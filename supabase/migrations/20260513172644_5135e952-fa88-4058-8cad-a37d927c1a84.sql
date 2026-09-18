@@ -1,0 +1,2 @@
+ALTER TABLE public.live_sessions ADD COLUMN IF NOT EXISTS last_source_seen_at TIMESTAMPTZ;
+CREATE INDEX IF NOT EXISTS idx_live_sessions_status_last_source_seen ON public.live_sessions (status, last_source_seen_at) WHERE mode = 'rtmp_obs';

@@ -1,0 +1,10 @@
+source,file_line,method,used_by_surface
+useTokenPrices hook (primary),src/hooks/useTokenPrices.ts:1-75,market — gọi edge token-prices (CoinGecko/external),useGiftBreakdown + GlobalGiftStatsModal + bất kỳ component import useTokenPrices
+FALLBACK_PRICES hardcode,src/hooks/useTokenPrices.ts:16-25,hardcode — BNB=$700 / BTC=$100k / USDT=$1 / CAMLY=$0.000014 / ETH=$3500 / POL=$0.5 / TON=$5,Tất cả surface khi edge token-prices lỗi
+token-prices edge (proxy),supabase/functions/token-prices/index.ts,market — external API (CoinGecko hoặc tương đương),useTokenPrices
+token_price_history table (DB),Chưa xác định nơi nào trong FE đọc trực tiếp bảng này,history — lưu giá theo thời điểm,Chưa đủ bằng chứng có FE consumer
+get_benefactor_leaderboard RPC (total_amount_usd),supabase/migrations (SQL không có trong repo src),server-side — RPC tự tính USD bằng join token_price_history hoặc hardcode,useBenefactorLeaderboard → BenefactorsPage + ExportCsvDialog
+get_recipient_leaderboard RPC (total_amount_usd),supabase/migrations (SQL không có trong repo src),server-side — RPC tự tính USD,useRecipientLeaderboard → BenefactorsPage + ExportCsvDialog
+get_donation_global_stats RPC (total_donated_usd),supabase/migrations (SQL không có trong repo src),server-side — tự tính USD,BenefactorsPage + ExportCsvDialog
+GlobalGiftStatsModal priceMap client-side,src/components/feed/GlobalGiftStatsModal.tsx:78-90,client-side từ useTokenPrices — override BTC→BTCB / BNB→WBNB,GlobalGiftStatsModal
+useGiftBreakdown usd_value calc,src/hooks/useGiftBreakdown.ts:~85-100,client-side từ useTokenPrices × amount,GiftBreakdownDialog + Profile stats

@@ -1,0 +1,26 @@
+Name,Type,File,File:Line,Import/Usage Count (rg),Notes
+usePublicDonationHistory,Hook,src/hooks/usePublicDonationHistory.ts,usePublicDonationHistory.ts:1,9,"Reads: donations, wallet_transfers, swap_transactions, RPC get_user_donation_summary"
+useDonationHistory,Hook,src/hooks/useDonationHistory.ts,useDonationHistory.ts:1,10,Reads donations direct; useDonationStats sub-hook
+useAdminDonationHistory,Hook,src/hooks/useAdminDonationHistory.ts,useAdminDonationHistory.ts:1,5,Reads donations direct; admin pagination+stats
+useTransactionHistory,Hook,src/hooks/useTransactionHistory.ts,useTransactionHistory.ts:1,3,Reads transactions+donations; compat shim
+useWalletHistory,Hook,src/hooks/useWalletHistory.ts,useWalletHistory.ts:1,1,DEAD — 0 active import; calls fetch-wallet-history edge (read-only)
+useBenefactorLeaderboard,Hook,src/hooks/useBenefactorLeaderboard.ts,useBenefactorLeaderboard.ts:1,3,Legacy RPCs: get_benefactor_leaderboard + get_donation_history
+DonationHistoryTab,Component,src/components/wallet/DonationHistoryTab.tsx,DonationHistoryTab.tsx:1,~4,useDonationHistory + exportDonationsToCSV/PDF
+HistoryTab,Component,src/components/wallet/tabs/HistoryTab.tsx,HistoryTab.tsx:1,~3,usePublicDonationHistory + local formatAmount + SummaryTable + StatusBadge
+WalletTransactionHistory,Component,src/components/profile/WalletTransactionHistory.tsx,WalletTransactionHistory.tsx:1,~3,usePublicDonationHistory + local formatAmount + inline expand
+ExportTransactionsMenu (wallet),Component,src/components/wallet/ExportTransactionsMenu.tsx,ExportTransactionsMenu.tsx:1,~2,mapDonationsToRows legacy mapper
+SystemDonationHistory,Component,src/components/donations/SystemDonationHistory.tsx,SystemDonationHistory.tsx:1,~2,useAdminDonationHistory + exportDonationsToCSV/PDF
+DonationHistoryAdminTab,Component,src/components/admin/DonationHistoryAdminTab.tsx,DonationHistoryAdminTab.tsx:1,~2,useAdminDonationHistory + exportDonationsToCSV
+formatAmount (HistoryTab),Util (local),src/components/wallet/tabs/HistoryTab.tsx,HistoryTab.tsx:~80,1,Duplicate của formatTokenAmount lib
+formatAmount (WalletTransactionHistory),Util (local),src/components/profile/WalletTransactionHistory.tsx,WalletTransactionHistory.tsx:~60,1,Duplicate của formatTokenAmount lib
+formatAmount (ClaimHistoryModal),Util (local),src/components/feed/ClaimHistoryModal.tsx,ClaimHistoryModal.tsx:~20,1,Inline toLocaleString; không dùng SSOT
+formatAmount (GlobalGiftStatsModal),Util (local),src/components/feed/GlobalGiftStatsModal.tsx,GlobalGiftStatsModal.tsx:~15,1,Inline; không dùng SSOT
+formatAmount (UnifiedTransactionSummary),Util (local),src/components/transactions/UnifiedTransactionSummary.tsx,UnifiedTransactionSummary.tsx:~12,1,Duplicate nội bộ (component này đã là Unified nhưng vẫn có hàm local)
+direction calc (usePublicDonationHistory),Logic,src/hooks/usePublicDonationHistory.ts,usePublicDonationHistory.ts:~160,1,isSent = sender_id===userId — trùng với RPC field direction
+direction calc (mapRows),Logic,src/utils/export/mapRows.ts,mapRows.ts:~45,1,recipient_id===currentUserId → 'in' — trùng với RPC field direction
+direction calc (useTransactionHistory),Logic,src/hooks/useTransactionHistory.ts,useTransactionHistory.ts:~40,1,isSender = sender_id===userId — trùng với RPC field direction
+mapDonationsToRows,Util,src/utils/export/mapRows.ts,mapRows.ts:1,~3,"Used by HistoryTab, WalletTransactionHistory, ExportTransactionsMenu; legacy DonationRecord shape"
+exportDonationsToCSV,Util,src/utils/exportDonations.ts,exportDonations.ts:1,~5,"Used by DonationHistoryTab, SystemDonationHistory, DonationHistoryAdminTab"
+exportDonationsToPDF,Util,src/utils/exportDonations.ts,exportDonations.ts:1,~3,Same files as above
+StatusBadge (HistoryTab inline),Component,src/components/wallet/tabs/HistoryTab.tsx,HistoryTab.tsx:~55,1,Duplicate của TransactionRow.statusBadge()
+StatusBadge (RecentTransactions inline),Component,src/components/wallet/RecentTransactions.tsx,RecentTransactions.tsx:~15,1,Duplicate của TransactionRow.statusBadge()

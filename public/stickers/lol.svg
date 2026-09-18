@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  <circle cx="60" cy="60" r="56" fill="#FFD93D" stroke="#E8A800" stroke-width="3"/>
+  <!-- squinting eyes -->
+  <path d="M30 48 L44 42 L30 36" stroke="#333" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M90 48 L76 42 L90 36" stroke="#333" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- open mouth laughing -->
+  <path d="M35 68 Q60 100 85 68" stroke="#333" stroke-width="3" fill="#333"/>
+  <path d="M40 68 Q60 58 80 68" fill="#FF6B6B"/>
+  <!-- tears -->
+  <path d="M26 52 Q22 62 26 58" fill="#5BC0EB" opacity="0.8"/>
+  <path d="M94 52 Q98 62 94 58" fill="#5BC0EB" opacity="0.8"/>
+</svg>

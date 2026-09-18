@@ -1,0 +1,6 @@
+postgres=arwdDxtm/postgres
+anon=rm/postgres
+authenticated=arwdDxtm/postgres
+service_role=arwdDxtm/postgres
+sandbox_exec_bhtsnervqiwchluwuxki=ar/postgres
+sandbox_exec=ar/postgres

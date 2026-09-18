@@ -1,0 +1,26 @@
+== After Phase 7B (same user 80c0a487…, 1906 rows) ==
+
+Q1: SELECT * FROM v_unified_transactions_primary WHERE user_id=X ORDER BY occurred_at DESC LIMIT 50
+- Total: 127.4 ms | Buffers: hit=12094 read=291   (was 872 ms / 223,470 buf)
+- Sub-plan (tx CTE) now uses Anti Join via new indexes:
+
+  Nested Loop Anti Join
+    Bitmap Heap Scan on transactions t              (5.6 ms, 547 buf)
+    Index Scan using idx_donations_lower_tx_hash_chain on donations d_2
+        Index Cond: (lower(tx_hash)=lower(t.tx_hash) AND chain_id=t.chain_id)
+        actual: 0.009 ms/row × 650 loops = ~6 ms
+  Nested Loop Anti Join (outer)
+    Index Scan using idx_wallet_transfers_lower_tx_hash_chain on wallet_transfers w_1
+        Index Cond: (lower(tx_hash)=lower(t.tx_hash) AND chain_id=t.chain_id)
+        actual: 0.007 ms/row × 58 loops
+
+  → tx CTE end-to-end: ~14 ms (was ~762 ms)
+
+Q2: SELECT id, occurred_at, total_count FROM get_unified_transactions('profile', X, ...limit=50)
+- Function Scan: 160.7 ms | Buffers hit=26,031    (was ~7,100 ms)
+
+Q3: SELECT * FROM get_unified_summary('profile', X)
+- 148.7 ms | Buffers hit=15,207                    (was ~7,100 ms)
+
+Q4: SELECT * FROM get_unified_counterparties('profile', X)
+- 138.6 ms | Buffers hit=15,992                    (was ~7,100 ms)

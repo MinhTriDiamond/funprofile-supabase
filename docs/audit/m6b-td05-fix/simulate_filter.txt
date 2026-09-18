@@ -1,0 +1,5 @@
+ total_tx | after_whitelist | after_dedup | duplicated_with_donations | duplicated_with_wallet_transfers | duplicated_with_both 
+----------+-----------------+-------------+---------------------------+----------------------------------+----------------------
+    55335 |           13027 |         590 |                     54418 |                             2157 |                 1859
+(1 row)
+

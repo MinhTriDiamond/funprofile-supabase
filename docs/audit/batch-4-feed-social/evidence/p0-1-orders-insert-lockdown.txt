@@ -1,0 +1,19 @@
+B4 P0-1 — chặn client tự tạo đơn + tự đặt giá (2026-08-19)
+
+-- Quyền bảng (has_table_privilege)
+authenticated INSERT pet_shop_orders    = false
+authenticated INSERT mystery_box_orders = false
+anon          INSERT pet_shop_orders    = false
+service_role  INSERT pet_shop_orders    = true
+
+-- Policy INSERT sau khi vá
+mb_orders_no_client_insert : WITH CHECK false
+orders_no_client_insert    : WITH CHECK false
+
+-- Thử INSERT thật với role=authenticated + request.jwt.claims.sub của user thường,
+-- giá 1 CAMLY, treasury '0xdead' => bị chặn, không dòng nào được ghi:
+count(pet_shop_orders where treasury_address='0xdead')    = 0
+count(mystery_box_orders where treasury_address='0xdead') = 0
+
+-- Luồng hợp lệ giữ nguyên: pet_shop_create_order / mystery_box_create_order
+-- (SECURITY DEFINER, owner = postgres) vẫn ghi được vì bypass RLS + GRANT.

@@ -1,0 +1,48 @@
+M6B — USD impact thật của 57 dòng gap + phân định chain 97
+Ngày: 2026-08-27 (UTC). Nguồn giá: public.token_price_history (giá tại NGÀY giao dịch,
+KHÔNG dùng giá hiện tại). Lệch ngày tối đa khi khớp giá: CAMLY 56 = 2 ngày, CAMLY 137 = 0 ngày.
+
+## Câu 1 — Quy đổi USD theo giá lịch sử
+
+  sym   | chain | rows | total_amount | total_usd | khoảng thời gian
+ -------+-------+------+--------------+-----------+--------------------------
+  CAMLY |    56 |   53 |    6.283.659 |  $39,0489 | 2025-12-04 → 2026-06-13
+  CAMLY |   137 |    1 |       10.000 |   $0,1640 | 2026-02-12
+  FUN   |    97 |    3 |        1.148 |   (không có giá — testnet)
+ -------+-------+------+--------------+-----------+--------------------------
+  TỔNG USD (phần định giá được)              = $39,2129
+
+5 dòng CAMLY lớn nhất theo USD:
+  2026-03-18 | 1.000.000 CAMLY | px 0,000009622975 | $9,6230
+  2025-12-06 | 2.042.000 CAMLY | px 0,000003078121 | $6,2855
+  2025-12-04 |   580.000 CAMLY | px 0,000003563518 | $2,0668
+  2026-03-16 |   200.000 CAMLY | px 0,000010013009 | $2,0026
+  2026-03-16 |   199.000 CAMLY | px 0,000010013009 | $1,9926
+
+⇒ Toàn bộ gap CAMLY = **$39,21**. Không phải "kết luận suy diễn": con số cụ thể,
+tính bằng giá theo ngày, dòng lớn nhất chỉ $9,62.
+
+Lưu ý phương pháp: token_price_history KHÔNG có symbol 'FUN' (365 dòng CAMLY,
+183 BNB, 71 BTC, 6 BTCB, 238 USDT). Điều này khớp USD Pricing Policy v1:
+FUN = testnet ⇒ price_source 'testnet_skip', amount_usd NULL.
+
+## Câu 2 — chain 97 = BSC TESTNET (xác nhận)
+
+Bằng chứng code: src/lib/chainTokenMapping.ts
+  BSC_TESTNET = 97; CHAIN_INFO[97].name = 'BNB Smart Chain Testnet',
+  explorerUrl = 'https://testnet.bscscan.com'.
+Không có ý nghĩa nào khác cho 97 trong registry.
+
+3 dòng FUN gap chain 97:
+  bfa65e73 | 999 FUN | 2026-06-13 | from 0xdb5e…e149 → to 0xdcce…26e3
+  3d5d5bb8 |  99 FUN | 2026-04-16 | from_address RỖNG, to_address RỖNG
+  f71e81b2 |  50 FUN | 2026-04-19 | from_address RỖNG, to_address RỖNG
+
+2/3 dòng thiếu cả from và to ⇒ không thể là giao dịch on-chain thật hoàn chỉnh.
+Cả 3 nằm trên testnet, giá trị USD không xác định được.
+
+Đề xuất: **LOẠI chain 97 khỏi whitelist UNION**. Chỉ thêm:
+  OR (upper(token_symbol)='CAMLY' AND chain_id IN (56,137))
+  OR (upper(token_symbol)='FUN'   AND chain_id = 56)
+⇒ Thêm 54 dòng (không phải 57). 3 dòng testnet vẫn nằm trong `transactions`,
+không bị xoá, chỉ không lên Unified History/Export production.

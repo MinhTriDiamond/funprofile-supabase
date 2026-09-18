@@ -1,0 +1,24 @@
+                  id                  |    tx_hash_short     | chain_id | token_symbol |  status   | created_at 
+--------------------------------------+----------------------+----------+--------------+-----------+------------
+ 61dfc9b3-c959-4f12-a200-c8a33823f331 | 0x72844d8b26a5c02976 |       56 | BNB          | confirmed | 2026-07-01
+ 01ddb96d-27df-453a-8f3f-5314b0d61856 | 0x72844d8b26a5c02976 |       56 | BNB          | confirmed | 2026-07-01
+ 35f10fe3-17e1-4c26-b3f0-a9c2ec42461f | 0x29d1d27a53427c9317 |       56 | CAMLY        | confirmed | 2026-07-01
+ 29bc57a4-5a05-4fc7-be4f-82458fdeec95 | 0x29d1d27a53427c9317 |       56 | CAMLY        | confirmed | 2026-07-01
+ 7e9d8ec9-ef47-4d28-9467-07dcd1b469f3 | 0x429105c6cdccc16928 |       56 | BNB          | confirmed | 2026-07-01
+ eff2bad4-26ff-4a6f-a11a-de1ea63377b6 | 0x429105c6cdccc16928 |       56 | BNB          | confirmed | 2026-07-01
+ 1a1ed787-619e-450e-aa1e-59d8b8ed8207 | 0x2986b7d49301338f1a |       56 | CAMLY        | confirmed | 2026-07-01
+ 30d1fad8-6272-49c9-af8e-e90e5d9868ec | 0x2986b7d49301338f1a |       56 | CAMLY        | confirmed | 2026-07-01
+ 08d35910-1eae-4ceb-a7c2-c9688425a992 | 0xf1aaad2db7338d2ed8 |       56 | BNB          | confirmed | 2026-07-01
+ c7145fea-69eb-496f-b204-3aea7f91d9dd | 0xf1aaad2db7338d2ed8 |       56 | BNB          | confirmed | 2026-07-01
+ 61362d05-045b-4308-ae98-1d781642a159 | 0xd0b559d8eee50b608b |       56 | CAMLY        | confirmed | 2026-07-01
+ 71d5d9f8-3d2f-49ca-a873-e3b69c12f823 | 0xd0b559d8eee50b608b |       56 | CAMLY        | confirmed | 2026-07-01
+ db39b90f-e4b4-444a-9008-ec6fa85e5a64 | 0xf49ed51da67c76070a |       97 | FUN          | confirmed | 2026-07-01
+ d58835c5-06d7-4b10-834c-0421392396ba | 0xf49ed51da67c76070a |       97 | FUN          | confirmed | 2026-07-01
+ 6063dcba-8c9e-438d-9e48-1b8815d0f00b | 0xc88cc4b429eb48b41f |       97 | FUN          | confirmed | 2026-07-01
+ 3fe94de7-ed31-40e9-ae8e-3174dae40d23 | 0xc88cc4b429eb48b41f |       97 | FUN          | confirmed | 2026-07-01
+ d817a79d-534d-4c1d-89b7-f4a9b38a1c61 | 0x210c5e83a876b06cbf |       97 | FUN          | confirmed | 2026-07-01
+ 5dca6b84-74a8-40a1-a48e-5c7d71f4c20f | 0x210c5e83a876b06cbf |       97 | FUN          | confirmed | 2026-07-01
+ f7e14906-b151-4af6-ba61-567f89e9da89 | 0x4fd015dfbcd0faeb12 |       56 | CAMLY        | confirmed | 2026-07-01
+ 49dd87a2-4642-47c0-aea4-abe54a95213c | 0x4fd015dfbcd0faeb12 |       56 | CAMLY        | confirmed | 2026-07-01
+(20 rows)
+

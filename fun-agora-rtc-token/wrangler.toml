@@ -1,0 +1,7 @@
+name = "fun-agora-rtc-token"
+main = "src/index.ts"
+compatibility_date = "2024-12-01"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+ALLOWED_ORIGINS = "https://funprofile.lovable.app,https://id-preview--f06fbccb-088c-4170-8736-4f1a09d4d572.lovable.app,https://f06fbccb-088c-4170-8736-4f1a09d4d572.lovableproject.com,http://localhost:5173"

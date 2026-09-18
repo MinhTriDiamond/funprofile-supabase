@@ -1,0 +1,15 @@
+Table,Được đọc bởi,Được ghi bởi,Trạng thái,Ghi chú
+donations,v_unified_transactions view + legacy hooks (usePublicDonationHistory/useDonationHistory/useAdminDonationHistory) + legacy RPCs + admin direct,record-donation/auto-scan-donations/scan-btc-transactions/approve-claim/wallet-reconciliation-cron,Active — Primary Source,Bảng trung tâm; cần giữ nguyên
+wallet_transfers,v_unified_transactions view + usePublicDonationHistory,auto-scan-donations/backfill-wallet-transfers,Active — Secondary Source,Dedup: donation thắng nếu trùng cặp nội bộ (mem: internal-transfer-dedup)
+swap_transactions,v_unified_transactions view + usePublicDonationHistory + useGiftBreakdown,backfill-swap-transactions + SwapTab.tsx (FE?),Active — Secondary Source,FE direct insert cần verify — chỉ thấy 1 file
+transactions,v_unified_transactions (KHÔNG nằm trong view hiện tại — Chưa đủ bằng chứng),approve-claim/wallet-reconciliation-cron/backfill-donations-to-transactions,Active — Side table,⚠️ KHÔNG nằm trong UNION của v_unified_transactions; chỉ backfill tracking
+reward_claims,Admin UI (RewardApprovalTab/BlockchainTab/WalletCenter) + approve-claim reads,approve-claim insert,Active — Claim tracking,"Chưa vào v_unified; claim_reward path: donations insert với metadata.type='claim_reward'"
+pending_claims,claim-reward reads + RewardApprovalTab,claim-reward + approve-claim updates,Active — Pending state,Staging table trước khi chuyển sang reward_claims
+treasury_flows,TreasuryPublicPage (legacy direct),treasury-recycle + scan-treasury-camly?,Active — Riêng biệt,Không trong v_unified_transactions — legacy read path riêng
+notifications,NotificationDropdown (realtime subscription),record-donation/auto-scan-donations/approve-claim/wallet-reconciliation-cron/claim-reward,Active — Downstream,Chưa unified; consumer đọc trực tiếp
+posts (gift_celebration),Feed + GiftCelebrationCard,record-donation/auto-scan-donations/scan-btc-transactions,Active — Downstream,Liên kết donations.post_id; không trong unified tx history
+light_actions,pplp pipeline,record-donation,Active — pplp scoring,Nằm ngoài tx architecture; dành cho PPLP
+transactions (bảng cũ),Không rõ FE đọc trực tiếp,approve-claim/wallet-reconciliation-cron/backfill,Partial Legacy,"⚠️ Không trong v_unified_transactions view; useTransactionHistory đọc bảng này — Legacy/Dead-write path"
+claim_rewards (bảng cũ),ClaimHistoryModal direct,Không rõ — có thể từ cron cũ,Legacy — Read-only,"Chưa đủ bằng chứng xác nhận claim_rewards vs reward_claims là cùng hay khác table"
+suspicious_wallet_events,Admin audit,fetch-wallet-history (Phase 1 guard),Active — Security log,Không liên quan tx history consumer
+tokens_registry,fetch-wallet-history (registry guard),Admin seed,Active — Registry,Phase 1 hardening

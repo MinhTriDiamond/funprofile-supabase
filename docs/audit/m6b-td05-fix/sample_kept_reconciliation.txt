@@ -1,0 +1,24 @@
+       tx_hash        | chain_id | token_symbol |  status   | created_at 
+----------------------+----------+--------------+-----------+------------
+ 0x7e5b8cf0472f0324bf |       56 | BNB          | confirmed | 2026-06-30
+ 0x3844ecb3171a91da6a |       56 | USDT         | confirmed | 2026-06-30
+ 0x1879e2428d88c1f4a4 |       56 | BNB          | confirmed | 2026-06-30
+ 72ccabf90a4dba5d9959 |        0 | BTC          | confirmed | 2026-06-30
+ ac2d71b9c0a82cacf48c |        0 | BTC          | confirmed | 2026-06-30
+ 0x2167bfbb63ac19c7de |       56 | USDT         | confirmed | 2026-06-30
+ 0x55185cfc5e7ed9e43c |       56 | USDT         | confirmed | 2026-06-30
+ 0x941c8c080add2b0be8 |       56 | BNB          | confirmed | 2026-06-30
+ 0xcee6d4ffe0ea6701df |       56 | USDT         | confirmed | 2026-06-30
+ 0x199b8af4b52059151c |       56 | USDT         | confirmed | 2026-06-30
+ 0xd98c2d30860c7732a5 |       56 | BNB          | confirmed | 2026-06-30
+ 0x850163dd181665cb4a |       56 | USDT         | confirmed | 2026-06-30
+ 0x32b68bc17a991f3426 |       56 | USDT         | confirmed | 2026-06-30
+ 0xc85f34408870722104 |       56 | USDT         | confirmed | 2026-06-30
+ 0x973bcbec52e42d7549 |       56 | BNB          | confirmed | 2026-06-30
+ 0x7b630bd6f648e980b9 |       56 | USDT         | confirmed | 2026-06-30
+ 0x2a7e66b6bdacf83bdf |       56 | USDT         | confirmed | 2026-06-30
+ 0x3811e1e72ca6977e0c |       56 | USDT         | confirmed | 2026-06-30
+ 0x6c2b6e123644d3f2a8 |       56 | USDT         | confirmed | 2026-06-29
+ 0x64f4a6faf49bb157aa |       56 | USDT         | confirmed | 2026-06-29
+(20 rows)
+

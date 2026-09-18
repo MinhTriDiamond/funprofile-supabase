@@ -1,0 +1,102 @@
+ai_agent_profile	AI agent profiles are public	true
+ai_agent_profile	Service role full access ai_agent_profile	((auth.jwt() ->> 'role'::text) = 'service_role'::text)
+app_settings	Service role only	false
+app_stats_cache	Anyone can read app stats cache	true
+buddy_daily_quests	Public read quests	true
+chains_registry	chains_registry_read_all	true
+comments	Comments are viewable by everyone	true
+connector_config	Anyone can read connector config	true
+cross_platform_tokens	Service role can manage tokens	(auth.role() = 'service_role'::text)
+custodial_wallets	Service role only access	(auth.role() = 'service_role'::text)
+did_registry	did_public_read	true
+donations	Donations are viewable by everyone	true
+email_verification_tokens	Deny all client access	false
+external_wallet_inclusion_overrides	Whitelist readable by everyone	true
+external_wallet_labels	Anyone can view external wallet labels	true
+financial_transactions	Service role can manage all transactions	(auth.role() = 'service_role'::text)
+fun_distribution_logs	Service role manages distribution	(auth.role() = 'service_role'::text)
+fun_pool_config	Service role manages pool config	(auth.role() = 'service_role'::text)
+i18n_languages	Anyone can read i18n_languages	true
+identity_epoch_snapshots	snap_public_read	true
+identity_levels	identity_levels_public_read	true
+identity_verification_events	Deny all client access	false
+light_reputation	Anon can read reputation via view	true
+link_preview_cache	Anyone can read link preview cache	true
+live_co_hosts	Anyone can view co-hosts	true
+live_comments	Anyone can view live comments	true
+live_messages	Anyone can view live messages	true
+live_reactions	Anyone can view live reactions	true
+live_replays	live_replays_public_read_playable_archive	(((status)::text = ANY (ARRAY['ready'::text, 'archived'::text, 'posted'::text])) OR (replay_status = ANY (ARRAY['ready'::text, 'ready_mp4'::text])) OR (archive_status = ANY (ARRAY['archived'::text, 'replay_posted'::text, 'stream_deleted'::text, 'r2_ready'::text])) OR (r2_video_url IS NOT NULL) OR (archive_mp4_url IS NOT NULL) OR (playback_mp4 IS NOT NULL))
+live_replays	live_replays_public_read_ready	(((status)::text = ANY (ARRAY['ready'::text, 'archived'::text, 'posted'::text])) OR (archive_status = ANY (ARRAY['archived'::text, 'replay_posted'::text, 'stream_deleted'::text])))
+login_ip_logs	Service role can insert IP logs	(auth.role() = 'service_role'::text)
+mint_epochs	Anyone can view mint epochs	true
+mystery_box_shop_config	shop_config_public_read	true
+oauth_codes	Service role can manage oauth codes	(auth.role() = 'service_role'::text)
+org_members	Org members visible to all	true
+org_members	Service role full access org_members	((auth.jwt() ->> 'role'::text) = 'service_role'::text)
+org_profile	Service role full access org_profile	((auth.jwt() ->> 'role'::text) = 'service_role'::text)
+org_profile	Org profiles are public	true
+otp_codes	OTP codes are system managed only	false
+pending_provisions	Service role only	false
+pet_battle_leaderboard	Anyone view leaderboard	true
+pet_battle_seasons	Anyone view seasons	true
+pet_cheers	pet_cheers_select_all	true
+pet_cosmetics_catalog	catalog_read_all	true
+pet_shop_config	config_read_all	true
+pet_voice_lines	Public read pet_voice_lines	(is_active = true)
+platform_financial_data	Service role can manage financial data	(auth.role() = 'service_role'::text)
+post_attachments	Anyone can read post attachments	true
+post_tags	Anyone can view post tags	true
+pplp_actions	Service role manages actions	(auth.role() = 'service_role'::text)
+pplp_audits	Service role manages audits	(auth.role() = 'service_role'::text)
+pplp_device_registry	Service role manages devices	(auth.role() = 'service_role'::text)
+pplp_epoch_caps	Service role manages epoch caps	(auth.role() = 'service_role'::text)
+pplp_epoch_caps	Anyone can view epoch caps	true
+pplp_evidences	Service role manages evidences	(auth.role() = 'service_role'::text)
+pplp_fraud_signals	Service role manages fraud	(auth.role() = 'service_role'::text)
+pplp_policies	Anyone can view active policy	(is_active = true)
+pplp_policies	Service role manages policies	(auth.role() = 'service_role'::text)
+pplp_scores	Service role manages scores	(auth.role() = 'service_role'::text)
+pplp_user_caps	Service role manages caps	(auth.role() = 'service_role'::text)
+pplp_user_nonces	Service role manages nonces	(auth.role() = 'service_role'::text)
+pplp_user_tiers	Service role manages tiers	(auth.role() = 'service_role'::text)
+pplp_v25_action_overrides	overrides_select_all	true
+pplp_v25_config	v25_cfg_read	true
+pplp_v25_event_base_values	events_public_read	true
+pplp_v25_impact_metrics	v25_impact_service	(auth.role() = 'service_role'::text)
+pplp_v25_intent_metrics	v25_intent_service	(auth.role() = 'service_role'::text)
+pplp_v25_legacy_params	legacy_public_read	true
+pplp_v25_light_scores	v25_ls_service	(auth.role() = 'service_role'::text)
+pplp_v25_mint_linking_config	mint_link_public_read	true
+pplp_v25_multiplier_ranges	mult_public_read	true
+pplp_v25_phase_config	phase_public_read	true
+pplp_v25_tier_assignments	v25_tier_service	(auth.role() = 'service_role'::text)
+pplp_v25_vvu_log	v25_vvu_service	(auth.role() = 'service_role'::text)
+pplp_v2_action_types	Anyone can read action types	true
+pplp_v2_immutable_rules	Anyone can read immutable rules	true
+profile_btc_aux_addresses	Public can read aux btc addresses	true
+quest_definitions	quest_definitions_public_read	(is_active = true)
+reactions	Reactions are viewable by everyone	true
+reconciliation_logs	Service role full access	(auth.role() = 'service_role'::text)
+reel_comment_likes	Comment likes are viewable by everyone	true
+reel_comments	Reel comments are viewable by everyone	true
+reel_likes	Reel likes are viewable by everyone	true
+reel_shares	Shares are viewable by everyone	true
+reel_views	Views are viewable by everyone	true
+reels	Public reels are viewable by everyone	((visibility = 'public'::text) AND (is_active = true))
+reserved_usernames	Anyone can read reserved usernames	true
+sbt_issuance_rules	rules_public_read	true
+slug_history	Anyone can read slug history	true
+soul_nfts	Anyone can view minted soul NFTs	(is_minted = true)
+sticker_packs	Anyone can view active sticker packs	(is_active = true)
+stickers	Anyone can view stickers	true
+streams	Anyone can view streams	true
+system_config	Anyone can read system config	true
+token_ingest_filters	read filters public	true
+token_price_history	tph_public_read	true
+tokens_registry	tokens_registry read for all	true
+trust_profile	trust_public_read	true
+username_history	Anyone can read username history	true
+validator_profile	Service role full access validator_profile	((auth.jwt() ->> 'role'::text) = 'service_role'::text)
+validator_profile	Validator profiles are public	true
+wallet_challenges	No public access to wallet_challenges	false

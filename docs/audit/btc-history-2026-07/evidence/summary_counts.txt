@@ -1,0 +1,110 @@
+=== USER b7856e97-9bff-4e2d-8448-c4395bf0548b ===
+         src          | n  |   total    
+----------------------+----+------------
+ transactions         | 23 | 1.15150127
+ wallet_transfers_in  | 13 | 0.57451507
+ wallet_transfers_out |  6 | 0.57449229
+ donations_sender     |  4 | 0.00216000
+ donations_recipient  | 14 | 0.57500898
+ unified_raw_in       | 27 | 1.14952405
+ unified_raw_out      | 10 | 0.57665229
+ unified_primary_in   | 14 | 0.57500898
+ unified_primary_out  | 10 | 0.57665229
+(9 rows)
+
+--- duplicates in unified_raw ---
+                                h                                 | direction |          array_agg           | count 
+------------------------------------------------------------------+-----------+------------------------------+-------
+ 05a78ade04d044c9179b381566fad7cbcc4d0b8eb2df47550433f18b42a82935 | in        | {donations,wallet_transfers} |     2
+ 0e1773a664e153faed81a1878e8a087dd10fd9b20a19bb9345a057353e3adfe5 | in        | {donations,wallet_transfers} |     2
+ 15c876dcb718917e8972e92825406aedbbbd70e2afe0c3f299f42ac804af2b59 | in        | {donations,wallet_transfers} |     2
+ 2c917a4822cb49009d9246d9a7f466f765976633ff583ebb0b219975e824bde1 | in        | {wallet_transfers,donations} |     2
+ 38d73ba1cc1a264cdd7d646ab6a3db1f05c66a1068960a245e670af467e9bee4 | in        | {donations,wallet_transfers} |     2
+ 74978ec15087e02e33c004917559d9e934bcc2984f70cc53c26749927d14cc96 | in        | {wallet_transfers,donations} |     2
+ 7c342b0ac39922d1e8ed383b0ad38df41404907d9dcf8e21324f7cdbf1410dfc | in        | {wallet_transfers,donations} |     2
+ a0707fdd93febdfbdd45ae7ada00b6b740016a3c7200e3434352a224e6ff1107 | in        | {wallet_transfers,donations} |     2
+ a915aa718c91d87e3f4e893aa97ad8970baa996bfc9b709cc44e0a00875c2df8 | in        | {wallet_transfers,donations} |     2
+ b805a59e2b066cfacb0e0bb946a150df2ce95e348492ccb32523a46d5627def0 | in        | {wallet_transfers,donations} |     2
+ de1f880d281950d3b41e5faf4cc6fc80e52ec2c257a6eb0bd594c473eb0b8c57 | in        | {donations,wallet_transfers} |     2
+ f75884d5e76575680db464aae88476cfc374511c9713c9b571d8817e78300e43 | in        | {donations,wallet_transfers} |     2
+ fe765e4e703cec8c793fcd8eff3fa90251877fbebb0ec48783de5f2a9b3b3a34 | in        | {wallet_transfers,donations} |     2
+(13 rows)
+
+=== USER 0fd954f5-5d1f-48bf-aab5-0152232aee6c ===
+         src          | n  |   total    
+----------------------+----+------------
+ transactions         | 56 | 2.40278417
+ wallet_transfers_in  | 10 | 0.00372750
+ wallet_transfers_out |  3 | 0.00048430
+ donations_sender     | 42 | 1.69695555
+ donations_recipient  | 19 | 1.02438931
+ unified_raw_in       | 36 | 1.03028981
+ unified_raw_out      | 45 | 1.69743985
+ unified_primary_in   | 26 | 1.02656231
+ unified_primary_out  | 29 | 1.46700676
+(9 rows)
+
+--- duplicates in unified_raw ---
+                                h                                 | direction |          array_agg           | count 
+------------------------------------------------------------------+-----------+------------------------------+-------
+ 0115b9ef66cc177d76619307729b416b722ab93e153ebd13494ab3b8a52ff3cd | in        | {donations,wallet_transfers} |     2
+ 191e6eb58f4e60c75a08581cb371b30d95a90e82f56bebab5875347ace4cd347 | out       | {donations,donations}        |     2
+ 224cc88ec86fc0376e003198b7820eb9e8c7c684bbb29904192157d375c24f7e | in        | {donations,wallet_transfers} |     2
+ 2fa38056f0bbf278df916041848393f2abf12be775e226376ffd6acf81e50e68 | in        | {wallet_transfers,donations} |     2
+ 3b71d9063f7c9406a9b447fc3490c15e184e71b748a2bd8a1c64ee3babeea19b | out       | {donations,wallet_transfers} |     2
+ 43e6773ff583c0dcad13452a935db55522b9c1ca225056b1ea3880914a26eb5e | in        | {wallet_transfers,donations} |     2
+ 551e9c36c4b1d08546b241a89de1f182689987777ac73c6ca7638921b6ffb6ed | out       | {donations,donations}        |     2
+ 57b45147b31c7038aa195a6f5f67e13d069c918b9afb76fc5068000079ad6bc0 | out       | {donations,donations}        |     2
+ 65baf7ad73cfd7e6069ed31477849081965d2d684be1cd0eacc06fb98516c7a9 | out       | {donations,donations}        |     2
+ 663c23a20c883be3f1e07d1934569caab8e2fcf36e102ad3fe81b9a613a54a10 | in        | {donations,wallet_transfers} |     2
+ 758888fd43042dfa30b26781a0a1ae1b30d6a53358b37331dbfb83f6521cf36c | out       | {donations,donations}        |     2
+ 7e3ea3fc887fbceb4f78d70c4ccbb5072cc5eb05a4c5296de2183035a1afaff3 | out       | {donations,donations}        |     2
+ 80a99e53efbc9c9c1cc3adf1dd0ad37011df3f9c894861aa8131e99786d62d3f | in        | {donations,wallet_transfers} |     2
+ 86e1e74d1d0af1977d1ce3dadeab12034063bc20a94fef087f9883d0fe1c816f | out       | {donations,donations}        |     2
+ 96ece9fb49297189724282440a096dad02395da37e2d90485d23163f56077c0d | out       | {donations,donations}        |     2
+ 9da49e2a1b66c440be302d29d7ffa7f54b7f4ae4a6787a6ada5a5f1ea5c97459 | out       | {donations,donations}        |     2
+ a0310ee11ea584ae7abf23209d38e1e5b78b588dbbd9433d9d91343bdb33058f | out       | {donations,wallet_transfers} |     2
+ a6811bf7d616550c8d8db9cce6d1ec21a463ec27f3c70b976f8c0b70f7dbada7 | in        | {donations,wallet_transfers} |     2
+ a71ade9c6c6b7224267462a8ec7b7f9b5a446c675a43db4f8b533a8ade6395cf | out       | {donations,donations}        |     2
+ bcc09bc753165e73eb5cff4c4518a1df08d9c02a70fb0152953ec4c83687b103 | out       | {donations,donations}        |     2
+(20 rows)
+
+=== USER dcfd1a56-cfca-4cac-8184-4357c184b362 ===
+         src          | n  |   total    
+----------------------+----+------------
+ transactions         | 66 | 2.41898284
+ wallet_transfers_in  | 24 | 0.52081789
+ wallet_transfers_out | 31 | 0.20984717
+ donations_sender     | 21 | 1.22158794
+ donations_recipient  | 26 | 0.53033954
+ unified_raw_in       | 51 | 1.05185590
+ unified_raw_out      | 52 | 1.43143511
+ unified_primary_in   | 27 | 0.53103801
+ unified_primary_out  | 37 | 1.42451072
+(9 rows)
+
+--- duplicates in unified_raw ---
+                                h                                 | direction |          array_agg           | count 
+------------------------------------------------------------------+-----------+------------------------------+-------
+ 069ab4dc872c9718fe56d788ea6088f08e8354e2d74ec50eec9e50e4533df7d8 | out       | {wallet_transfers,donations} |     2
+ 152d45cb0a7707b19ae09309d78f3202e47f09eea62df59aa989da5eaa19848d | out       | {donations,wallet_transfers} |     2
+ 1c6250ec258dfa55412cbd6f7c0fc10d30722f946c6dabe06ad2d7f8d639c9b5 | in        | {wallet_transfers,donations} |     2
+ 1e5182aa451e61b890fd85bd690e8c9ab20763e2519f272b2230de0766d4838a | in        | {donations,wallet_transfers} |     2
+ 1f736b978f4967f55e48f154378060d873fe65f490c8745358045d16127da3b9 | out       | {wallet_transfers,donations} |     2
+ 2c7c6d2fa389368ba0887e3eb47eb6a5587780873a8521376c12d513206f316d | in        | {wallet_transfers,donations} |     2
+ 2c917a4822cb49009d9246d9a7f466f765976633ff583ebb0b219975e824bde1 | out       | {wallet_transfers,donations} |     2
+ 2e706f52fe0971d7bd98b864e87036ca7ef73b939ea48f3b272d1dbfccedb9c2 | out       | {donations,wallet_transfers} |     2
+ 351ff062bf36cb6adbd542d78fa35d92fbd05f82260837682444f173e628742d | in        | {donations,wallet_transfers} |     2
+ 360b35555321dea1f0065a6bc4f010fdc95504e8fd3fb411f2c8ceda44d181f6 | out       | {wallet_transfers,donations} |     2
+ 3d61f39b52e95138e901e797b115b434c65473223143de4300544fd8a838ca96 | in        | {donations,wallet_transfers} |     2
+ 3e5a90594bde0b28fad35a31a354e196c5138722078c4df7653a102066521e85 | out       | {wallet_transfers,donations} |     2
+ 3ec8f8dc9501b7927b2fbfef92e481a53791d2434563eedd30247f3e4074db82 | in        | {donations,wallet_transfers} |     2
+ 513da02b91025c54aeafb0ab7fe7e79ada6aae47be88f48b55e4184f67ff8c9b | in        | {donations,wallet_transfers} |     2
+ 53ab6c2021b93bcf2a821072728ea23039996c9a8d180ed52b25d083a9dad4a8 | out       | {donations,wallet_transfers} |     2
+ 5689e95a49ff30ce2abf7e9a76c5d25d9e9330e22e9a606120a31155c354a50a | in        | {wallet_transfers,donations} |     2
+ 65f6726050600266b8d134855f6a01a811390bc208a14a0733d7ee195799d25b | out       | {wallet_transfers,donations} |     2
+ 667a3fbd89688be74ba551f3b80b11e790105cd368605db5276e2a08c350b161 | in        | {donations,wallet_transfers} |     2
+ 6bd3f1f5065a1dc19f0f0e15597ff5caa62c74fa6b2e16366003ca88cff86dca | in        | {wallet_transfers,donations} |     2
+ 6d5270786e095a0037ca8c098b89b41884461775a483dd86b4e9e55353da8232 | in        | {wallet_transfers,donations} |     2
+(20 rows)
+

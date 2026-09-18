@@ -1,0 +1,9 @@
+         category          | row_count 
+---------------------------+-----------
+ camly_claim_or_gift       |     39376
+ reconciliation_bep20_usdt |      8755
+ reconciliation_bnb        |      2997
+ other                     |      2932
+ reconciliation_btc        |      1275
+(5 rows)
+

@@ -1,0 +1,1 @@
+DROP TRIGGER IF EXISTS trg_log_profiles_wallet_changes ON public.profiles;

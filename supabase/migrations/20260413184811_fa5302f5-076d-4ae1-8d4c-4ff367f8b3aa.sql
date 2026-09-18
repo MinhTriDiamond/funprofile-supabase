@@ -1,0 +1,1 @@
+UPDATE mint_epochs SET mint_pool = 5000000 WHERE id = 'ef0dcf6d-776f-4a01-aeda-8b8c92c5a2bb';

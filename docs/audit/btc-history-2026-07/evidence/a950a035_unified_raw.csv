@@ -1,0 +1,1 @@
+source_table,tx_hash,direction,amount_decimal,is_external,status,occurred_at,counterparty_user_id,sender_address,recipient_address

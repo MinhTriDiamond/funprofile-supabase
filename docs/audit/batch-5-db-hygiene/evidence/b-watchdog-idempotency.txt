@@ -1,0 +1,82 @@
+B5-B — Fix idempotency live-duration-watchdog (phiên zombie) — 2026-08-20
+
+===============================================================================
+1) 4 PHIÊN ZOMBIE (raw)
+===============================================================================
+Lượt ghi 3h (21:42 -> 00:41 UTC), reason force_end_idempotent_return + duration_limit_triggered:
+ ecd0cf3b-c3ce-4699-ae28-3d752996a518 | 540
+ 52138651-5d60-4718-88b9-f795fa45dbc1 | 360
+ 5c326bcc-4e05-4970-814f-6f1fba965bdb | 360
+ 8f8a3ed0-ae11-4e67-99f2-4c78809efc5c | 360
+
+Trạng thái trong live_sessions TRƯỚC khi vá:
+ id | status | mode | started_at | ended_at | end_reason | last_host_heartbeat_at | recording_status | archive_status
+ 52138651… | processing_replay | agora_webcam | 2026-08-18 12:54:03 | 2026-08-18 13:51:58 | host_disconnected_timeout | 2026-08-18 13:51:42 | ready | replay_posted
+ 5c326bcc… | processing_replay | agora_webcam | 2026-07-28 08:37:56 | 2026-07-28 08:45:04 | host_disconnected_timeout | 2026-07-28 08:43:29 | ready | replay_posted
+ 8f8a3ed0… | processing_replay | agora_webcam | 2026-07-03 21:59:15 | 2026-07-03 22:38:11 | superseded_by_new_live   | 2026-07-03 22:38:05 | ready | replay_posted
+ ecd0cf3b… | processing_replay | agora_webcam | 2026-07-07 02:16:18 | 2026-07-07 02:27:48 | host_clicked_end         | 2026-07-07 02:26:54 | ready | replay_posted
+=> Cả 4 ĐÃ có ended_at + recording_status=ready + archive_status=replay_posted.
+
+ẢNH HƯỞNG UI: KHÔNG.
+  select username, is_live from profiles where id in (host_user_id …)
+   nguyenlanh | f
+   dothuthuy  | f
+  Frontend lọc phiên live bằng isFreshLiveSession() (src/modules/live/utils/liveSessionFreshness.ts):
+  ended_at != null -> false; status != 'live' -> false. 4 phiên này fail cả 2 điều kiện.
+  Replay của cả 4 đã đăng (live_post_id có, archive_status=replay_posted) => Feed hiển thị đúng dạng replay.
+
+ẢNH HƯỞNG QUOTA/PHÍ AGORA: KHÔNG.
+  Bảng agora usage: `select table_name from information_schema.tables where table_name like '%agora%'` -> 0 row
+  (tracking usage nằm ở nơi khác/chưa bật trên project này) và recording_status='ready' = Agora Cloud
+  Recording đã stop từ lâu. Watchdog chỉ chạy 2 câu lệnh DB + insert log, KHÔNG gọi Agora API cho
+  nhánh idempotent (forceEndLive return sớm trước mọi lời gọi Agora).
+  => Thiệt hại thuần là rác log (~540 row/giờ ≈ 46% lượt ghi bảng), không tốn phí streaming.
+
+===============================================================================
+2) NGUYÊN NHÂN
+===============================================================================
+a) live-duration-watchdog/index.ts: ACTIVE_STATUSES chứa 'processing' và 'processing_replay',
+   truy vấn KHÔNG lọc `ended_at is null`. Phiên kết thúc nhưng kẹt status 'processing_replay'
+   vĩnh viễn ⇒ mỗi phút lại vào danh sách ứng viên, và vì started_at đã quá trần 2h nên
+   isLiveDurationExpired() luôn true ⇒ ghi `duration_limit_triggered` + gọi forceEndLive.
+b) liveEndService.forceEndLive(): nhánh idempotent (status terminal hoặc recording_status='ready')
+   return sớm — ĐÚNG về hành vi — nhưng LUÔN ghi `force_end_idempotent_return` mỗi lần gọi.
+   "Idempotent" chỉ áp cho tác dụng phụ, không áp cho log ⇒ 1 row/phút/phiên vô hạn.
+   Ghi chú: FORCE_END_TERMINAL_STATUSES = {recording_processing, ended, recording_failed} —
+   KHÔNG có 'processing_replay', nên status của phiên không bao giờ được chuyển tiếp về 'ended'.
+
+===============================================================================
+3) FIX
+===============================================================================
+NEW supabase/functions/_shared/liveWatchdogIdempotency.ts (pure, test được bằng Vitest):
+  isSettledLiveSession()   : ended_at != null || status ∈ {ended,failed,archived,posted,recording_failed}
+                             || archive_status ∈ {replay_posted,r2_ready,unrecoverable}
+  shouldWatchdogForceEnd() : !isSettledLiveSession()
+  shouldLogIdempotentReturn(count): chỉ true khi count == 0 (log 1 lần duy nhất/phiên)
+
+live-duration-watchdog/index.ts
+  + `.is('ended_at', null)` cho CẢ 2 truy vấn (duration + heartbeat-lost)
+  + filter `shouldWatchdogForceEnd(session)` ở candidates và hbCandidates
+liveEndService.ts
+  + trước khi log `force_end_idempotent_return`: COUNT event cùng reason của phiên; chỉ log nếu = 0.
+Deploy: live-duration-watchdog, live-zombie-cleanup, live-session-watchdog -> Successfully deployed.
+
+Migration dọn dứt điểm (5 phiên — phát hiện thêm 9abcde51-27c8-4c1a-9330-e9f0b5873612,
+rtmp_obs, ended_at 2026-08-03 16:31 nhưng status='ready_to_go_live'):
+  UPDATE live_sessions SET status='ended' WHERE ended_at IS NOT NULL AND status IN (…active…);
+Sau migration:
+  52138651… ended | 5c326bcc… ended | 8f8a3ed0… ended | 9abcde51… ended | ecd0cf3b… ended
+  select count(*) from live_sessions where ended_at is not null and status<>'ended'
+    and status in ('live','processing','processing_replay','ready_to_go_live')  -> 0
+
+Vitest: src/__tests__/b5-live-watchdog-idempotency.test.ts -> 4 passed
+  (gồm case chạy watchdog 60 lượt trên phiên đã end => chỉ 1 row log)
+
+===============================================================================
+4) VERIFY RUNTIME (sau ~3 phút = 3 chu kỳ watchdog)
+===============================================================================
+  select reason, source, count(*), max(created_at) from live_session_events
+  where created_at > '2026-08-20 00:44:00+00' group by 1,2;
+  -> 0 row
+  select live_session_id, count(*) … created_at > '2026-08-20 00:44:00+00' -> 0 row
+Trước fix: ~540 row/giờ (9 row/phút) liên tục. Sau fix: 0 row trong 3 chu kỳ.

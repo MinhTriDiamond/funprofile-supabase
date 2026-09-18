@@ -1,0 +1,13 @@
+=== grep statistics/ for domain literals (should be 0) ===
+src/components/statistics/TokenOverviewStrip.tsx:3:export interface TokenOverviewItem {
+src/components/statistics/TokenOverviewStrip.tsx:12:export interface TokenOverviewStripProps {
+src/components/statistics/TokenOverviewStrip.tsx:13:  items: TokenOverviewItem[];
+src/components/statistics/TokenOverviewStrip.tsx:38:export function TokenOverviewStrip({
+src/components/statistics/TokenOverviewStrip.tsx:44:}: TokenOverviewStripProps) {
+
+=== grep statistics/ for benefactor hooks (should be 0) ===
+0 matches
+
+=== new files ===
+-rw-r--r-- 1 root root 1210 Jul  3 00:51 src/components/benefactors/UsdRankingList.tsx
+-rw-r--r-- 1 root root 7885 Jul  3 00:51 src/components/benefactors/UsdRankingRow.tsx

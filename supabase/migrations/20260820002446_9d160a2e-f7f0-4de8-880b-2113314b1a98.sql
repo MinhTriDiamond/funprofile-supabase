@@ -1,0 +1,2 @@
+REVOKE EXECUTE ON FUNCTION public.live_session_events_retention(integer, integer, integer) FROM anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.live_session_events_retention(integer, integer, integer) TO service_role;

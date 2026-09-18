@@ -1,0 +1,1099 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* FUN Profile 2025 - Royal Green & Gold Theme */
+/* Inspired by luxury royal badges with green + thin golden accents */
+
+@layer base {
+  :root {
+    /* Pearl/Ivory White Background - Elegant & Warm */
+    --background: 45 30% 97%;
+    --foreground: 142 50% 15%;
+
+    /* Card - Soft Pearl White */
+    --card: 45 40% 99%;
+    --card-foreground: 142 50% 15%;
+
+    --popover: 45 40% 99%;
+    --popover-foreground: 142 50% 15%;
+
+    /* FUN Profile Royal Green - Primary */
+    --primary: 142 76% 26%;
+    --primary-foreground: 0 0% 100%;
+    --primary-hover: 142 76% 22%;
+    --primary-dark: 142 76% 18%;
+    
+    /* Royal Golden - Thin Accent Lines */
+    --gold: 43 74% 49%;
+    --gold-hover: 43 74% 42%;
+    --gold-light: 43 74% 65%;
+    --gold-line: 43 74% 55%;
+
+    /* Secondary - Warm Gray with Pearl Tint */
+    --secondary: 45 20% 94%;
+    --secondary-foreground: 142 50% 15%;
+
+    /* Muted - Soft Pearl Tones */
+    --muted: 45 15% 90%;
+    --muted-foreground: 142 30% 35%;
+
+    /* Accent - Forest Green */
+    --accent: 142 76% 30%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 142 76% 30%;
+    --success-foreground: 0 0% 100%;
+
+    /* Border - Very thin golden tint */
+    --border: 43 40% 85%;
+    --input: 45 20% 92%;
+    --ring: 142 76% 30%;
+
+    --radius: 0.5rem;
+
+    /* Facebook Reactions */
+    --reaction-like: 220 80% 55%;
+    --reaction-love: 350 80% 55%;
+    --reaction-haha: 43 74% 49%;
+    --reaction-wow: 43 74% 49%;
+    --reaction-sad: 43 74% 49%;
+    --reaction-angry: 15 80% 50%;
+
+    /* ============================================ */
+    /* Mobile Layout System — Phase 1 mobile audit  */
+    /* Khớp với chiều cao thực của FacebookNavbar   */
+    /* (h-12 mobile = 48px, h-14 desktop = 56px)    */
+    /* và MobileBottomNav (h-[72px])                */
+    /* ============================================ */
+    --header-h: 56px;
+    --mbn-h: 72px;
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+  }
+}
+
+/* Mobile: header thấp hơn */
+@media (max-width: 767px) {
+  :root {
+    --header-h: 48px;
+  }
+}
+
+/* ============================================ */
+/* App layout utilities - Phase 1 mobile audit  */
+/* Dùng thay cho top-[3cm], pb-20, ... cũ      */
+/* ============================================ */
+
+/* Main scroll area: nằm dưới header (cộng safe-area-top), tới đáy màn hình */
+.app-main {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: calc(var(--header-h) + var(--safe-top));
+  bottom: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  /* Phase 3 — fade-in nhẹ khi route mount (cảm giác native) */
+  animation: fadeIn 0.22s ease-out;
+  /* Phase 3 — chặn pull bounce body trên iOS, chỉ scroll trong main */
+  overscroll-behavior-y: contain;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-main {
+    animation: none;
+  }
+}
+
+/* Padding bottom đồng bộ cho mọi page có MobileBottomNav */
+.app-pb-nav {
+  padding-bottom: calc(var(--mbn-h) + var(--safe-bottom) + 8px);
+}
+@media (min-width: 1024px) {
+  .app-pb-nav {
+    padding-bottom: 16px;
+  }
+}
+
+/* Sub-header sticky bar (filter, tabs) ngay dưới navbar */
+.app-subheader {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+}
+
+/* iOS auto-zoom prevention: input phải >= 16px trên mobile */
+@media (max-width: 767px) {
+  input,
+  textarea,
+  select {
+    font-size: 16px;
+  }
+}
+
+/* Profile khi đang xem ở chế độ public preview cần offset thêm cho banner cảnh báo */
+.profile-public-offset {
+  top: calc(var(--header-h) + var(--safe-top) + 32px);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  /* Phase 2.1 — Global horizontal-overflow guard.
+     Cho phép app tự cuộn ngang ở chỗ cần (vd: tabs, filter chips),
+     nhưng chặn body/html bị tràn → không còn lăn ngang ngoài ý muốn. */
+  html,
+  body,
+  #root {
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
+
+  #root {
+    width: 100%;
+    min-height: 100vh;
+  }
+
+  /* Chặn ảnh/video tự nhiên vượt khung chứa, vốn là nguyên nhân chính
+     gây vỡ layout trên trang chủ (Angel AI / Green Earth logo tràn mép). */
+  img,
+  video,
+  canvas,
+  svg {
+    max-width: 100%;
+  }
+
+  /* Phase 3 — Native-like polish:
+     - overscroll-behavior-y: contain → tránh bounce kéo cả body trên iOS
+       khi user pull-to-refresh trong main; pull chỉ nằm trong vùng cuộn.
+     - -webkit-tap-highlight-color: transparent → bỏ flash xám khi tap
+       trên Android Chrome / iOS Safari (cảm giác native).
+     - text-size-adjust: 100% → iOS không tự phóng to chữ khi xoay ngang. */
+  html {
+    overscroll-behavior-y: contain;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    text-rendering: optimizeSpeed;
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+
+/* ============================================ */
+/* Phase 2.2 — Touch target ≥ 44px (WCAG AA)   */
+/* Áp cho icon buttons trên mobile để tránh    */
+/* bấm nhầm. Padding giữ visual size nhỏ.       */
+/* ============================================ */
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Phase 2.1 — Helper: cắt text giữa flex */
+.flex-min-0 > * {
+  min-width: 0;
+}
+
+/* Optimize text rendering for LCP */
+.whitespace-pre-wrap {
+  text-rendering: optimizeSpeed;
+  content-visibility: visible;
+}
+
+/* Facebook-style Card - Glass effect để hiển thị video Valentine */
+.fb-card {
+  @apply rounded-lg shadow-sm border border-border;
+  background: hsl(var(--card) / 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  contain: layout style paint;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 300px;
+}
+
+/* ================================ */
+/* Fixed Scroll Shell - App Layout  */
+/* Safe-area aware for iPhone notch */
+/* Đồng bộ với .app-main           */
+/* ================================ */
+.app-shell-content {
+  top: calc(var(--header-h) + var(--safe-top));
+}
+
+/* ================================ */
+/* Valentine Video Background       */
+/* Desktop: cover, Mobile: contain  */
+/* ================================ */
+
+/* Valentine Background Container - Bắt đầu từ dưới header */
+.tet-background-container {
+  top: calc(var(--header-h) + var(--safe-top));
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+
+.tet-background-container video {
+  contain: strict;
+}
+
+/* Mobile Portrait */
+@media (max-width: 768px) and (orientation: portrait) {
+  
+  .fb-card {
+    @apply bg-card rounded-xl;
+    margin-left: 4px;
+    margin-right: 4px;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+  
+  .fb-header {
+    @apply bg-card;
+  }
+}
+
+/* Mobile Landscape */
+@media (max-width: 768px) and (orientation: landscape) {
+  .fb-card {
+    @apply bg-card rounded-xl;
+    margin-left: 4px;
+    margin-right: 4px;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
+
+.feed-post-shell {
+  content-visibility: auto;
+  contain-intrinsic-size: 520px;
+}
+
+/* Facebook-style Hover */
+.fb-hover {
+  @apply hover:bg-muted/50 transition-colors cursor-pointer rounded-lg;
+}
+
+.fb-header {
+  @apply bg-card shadow-sm border-b border-border;
+}
+
+/* Facebook Icon Button */
+.fb-icon-btn {
+  @apply w-10 h-10 rounded-full bg-secondary hover:bg-muted flex items-center justify-center transition-colors;
+}
+
+/* Facebook Active Icon */
+.fb-icon-active {
+  @apply text-primary;
+}
+
+/* FUN Icon Button - Container with Green -> Gold -> White theme */
+.fun-icon-btn {
+  @apply w-10 h-10 rounded-full bg-secondary flex items-center justify-center transition-all duration-300;
+}
+
+.fun-icon-btn svg {
+  @apply text-muted-foreground transition-all duration-300;
+}
+
+.fun-icon-btn:hover {
+  @apply bg-primary;
+}
+
+.fun-icon-btn:hover svg {
+  @apply text-white;
+  filter: drop-shadow(0 0 6px hsl(0 0% 100% / 0.5));
+}
+
+.fun-icon-btn:active {
+  @apply bg-gold scale-95;
+}
+
+.fun-icon-btn:active svg {
+  @apply text-foreground;
+  filter: drop-shadow(0 0 8px hsl(48 96% 53% / 0.6));
+}
+
+/* FUN Icon Button - Gold variant (for Wallet, Notification) */
+.fun-icon-btn-gold {
+  @apply w-10 h-10 rounded-full bg-secondary flex items-center justify-center transition-all duration-300;
+}
+
+.fun-icon-btn-gold:hover {
+  @apply bg-gold/20;
+}
+
+.fun-icon-btn-gold:active {
+  @apply bg-gold/30 scale-95;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground) / 0.3);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.5);
+}
+
+/* Story Card */
+.story-card {
+  @apply relative w-28 h-48 rounded-xl overflow-hidden cursor-pointer;
+  background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.6) 100%);
+}
+
+/* Facebook Reaction Animation */
+@keyframes reaction-pop {
+  0% { transform: scale(0); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+.reaction-pop {
+  animation: reaction-pop 0.3s ease-out;
+}
+
+/* Safe area for iOS devices */
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.safe-area-top {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+/* Hide scrollbar for horizontal tabs */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Touch manipulation for better mobile interaction */
+.touch-manipulation {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Mobile touch target optimization */
+@media (max-width: 1023px) {
+  .fb-card {
+    @apply rounded-none sm:rounded-lg;
+    /* margin removed - let 768px media query apply 16px margins for Valentine background visibility */
+  }
+  
+  /* Ensure adequate touch targets - but don't affect icons/small elements */
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+@media (max-width: 640px) {
+  .profile-page-main .profile-feed-column {
+    width: 100%;
+  }
+
+  .profile-page-main .profile-feed-column .fb-card {
+    margin-left: 0;
+    margin-right: 0;
+    border-left: 0;
+    border-right: 0;
+    border-radius: 0;
+    box-shadow: none;
+    background: hsl(var(--card));
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  .profile-page-main .profile-feed-column [data-feed-video-id] {
+    border-radius: 0;
+  }
+}
+
+/* Fluid Typography */
+html {
+  font-size: clamp(14px, 0.875rem + 0.5vw, 16px);
+}
+
+/* Page Transition Animation */
+.page-transition-enter {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+.page-transition-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 200ms ease-out, transform 200ms ease-out;
+}
+
+.page-transition-exit {
+  opacity: 1;
+}
+
+.page-transition-exit-active {
+  opacity: 0;
+  transition: opacity 150ms ease-in;
+}
+
+/* Smooth fade in animation for lazy loaded content */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+/* ============================================
+   Phase 3 — Native-like page transitions
+   Dùng View Transitions API (Chrome 111+, Safari 18+).
+   Trình duyệt cũ tự bỏ qua → không có animation, an toàn.
+   Áp dụng nhẹ: fade + slight slide-up 6px, 220ms.
+   ============================================ */
+@keyframes funPageIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes funPageOut {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
+::view-transition-old(root) {
+  animation: funPageOut 140ms ease-in both;
+}
+::view-transition-new(root) {
+  animation: funPageIn 220ms ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none !important;
+  }
+}
+
+/* Mobile-optimized scrolling */
+@media (max-width: 768px) {
+  .scroll-smooth {
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Reduce motion for performance */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+/* Mobile header compact mode */
+.mobile-header-compact {
+  @apply h-12 transition-all duration-200;
+}
+
+/* Bottom navigation safe area */
+.bottom-nav-safe {
+  padding-bottom: max(env(safe-area-inset-bottom, 0px), 16px);
+}
+
+/* Mobile card spacing */
+@media (max-width: 640px) {
+  .mobile-full-width {
+    margin-left: -1rem;
+    margin-right: -1rem;
+    border-radius: 0;
+  }
+}
+
+/* Touch ripple effect */
+.touch-ripple {
+  position: relative;
+  overflow: hidden;
+}
+
+.touch-ripple::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle, hsl(var(--primary) / 0.15) 0%, transparent 70%);
+  opacity: 0;
+  transform: scale(0);
+  transition: transform 0.3s, opacity 0.3s;
+}
+
+.touch-ripple:active::after {
+  opacity: 1;
+  transform: scale(2);
+}
+
+/* Law of Light mobile optimizations */
+@media (max-width: 768px) {
+  .law-of-light-title {
+    font-size: clamp(2rem, 8vw, 3.5rem);
+  }
+  
+  .law-of-light-card {
+    padding: 1.5rem;
+    margin: 0 0.5rem;
+  }
+}
+
+/* Skeleton loading animation */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    hsl(var(--muted)) 25%,
+    hsl(var(--muted-foreground) / 0.1) 50%,
+    hsl(var(--muted)) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* ================================ */
+/* FUN Profile Royal Theme         */
+/* Deep Green + Thin Golden Lines  */
+/* Pearl White Background          */
+/* ================================ */
+
+/* Thin golden decorative line */
+.fun-golden-line {
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, #C9A84C 50%, transparent 100%);
+  opacity: 0.6;
+}
+
+.fun-golden-line-vertical {
+  width: 1px;
+  background: linear-gradient(180deg, transparent 0%, #C9A84C 50%, transparent 100%);
+  opacity: 0.6;
+}
+
+/* Golden border - very thin */
+.fun-golden-border {
+  border: 1px solid rgba(201, 168, 76, 0.4);
+}
+
+.fun-golden-border-hover:hover {
+  border-color: rgba(201, 168, 76, 0.7);
+}
+
+.fun-gradient-bg {
+  background: linear-gradient(
+    135deg, 
+    #166534 0%,
+    #14532d 50%,
+    #0f3d22 100%
+  );
+}
+
+.fun-gradient-bg-reverse {
+  background: linear-gradient(
+    -45deg, 
+    #166534 0%,
+    #1a7340 50%,
+    #14532d 100%
+  );
+}
+
+.fun-gradient-text {
+  background: linear-gradient(
+    90deg, 
+    #166534 0%, 
+    #1a7340 50%,
+    #14532d 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.fun-gradient-gold-text {
+  background: linear-gradient(
+    135deg, 
+    #C9A84C 0%, 
+    #D4B45C 30%, 
+    #C9A84C 50%, 
+    #B8973F 70%, 
+    #C9A84C 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Pearl white card with thin golden accent */
+.fun-card {
+  background: linear-gradient(180deg, #FFFEF7 0%, #FAF8F3 100%);
+  border: 1px solid rgba(201, 168, 76, 0.3);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.fun-card:hover {
+  border-color: rgba(201, 168, 76, 0.5);
+}
+
+/* Primary button - Royal Green with thin golden border */
+.fun-button-primary {
+  background: linear-gradient(180deg, #166534 0%, #14532d 100%);
+  color: white;
+  border: 1px solid rgba(201, 168, 76, 0.5);
+  transition: all 0.3s ease;
+}
+
+.fun-button-primary:hover {
+  background: linear-gradient(180deg, #14532d 0%, #0f3d22 100%);
+  border-color: rgba(201, 168, 76, 0.8);
+  box-shadow: 0 2px 8px rgba(22, 101, 52, 0.2);
+}
+
+/* Secondary button - Outlined */
+.fun-button-secondary {
+  background: transparent;
+  border: 1px solid rgba(201, 168, 76, 0.4);
+  color: #166534;
+  transition: all 0.3s ease;
+}
+
+.fun-button-secondary:hover {
+  background: rgba(22, 101, 52, 0.05);
+  border-color: rgba(201, 168, 76, 0.7);
+}
+
+/* ================================ */
+/* FUN Profile Icon Navigation     */
+/* Deep Green Theme                */
+/* ================================ */
+
+/* FUN Icon - Default state */
+.fun-nav-icon {
+  @apply text-muted-foreground transition-all duration-300;
+}
+
+/* FUN Icon - Hover state (Green) */
+.fun-nav-icon:hover {
+  color: #166534;
+}
+
+/* FUN Icon - Active state */
+.fun-nav-icon.active,
+.fun-nav-icon:active {
+  color: #166534;
+}
+
+/* FUN Icon Button - Container */
+.fun-icon-btn {
+  @apply w-10 h-10 rounded-full bg-secondary flex items-center justify-center transition-all duration-300;
+  border: 1px solid transparent;
+}
+
+/* FUN Icon Button - Hover (Green bg) */
+.fun-icon-btn:hover {
+  background: #166534;
+  border-color: rgba(201, 168, 76, 0.4);
+}
+
+.fun-icon-btn:hover svg {
+  @apply text-white;
+}
+
+/* FUN Icon Button - Active/Pressed */
+.fun-icon-btn:active {
+  background: #14532d;
+  @apply scale-95;
+}
+
+/* FUN Icon Button - Gold variant */
+.fun-icon-btn-gold {
+  @apply w-10 h-10 rounded-full bg-secondary flex items-center justify-center transition-all duration-300;
+  border: 1px solid rgba(201, 168, 76, 0.3);
+}
+
+.fun-icon-btn-gold:hover {
+  background: rgba(201, 168, 76, 0.1);
+  border-color: rgba(201, 168, 76, 0.5);
+}
+
+.fun-icon-btn-gold:active {
+  background: rgba(201, 168, 76, 0.2);
+  @apply scale-95;
+}
+
+/* Donation Celebration Animations */
+@keyframes fall {
+  0% {
+    transform: translateY(-100vh) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+@keyframes sparkle {
+  0%, 100% {
+    opacity: 0;
+    transform: scale(0);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-fall {
+  animation: fall 4s linear infinite;
+}
+
+.animate-sparkle {
+  animation: sparkle 2s ease-in-out infinite;
+}
+
+.animate-spin-slow {
+  animation: spin-slow 3s linear infinite;
+}
+
+.tet-card {
+  @apply bg-card rounded-xl border border-border;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.tet-card-strong {
+  @apply bg-card rounded-xl border border-border;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.fb-card-tet {
+  @apply bg-card rounded-lg shadow-sm border border-border;
+}
+
+/* Mobile optimization for Valentine video background */
+@media (max-width: 768px) {
+  /* Đảm bảo video Valentine hiển thị đầy đủ trên mobile */
+  .tet-mobile-optimized {
+    min-height: 100dvh;
+    min-height: -webkit-fill-available;
+  }
+}
+
+/* Diamond sparkle animations */
+@keyframes diamond-glow {
+  0%, 100% {
+    filter: drop-shadow(0 0 6px rgba(96, 215, 255, 0.7)) drop-shadow(0 0 14px rgba(148, 103, 255, 0.45)) brightness(1.05);
+  }
+  33% {
+    filter: drop-shadow(0 0 18px rgba(255, 220, 80, 0.9)) drop-shadow(0 0 32px rgba(255, 180, 50, 0.55)) brightness(1.3);
+  }
+  66% {
+    filter: drop-shadow(0 0 12px rgba(96, 215, 255, 1)) drop-shadow(0 0 26px rgba(0, 200, 255, 0.65)) brightness(1.18);
+  }
+}
+
+@keyframes diamond-float {
+  0%, 100% { transform: translateX(-50%) translateY(0px) rotate(0deg); }
+  25% { transform: translateX(-50%) translateY(-5px) rotate(1.5deg); }
+  50% { transform: translateX(-50%) translateY(-2px) rotate(0.5deg); }
+  75% { transform: translateX(-50%) translateY(3px) rotate(-1deg); }
+}
+
+@keyframes sparkle-dot {
+  0%, 100% { opacity: 0; transform: scale(0) rotate(0deg); }
+  40%, 60% { opacity: 1; transform: scale(1) rotate(180deg); }
+}
+
+.diamond-sparkle {
+  animation: diamond-glow 2.8s ease-in-out infinite;
+}
+
+.sparkle-dot-1 { animation: sparkle-dot 2.2s ease-in-out infinite 0s; }
+.sparkle-dot-2 { animation: sparkle-dot 2.2s ease-in-out infinite 0.55s; }
+.sparkle-dot-3 { animation: sparkle-dot 2.2s ease-in-out infinite 1.1s; }
+.sparkle-dot-4 { animation: sparkle-dot 2.2s ease-in-out infinite 1.65s; }
+.sparkle-dot-5 { animation: sparkle-dot 2.4s ease-in-out infinite 0.28s; }
+.sparkle-dot-6 { animation: sparkle-dot 2.4s ease-in-out infinite 0.84s; }
+.sparkle-dot-7 { animation: sparkle-dot 2.4s ease-in-out infinite 1.4s; }
+.sparkle-dot-8 { animation: sparkle-dot 2.4s ease-in-out infinite 1.96s; }
+
+/* Hologram shimmer effect for FUN Ecosystem auth */
+@keyframes hologram-shimmer {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.hologram-border {
+  background: linear-gradient(135deg, #9333ea, #3b82f6, #22c55e, #f97316, #ec4899, #9333ea);
+  background-size: 300% 300%;
+  animation: hologram-shimmer 6s ease infinite;
+}
+
+.hologram-text {
+  background: linear-gradient(135deg, #9333ea 0%, #3b82f6 25%, #22c55e 50%, #f97316 75%, #ec4899 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  background-size: 200% 200%;
+  animation: hologram-shimmer 4s ease infinite;
+}
+
+/* Sun halo animations for EcosystemWheel center */
+@keyframes sun-halo-outer {
+  0%, 100% { opacity: 0.5; transform: translate(-50%, -50%) scale(1); }
+  50% { opacity: 1; transform: translate(-50%, -50%) scale(1.12); }
+}
+
+@keyframes sun-halo-inner {
+  0%, 100% { opacity: 0.6; transform: translate(-50%, -50%) scale(1); }
+  50% { opacity: 1; transform: translate(-50%, -50%) scale(1.08); }
+}
+
+@keyframes sun-rays {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+/* FUN Ecosystem ∞ — dải ánh sáng "sao chổi" chạy dọc ống ∞ (FunEcosystemLogo.tsx).
+   Chuyển động bằng CSS: animate stroke-dashoffset của từng lớp nét đứt, và
+   offset-distance của ngôi sao. Không vẽ thêm màu/viền tĩnh nào lên logo gốc. */
+.fun-infinity-glow {
+  opacity: 0.95;
+  transition: opacity 0.4s ease, filter 0.4s ease;
+}
+.group:hover .fun-infinity-glow {
+  opacity: 1;
+  filter: brightness(1.35);
+}
+
+@keyframes fun-inf-run {
+  to { stroke-dashoffset: var(--fun-inf-to); }
+}
+.fun-inf-layer {
+  animation: fun-inf-run var(--fun-inf-dur, 4s) linear infinite;
+}
+
+@keyframes fun-inf-spark {
+  to { offset-distance: 100%; }
+}
+.fun-inf-spark {
+  offset-rotate: 0deg;
+  opacity: 0.95;
+  animation:
+    fun-inf-spark var(--fun-inf-dur, 4s) linear infinite,
+    fun-inf-twinkle 1.1s ease-in-out infinite;
+  animation-delay: var(--fun-inf-spark-delay, -0.88s), 0s;
+}
+@keyframes fun-inf-twinkle {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 1; }
+}
+
+/* Cầu vồng "chảy" + sáng mạnh hơn: xoay hue toàn cụm dải sáng. */
+@keyframes fun-inf-hue {
+  from { filter: hue-rotate(0deg) saturate(1.6) brightness(1.3); }
+  to { filter: hue-rotate(360deg) saturate(1.6) brightness(1.3); }
+}
+.fun-inf-holo {
+  animation: fun-inf-hue 7s linear infinite;
+  will-change: filter;
+}
+
+/* ============================================
+   Premium Reaction System animations
+   ============================================ */
+
+@keyframes reaction-pop-in-spring {
+  0%   { opacity: 0; transform: scale(0.3) translateY(14px); }
+  60%  { opacity: 1; transform: scale(1.18) translateY(-4px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes reaction-pop-out {
+  0%   { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(0.6) translateY(8px); }
+}
+
+@keyframes reaction-burst {
+  0%   { opacity: 0.9; transform: scale(0.4); }
+  60%  { opacity: 0.6; transform: scale(1.6); }
+  100% { opacity: 0; transform: scale(2.2); }
+}
+
+@keyframes reaction-active-pulse {
+  0%   { transform: scale(1); }
+  35%  { transform: scale(1.35); }
+  70%  { transform: scale(0.92); }
+  100% { transform: scale(1); }
+}
+
+@keyframes reaction-shimmer {
+  0%   { transform: translateX(-120%) skewX(-18deg); opacity: 0; }
+  40%  { opacity: 0.8; }
+  100% { transform: translateX(120%) skewX(-18deg); opacity: 0; }
+}
+
+@keyframes reaction-particle {
+  0%   { opacity: 1; transform: translate(0, 0) scale(0.6); }
+  100% { opacity: 0; transform: translate(var(--rx, 0), var(--ry, -28px)) scale(0.2); }
+}
+
+@keyframes reaction-count-bump {
+  0%   { transform: translateY(6px); opacity: 0; }
+  60%  { transform: translateY(-2px); opacity: 1; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+.reaction-spring {
+  animation: reaction-pop-in-spring 0.42s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.reaction-active-pulse {
+  animation: reaction-active-pulse 0.55s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.reaction-burst-ring {
+  animation: reaction-burst 0.7s ease-out forwards;
+}
+
+.reaction-particle {
+  animation: reaction-particle 0.7s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+}
+
+.reaction-count-bump {
+  animation: reaction-count-bump 0.28s ease-out;
+}
+
+.reaction-shimmer-overlay::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    100deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.55) 50%,
+    transparent 70%
+  );
+  animation: reaction-shimmer 1.4s ease-out;
+  pointer-events: none;
+  mix-blend-mode: overlay;
+}
+
+/* ============================================ */
+/* FUN Reaction System v2 — Premium Glass Polish */
+/* ============================================ */
+@keyframes fun-reaction-pop {
+  0%   { opacity: 0; transform: scale(0.92) translateY(6px); }
+  60%  { opacity: 1; transform: scale(1.02) translateY(-1px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.fun-reaction-bar {
+  background: hsl(var(--card) / 0.78);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  backdrop-filter: blur(20px) saturate(140%);
+  border: 1px solid hsl(var(--gold-line) / 0.28);
+  box-shadow:
+    0 14px 36px -10px hsl(142 50% 12% / 0.22),
+    0 2px 8px hsl(0 0% 0% / 0.06),
+    inset 0 1px 0 hsl(0 0% 100% / 0.55);
+  animation: fun-reaction-pop 220ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform, opacity;
+}
+
+.dark .fun-reaction-bar {
+  background: hsl(220 12% 14% / 0.82);
+  border-color: hsl(var(--gold-line) / 0.22);
+  box-shadow:
+    0 14px 36px -10px hsl(0 0% 0% / 0.55),
+    0 2px 8px hsl(0 0% 0% / 0.3),
+    inset 0 1px 0 hsl(0 0% 100% / 0.06);
+}
+
+.fun-reaction-item {
+  transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+
+.fun-reaction-tooltip {
+  background: hsl(var(--primary) / 0.95);
+  color: hsl(var(--primary-foreground));
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  padding: 3px 9px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px hsl(142 50% 12% / 0.25);
+  animation: fade-in 140ms ease-out 60ms both;
+  white-space: nowrap;
+}
+
+.fun-reaction-glow-active {
+  background:
+    radial-gradient(
+      circle at 50% 60%,
+      hsl(var(--reaction-glow) / 0.14) 0%,
+      transparent 60%
+    );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reaction-spring,
+  .reaction-active-pulse,
+  .reaction-burst-ring,
+  .reaction-particle,
+  .reaction-count-bump,
+  .reaction-shimmer-overlay::after,
+  .fun-reaction-bar,
+  .fun-reaction-tooltip {
+    animation: none !important;
+  }
+  .fun-reaction-item { transition: none !important; }
+}

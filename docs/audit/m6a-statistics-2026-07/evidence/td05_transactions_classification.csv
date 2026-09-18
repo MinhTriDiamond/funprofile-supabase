@@ -1,0 +1,8 @@
+category,tx_count,pct_total,sample_tx_hash,source_function
+reconciliation_btc,Chưa đủ bằng chứng — cần query DB trực tiếp,—,—,wallet-reconciliation-cron/index.ts (token_symbol=BTC chain_id=BTC_CHAIN_ID)
+reconciliation_bep20_usdt,Chưa đủ bằng chứng — cần query DB trực tiếp,—,—,wallet-reconciliation-cron/index.ts (token_symbol=USDT chain_id=56)
+reconciliation_bnb,Chưa đủ bằng chứng — cần query DB trực tiếp,—,—,wallet-reconciliation-cron/index.ts (token_symbol=BNB chain_id=56)
+claim_reward,Chưa đủ bằng chứng — cần query DB trực tiếp,—,—,approve-claim/index.ts:256 (metadata.type=claim_reward)
+TOTAL_NOT_IN_donations,Chưa đủ bằng chứng,—,—,transactions bảng KHÔNG trong v_unified_transactions (TD-05)
+TOTAL_NOT_IN_wallet_transfers,Chưa đủ bằng chứng,—,—,wallet_transfers chứa nội bộ — transactions chứa reconciliation on-chain
+TOTAL_NOT_IN_swap_transactions,Chưa đủ bằng chứng,—,—,swap_transactions chứa DEX swap — transactions chứa chain-level transfers

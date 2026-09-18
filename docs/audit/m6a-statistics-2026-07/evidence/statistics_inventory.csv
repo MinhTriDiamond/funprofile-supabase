@@ -1,0 +1,24 @@
+surface,file,line,calc_type,input_source,output_field,duplicate_group_id
+usePublicDonationHistory — summary client-side,src/hooks/usePublicDonationHistory.ts,60-125,SUM+COUNT,donations+wallet_transfers+swap_transactions (SELECT trực tiếp),{received/sent} TokenBreakdown,DUP-01
+usePublicDonationHistory — direction calc,src/hooks/usePublicDonationHistory.ts,365,DIRECTION,sender_id vs userId,direction in/out,DUP-02
+useGiftBreakdown — SUM by token,src/hooks/useGiftBreakdown.ts,35-90,SUM+GROUP,donations+wallet_transfers+swap_transactions (3 SELECT),{token_symbol: count+total+usd_value},DUP-01
+GlobalGiftStatsModal — formatAmount client,src/components/feed/GlobalGiftStatsModal.tsx,50-65,FORMAT,RPC data,display string,DUP-03
+WalletCenterContainer — claims reduce,src/components/wallet/WalletCenterContainer.tsx,374,SUM,reward_claims SELECT,claimed total CAMLY,DUP-04
+WalletCenterContainer — todayClaims reduce,src/components/wallet/WalletCenterContainer.tsx,379,SUM+FILTER,reward_claims SELECT,today claimed,DUP-04
+WalletCenterContainer — RPC get_my_rewards,src/components/wallet/WalletCenterContainer.tsx,336,RPC,get_my_rewards RPC,rewards data,—
+WalletCenterContainer — RPC fallback get_user_honor_stats,src/components/wallet/WalletCenterContainer.tsx,341,RPC,get_user_honor_stats RPC,honor stats,—
+BlockchainTab — claims reduce,src/components/admin/BlockchainTab.tsx,76,SUM,reward_claims SELECT,totalClaimed,DUP-04
+Benefactors/BenefactorsPage — global stats,src/pages/Benefactors.tsx,52-64,RPC,get_donation_global_stats,totalDonatedUsd+totalDonors+…,DUP-05
+Benefactors/BenefactorsPage — benefactor rank,src/pages/Benefactors.tsx,29,RANK,get_benefactor_leaderboard RPC,rank field,DUP-06
+Benefactors/BenefactorsPage — recipient rank,src/pages/Benefactors.tsx,34,RANK,get_recipient_leaderboard RPC,rank field,DUP-06
+ExportCsvDialog — leaderboard export,src/components/benefactors/ExportCsvDialog.tsx,109-115,RPC,get_benefactor_leaderboard+get_donation_global_stats,CSV rows,DUP-05
+Leaderboard — light community RPC,src/pages/Leaderboard.tsx,92,RPC,get_light_community RPC,members array,—
+TopRanking — light community RPC,src/components/feed/TopRanking.tsx,43,RPC,get_light_community RPC,members array,DUP-07
+FounderOverviewPanel — RPC,src/components/founder/FounderOverviewPanel.tsx,18,RPC,get_founder_overview_stats RPC,dau+mau+light_score+fun_minted,—
+FounderEconomyPanel — RPC+client reduce,src/components/founder/FounderEconomyPanel.tsx,17-36,RPC+SUM,get_founder_economy_stats + .reduce(),daily flow SUM,DUP-08
+FounderPPLPAnalyticsPanel — DB select+reduce,src/components/founder/FounderPPLPAnalyticsPanel.tsx,19-51,SUM,pplp_pillar_scores SELECT,strongest/weakest pillar,DUP-08
+ContentStatsModal — RPC+reduce,src/components/feed/ContentStatsModal.tsx,44-89,RPC+SUM,get_content_stats_grouped_vn + .reduce(),grandTotal,DUP-09
+ContentStatsDateDetail — RPC+reduce,src/components/feed/ContentStatsDateDetail.tsx,82-113,RPC+SUM,get_content_users_by_period_vn + .reduce(),totalCount,DUP-09
+exportExcel — client SUM,src/utils/export/exportExcel.ts,65-85,SUM+GROUP,UnifiedTransactionRow[],SummaryRow per token,—
+useGiftHistory — RPC get_gift_day_counts,src/hooks/useGiftHistory.ts,12-23,RPC,get_gift_day_counts RPC,counts per VN date,—
+useGiftHistory — RPC get_gift_day_token_totals,src/hooks/useGiftHistory.ts,27-43,RPC+GROUP,get_gift_day_token_totals RPC,token totals per date,DUP-01

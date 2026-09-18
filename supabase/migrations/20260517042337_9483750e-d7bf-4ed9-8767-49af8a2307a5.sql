@@ -1,0 +1,1 @@
+ALTER VIEW public.public_pet_states SET (security_invoker = on);

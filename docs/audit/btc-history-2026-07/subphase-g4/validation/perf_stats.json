@@ -1,0 +1,26 @@
+{
+  "timings_ms": {
+    "fetch": 441.830591,
+    "resolve": 130.079251,
+    "classify": 0.5767439999999624,
+    "persist": 0.053401000000008025,
+    "total": 765.7947750000001
+  },
+  "metrics_agg": {
+    "total_inputs": 5,
+    "total_outputs": 19,
+    "resolved_inputs": 0,
+    "resolved_outputs": 3,
+    "unknown_addresses": 16,
+    "change_outputs": 2,
+    "donation_outputs": 3,
+    "transfer_outputs": 0,
+    "review_outputs": 0,
+    "coinjoins": 0
+  },
+  "tx_count": 4,
+  "cache_hits": 0,
+  "cache_misses": 4,
+  "fetch_errors": [],
+  "avg_ms_per_tx": 191.45
+}

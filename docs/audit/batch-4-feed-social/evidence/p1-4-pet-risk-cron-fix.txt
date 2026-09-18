@@ -1,0 +1,29 @@
+B4 P1-4 — pet-risk-cron: sửa nguồn trust + fail-safe từng nhánh (2026-08-19)
+
+Nguyên nhân gốc: nhánh tc_low query bảng `trust_scores` — bảng này KHÔNG tồn tại.
+Bảng thật (raw evidence, information_schema):
+  trust_profile(did_id, tc, trust_tier, verification_strength, behavior_stability,
+                social_trust, onchain_credibility, historical_cleanliness,
+                risk_factor, fraud_risk, sybil_risk, last_calculated_at)
+  did_registry(did_id, owner_user_id, entity_type, did_level, status, ...)
+=> trust_profile khoá theo did_id, phải join did_registry.owner_user_id để ra user_id.
+   Join thật: 1.720 dòng (trust_profile ⋈ did_registry ⋈ pet_states), tc min 0.300 max 0.843.
+
+Đã sửa:
+- tc_low đọc `trust_profile.tc` qua map did_id -> owner_user_id.
+- Mỗi nhánh (xp_burst, cheer_loop, shop_velocity, tc_low) bọc try/catch riêng qua helper
+  `branch(name, fn)`; lỗi được gom vào mảng `errors` và trả về trong response
+  => không còn thất bại im lặng.
+- Lỗi phát hiện ngay khi chạy thật lần 1: `shop_velocity: ReferenceError: dayAgo is not defined`
+  (dayAgo/hourAgo bị kẹt trong scope nhánh cheer_loop) -> đã hoist ra scope ngoài.
+
+Chạy thật sau khi sửa:
+  lần 1: {"ok":true,"signals_inserted":0,"users_recomputed":0,"errors":["shop_velocity: ReferenceError: dayAgo is not defined"]}
+  lần 2: {"ok":true,"signals_inserted":0,"users_recomputed":0,"errors":[]}
+
+signals_inserted = 0 là ĐÚNG với dữ liệu thật, không phải lỗi im lặng:
+  pet_interactions xp_delta>0 trong 7 ngày = 2.410 dòng, max xp_delta = 8 (ngưỡng burst 500/10')
+  pet_cheers 24h = 0 ; pet_shop_orders completed 24h = 0
+  trust_profile có tc < 0.30 = 0 dòng (min tc = 0.300, ngưỡng tc_low là < 0.30)
+=> Không có hành vi nào vượt ngưỡng trong cửa sổ quét; engine đã có nguồn dữ liệu thật
+   và sẽ sinh signal khi ngưỡng bị vượt.

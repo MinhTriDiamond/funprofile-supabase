@@ -1,0 +1,1 @@
+row_id,tx_hash,db_sender,db_recipient,db_sender_addr,db_recipient_addr,db_amount_btc,chain_family,is_external,rc_codes,status

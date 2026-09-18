@@ -1,0 +1,99 @@
+flowchart TD
+    %% ====================================================
+    %% M6A Audit — Lifecycle Diagram (5 Flows)
+    %% ====================================================
+
+    subgraph FLOW1["🎁 Flow 1: Gift / Donation (BSC/BTC)"]
+        F1_UI["FE: GiftDialog / SendGiftButton"]
+        F1_EDGE["Edge: record-donation"]
+        F1_DB1["DB: donations INSERT\n(status=pending)"]
+        F1_DB2["DB: light_actions INSERT"]
+        F1_DB3["DB: posts INSERT\n(post_type=gift_celebration)"]
+        F1_NOTIF["DB: notifications INSERT\n(type=donation)"]
+        F1_VIEW["View: v_unified_transactions\n(don_out + don_in rows)"]
+        F1_RPC["RPC: get_unified_transactions"]
+        F1_HOOK["Hook: useUnifiedTransactionHistory"]
+        F1_PAGE["Page: WalletHistoryPage / TransactionHistoryPage"]
+
+        F1_UI -->|"invoke('record-donation')"| F1_EDGE
+        F1_EDGE --> F1_DB1
+        F1_EDGE --> F1_DB2
+        F1_EDGE --> F1_DB3
+        F1_EDGE --> F1_NOTIF
+        F1_DB1 --> F1_VIEW
+        F1_VIEW --> F1_RPC
+        F1_RPC --> F1_HOOK
+        F1_HOOK --> F1_PAGE
+    end
+
+    subgraph FLOW2["🔄 Flow 2: Swap (BSC DEX)"]
+        F2_UI["FE: SwapTab"]
+        F2_DB["DB: swap_transactions INSERT"]
+        F2_VIEW2["View: v_unified_transactions\n(swap row)"]
+        F2_RPC2["RPC: get_unified_transactions"]
+        F2_PAGE2["Page: WalletHistoryPage"]
+
+        F2_UI -->|"from('swap_transactions').insert"| F2_DB
+        F2_DB --> F2_VIEW2
+        F2_VIEW2 --> F2_RPC2
+        F2_RPC2 --> F2_PAGE2
+    end
+
+    subgraph FLOW3["💸 Flow 3: Wallet Transfer (Internal FUN→FUN)"]
+        F3_UI["FE: SendTransferDialog"]
+        F3_EDGE3["Edge: record-donation OR auto-scan-donations"]
+        F3_DB3W["DB: wallet_transfers INSERT"]
+        F3_DEDUP["Dedup Logic: donation wins over wallet_transfer\n(mem: internal-transfer-dedup)"]
+        F3_VIEW3["View: v_unified_transactions\n(transfer rows)"]
+        F3_RPC3["RPC: get_unified_transactions"]
+        F3_PAGE3["Page: WalletHistoryPage"]
+
+        F3_UI --> F3_EDGE3
+        F3_EDGE3 --> F3_DB3W
+        F3_DB3W --> F3_DEDUP
+        F3_DEDUP --> F3_VIEW3
+        F3_VIEW3 --> F3_RPC3
+        F3_RPC3 --> F3_PAGE3
+    end
+
+    subgraph FLOW4["🔍 Flow 4: External Scanner BTC/BSC"]
+        F4_CRON["Cron: wallet-reconciliation-cron (30min)\nOR auto-scan-donations"]
+        F4_MORALIS["Moralis API / Mempool.space"]
+        F4_REGISTRY["DB: tokens_registry (Phase 1 guard)"]
+        F4_SUSPICIOUS["DB: suspicious_wallet_events"]
+        F4_DB4["DB: transactions INSERT\n+ donations INSERT (nếu internal)"]
+        F4_VIEW4["View: v_unified_transactions"]
+        F4_RPC4["RPC: get_unified_transactions"]
+
+        F4_CRON -->|"HTTP"| F4_MORALIS
+        F4_MORALIS --> F4_REGISTRY
+        F4_REGISTRY -->|"blocked/suspicious"| F4_SUSPICIOUS
+        F4_REGISTRY -->|"trusted/allowed"| F4_DB4
+        F4_DB4 --> F4_VIEW4
+        F4_VIEW4 --> F4_RPC4
+    end
+
+    subgraph FLOW5["🏆 Flow 5: Claim Reward (CAMLY)"]
+        F5_UI["FE: ClaimButton (WalletCenter)"]
+        F5_HOOK5["Hook: useClaimReward"]
+        F5_EDGE5["Edge: claim-reward"]
+        F5_PENDING["DB: pending_claims UPDATE → approved"]
+        F5_REWARD["DB: reward_claims INSERT"]
+        F5_TX["DB: transactions INSERT\n(treasury→user)"]
+        F5_DON["DB: donations INSERT\n(type=claim_reward metadata)"]
+        F5_NOTIF5["DB: notifications INSERT\n(reward_approved)"]
+        F5_VIEW5["View: v_unified_transactions"]
+        F5_RPC5["RPC: get_unified_transactions"]
+        F5_PAGE5["Page: WalletHistoryPage"]
+
+        F5_UI --> F5_HOOK5
+        F5_HOOK5 -->|"invoke('claim-reward')"| F5_EDGE5
+        F5_EDGE5 --> F5_PENDING
+        F5_PENDING -->|"admin approve-claim"| F5_REWARD
+        F5_REWARD --> F5_TX
+        F5_TX --> F5_DON
+        F5_DON --> F5_NOTIF5
+        F5_DON --> F5_VIEW5
+        F5_VIEW5 --> F5_RPC5
+        F5_RPC5 --> F5_PAGE5
+    end

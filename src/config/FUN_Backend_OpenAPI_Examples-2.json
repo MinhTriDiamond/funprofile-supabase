@@ -1,0 +1,136 @@
+{
+  "submit_action_request": {
+    "user_id": "2f9a74dc-9e2e-4ad8-8ad3-1d5d55f84801",
+    "action_type": "SERVICE",
+    "title": "Hosted a Zoom repentance and gratitude session",
+    "description": "Led a 45-minute Love House group session.",
+    "source_platform": "zoom",
+    "source_url": "https://zoom.us/j/123456789",
+    "metadata": {
+      "duration_minutes": 45,
+      "participants_estimated": 12
+    }
+  },
+  "submit_action_response": {
+    "action_id": "7d8e09d1-20fa-463b-ae6c-eae5920be5f1",
+    "status": "proof_pending",
+    "created_at": "2026-04-13T08:05:00Z"
+  },
+  "attach_event_proof_request": {
+    "proof_type": "link",
+    "proof_url": "https://facebook.com/example-live",
+    "external_ref": "fb-live-893749",
+    "metadata": {
+      "platform": "facebook",
+      "role": "event_proof"
+    }
+  },
+  "validate_action_response": {
+    "action_id": "7d8e09d1-20fa-463b-ae6c-eae5920be5f1",
+    "validation_status": "validated",
+    "pplp_scores": {
+      "serving_life": 8,
+      "transparent_truth": 9,
+      "healing_love": 8,
+      "long_term_value": 7,
+      "unity_over_separation": 9
+    },
+    "raw_light_score": 3.6288,
+    "impact_weight": 1.1,
+    "trust_multiplier": 1.05,
+    "consistency_multiplier": 1.02,
+    "final_light_score": 4.2746256,
+    "ai_score": 8.2,
+    "community_score": 7.4,
+    "trust_signal_score": 8.0,
+    "flags": [],
+    "explanation": {
+      "notes": [
+        "Event proof accepted",
+        "Group attendance confirmed",
+        "No duplicate proof detected"
+      ]
+    }
+  },
+  "mint_action_request": {
+    "release_mode": "partial_lock",
+    "claim_percent": 25
+  },
+  "mint_action_response": {
+    "action_id": "7d8e09d1-20fa-463b-ae6c-eae5920be5f1",
+    "mint_record_id": "4f73fef1-cf2f-46f0-a878-14053f18dc13",
+    "light_score": 4.2746256,
+    "mint_amount_total": 42.746256,
+    "mint_amount_user": 42.31879344,
+    "mint_amount_platform": 0.42746256,
+    "release_mode": "partial_lock",
+    "claimable_now": 10.57969836,
+    "locked_amount": 31.73909508,
+    "tx_hash": "0xabc123def456",
+    "status": "minted"
+  },
+  "create_event_request": {
+    "event_type": "ZOOM_GROUP_MEDITATION",
+    "title": "Morning repentance and gratitude session",
+    "host_user_id": "c6dfe8d5-579c-496e-9f97-d5c4f23f0882",
+    "started_at": "2026-04-13T07:00:00Z",
+    "ended_at": "2026-04-13T08:00:00Z",
+    "source_platform": "zoom",
+    "zoom_meeting_id": "987654321",
+    "livestream_links": [
+      {
+        "platform": "facebook",
+        "url": "https://facebook.com/live/abc"
+      },
+      {
+        "platform": "youtube",
+        "url": "https://youtube.com/live/xyz"
+      }
+    ],
+    "metadata": {
+      "expected_zoom_tiles": 100
+    }
+  },
+  "create_group_request": {
+    "group_name": "Love House 07",
+    "leader_user_id": "550fcc1f-d1c3-45f6-80f4-a5eebd3fc410",
+    "estimated_participants": 8,
+    "metadata": {
+      "zoom_tile_label": "Tile-42"
+    }
+  },
+  "submit_attendance_request": {
+    "user_id": "7ef67e83-fd54-4b64-92b8-e407e7d6f4c0",
+    "check_in_at": "2026-04-13T07:02:00Z",
+    "check_out_at": "2026-04-13T07:58:00Z",
+    "attendance_mode": "group_leader_confirmed",
+    "optional_signals": {
+      "post_session_reflection_submitted": true,
+      "presence_snapshot_count": 2,
+      "face_signal_used": false
+    }
+  },
+  "submit_attendance_response": {
+    "attendance_id": "11720bd4-8577-43ca-869e-07bd5955d20d",
+    "event_id": "aa6cc6e1-1783-4a0c-8c4d-b7e36e38c0ea",
+    "group_id": "45767cff-0f53-4f88-bd7d-a7ab92720dc5",
+    "user_id": "7ef67e83-fd54-4b64-92b8-e407e7d6f4c0",
+    "attendance_confidence": 0.86,
+    "created_at": "2026-04-13T08:03:00Z"
+  },
+  "user_light_profile_response": {
+    "user_id": "2f9a74dc-9e2e-4ad8-8ad3-1d5d55f84801",
+    "trust_level": 1.08,
+    "total_light_score": 245.82,
+    "total_fun_minted": 3188.45,
+    "streak_days": 22,
+    "recent_actions": 12,
+    "pillar_summary": {
+      "serving_life_avg": 7.8,
+      "transparent_truth_avg": 8.4,
+      "healing_love_avg": 8.1,
+      "long_term_value_avg": 7.0,
+      "unity_over_separation_avg": 8.3
+    }
+  }
+}

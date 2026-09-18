@@ -1,0 +1,74 @@
+B5 — Dọn cron replay trùng + REVOKE anon trên reward_claims (2026-08-20)
+
+===============================================================================
+MỤC 2A — live-replay-readiness-check-b : ĐÃ XOÁ
+===============================================================================
+Trước:
+  live-replay-readiness-check-a  * * * * *  -> POST /functions/v1/live-replay-readiness-check
+  live-replay-readiness-check-b  * * * * *  -> pg_sleep(30); POST /functions/v1/live-replay-readiness-check
+=> -b gọi ĐÚNG CÙNG function, chỉ lệch 30 giây. Là bản nhân đôi tần số thuần, không thêm logic.
+Sau:
+  SELECT jobname, schedule, active FROM cron.job WHERE jobname LIKE 'live-replay-readiness%';
+  -> live-replay-readiness-check-a | * * * * * | true
+     (không còn -b)
+Tiết kiệm: 1.440 lượt gọi/ngày. Nhịp kiểm tra readiness giãn từ 30s -> 60s.
+
+===============================================================================
+MỤC 2B — live-replay-poll-status : KHÔNG XOÁ (kết luận audit trước SAI)
+===============================================================================
+Cha yêu cầu xoá vì "trùng mp4-poll". Đã đọc code cả hai — KHÔNG trùng:
+
+live-replay-mp4-poll-cron  (job live-replay-mp4-poll-every-1min)
+  Query: live_replays WHERE archive_phase = 'mp4_wait'
+  Việc:  pollMp4ForReplay() — giai đoạn TẢI MP4 VỀ R2, chỉ chạy SAU khi replay đã 'ready'.
+
+live-replay-poll-status  (job live-replay-poll-status)
+  Query: live_replays WHERE status IN ('uploading','queued','processing') AND cloudflare_vod_enabled
+  Việc:  hỏi Cloudflare Stream trạng thái encode và ĐẨY replay từ processing -> ready
+         (requestMp4Download + markStreamReadyAndArchive). Cộng thêm 3 việc không ai khác làm:
+           1. watchdog 'normalizing' treo > 1800s  -> failed
+           2. watchdog 'pendingupload' treo > 600s -> failed
+           3. fallback post: replay failed/skipped_legacy mà post còn 'cloudflare_stream_pending'
+              -> chuyển metadata.playback_type = 'chunked_fallback' để feed không kẹt "đang xử lý"
+
+=> Xoá live-replay-poll-status sẽ khiến replay Cloudflare KHÔNG BAO GIỜ chuyển sang 'ready',
+   nên mp4-poll (chỉ chạy ở phase 'mp4_wait') cũng không có gì để làm => vỡ luồng replay,
+   kèm mất 2 watchdog chống kẹt UI. ĐÃ GIỮ NGUYÊN job này.
+Xác nhận sau đợt vá:
+  live-replay-poll-status | * * * * * | active = true
+
+===============================================================================
+MỤC 3 — REVOKE anon full write trên public.reward_claims
+===============================================================================
+Trước: anon = arwd (SELECT, INSERT, UPDATE, DELETE) — nợ đã ghi nhận ở Batch 5 item 4.
+Policy hiện có (không policy nào cho anon ghi):
+  "Users can create their own claims"    INSERT  WITH CHECK (auth.uid() = user_id)
+  "Users can view their own claims"      SELECT  USING (auth.uid() = user_id)
+  "Admins can view all reward claims"    SELECT  USING (has_role(auth.uid(),'admin'))
+=> anon vốn đã bị RLS chặn; nay chặn thêm ở TẦNG GRANT (mẫu Batch 4).
+
+Sau khi vá:
+  REVOKE INSERT, UPDATE, DELETE ON public.reward_claims FROM anon;
+  GRANT SELECT ON public.reward_claims TO anon;                 -- RLS vẫn lọc, khách thấy rỗng
+  GRANT SELECT, INSERT, UPDATE, DELETE ... TO authenticated;
+  GRANT ALL ... TO service_role;
+
+VERIFY THẬT BẰNG ANON KEY (REST, không đăng nhập):
+  POST   /rest/v1/reward_claims
+    -> {"code":"42501","message":"permission denied for table reward_claims"}
+  PATCH  /rest/v1/reward_claims?id=eq.00000000-0000-0000-0000-000000000000
+    -> {"code":"42501","message":"permission denied for table reward_claims"}
+  DELETE /rest/v1/reward_claims?id=eq.00000000-0000-0000-0000-000000000000
+    -> {"code":"42501","message":"permission denied for table reward_claims"}
+  GET    /rest/v1/reward_claims?select=id&limit=1
+    -> []            (đọc được nhưng RLS trả rỗng, không lộ dòng nào)
+
+===============================================================================
+CÒN NỢ VERIFY (cần 1 phiên replay thật)
+===============================================================================
+Sau khi có 1 lượt live -> kết thúc -> replay ready, dán bằng chứng:
+  SELECT id, status, archive_phase, r2_video_url IS NOT NULL AS on_r2,
+         last_cf_status, created_at, updated_at
+  FROM live_replays WHERE created_at > '2026-08-20 00:30:00+00'
+  ORDER BY created_at DESC LIMIT 5;
+Kỳ vọng: status='ready' và on_r2=true => nhịp readiness 60s không làm chậm/vỡ luồng.

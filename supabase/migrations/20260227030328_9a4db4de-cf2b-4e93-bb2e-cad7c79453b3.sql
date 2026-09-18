@@ -1,0 +1,1 @@
+ALTER TABLE shared_posts ADD COLUMN caption text DEFAULT NULL;

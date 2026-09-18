@@ -1,0 +1,1 @@
+ALTER TABLE public.live_sessions RENAME COLUMN source_disconnected_at TO last_disconnected_at;

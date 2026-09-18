@@ -1,0 +1,1 @@
+UPDATE public.fun_profile_event_outbox SET status='pending', attempts=0, last_error=NULL, next_attempt_at=now() WHERE id IN ('852f44ea-d34b-4de6-abfd-26c3fde6ab1b','06772bfb-eabe-4e94-877d-bbb4b9aaa1ee','85934b5a-e6e9-473c-80cf-ae248688f939','7fd53ab3-6385-4533-ae63-792eaf743b61','d59a6ef8-59fc-41b3-b04a-e41a330e73e0');

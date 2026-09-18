@@ -1,0 +1,14 @@
+topic,file,line_approx,snippet,recommendation
+formatAmount duplicate,src/components/wallet/tabs/HistoryTab.tsx,~80,"function formatAmount(num,lang){if(num<0.0001)return num.toFixed(8)...}",Replace with formatTokenAmount from lib/formatTokenAmount.ts
+formatAmount duplicate,src/components/profile/WalletTransactionHistory.tsx,~60,"function formatAmount(num:number):string{if(num===0)return '0'...}",Replace with formatTokenAmount
+direction calc duplicate,src/utils/export/mapRows.ts,~45,"if(d.recipient_id===currentUserId)direction='in'; else if(d.sender_id===currentUserId)direction='out'",Already handled by RPC in unified path; delete mapDonationsToRows
+direction calc duplicate,src/hooks/usePublicDonationHistory.ts,~160,"if(isSent){...}else{...receivedCount++}",computeSummaryFromDonations duplicates UnifiedTransactionSummary.aggregate()
+summary calc duplicate,src/hooks/usePublicDonationHistory.ts,~60,computeSummaryFromDonations full implementation,Covered by useUnifiedRowsForSummary + UnifiedTransactionSummary
+summary calc duplicate,src/hooks/useDonationHistory.ts,~75,useDonationStats token breakdown loops,Covered by useUnifiedTransactionSummary (get_unified_summary)
+status label duplicate,src/components/wallet/tabs/HistoryTab.tsx,~55,"function StatusBadge: confirmed→txSuccess/pending→txPending",TransactionRow already has statusBadge()
+status label duplicate,src/utils/exportDonations.ts,~40,"pending:'Đang xử lý',confirmed:'Thành công',failed:'Thất bại'",Duplicate of mapRows.ts STATUS_VI
+status label duplicate,src/utils/export/exportPdf.ts,~30,"if(x==='confirmed'||x==='completed')return 'Thành công'",Consolidate to single STATUS_LABEL map
+export legacy,src/utils/exportDonations.ts,1,"exportDonationsToCSV uses DonationRecord shape",Deprecated; TransactionExportMenu uses unified shape
+export legacy,src/components/wallet/ExportTransactionsMenu.tsx,1,"mapDonationsToRows via usePublicDonationHistory",Deprecated; use TransactionExportMenu (unified)
+mapper duplicate,src/utils/export/mapRows.ts,1,"mapDonationsToRows: direction computed client-side",Superseded by rowsFromUnified() in TransactionExportMenu.tsx
+external wallet detect duplicate,src/hooks/useGiftHistory.ts,~15,".not('is_external','is',true) filter client",Already a field in UnifiedTransactionRow.is_external

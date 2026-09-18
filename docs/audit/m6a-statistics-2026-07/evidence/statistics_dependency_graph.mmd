@@ -1,0 +1,83 @@
+flowchart TD
+    subgraph PRODUCER ["📦 Producers (DB Write)"]
+        D[donations\nsupabase table]
+        WT[wallet_transfers\nsupabase table]
+        ST[swap_transactions\nsupabase table]
+        TX[transactions\nreconciliation+claim]
+        LA[light_actions /\npplp_v2_validations]
+        TPH[token_price_history\nsupabase table]
+    end
+
+    subgraph AGGREGATOR ["⚙️ Aggregators"]
+        RPC1[get_unified_transactions\nget_unified_summary RPC]
+        RPC2[get_benefactor_leaderboard\nget_recipient_leaderboard RPC]
+        RPC3[get_donation_global_stats RPC]
+        RPC4[get_light_community RPC]
+        RPC5[get_founder_overview_stats\nget_founder_economy_stats RPC]
+        RPC6[get_user_honor_stats\nget_my_rewards RPC]
+        RPC7[pet_leaderboard_top RPC]
+        HOOK1[usePublicDonationHistory\nclient-side 3×SELECT+SUM]
+        HOOK2[useGiftBreakdown\nclient-side 3×SELECT+SUM]
+        CRON[statistics-cron\nedge — nếu có]
+        TP[useTokenPrices\ntoken-prices edge proxy]
+    end
+
+    subgraph CONSUMER ["🖥️ Consumers (UI)"]
+        C1[WalletHistory\nTransactionHistoryPage]
+        C2[ProfileHistory\nDonationsPage]
+        C3[Benefactors\nRecipient Leaderboard]
+        C4[Honor Board\nWalletCenter]
+        C5[Founder Dashboard]
+        C6[Admin Dashboard\nBlockchainTab]
+        C7[Treasury Public\nTreasury Admin]
+        C8[Analytics\nContentStats]
+        C9[Export Excel\nExport PDF]
+        C10[Notification\nFeed Stats]
+        C11[Leaderboard\nTopRanking\nPet Leaderboard]
+    end
+
+    D --> RPC1
+    WT --> RPC1
+    ST --> RPC1
+    TX -.->|⚠️ gap unconfirmed| RPC1
+    D --> RPC2
+    WT --> RPC2
+    ST --> RPC2
+    D --> RPC3
+    LA --> RPC4
+    LA --> RPC5
+    D --> RPC5
+    D --> RPC6
+    TPH --> RPC2
+    TPH --> RPC3
+
+    D --> HOOK1
+    WT --> HOOK1
+    ST --> HOOK1
+    D --> HOOK2
+    WT --> HOOK2
+    ST --> HOOK2
+
+    TPH --> TP
+
+    RPC1 --> C1
+    RPC1 --> C2
+    RPC1 --> C9
+    RPC2 --> C3
+    RPC2 --> C9
+    RPC3 --> C3
+    RPC4 --> C11
+    RPC5 --> C5
+    RPC6 --> C4
+    RPC7 --> C11
+    HOOK1 --> C2
+    HOOK2 --> C2
+    TP --> C2
+    TP --> C3
+    CRON -.->|planned| C7
+    CRON -.->|planned| C8
+
+    style TX fill:#fecaca
+    style HOOK1 fill:#fef9c3
+    style HOOK2 fill:#fef9c3
+    style CRON fill:#e0e7ff

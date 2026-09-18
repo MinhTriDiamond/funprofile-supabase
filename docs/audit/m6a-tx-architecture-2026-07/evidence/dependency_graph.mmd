@@ -1,0 +1,177 @@
+graph TD
+
+    %% ====================================================
+    %% M6A — Full Dependency Graph
+    %% Producer → Table → View → RPC → Hook → Component → Page → Consumer
+    %% ====================================================
+
+    subgraph PRODUCERS["⚡ Producers (Edge Functions + FE)"]
+        P1["record-donation\n(Edge)"]
+        P2["auto-scan-donations\n(Edge)"]
+        P3["scan-btc-transactions\n(Edge)"]
+        P4["approve-claim\n(Edge)"]
+        P5["wallet-reconciliation-cron\n(Cron 30m)"]
+        P6["backfill-donations-to-transactions\n(Edge/Admin)"]
+        P7["backfill-swap-transactions\n(Edge/Admin)"]
+        P8["SwapTab\n(FE direct)"]
+    end
+
+    subgraph TABLES["🗄️ Source Tables"]
+        T_DON[(donations)]
+        T_WT[(wallet_transfers)]
+        T_SWAP[(swap_transactions)]
+        T_TX[(transactions)]
+        T_RC[(reward_claims)]
+        T_PC[(pending_claims)]
+        T_NOTIF[(notifications)]
+        T_POSTS[(posts)]
+        T_LA[(light_actions)]
+        T_TF[(treasury_flows)]
+    end
+
+    subgraph VIEWS["👁️ Views"]
+        V_UNI["v_unified_transactions\n(UNION: donations×2 + wallet_transfers + swap_transactions)"]
+        V_PRI["v_unified_transactions_primary\n(dedup: 1 row per tx per user)"]
+    end
+
+    subgraph RPC_UNIFIED["✅ 4 Unified RPCs"]
+        R1["get_unified_transactions\n(paginated history)"]
+        R2["get_unified_summary\n(aggregated stats)"]
+        R3["get_unified_transaction_detail\n(single tx)"]
+        R4["get_unified_counterparties\n(search/filter)"]
+    end
+
+    subgraph RPC_LEGACY["⚠️ Legacy RPCs"]
+        RL1["get_benefactor_leaderboard"]
+        RL2["get_donation_global_stats"]
+        RL3["get_donation_history"]
+        RL4["get_user_donation_summary"]
+        RL5["get_recipient_leaderboard"]
+        RL6["get_user_nstats"]
+    end
+
+    subgraph HOOKS_UNI["🟢 Unified Hooks"]
+        H1["useUnifiedTransactionHistory"]
+        H2["useUnifiedTransactionSummary"]
+        H3["useUnifiedTransactionDetail"]
+        H4["useUnifiedRowsForSummary"]
+        H5["useUnifiedCounterparties"]
+        H6["useUnifiedHistoryEnabled\n(feature flag)"]
+    end
+
+    subgraph HOOKS_LEG["🔴 Legacy Hooks"]
+        HL1["usePublicDonationHistory\n(9 refs)"]
+        HL2["useDonationHistory\n(10 refs)"]
+        HL3["useTransactionHistory\n(3 refs)"]
+        HL4["useAdminDonationHistory\n(5 refs)"]
+        HL5["useWalletHistory\n(0 refs — DEAD)"]
+        HL6["useBenefactorLeaderboard\n(3 refs)"]
+    end
+
+    subgraph COMP_UNI["🟢 Unified Components"]
+        C1["TransactionHistoryPage"]
+        C2["TransactionList + TransactionRow"]
+        C3["TransactionExportMenu"]
+        C4["UnifiedTransactionSummary"]
+        C5["CelebrationCardModal"]
+        C6["RecentUnifiedTransactions"]
+        C7["TransactionFilters"]
+    end
+
+    subgraph COMP_LEG["🔴 Legacy Components"]
+        CL1["HistoryTab"]
+        CL2["DonationHistoryTab"]
+        CL3["WalletTransactionHistory"]
+        CL4["ExportTransactionsMenu (wallet)"]
+        CL5["SystemDonationHistory"]
+        CL6["DonationHistoryAdminTab"]
+    end
+
+    subgraph PAGES["📄 Pages"]
+        PG1["WalletHistoryPage\n/wallet/history"]
+        PG2["ProfileHistoryPage\n/profile/:u/history"]
+        PG3["DonationsPage (flag-gated)\n/donations"]
+        PG4["BenefactorsPage\n/benefactors"]
+        PG5["TreasuryPublicPage\n/treasury"]
+    end
+
+    subgraph CONSUMERS["📊 Downstream Consumers"]
+        CON1["Notification System"]
+        CON2["Export (CSV/PDF)"]
+        CON3["Dashboard / Analytics"]
+        CON4["Benefactor Board"]
+        CON5["Honor Board"]
+        CON6["Feed (gift_celebration)"]
+        CON7["Admin Panel"]
+        CON8["Search / Counterparty"]
+        CON9["Summary / Charts"]
+    end
+
+    %% Producer → Tables
+    P1 --> T_DON & T_LA & T_POSTS & T_NOTIF
+    P2 --> T_DON & T_WT & T_POSTS & T_NOTIF
+    P3 --> T_DON & T_POSTS
+    P4 --> T_RC & T_TX & T_DON & T_NOTIF
+    P5 --> T_TX & T_DON & T_NOTIF
+    P6 --> T_TX & T_POSTS
+    P7 --> T_SWAP
+    P8 --> T_SWAP
+
+    %% Tables → View
+    T_DON --> V_UNI
+    T_WT --> V_UNI
+    T_SWAP --> V_UNI
+    V_UNI --> V_PRI
+
+    %% View → RPC Unified
+    V_PRI --> R1 & R2 & R3 & R4
+
+    %% Legacy direct reads
+    T_DON --> RL1 & RL2 & RL3 & RL4 & RL5
+
+    %% RPC Unified → Hooks
+    R1 --> H1 & H4
+    R2 --> H2
+    R3 --> H3
+    R4 --> H5
+
+    %% RPC Legacy → Hooks
+    RL1 --> HL6
+    RL3 --> HL6
+    RL4 --> HL1
+
+    %% Direct table → Legacy hooks
+    T_DON --> HL1 & HL2 & HL3 & HL4
+    T_WT --> HL1
+    T_SWAP --> HL1
+
+    %% Unified Hooks → Unified Components
+    H1 --> C1 & C6
+    H2 --> C4
+    H3 --> C5
+    H4 --> C4
+    H5 --> C7
+
+    %% Legacy Hooks → Legacy Components
+    HL1 --> CL1 & CL3
+    HL2 --> CL2
+    HL4 --> CL5 & CL6
+
+    %% Components → Pages
+    C1 --> PG1 & PG2 & PG3
+    CL1 --> PG1
+    CL2 --> PG1
+    CL3 --> PG2
+    HL6 --> PG4
+    T_TF --> PG5
+
+    %% Pages → Consumers
+    PG1 & PG2 & PG3 --> CON2 & CON3
+    PG4 --> CON4
+    T_NOTIF --> CON1
+    T_POSTS --> CON6
+    R3 --> CON6
+    R2 --> CON9
+    R4 --> CON8
+    RL2 --> CON4 & CON9
+    T_RC --> CON5 & CON7

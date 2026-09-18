@@ -1,0 +1,24 @@
+Surface,File,Datasource,Hook,RPC,View/Table,Status
+WalletHistoryPage,src/pages/WalletHistoryPage.tsx,RPC unified,useUnifiedTransactionHistory,get_unified_transactions,v_unified_transactions_primary,Unified
+ProfileHistoryPage,src/pages/ProfileHistoryPage.tsx,RPC unified,useUnifiedTransactionHistory,get_unified_transactions,v_unified_transactions_primary,Unified
+DonationsPage (flag ON),src/pages/Donations.tsx,RPC unified,useUnifiedTransactionHistory,get_unified_transactions,v_unified_transactions_primary,Unified
+DonationsPage (flag OFF),src/pages/Donations.tsx,Table direct,useAdminDonationHistory,—,donations,Legacy
+TransactionHistoryPage,src/components/transactions/TransactionHistoryPage.tsx,RPC unified,useUnifiedTransactionHistory,get_unified_transactions,v_unified_transactions_primary,Unified
+RecentTransactions (flag ON),src/components/wallet/RecentTransactions.tsx,RPC unified,useUnifiedTransactionHistory,get_unified_transactions,v_unified_transactions_primary,Unified
+RecentTransactions (flag OFF),src/components/wallet/RecentTransactions.tsx,Table direct,useTransactionHistory,—,"transactions, donations",Legacy
+HistoryTab,src/components/wallet/tabs/HistoryTab.tsx,Table direct,usePublicDonationHistory,—,"donations, wallet_transfers, swap_transactions",Legacy
+DonationHistoryTab,src/components/wallet/DonationHistoryTab.tsx,Table direct,useDonationHistory,—,donations,Legacy
+WalletTransactionHistory,src/components/profile/WalletTransactionHistory.tsx,Table direct,usePublicDonationHistory,—,"donations, wallet_transfers, swap_transactions",Legacy
+ProfileHistoryEntry (flag OFF),src/components/profile/ProfileHistoryEntry.tsx,Table direct,usePublicDonationHistory,—,donations,Legacy
+DonationHistoryAdminTab,src/components/admin/DonationHistoryAdminTab.tsx,Table direct,useAdminDonationHistory,—,donations,Legacy
+BenefactorsPage,src/pages/Benefactors.tsx,RPC legacy,useBenefactorLeaderboard,"get_benefactor_leaderboard, get_donation_global_stats",donations,Hybrid
+TreasuryPublicPage,src/pages/TreasuryPublicPage.tsx,Separate,useTreasuryPublicInflows,—,treasury_flows,Legacy
+ClaimHistoryModal,src/components/feed/ClaimHistoryModal.tsx,Table direct,useQuery direct,—,claim_rewards,Legacy
+TransactionExportMenu,src/components/transactions/TransactionExportMenu.tsx,RPC unified,—,get_unified_transactions,v_unified_transactions_primary,Unified
+ExportTransactionsMenu (wallet),src/components/wallet/ExportTransactionsMenu.tsx,Table direct (mapDonationsToRows),—,—,donations,Legacy
+UnifiedTransactionSummary,src/components/transactions/UnifiedTransactionSummary.tsx,RPC unified,useUnifiedRowsForSummary,get_unified_transactions,v_unified_transactions_primary,Unified
+CelebrationCardModal,src/components/transactions/CelebrationCardModal.tsx,RPC unified,useUnifiedTransactionDetail,get_unified_transaction_detail,v_unified_transactions,Unified
+RewardApprovalTab (admin),src/components/admin/RewardApprovalTab.tsx,Table direct,useQuery,—,"reward_claims, pending_claims",Legacy
+BlockchainTab (admin),src/components/admin/BlockchainTab.tsx,Table direct,useQuery,—,reward_claims,Legacy
+ExportCsvDialog (benefactors),src/components/benefactors/ExportCsvDialog.tsx,RPC legacy,—,"get_donation_global_stats, get_recipient_leaderboard",donations,Hybrid
+WalletCenterContainer,src/components/wallet/WalletCenterContainer.tsx,Mixed,—,"get_user_nstats, reward_claims",Mixed,Hybrid

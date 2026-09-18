@@ -1,0 +1,1 @@
+CREATE INDEX IF NOT EXISTS idx_posts_tx_hash_lower ON public.posts (lower(tx_hash)) WHERE tx_hash IS NOT NULL;

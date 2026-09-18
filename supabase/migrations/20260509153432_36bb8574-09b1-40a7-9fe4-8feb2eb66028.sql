@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX IF NOT EXISTS live_replays_stream_uid_uniq ON public.live_replays (stream_uid) WHERE stream_uid IS NOT NULL;

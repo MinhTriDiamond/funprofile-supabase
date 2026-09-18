@@ -1,0 +1,107 @@
+B5-A′ — live_session_events: bỏ 3 reason nhịp thăm dò + retention 45 ngày (2026-08-20)
+
+===============================================================================
+0) XÁC NHẬN admin-replay-debug KHÔNG PHỤ THUỘC 3 REASON BỊ BỎ  (làm TRƯỚC khi tắt)
+===============================================================================
+Chỗ duy nhất admin-replay-debug đọc live_session_events (index.ts:923):
+    .from('live_session_events')
+    .select('live_session_id, reason, source, payload, created_at')
+    .in('live_session_id', sessionIds)
+    .order('created_at', { ascending: false })
+    .limit(min(500, sessionIds.length * 20))
+=> Dựng `session.timeline` (20 event mới nhất/phiên) theo kiểu GENERIC: không filter theo
+   reason, không count reason, không suy luận trạng thái từ reason nào cả.
+
+Các trường "phiên còn sống tới lúc nào" của debug KHÔNG lấy từ event log:
+  heartbeat_age_ms   -> heartbeatAge(session)      : đọc live_sessions.last_host_heartbeat_at / last_seen_at
+  watchdog_decision  -> watchdogDecision(session)  : đọc cột trên live_sessions
+  processor_eligible -> isAgoraWebcamProcessorEligible(session, tempObjectCount)
+  temp_object_count / temp_total_bytes -> scan R2 trực tiếp lúc gọi, KHÔNG đọc temp_scan_started
+
+grep toàn repo (chỉ 2 file ghi, 0 file đọc):
+  supabase/functions/live-heartbeat/index.ts:59,66  heartbeat_received
+  supabase/functions/live-heartbeat/index.ts:96      cloud_recording_health_query
+  supabase/functions/live-webcam-recording-processor/index.ts:736  temp_scan_started
+grep supabase/migrations : 0 match
+DB objects phụ thuộc:
+  SELECT p.proname FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace
+  WHERE n.nspname='public' AND (prosrc ILIKE '%heartbeat_received%'
+     OR prosrc ILIKE '%temp_scan_started%' OR prosrc ILIKE '%cloud_recording_health_query%');
+  -> 0 row
+KẾT LUẬN: không có phụ thuộc, kể cả gián tiếp. An toàn để tắt ghi.
+
+===============================================================================
+1) KHỐI LƯỢNG TRƯỚC KHI VÁ (7 ngày)
+===============================================================================
+ force_end_idempotent_return            | 50004
+ duration_limit_triggered               | 32269
+ heartbeat_received                     | 20103   <-- BỎ
+ cloud_recording_health_query           | 19053   <-- BỎ
+ heartbeat_timeout                      | 17713
+ temp_scan_started                      |  2696   <-- BỎ
+ ...
+Tổng bảng: 7.139.422 row, từ 2026-05-26 -> 2026-08-20.
+3 reason bị bỏ ≈ 41.852/7 ngày ≈ 23% lượt ghi.
+
+===============================================================================
+2) SỬA Ở NGUỒN (không lọc sau khi ghi)
+===============================================================================
+live-heartbeat/index.ts
+  - Xoá hẳn insert `heartbeat_received`. Chỉ còn insert khi CÓ chuyển trạng thái thật
+    (recovered === true -> reason 'host_reconnected').
+  - Xoá insert `cloud_recording_health_query` (thăm dò 45s/lượt).
+    Không mất dữ liệu: phản hồi Agora vẫn được lưu ở
+    live_sessions.last_agora_query_response + last_worker_response (update ngay phía trên).
+  - GIỮ NGUYÊN log bất thường: cloud_recording_health_query_not_found / _failed.
+live-webcam-recording-processor/index.ts
+  - Xoá logEvent('temp_scan_started'). Kết quả thật vẫn ghi qua recording_stopped /
+    hls_found / replay_processing.
+Deploy: live-heartbeat, live-webcam-recording-processor -> Successfully deployed.
+
+===============================================================================
+3) RETENTION 45 NGÀY
+===============================================================================
+Function: public.live_session_events_retention(_days=45,_batch=20000,_max_batches=40)
+  SECURITY DEFINER, search_path=public, xoá theo lô 20k (tối đa 800k row/lượt) => không lock lâu.
+  Sàn an toàn: GREATEST(_days,7) — không ai gọi được với ngưỡng < 7 ngày.
+  EXECUTE: REVOKE FROM PUBLIC, anon, authenticated; chỉ service_role.
+    has_function_privilege('anon',...,'EXECUTE')          -> false (sau REVOKE)
+    has_function_privilege('authenticated',...,'EXECUTE')  -> false (sau REVOKE)
+Cron:
+  jobname = live-session-events-retention-daily | schedule = 15 4 * * * | active = true
+  (slot 04:15 UTC — trước đó trống, tránh chồng 3 job đang ở 04:30)
+Ghi chú: lượt đầu xoá tối đa 800k row/ngày => hạ dần ~5.8M row tồn (spike T6/2026)
+trong vài ngày, không dồn 1 lần.
+
+===============================================================================
+4) VERIFY SAU DEPLOY
+===============================================================================
+Ngay sau deploy (00:26 UTC 20/08) — 30 phút gần nhất:
+  SELECT reason, count(*) FROM live_session_events
+  WHERE reason IN ('heartbeat_received','cloud_recording_health_query','temp_scan_started')
+    AND created_at > now() - interval '30 minutes' GROUP BY 1;
+  -> [] (0 row)
+LƯU Ý TRUNG THỰC: lượt live cuối cùng kết thúc 22:43 UTC 19/08 (trước khi deploy), nên
+kết quả rỗng này CHƯA phải bằng chứng đủ. Bằng chứng đủ = sau 1 phiên live thật kế tiếp:
+  -- phải trả về 0 row
+  SELECT reason, count(*), max(created_at) FROM live_session_events
+  WHERE reason IN ('heartbeat_received','cloud_recording_health_query','temp_scan_started')
+    AND created_at > '2026-08-20 00:26:00+00' GROUP BY 1;
+  -- và phải CÒN các event nghiệp vụ (chứng tỏ đường ghi không bị vỡ)
+  SELECT reason, max(created_at) FROM live_session_events
+  WHERE created_at > '2026-08-20 00:26:00+00' GROUP BY 1 ORDER BY 2 DESC;
+Cùng lúc: gọi admin-replay-debug (action list_recent_agora_sessions) và xác nhận
+`timeline` của phiên mới vẫn có event (recording_started/recording_stopped/hls_found/...).
+
+===============================================================================
+5) PHÁT SINH — KHÔNG VÁ TRONG ĐỢT NÀY (báo để Cha quyết)
+===============================================================================
+force_end_idempotent_return + duration_limit_triggered vẫn ghi ~540 row/giờ NGAY CẢ KHI
+KHÔNG CÓ AI LIVE. 4 phiên zombie bị watchdog xử lý lại mỗi phút suốt nhiều giờ:
+  ecd0cf3b-c3ce-4699-ae28-3d752996a518  360 row/3h  (21:26 -> 00:25)
+  52138651-5d60-4718-88b9-f795fa45dbc1  180 row/3h
+  5c326bcc-4e05-4970-814f-6f1fba965bdb  180 row/3h
+  8f8a3ed0-ae11-4e67-99f2-4c78809efc5c  180 row/3h
+Đây là 2 reason ồn nhất bảng (82k/7 ngày = 46% lượt ghi) và là VÒNG LẶP, không phải log
+bình thường: live-duration-watchdog gọi force-end lặp vô hạn trên phiên đã kết thúc.
+Retention chỉ che triệu chứng — nên vá idempotency của watchdog ở đợt sau.

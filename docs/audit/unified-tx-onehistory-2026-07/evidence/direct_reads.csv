@@ -1,0 +1,16 @@
+table,file,line_approx,context
+donations,src/hooks/useDonationHistory.ts,49,useDonationHistory - legacy hook sent/received
+donations,src/hooks/useDonationHistory.ts,75,useDonationStats - sent count
+donations,src/hooks/useDonationHistory.ts,82,useDonationStats - received count
+donations,src/hooks/useAdminDonationHistory.ts,60,admin pagination query
+donations,src/hooks/useAdminDonationHistory.ts,120,admin stats - confirmed count
+donations,src/hooks/useAdminDonationHistory.ts,122,admin stats - pending count
+donations,src/hooks/useAdminDonationHistory.ts,123,admin stats - today count
+donations,src/hooks/useAdminDonationHistory.ts,130,admin stats - token aggregation loop
+donations,src/hooks/usePublicDonationHistory.ts,130,fetchDonations - public profile view
+donations,src/hooks/useTransactionHistory.ts,47,fetchTransactionsForUser - fallback reads
+transactions,src/hooks/useTransactionHistory.ts,39,fetchTransactionsForUser - primary source
+wallet_transfers,src/hooks/usePublicDonationHistory.ts,100,fetchDonations - transfer records
+swap_transactions,src/hooks/usePublicDonationHistory.ts,85,fetchDonations - swap records
+swap_transactions,src/hooks/useGiftBreakdown.ts,60,gift breakdown by type
+v_unified_transactions,NONE,N/A,Not read directly in FE (RPC wraps it)

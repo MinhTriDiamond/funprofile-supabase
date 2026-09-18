@@ -1,0 +1,147 @@
+_emit_fp_activity|p_event_type text, p_subject_user uuid, p_payload jsonb
+_emit_fp_event|p_event_type text, p_aggregate_id text, p_payload jsonb, p_force boolean
+_unified_profile_lite|_uid uuid
+_unified_tx_can_view|_target uuid
+admin_fix_live_replay_orientation|p_session_id uuid, p_layout text
+approve_user_reward|p_user_id uuid, p_admin_id uuid, p_note text
+archive_acquire_lease|p_id uuid, p_minutes integer
+attach_live_replay_to_post|_session_id uuid, _playback_url text, _duration_seconds integer, _thumbnail_url text
+auto_flip_pending_light_actions|
+auto_flip_recoverable_mint_allocations|
+backfill_transactions_from_sources|
+ban_user_permanently|p_admin_id uuid, p_user_id uuid, p_reason text
+batch_ban_ghost_users|user_ids uuid[], admin_id uuid
+batch_delete_orphan_auth_users|p_admin_id uuid
+btc_persist_semantic_batch|p_cache_rows jsonb, p_semantic_rows jsonb, p_review_rows jsonb
+btc_raw_sat_guard_scan|
+btc_reconcile_apply_op|p_op jsonb
+buddy_circle_create|_name text, _max_members integer
+buddy_circle_invite|_circle_id uuid, _user_id uuid
+buddy_circle_join_by_code|_code text
+buddy_circle_leave|_circle_id uuid
+buddy_quest_complete|_circle_id uuid, _quest_id text
+check_email_collision|p_email text, p_exclude_user_id uuid
+check_rate_limit|p_key text, p_limit integer, p_window_ms integer
+claim_red_envelope|p_envelope_id uuid
+cleanup_expired_oauth_data|
+cleanup_old_system_data|
+connector_revert_link|_link_id uuid, _admin_id uuid, _reason text
+decay_fraud_risk|
+decrement_live_viewer_count|session_id uuid
+detect_wallet_bulk_updates|p_window_minutes integer, p_threshold integer
+end_livestream|p_livestream_id uuid
+expire_old_mint_requests_v2|
+fun_profile_apply_outbox_rollout_preset|p_preset text
+fun_profile_dry_run_emit_event|p_user_id uuid, p_event_type text
+fun_profile_get_outbox_event_flags|
+fun_profile_outbox_retry_dead_batch|p_limit integer
+fun_profile_outbox_retry_one|p_id uuid
+fun_profile_set_outbox_event_flag|p_event_type text, p_enabled boolean
+fun_profile_toggle_outbox_producer|p_enabled boolean
+fun_profile_toggle_outbox_publisher|p_enabled boolean
+generate_content_slug|title text, p_user_id uuid, p_table_name text
+generate_post_slug|title text, p_user_id uuid
+generate_secure_token|length integer
+get_all_claim_history|
+get_app_stats|p_prices jsonb
+get_app_stats|
+get_attester_dashboard_stats|wallet_addr text
+get_attester_mint_requests|wallet_addr text, p_request_id uuid
+get_attester_mint_requests|wallet_addr text
+get_banned_user_claims|
+get_benefactor_leaderboard|p_limit integer, p_offset integer, p_time_range text, p_token_symbol text, p_from timestamp with time zone, p_to timestamp with time zone
+get_content_users_by_period_vn|p_type text, p_date text, p_mode text
+get_contribution_dimension_stats|p_dimension text, p_time_range text, p_from timestamp with time zone, p_to timestamp with time zone
+get_daily_signups_vn|p_days integer
+get_donation_global_stats|p_time_range text, p_from timestamp with time zone, p_to timestamp with time zone
+get_donation_history|p_user_id uuid, p_type text, p_limit integer, p_offset integer
+get_founder_economy_stats|
+get_founder_identity_stats|
+get_founder_overview_stats|
+get_gift_day_token_totals|
+get_global_gift_breakdown|p_direction text
+get_global_gift_breakdown|p_direction text, p_prices jsonb
+get_global_wallet_flow_breakdown|p_direction text, p_prices jsonb
+get_light_community|p_limit integer
+get_live_recording_context|_session_id uuid
+get_livestream_stats|
+get_member_reward_breakdown|
+get_my_did|
+get_my_profile_private|
+get_my_rewards|
+get_post_stats|p_post_ids uuid[]
+get_pplp_admin_stats|
+get_qualified_reward_users|p_admin_id uuid
+get_recipient_leaderboard|p_limit integer, p_offset integer, p_time_range text, p_token_symbol text, p_from timestamp with time zone, p_to timestamp with time zone
+get_replay_backlog_summary|
+get_token_leaderboard|p_token_symbol text, p_direction text, p_time_range text, p_limit integer, p_offset integer, p_from timestamp with time zone, p_to timestamp with time zone
+get_unified_admin_stats|_from_ts timestamp with time zone, _to_ts timestamp with time zone
+get_unified_counterparties|_scope text, _target_user_id uuid, _direction text, _chain text, _token_symbol text, _tx_type text, _status text, _from_ts timestamp with time zone, _to_ts timestamp with time zone, _search text, _external_only boolean, _limit integer
+get_unified_facets|_scope text, _target_user_id uuid
+get_unified_light_score|p_user_id uuid
+get_unified_summary|_scope text, _target_user_id uuid, _direction text, _chain text, _token_symbol text, _tx_type text, _status text, _from_ts timestamp with time zone, _to_ts timestamp with time zone, _search text, _external_only boolean, _counterparty_user_id uuid
+get_unified_transaction_detail|_tx_hash text, _source_table text, _source_id text
+get_unified_transactions|_scope text, _target_user_id uuid, _direction text, _chain text, _token_symbol text, _tx_type text, _status text, _from_ts timestamp with time zone, _to_ts timestamp with time zone, _search text, _limit integer, _offset integer, _external_only boolean, _counterparty_user_id uuid
+get_user_directory_summary|
+get_user_directory_totals|
+get_user_donation_stats|p_user_id uuid
+get_user_donation_summary|p_user_id uuid
+get_user_emails_for_admin|p_admin_id uuid
+get_user_friends|target_user_id uuid
+get_user_honor_stats|p_user_id uuid
+get_user_light_score|p_user_id uuid
+get_user_mint_stats|search_query text
+get_user_rewards_v2|limit_count integer
+get_user_rewards_v2_single|target_user_id uuid
+get_wallet_change_count_30d|p_user_id uuid
+get_who_can_message|p_user_id uuid
+has_block_between|user_a uuid, user_b uuid
+has_role|_user_id uuid, _role app_role
+increment_live_viewer_count|session_id uuid
+is_buddy_member|_circle_id uuid, _user_id uuid
+is_conversation_admin|conv_id uuid, check_user_id uuid
+is_conversation_participant|conv_id uuid, check_user_id uuid
+is_gov_attester|check_user_id uuid
+is_org_admin|_did_id text, _user_id uuid
+kyc_metrics_increment|_provider text, _field text, _delta integer
+live_replay_force_resync|p_replay_id uuid
+live_replay_recover_409_failed|
+live_replays_patch|p_id uuid, p_patch jsonb
+log_founder_admin_action|_action text, _target_kind text, _target_ref text, _payload jsonb
+log_security_action|p_user_id uuid, p_action text, p_details jsonb
+mark_suspected_farming|
+mystery_box_create_order|_box_code text
+mystery_box_open|_inventory_id uuid
+mystery_box_purchase|_box_code text
+pet_battle_accept|_battle_id uuid
+pet_battle_challenge|_opponent_id uuid
+pet_battle_compute_stats|_user_id uuid
+pet_battle_decline|_battle_id uuid
+pet_battle_expire_pending|
+pet_cheer|_to_user_id uuid, _message text
+pet_equip_cosmetic|_cosmetic_id uuid
+pet_leaderboard_top|_limit integer
+pet_rename|_new_name text
+pet_shop_create_order|_cosmetic_id uuid
+pet_unequip_cosmetic|_cosmetic_id uuid
+pin_message|p_message_id uuid
+pplp_v25_dashboard_stats|
+recalculate_user_financial|p_user_id uuid, p_client_id text, p_admin_id uuid
+refresh_app_stats_cache|
+reject_user_reward|p_user_id uuid, p_admin_id uuid, p_note text
+resolve_live_session_route_id|p_id uuid
+run_financial_reconciliation|p_admin_id uuid
+set_live_recording_state|_session_id uuid, _recording_status text, _resource_id text, _sid text, _recording_uid integer, _recording_started_at timestamp with time zone, _recording_stopped_at timestamp with time zone, _recording_ready_at timestamp with time zone, _recording_error text, _last_worker_response jsonb
+set_wallet_kill_switch|_enabled boolean, _reason text
+set_wallet_strict_mode|_enabled boolean, _reason text
+sync_active_live_state|p_user_id uuid
+sync_all_active_live_states|
+tokens_registry_coverage_30d|
+tt_ack_drift|p_alert_id uuid
+tt_approve_suspicious|p_event_id uuid, p_symbol text, p_name text, p_decimals integer
+tt_block_suspicious|p_event_id uuid
+tt_ignore_suspicious|p_event_id uuid
+unban_user|p_admin_id uuid, p_user_id uuid, p_reason text
+unpin_message|p_message_id uuid
+upsert_live_recording_row|_session_id uuid, _resource_id text, _sid text, _recorder_uid text, _status text, _file_list_json jsonb, _media_url text, _raw_response jsonb, _stopped_at timestamp with time zone, _duration_seconds integer, _thumbnail_url text
+vus_append_part|_session_id uuid, _part_number integer, _etag text, _size bigint

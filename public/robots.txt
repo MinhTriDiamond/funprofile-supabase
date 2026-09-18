@@ -1,3 +1,6 @@
+# FUN.RICH - Robots.txt
+# https://fun.rich
+
 User-agent: Googlebot
 Allow: /
 
@@ -12,3 +15,22 @@ Allow: /
 
 User-agent: *
 Allow: /
+
+# Block internal routes
+Disallow: /auth
+Disallow: /auth/
+Disallow: /settings
+Disallow: /settings/
+Disallow: /admin
+Disallow: /admin/
+Disallow: /api/
+Disallow: /law-of-light
+Disallow: /wallet
+Disallow: /wallet/
+Disallow: /chat
+Disallow: /chat/
+Disallow: /notifications
+Disallow: /notifications/
+
+# Sitemaps
+Sitemap: https://fun.rich/sitemap-index.xml
