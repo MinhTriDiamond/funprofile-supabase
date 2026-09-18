@@ -1,3 +1,4 @@
+import funEcosystemMintAsset from '@/assets/tokens/fun-ecosystem-mint.gif.asset.json';
 import { useState, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
