@@ -1,0 +1,23 @@
+B4 P1-2 + P1-3 — gate risk ở server + khoá cột mirror pet_states (2026-08-19)
+
+Helper: public.pet_risk_assert_allowed(uuid, text) — đọc risk_tier từ public.pet_risk_scores
+  (nguồn thật, KHÔNG dùng cột mirror pet_states.risk_tier)
+  frozen      -> PET_RISK_FROZEN (chặn toàn bộ)
+  restricted  -> PET_RISK_RESTRICTED cho action 'shop' | 'cheer'
+  EXECUTE đã REVOKE khỏi PUBLIC/anon/authenticated.
+
+Đã nhúng PERFORM pet_risk_assert_allowed vào:
+  - pet_shop_create_order    (action 'shop')
+  - mystery_box_create_order (action 'shop')
+  - pet_cheer                (action 'cheer')
+
+Trigger: trg_pet_states_freeze_system_columns (BEFORE UPDATE ON public.pet_states)
+  ghim level, xp, risk_tier về OLD khi role request là anon/authenticated.
+
+-- Verify thật (role=authenticated + jwt claims sub của user có pet, risk_tier tạm = frozen):
+shop=PET_RISK_FROZEN | box=PET_RISK_FROZEN | cheer=PET_RISK_FROZEN
+| level 1 -> 1 (self update 999) | xp_after=0 | tier_after=safe
+(admin_sql_audit sql_hash='b4-p1-2-p1-3' @ 2026-08-19 02:56:32+00)
+
+=> Cả 3 luồng bị chặn ở server; UPDATE tự đặt level=999/xp=999999/risk_tier='safe'
+   bị ghim nguyên trạng. Dữ liệu thử đã dọn.

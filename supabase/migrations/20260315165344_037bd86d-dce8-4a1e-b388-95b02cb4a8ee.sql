@@ -1,0 +1,2 @@
+ALTER TABLE light_actions DROP CONSTRAINT light_actions_mint_status_check;
+ALTER TABLE light_actions ADD CONSTRAINT light_actions_mint_status_check CHECK (mint_status = ANY (ARRAY['pending'::text, 'approved'::text, 'pending_sig'::text, 'minted'::text, 'rejected'::text, 'expired'::text, 'confirmed'::text, 'revoked'::text]));

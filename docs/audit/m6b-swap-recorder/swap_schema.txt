@@ -1,0 +1,26 @@
+                         Table "public.swap_transactions"
+   Column    |           Type           | Collation | Nullable |      Default      
+-------------+--------------------------+-----------+----------+-------------------
+ id          | uuid                     |           | not null | gen_random_uuid()
+ user_id     | uuid                     |           | not null | 
+ tx_hash     | text                     |           | not null | 
+ from_symbol | text                     |           | not null | 
+ to_symbol   | text                     |           | not null | 
+ from_amount | numeric                  |           | not null | 
+ to_amount   | numeric                  |           | not null | 
+ chain_id    | integer                  |           | not null | 56
+ status      | text                     |           | not null | 'confirmed'::text
+ created_at  | timestamp with time zone |           | not null | now()
+Indexes:
+    "swap_transactions_pkey" PRIMARY KEY, btree (id)
+    "idx_swap_transactions_created_at" btree (created_at DESC)
+    "idx_swap_transactions_user_id" btree (user_id)
+Foreign-key constraints:
+    "swap_transactions_user_id_fkey" FOREIGN KEY (user_id) REFERENCES profiles(id) ON DELETE CASCADE
+Policies:
+    POLICY "Anyone can view swap transactions" FOR SELECT
+      USING (true)
+    POLICY "Users can insert own swap transactions" FOR INSERT
+      TO authenticated
+      WITH CHECK ((auth.uid() = user_id))
+

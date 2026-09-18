@@ -1,0 +1,26 @@
+B4 P1-5 — chặn INSERT thẳng vào posts với field hệ thống tự đặt (2026-08-19)
+
+Trigger: trg_posts_sanitize_system_columns_on_insert (BEFORE INSERT, FOR EACH ROW)
+Function: public.posts_sanitize_system_columns_on_insert()
+  - chỉ ép khi current_setting('role') IN ('anon','authenticated')
+  - bypass cho admin (has_role(auth.uid(),'admin'))
+  - ghim: is_reward_eligible=false, moderation_status='approved' (mặc định an toàn,
+    không tự cấp thưởng), content_hash=NULL, pplp_pillar=NULL,
+    scored_at=NULL, scored_content_hash=NULL
+
+-- Verify thật: role=authenticated + request.jwt.claims.sub của user thường,
+-- INSERT với is_reward_eligible=true, moderation_status='pending_review',
+-- content_hash='fakehash', pplp_pillar='inner_work', scored_at=now(), scored_content_hash='fakehash'
+-- Kết quả dòng ghi được (đã xoá sau khi đọc):
+id                  = eb2d0ad6-1577-437b-b893-409a5f5d7a1d
+is_reward_eligible  = false
+moderation_status   = approved
+content_hash        = NULL
+pplp_pillar         = NULL
+scored_at           = NULL
+scored_content_hash = NULL
+
+-- Đường hợp lệ: supabase/functions/create-post/index.ts ghi bài bằng
+-- postWriter = supabaseAdmin ?? supabase (service_role) => trigger không ép,
+-- giữ nguyên is_reward_eligible / moderation_status / content_hash / pplp_pillar
+-- do overlap check + MIN_POST_LENGTH_FOR_LS tính ra.

@@ -1,0 +1,739 @@
+openapi: 3.1.0
+info:
+  title: FUN Ecosystem Light Score Backend API
+  version: 1.0.0
+  summary: Backend API for PPLP-based action validation, Light Score calculation, and FUN minting.
+  description: |
+    Core backend specification for the FUN Ecosystem.
+
+    Immutable principles:
+    - PPLP = Proof of Pure Love Protocol
+    - Light Score is unbounded upward over time at the user aggregate level
+    - No Proof -> No Score
+    - No Score -> No Mint
+    - Mint split = 99% user / 1% platform
+    - Event proof does not automatically imply individual participation proof
+servers:
+  - url: https://api.fun.ecosystem
+    description: Production
+  - url: https://staging.api.fun.ecosystem
+    description: Staging
+
+tags:
+  - name: Actions
+  - name: Proofs
+  - name: Validation
+  - name: Minting
+  - name: Users
+  - name: Events
+  - name: Groups
+
+paths:
+  /v1/actions:
+    post:
+      tags: [Actions]
+      summary: Submit a user action
+      operationId: submitAction
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubmitActionRequest'
+            examples:
+              serviceAction:
+                value:
+                  user_id: "2f9a74dc-9e2e-4ad8-8ad3-1d5d55f84801"
+                  action_type: "SERVICE"
+                  title: "Hosted a Zoom repentance and gratitude session"
+                  description: "Led a 45-minute Love House group session."
+                  source_platform: "zoom"
+                  source_url: "https://zoom.us/j/123456789"
+                  metadata:
+                    duration_minutes: 45
+                    participants_estimated: 12
+      responses:
+        '201':
+          description: Action created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActionResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /v1/actions/{actionId}:
+    get:
+      tags: [Actions]
+      summary: Get action detail
+      operationId: getAction
+      parameters:
+        - $ref: '#/components/parameters/ActionId'
+      responses:
+        '200':
+          description: Action detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActionDetailResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /v1/actions/{actionId}/proofs:
+    post:
+      tags: [Proofs]
+      summary: Attach proof to an action
+      operationId: attachProof
+      parameters:
+        - $ref: '#/components/parameters/ActionId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AttachProofRequest'
+            examples:
+              livestreamProof:
+                value:
+                  proof_type: "link"
+                  proof_url: "https://facebook.com/example-live"
+                  external_ref: "fb-live-893749"
+                  metadata:
+                    platform: "facebook"
+                    role: "event_proof"
+      responses:
+        '201':
+          description: Proof attached
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProofResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /v1/actions/{actionId}/validate:
+    post:
+      tags: [Validation]
+      summary: Run validation for an action
+      operationId: validateAction
+      parameters:
+        - $ref: '#/components/parameters/ActionId'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ValidateActionRequest'
+      responses:
+        '200':
+          description: Validation completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationResponse'
+        '409':
+          description: Validation blocked due to missing proof or incompatible state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /v1/actions/{actionId}/mint:
+    post:
+      tags: [Minting]
+      summary: Mint FUN for a validated action
+      operationId: mintAction
+      parameters:
+        - $ref: '#/components/parameters/ActionId'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MintActionRequest'
+      responses:
+        '200':
+          description: Mint successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MintResponse'
+        '409':
+          description: Action not eligible for mint
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /v1/users/{userId}/light-profile:
+    get:
+      tags: [Users]
+      summary: Get a user's Light profile
+      operationId: getUserLightProfile
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+      responses:
+        '200':
+          description: Light profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserLightProfileResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /v1/events:
+    post:
+      tags: [Events]
+      summary: Create an event for Zoom, livestream, or in-person group practice
+      operationId: createEvent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateEventRequest'
+            examples:
+              zoomMeditationEvent:
+                value:
+                  event_type: "ZOOM_GROUP_MEDITATION"
+                  title: "Morning repentance and gratitude session"
+                  host_user_id: "c6dfe8d5-579c-496e-9f97-d5c4f23f0882"
+                  started_at: "2026-04-13T07:00:00Z"
+                  ended_at: "2026-04-13T08:00:00Z"
+                  source_platform: "zoom"
+                  zoom_meeting_id: "987654321"
+                  livestream_links:
+                    - platform: "facebook"
+                      url: "https://facebook.com/live/abc"
+                    - platform: "youtube"
+                      url: "https://youtube.com/live/xyz"
+                  metadata:
+                    expected_zoom_tiles: 100
+      responses:
+        '201':
+          description: Event created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventResponse'
+
+  /v1/events/{eventId}/groups:
+    post:
+      tags: [Groups]
+      summary: Register a Love House or participation group within an event
+      operationId: createGroup
+      parameters:
+        - $ref: '#/components/parameters/EventId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateGroupRequest'
+            examples:
+              loveHouseGroup:
+                value:
+                  group_name: "Love House 07"
+                  leader_user_id: "550fcc1f-d1c3-45f6-80f4-a5eebd3fc410"
+                  estimated_participants: 8
+                  metadata:
+                    zoom_tile_label: "Tile-42"
+      responses:
+        '201':
+          description: Group created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupResponse'
+
+  /v1/events/{eventId}/groups/{groupId}/attendance:
+    post:
+      tags: [Groups]
+      summary: Submit attendance for a group member in an event
+      operationId: submitAttendance
+      parameters:
+        - $ref: '#/components/parameters/EventId'
+        - $ref: '#/components/parameters/GroupId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubmitAttendanceRequest'
+            examples:
+              attendanceRecord:
+                value:
+                  user_id: "7ef67e83-fd54-4b64-92b8-e407e7d6f4c0"
+                  check_in_at: "2026-04-13T07:02:00Z"
+                  check_out_at: "2026-04-13T07:58:00Z"
+                  attendance_mode: "group_leader_confirmed"
+                  optional_signals:
+                    post_session_reflection_submitted: true
+                    presence_snapshot_count: 2
+      responses:
+        '201':
+          description: Attendance recorded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttendanceResponse'
+
+components:
+  parameters:
+    ActionId:
+      name: actionId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    UserId:
+      name: userId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    EventId:
+      name: eventId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    GroupId:
+      name: groupId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+
+  responses:
+    BadRequest:
+      description: Invalid request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+  schemas:
+    SubmitActionRequest:
+      type: object
+      required: [user_id, action_type, title]
+      properties:
+        user_id:
+          type: string
+          format: uuid
+        action_type:
+          type: string
+          enum: [INNER_WORK, CHANNELING, GIVING, SOCIAL_IMPACT, SERVICE, LEARNING]
+        title:
+          type: string
+        description:
+          type: string
+        source_platform:
+          type: string
+          enum: [zoom, facebook, youtube, telegram, internal, onchain, other]
+        source_url:
+          type: string
+          format: uri
+        metadata:
+          type: object
+          additionalProperties: true
+
+    ActionResponse:
+      type: object
+      properties:
+        action_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [submitted, proof_pending, under_review, validated, rejected, minted, flagged]
+        created_at:
+          type: string
+          format: date-time
+
+    ActionDetailResponse:
+      allOf:
+        - $ref: '#/components/schemas/ActionResponse'
+        - type: object
+          properties:
+            user_id:
+              type: string
+              format: uuid
+            action_type:
+              type: string
+            title:
+              type: string
+            description:
+              type: string
+            source_platform:
+              type: string
+            source_url:
+              type: string
+              format: uri
+            metadata:
+              type: object
+              additionalProperties: true
+            proofs:
+              type: array
+              items:
+                $ref: '#/components/schemas/ProofResponse'
+
+    AttachProofRequest:
+      type: object
+      required: [proof_type]
+      properties:
+        proof_type:
+          type: string
+          enum: [link, video, image, document, onchain_tx, system_log, manual_attestation]
+        proof_url:
+          type: string
+          format: uri
+        external_ref:
+          type: string
+        metadata:
+          type: object
+          additionalProperties: true
+
+    ProofResponse:
+      type: object
+      properties:
+        proof_id:
+          type: string
+          format: uuid
+        action_id:
+          type: string
+          format: uuid
+        proof_type:
+          type: string
+        proof_url:
+          type: string
+          format: uri
+        external_ref:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+
+    ValidateActionRequest:
+      type: object
+      properties:
+        force_manual_review:
+          type: boolean
+          default: false
+        notes:
+          type: string
+
+    ValidationResponse:
+      type: object
+      properties:
+        action_id:
+          type: string
+          format: uuid
+        validation_status:
+          type: string
+          enum: [pending, validated, rejected, flagged, manual_review]
+        pplp_scores:
+          $ref: '#/components/schemas/PPLPScores'
+        raw_light_score:
+          type: number
+          format: double
+        impact_weight:
+          type: number
+          format: double
+        trust_multiplier:
+          type: number
+          format: double
+        consistency_multiplier:
+          type: number
+          format: double
+        final_light_score:
+          type: number
+          format: double
+        ai_score:
+          type: number
+          format: double
+        community_score:
+          type: number
+          format: double
+        trust_signal_score:
+          type: number
+          format: double
+        flags:
+          type: array
+          items:
+            type: string
+        explanation:
+          type: object
+          additionalProperties: true
+
+    PPLPScores:
+      type: object
+      required:
+        - serving_life
+        - transparent_truth
+        - healing_love
+        - long_term_value
+        - unity_over_separation
+      properties:
+        serving_life:
+          type: number
+          minimum: 0
+          maximum: 10
+        transparent_truth:
+          type: number
+          minimum: 0
+          maximum: 10
+        healing_love:
+          type: number
+          minimum: 0
+          maximum: 10
+        long_term_value:
+          type: number
+          minimum: 0
+          maximum: 10
+        unity_over_separation:
+          type: number
+          minimum: 0
+          maximum: 10
+
+    MintActionRequest:
+      type: object
+      properties:
+        release_mode:
+          type: string
+          enum: [instant, partial_lock]
+          default: instant
+        claim_percent:
+          type: integer
+          minimum: 0
+          maximum: 100
+          default: 100
+
+    MintResponse:
+      type: object
+      properties:
+        action_id:
+          type: string
+          format: uuid
+        mint_record_id:
+          type: string
+          format: uuid
+        light_score:
+          type: number
+          format: double
+        mint_amount_total:
+          type: number
+          format: double
+        mint_amount_user:
+          type: number
+          format: double
+        mint_amount_platform:
+          type: number
+          format: double
+        release_mode:
+          type: string
+        claimable_now:
+          type: number
+          format: double
+        locked_amount:
+          type: number
+          format: double
+        tx_hash:
+          type: string
+        status:
+          type: string
+          enum: [pending, minted, failed]
+
+    UserLightProfileResponse:
+      type: object
+      properties:
+        user_id:
+          type: string
+          format: uuid
+        trust_level:
+          type: number
+          format: double
+        total_light_score:
+          type: number
+          format: double
+        total_fun_minted:
+          type: number
+          format: double
+        streak_days:
+          type: integer
+        recent_actions:
+          type: integer
+        pillar_summary:
+          type: object
+          properties:
+            serving_life_avg:
+              type: number
+              format: double
+            transparent_truth_avg:
+              type: number
+              format: double
+            healing_love_avg:
+              type: number
+              format: double
+            long_term_value_avg:
+              type: number
+              format: double
+            unity_over_separation_avg:
+              type: number
+              format: double
+
+    CreateEventRequest:
+      type: object
+      required: [event_type, title, host_user_id, started_at, ended_at, source_platform]
+      properties:
+        event_type:
+          type: string
+          enum: [ZOOM_GROUP_MEDITATION, LIVESTREAM_SESSION, IN_PERSON_GROUP, COMMUNITY_EVENT]
+        title:
+          type: string
+        host_user_id:
+          type: string
+          format: uuid
+        started_at:
+          type: string
+          format: date-time
+        ended_at:
+          type: string
+          format: date-time
+        source_platform:
+          type: string
+          enum: [zoom, facebook, youtube, telegram, internal, other]
+        zoom_meeting_id:
+          type: string
+        livestream_links:
+          type: array
+          items:
+            type: object
+            properties:
+              platform:
+                type: string
+              url:
+                type: string
+                format: uri
+        metadata:
+          type: object
+          additionalProperties: true
+
+    EventResponse:
+      type: object
+      properties:
+        event_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [created, active, completed, archived]
+        created_at:
+          type: string
+          format: date-time
+
+    CreateGroupRequest:
+      type: object
+      required: [group_name, leader_user_id]
+      properties:
+        group_name:
+          type: string
+        leader_user_id:
+          type: string
+          format: uuid
+        estimated_participants:
+          type: integer
+          minimum: 1
+        metadata:
+          type: object
+          additionalProperties: true
+
+    GroupResponse:
+      type: object
+      properties:
+        group_id:
+          type: string
+          format: uuid
+        event_id:
+          type: string
+          format: uuid
+        group_name:
+          type: string
+        leader_user_id:
+          type: string
+          format: uuid
+        estimated_participants:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+
+    SubmitAttendanceRequest:
+      type: object
+      required: [user_id, attendance_mode]
+      properties:
+        user_id:
+          type: string
+          format: uuid
+        check_in_at:
+          type: string
+          format: date-time
+        check_out_at:
+          type: string
+          format: date-time
+        attendance_mode:
+          type: string
+          enum:
+            - direct_checkin
+            - system_log
+            - group_leader_confirmed
+            - hybrid
+        optional_signals:
+          type: object
+          additionalProperties: true
+
+    AttendanceResponse:
+      type: object
+      properties:
+        attendance_id:
+          type: string
+          format: uuid
+        event_id:
+          type: string
+          format: uuid
+        group_id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        attendance_confidence:
+          type: number
+          format: double
+        created_at:
+          type: string
+          format: date-time
+
+    ErrorResponse:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+          additionalProperties: true

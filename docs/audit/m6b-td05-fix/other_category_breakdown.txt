@@ -1,0 +1,11 @@
+ token_symbol | chain_id |  status   | count 
+--------------+----------+-----------+-------
+ FUN          |       97 | confirmed |  2894
+ BNB          |       97 | confirmed |    20
+ BTCB         |       56 | confirmed |    11
+ CAMLY        |       97 | confirmed |     2
+ BNB          |        0 | confirmed |     2
+ TONCOIN      |       56 | confirmed |     2
+ CAMLY        |      137 | confirmed |     1
+(7 rows)
+

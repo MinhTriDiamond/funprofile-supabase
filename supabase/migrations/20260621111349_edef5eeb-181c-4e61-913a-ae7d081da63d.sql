@@ -1,0 +1,1 @@
+DROP TABLE IF EXISTS public.btc_blocktime_staging_20260621;

@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <!-- HTML cache-control handled by hosting headers + hashed asset filenames; no meta no-cache to allow asset caching. -->
+    <meta name="description" content="FUN Profile - Mạng xã hội Web3 kết hợp AI. Kết nối bạn bè, chia sẻ nội dung, kiếm phần thưởng Camly Coin.">
+    
+    <!-- Preconnect to critical origins -->
+    <link rel="preconnect" href="https://bhtsnervqiwchluwuxki.supabase.co" crossorigin />
+    <link rel="preconnect" href="https://pub-e83e74b0726742fbb6a60bc08f95624b.r2.dev" crossorigin />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://videodelivery.net" crossorigin />
+    <link rel="preconnect" href="https://iframe.videodelivery.net" crossorigin />
+    <link rel="preconnect" href="https://media.fun.rich" crossorigin />
+    <link rel="dns-prefetch" href="https://bhtsnervqiwchluwuxki.supabase.co" />
+    <link rel="dns-prefetch" href="https://pub-e83e74b0726742fbb6a60bc08f95624b.r2.dev" />
+    <link rel="dns-prefetch" href="https://videodelivery.net" />
+    <link rel="dns-prefetch" href="https://iframe.videodelivery.net" />
+    
+    <!-- Elegant fonts for Law of Light — load non-blocking; trang chủ dùng system font -->
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Playfair+Display:wght@600;700&display=swap"
+      media="print"
+      onload="this.media='all'"
+    />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    
+    <!-- PWA Manifest (Phase 4 — B1+B2) -->
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="application-name" content="FUN.RICH" />
+    <meta name="apple-mobile-web-app-title" content="FUN.RICH" />
+    <link rel="apple-touch-startup-image" href="/pwa-512.png" />
+    
+    <title>FUN.RICH - Connect, Share, Earn</title>
+    
+    <!-- Open Graph defaults (crawlers don't run JS) -->
+    
+    
+    <meta property="og:image" content="https://storage.googleapis.com/gpt-engineer-file-uploads/5Gm12VTczLRiNBAlh1tdk0c7a1G2/social-images/social-1780826750875-FUNProfile.webp">
+    <meta property="og:image:width" content="512" />
+    <meta property="og:image:height" content="512" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="FUN Profile" />
+    <meta property="og:url" content="https://fun.rich" />
+    
+    <!-- Twitter Card defaults -->
+    <meta name="twitter:card" content="summary_large_image" />
+    
+    
+    <meta name="twitter:image" content="https://storage.googleapis.com/gpt-engineer-file-uploads/5Gm12VTczLRiNBAlh1tdk0c7a1G2/social-images/social-1780826750875-FUNProfile.webp">
+    
+    <!-- Theme -->
+    <meta name="theme-color" content="#22c55e" />
+    
+    <!-- Preload LCP image - small optimized version -->
+    <link rel="preload" as="image" href="https://media.fun.rich/cdn-cgi/image/width=64,height=64,quality=90,fit=cover,format=auto,gravity=auto/fun-profile-logo-40.webp" type="image/webp" fetchpriority="high" />
+    
+    <!-- Critical CSS inline for fastest FCP/LCP -->
+    <style>
+      /* Reset & Critical Layout */
+      *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+      html{-webkit-text-size-adjust:100%;font-size:16px}
+      body{
+        min-height:100vh;
+        min-height:100dvh;
+        background:#f0f2f5;
+        font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+        text-rendering:optimizeSpeed;
+        -webkit-font-smoothing:antialiased
+      }
+      #root{min-height:100vh;min-height:100dvh}
+      
+      /* Initial loader - visible before React hydrates */
+      .initial-loader{display:flex;align-items:center;justify-content:center;min-height:100vh;min-height:100dvh;background:#f0f2f5}
+      .spinner{width:40px;height:40px;border:3px solid #e5e7eb;border-top-color:#22c55e;border-radius:50%;animation:spin .6s linear infinite}
+      @keyframes spin{to{transform:rotate(360deg)}}
+      
+      /* Auth page critical styles - prevent layout shift */
+      .auth-container{min-height:100vh;min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:1rem}
+      .auth-form-skeleton{width:100%;max-width:28rem;min-height:500px;background:#fff;border-radius:1.5rem;box-shadow:0 4px 24px rgba(251,191,36,0.2)}
+      
+      /* LCP image container - fixed dimensions */
+      .lcp-logo{width:64px;height:64px;border-radius:50%;background:#e5e7eb}
+    </style>
+    <meta property="og:title" content="FUN.RICH - Connect, Share, Earn">
+  <meta name="twitter:title" content="FUN.RICH - Connect, Share, Earn">
+  <meta property="og:description" content="FUN Profile - Mạng xã hội Web3 kết hợp AI. Kết nối bạn bè, chia sẻ nội dung, kiếm phần thưởng Camly Coin.">
+  <meta name="twitter:description" content="FUN Profile - Mạng xã hội Web3 kết hợp AI. Kết nối bạn bè, chia sẻ nội dung, kiếm phần thưởng Camly Coin.">
+</head>
+  <body>
+    <div id="root">
+      <div class="initial-loader">
+        <div class="spinner"></div>
+      </div>
+    </div>
+    <script>
+    // Boot guard chạy TRƯỚC entry module. Mục tiêu: nếu browser profile còn SW/cache/
+    // recovery URL/wallet state cũ làm module không chạy, tự dọn phần volatile rồi reload sạch 1 lần.
+    (function(){
+      var SW_DONE_KEY = 'fun:sw-wipe-done-v5';
+      var SW_HARD_KEY = 'fun:sw-hard-reload-done-v5';
+      var BOOT_RELOAD_KEY = 'fun:boot-auto-reload-v2';
+      var BOOT_PROBLEM_KEY = 'fun:boot-problem-v1';
+      var RECOVERY_CLEAN_KEY = 'fun:recovery-url-cleaned-v1';
+      var BOOT_BUDGET_KEY = 'fun:boot-reload-budget-v1';
+      var BOOT_BUDGET_MAX = 2;
+      var BOOT_BUDGET_WINDOW_MS = 5 * 60 * 1000;
+      var RECOVERY_PARAMS = ['__fun_rescue','__fun_update','__fun_reload','__fun_hard','__fun_probe','__fun_no_web3','__sw_wiped','__fun_cleaned'];
+
+      window.__FUN_MAIN_EXECUTED__ = false;
+
+      function cleanUrl(extraParam){
+        var u = new URL(window.location.href);
+        RECOVERY_PARAMS.forEach(function(p){ u.searchParams.delete(p); });
+        if(extraParam) u.searchParams.set(extraParam, String(Date.now()));
+        return u;
+      }
+
+      function clearCaches(){
+        if(!('caches' in window)) return Promise.resolve();
+        return caches.keys()
+          .then(function(keys){ return Promise.all(keys.map(function(k){ return caches.delete(k); })); })
+          .catch(function(){});
+      }
+
+      function unregisterServiceWorkers(){
+        if(!('serviceWorker' in navigator)) return Promise.resolve();
+        return navigator.serviceWorker.getRegistrations()
+          .then(function(regs){ return Promise.all(regs.map(function(r){ return r.unregister(); })); })
+          .catch(function(){});
+      }
+
+      // Các key điều phối chính boot guard — KHÔNG được xóa khi dọn storage,
+      // nếu xóa thì bộ đếm chống lặp mất tác dụng → app tự reload vô hạn (nhấp nháy).
+      function protectedKeys(){
+        return [SW_DONE_KEY, SW_HARD_KEY, BOOT_RELOAD_KEY, BOOT_PROBLEM_KEY, RECOVERY_CLEAN_KEY, BOOT_BUDGET_KEY];
+      }
+
+      function clearVolatileStorage(){
+        var prefixes = [
+          'fun_profile_chunk_',
+          'fun_profile_spa_',
+          'fun_profile_force_',
+          'fun_profile_force_no_web3',
+          'fun:sw-',
+          'fun:boot-',
+          'wagmi.',
+          'wc@2',
+          'walletconnect',
+          'WALLETCONNECT',
+          '-walletlink',
+          'nav:stack'
+        ];
+        var keep = protectedKeys();
+        [localStorage, sessionStorage].forEach(function(store){
+          try{
+            var remove = [];
+            for(var i = 0; i < store.length; i++){
+              var key = store.key(i) || '';
+              if(keep.indexOf(key) !== -1) continue;
+              if(prefixes.some(function(prefix){ return key.indexOf(prefix) === 0; })) remove.push(key);
+            }
+            remove.forEach(function(key){ store.removeItem(key); });
+          }catch(_){}
+        });
+      }
+
+      // Ngân sách reload tự động: tối đa BOOT_BUDGET_MAX lần trong BOOT_BUDGET_WINDOW_MS.
+      // Hết ngân sách → dừng hẳn auto-reload, chỉ hiện màn hình cho user bấm thủ công.
+      function takeBootReloadBudget(){
+        try{
+          var now = Date.now();
+          var raw = localStorage.getItem(BOOT_BUDGET_KEY);
+          var state = raw ? JSON.parse(raw) : null;
+          if(!state || typeof state.count !== 'number' || typeof state.firstAt !== 'number' || (now - state.firstAt) > BOOT_BUDGET_WINDOW_MS){
+            state = { count: 0, firstAt: now };
+          }
+          if(state.count >= BOOT_BUDGET_MAX) return false;
+          state.count += 1;
+          localStorage.setItem(BOOT_BUDGET_KEY, JSON.stringify(state));
+          return true;
+        }catch(_){
+          return true;
+        }
+      }
+
+
+      function showBootProblem(message){
+        try{
+          var root = document.getElementById('root');
+          if(!root) return;
+          root.innerHTML = ''+
+            '<div class="initial-loader" style="padding:24px;text-align:center">' +
+              '<div style="max-width:420px;background:#fff;border:1px solid #d1fae5;border-radius:16px;padding:20px;box-shadow:0 12px 40px rgba(15,23,42,.08)">' +
+                '<div class="spinner" style="margin:0 auto 14px"></div>' +
+                '<h1 style="font-size:18px;line-height:1.35;margin:0 0 8px;color:#0f172a">FUN.RICH đang làm sạch phiên bản cũ</h1>' +
+                '<p style="font-size:14px;line-height:1.55;margin:0 0 16px;color:#475569">' + message + '</p>' +
+                '<button id="fun-clean-boot" style="height:42px;border:0;border-radius:10px;background:#16a34a;color:#fff;font-weight:700;padding:0 16px;cursor:pointer">Tải lại bản sạch</button>' +
+              '</div>' +
+            '</div>';
+          var btn = document.getElementById('fun-clean-boot');
+          if(btn) btn.onclick = function(){
+            clearVolatileStorage();
+            Promise.all([unregisterServiceWorkers(), clearCaches()]).finally(function(){
+              window.location.replace(cleanUrl('__fun_rescue').toString());
+            });
+          };
+        }catch(_){}
+      }
+
+      function recoverBoot(reason, auto){
+        try { sessionStorage.setItem(BOOT_PROBLEM_KEY, String(reason || 'unknown')); } catch(_) {}
+        showBootProblem('Bé phát hiện trình duyệt còn giữ cache/phiên ví cũ nên app chưa boot được. Hệ thống sẽ tự tải lại một lần bằng bản sạch.');
+        if(!auto) return;
+        try{
+          if(sessionStorage.getItem(BOOT_RELOAD_KEY)) return;
+        }catch(_){}
+        // Ngân sách toàn cục (localStorage) — chống nhấp nháy khi tab mới liên tục được mở.
+        if(!takeBootReloadBudget()) return;
+        clearVolatileStorage();
+        try{ sessionStorage.setItem(BOOT_RELOAD_KEY, '1'); }catch(_){}
+        Promise.all([unregisterServiceWorkers(), clearCaches()]).finally(function(){
+          window.setTimeout(function(){
+            window.location.replace(cleanUrl('__fun_rescue').toString());
+          }, 350);
+        });
+      }
+
+      window.addEventListener('error', function(event){
+        var target = event && event.target;
+        if(target && target.tagName === 'SCRIPT') recoverBoot('entry-script-error', true);
+      }, true);
+
+      try{
+        var hasSW = 'serviceWorker' in navigator;
+        var controlled = hasSW && navigator.serviceWorker.controller;
+        var currentUrl = new URL(window.location.href);
+        var isRescue = RECOVERY_PARAMS.some(function(p){ return currentUrl.searchParams.has(p); });
+        var hasLegacyRecoveryUrl = currentUrl.searchParams.has('__fun_update') || currentUrl.searchParams.has('__fun_reload') || currentUrl.searchParams.has('__fun_hard');
+
+        // URL còn tham số recovery cũ (__fun_update/__fun_reload/__fun_hard):
+        // CHỈ dọn tham số tại chỗ bằng replaceState + gỡ SW/cache nền.
+        // Không reload thêm lần nữa — trước đây mỗi lần recovery lại kéo theo
+        // một full reload phụ, gây màn hình nhấp nháy liên tục.
+        if(hasLegacyRecoveryUrl){
+          try{ sessionStorage.setItem(RECOVERY_CLEAN_KEY, '1'); }catch(_){}
+          try{
+            window.history.replaceState(window.history.state, '', cleanUrl(null).toString());
+          }catch(_){}
+          unregisterServiceWorkers();
+          clearCaches();
+        }
+
+
+        if(controlled && !sessionStorage.getItem(SW_HARD_KEY)){
+          // Chỉ force-reload khi thực sự còn registration đang sống.
+          // iOS Safari + PWA standalone giữ `controller` truthy sau khi đã unregister
+          // → nếu không kiểm tra sẽ reload mỗi lần mở app (bug "app cứ tự refresh").
+          navigator.serviceWorker.getRegistrations().then(function(regs){
+            if(regs && regs.length > 0){
+              sessionStorage.setItem(SW_HARD_KEY, '1');
+              showBootProblem('Đang gỡ Service Worker cũ trước khi mở lại FUN.RICH.');
+              Promise.all([unregisterServiceWorkers(), clearCaches()]).finally(function(){
+                window.location.replace(cleanUrl('__sw_wiped').toString());
+              });
+            } else {
+              // Controller mồ côi — đánh dấu đã xử lý, không reload.
+              sessionStorage.setItem(SW_HARD_KEY, '1');
+            }
+          }).catch(function(){
+            sessionStorage.setItem(SW_HARD_KEY, '1');
+          });
+        }
+
+        if(hasSW && (isRescue || !localStorage.getItem(SW_DONE_KEY))){
+          unregisterServiceWorkers();
+          clearCaches();
+          localStorage.setItem(SW_DONE_KEY, '1');
+        }
+
+        if(currentUrl.searchParams.has('__sw_wiped')){
+          var clean = cleanUrl(null);
+          window.history.replaceState(window.history.state, '', clean.toString());
+        }
+        if(currentUrl.searchParams.has('__fun_cleaned')){
+          var cleanRecoveryUrl = cleanUrl(null);
+          window.history.replaceState(window.history.state, '', cleanRecoveryUrl.toString());
+        }
+      }catch(_){}
+
+      window.setTimeout(function(){
+        if(window.__FUN_MAIN_EXECUTED__) return;
+        recoverBoot('main-not-executed-timeout', true);
+      }, 20000);
+    })();
+    </script>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

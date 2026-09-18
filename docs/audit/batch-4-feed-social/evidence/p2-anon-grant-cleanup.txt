@@ -1,0 +1,98 @@
+B4 P2 — REVOKE quyền ghi thừa của anon trên nhóm bảng Batch 4 (2026-08-19)
+
+PHẠM VI: 68 bảng Feed/Chat/Reels/Live/Pet/Mystery Box.
+Trước khi vá: 65/68 bảng có anon = arwd (full: SELECT,INSERT,UPDATE,DELETE);
+  posts = SELECT (đã siết ở P1-5/Batch 3), pet_shop_orders + mystery_box_orders = NONE ghi (đã siết ở P0-1).
+Sau khi vá: 67/68 bảng chỉ còn SELECT (hoặc NONE), 1 ngoại lệ có chủ đích = video_downloads.
+
+NGOẠI LỆ CÓ CHỦ ĐÍCH (không REVOKE INSERT):
+  video_downloads — policy "log own download" WITH CHECK ((user_id IS NULL) OR (user_id = auth.uid()));
+  khách chưa đăng nhập tải video công khai vẫn ghi 1 dòng log (src/hooks/useDownloadVideo.ts).
+  Đã REVOKE UPDATE, DELETE ⇒ chỉ append, không sửa/xoá được.
+
+KIỂM TRA TRƯỚC KHI REVOKE: không policy nào của 67 bảng còn lại cho anon ghi.
+  Toàn bộ policy INSERT/UPDATE/DELETE có 'anon' trong roles chỉ gồm:
+    mystery_box_orders / pet_shop_orders : WITH CHECK false
+    email_verification_tokens / identity_verification_events : ALL WITH CHECK false
+    video_downloads : ngoại lệ nêu trên
+  Các policy roles={public} còn lại đều yêu cầu auth.uid()/has_role()/service_role ⇒ anon vốn đã bị RLS chặn.
+
+BẢNG QUYỀN SAU KHI VÁ (has_table_privilege('anon', ...)):
+call_participants                anon=SELECT
+call_sessions                    anon=SELECT
+chat_settings                    anon=SELECT
+chunked_recording_chunks         anon=SELECT
+chunked_recordings               anon=SELECT
+comments                         anon=SELECT
+conversation_participants        anon=SELECT
+conversations                    anon=SELECT
+creator_library                  anon=SELECT
+live_co_hosts                    anon=SELECT
+live_comments                    anon=SELECT
+live_messages                    anon=SELECT
+live_reactions                   anon=SELECT
+live_recording_chunks            anon=SELECT
+live_recordings                  anon=SELECT
+live_replays                     anon=SELECT
+live_session_events              anon=SELECT
+live_sessions                    anon=NONE
+livestreams                      anon=SELECT
+message_reactions                anon=SELECT
+message_reads                    anon=SELECT
+messages                         anon=SELECT
+mystery_box_definitions          anon=SELECT
+mystery_box_grant_audit          anon=SELECT
+mystery_box_inventory            anon=SELECT
+mystery_box_open_log             anon=SELECT
+mystery_box_orders               anon=NONE
+mystery_box_premium_grants       anon=SELECT
+mystery_box_rewards              anon=SELECT
+mystery_box_risk_log             anon=SELECT
+mystery_box_shop_config          anon=SELECT
+mystery_box_stats_daily          anon=SELECT
+pet_battle_leaderboard           anon=SELECT
+pet_battle_seasons               anon=SELECT
+pet_battles                      anon=SELECT
+pet_cheers                       anon=SELECT
+pet_cosmetics_catalog            anon=SELECT
+pet_cosmetics_owned              anon=SELECT
+pet_interactions                 anon=SELECT
+pet_risk_appeals                 anon=SELECT
+pet_risk_scores                  anon=SELECT
+pet_risk_signals                 anon=SELECT
+pet_shop_config                  anon=SELECT
+pet_shop_orders                  anon=NONE
+pet_states                       anon=SELECT
+pet_voice_lines                  anon=SELECT
+post_attachments                 anon=SELECT
+post_tags                        anon=SELECT
+posts                            anon=SELECT
+reactions                        anon=SELECT
+reel_bookmarks                   anon=SELECT
+reel_comment_likes               anon=SELECT
+reel_comments                    anon=SELECT
+reel_likes                       anon=SELECT
+reel_shares                      anon=SELECT
+reel_views                       anon=SELECT
+reels                            anon=SELECT
+reports                          anon=SELECT
+rtmp_stream_configs              anon=SELECT
+search_history                   anon=SELECT
+shared_posts                     anon=SELECT
+sticker_packs                    anon=SELECT
+stickers                         anon=SELECT
+streams                          anon=SELECT
+user_blocks                      anon=SELECT
+user_reel_preferences            anon=SELECT
+video_downloads                  anon=SELECT,INSERT
+video_upload_sessions            anon=SELECT
+
+VERIFY THẬT BẰNG ANON KEY (REST, không đăng nhập) — chặn ở TẦNG GRANT (42501 permission denied for table):
+  POST /rest/v1/comments      -> {"code":"42501","message":"permission denied for table comments"}
+  POST /rest/v1/reactions     -> {"code":"42501","message":"permission denied for table reactions"}
+  POST /rest/v1/pet_cheers    -> {"code":"42501","message":"permission denied for table pet_cheers"}
+  POST /rest/v1/reel_likes    -> {"code":"42501","message":"permission denied for table reel_likes"}
+  POST /rest/v1/live_comments -> {"code":"42501","message":"permission denied for table live_comments"}
+  GET  /rest/v1/posts?select=id&limit=1 -> 200 [{"id":"9d3fa996-1d4e-4b8b-8728-0395acf0d22e"}]  (khách vẫn đọc được nội dung công khai)
+
+LINTER: 334 issue nền, không phát sinh mới sau migration.

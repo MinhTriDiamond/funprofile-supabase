@@ -1,0 +1,16 @@
+REVOKE EXECUTE ON FUNCTION public.cron_unschedule_by_name(job_name text) FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.get_auth_user_id_by_email(p_email text) FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.process_wallet_change(p_user_id uuid, p_new_wallet text, p_old_wallet text, p_reason text, p_ip text, p_user_agent text, p_device_hash text) FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.apply_pet_xp_grant(_user_id uuid, _xp_delta integer, _source text) FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.apply_pet_event(_user_id uuid, _event pet_event_type) FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.mystery_box_grant(_user_id uuid, _box_code text, _source_event box_source, _source_ref text) FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.mystery_box_finalize_order(_order_id uuid, _tx_hash text, _from_address text) FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.mystery_box_fail_order(_order_id uuid, _reason text) FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.pet_shop_finalize_order(_order_id uuid, _tx_hash text, _from_address text) FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.pet_shop_fail_order(_order_id uuid, _reason text) FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.quest_set_progress(p_user_id uuid, p_quest_code text, p_set_to integer, p_evidence jsonb) FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.quest_record_progress(p_user_id uuid, p_quest_code text, p_increment integer, p_evidence jsonb) FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.check_user_cap_and_update(_user_id uuid, _action_type text, _reward_amount bigint) FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.unlock_wallet_reward(p_user_id uuid) FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.get_next_nonce(_user_id uuid) FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.pet_risk_recompute(_user_id uuid) FROM PUBLIC, anon, authenticated;

@@ -1,0 +1,18 @@
+Domain,Số Implementation,Danh sách file,SSOT hiện tại,Đề xuất SSOT M6
+Direction (in/out calc),3,"usePublicDonationHistory.ts:~160, mapRows.ts:~45, useTransactionHistory.ts:~40","RPC field direction (v_unified_transactions)","Xoá FE calc; dùng row.direction từ RPC"
+Amount Format,5,"HistoryTab.tsx:~80, WalletTransactionHistory.tsx:~60, ClaimHistoryModal.tsx:~20, GlobalGiftStatsModal.tsx:~15, UnifiedTransactionSummary.tsx:~12",src/lib/formatTokenAmount.ts,Dùng formatTokenAmount() toàn bộ; xoá 5 hàm local
+Status Label,5,"HistoryTab.tsx:~55 (StatusBadge), RecentTransactions.tsx:~15 (StatusBadge), exportDonations.ts:~40, mapRows.ts:~10, exportPdf.ts:~30",TransactionRow.statusBadge(),"Tạo util statusToLabel(status) riêng; import trong TransactionRow + Export"
+Summary Aggregation,3,"usePublicDonationHistory.ts:~60 (computeSummaryFromDonations), useDonationHistory.ts:75-90 (useDonationStats), HistoryTab.tsx:~140 (SummaryTable)","UnifiedTransactionSummary + useUnifiedRowsForSummary","Xoá 3 impl; dùng useUnifiedRowsForSummary"
+Export Logic,3,"exportDonations.ts (exportDonationsToCSV/PDF), ExportTransactionsMenu.tsx (mapDonationsToRows), TransactionExportMenu.tsx (rowsFromUnified)",TransactionExportMenu (rowsFromUnified),"Xoá exportDonations.ts + ExportTransactionsMenu wallet; dùng TransactionExportMenu"
+Mapper (DonationRecord → Row),2,"mapRows.ts (mapDonationsToRows), TransactionExportMenu.tsx (rowsFromUnified)",rowsFromUnified() trong TransactionExportMenu,Xoá mapDonationsToRows + src/utils/export/mapRows.ts
+Benefactor Logic,2,"get_benefactor_leaderboard RPC (legacy), useBenefactorLeaderboard.ts","Chưa đủ bằng chứng — RPC riêng chưa trong v_unified","Tạo get_unified_benefactor_stats từ v_unified_transactions"
+Honor Board,1,get_user_nstats (pplp table riêng),Chưa unified,Giữ pplp layer riêng — không thuộc tx architecture
+Leaderboard,2,"get_benefactor_leaderboard, get_recipient_leaderboard","Chưa unified","Phase M6D: unify dựa trên v_unified_transactions aggregate"
+Notification (tx-related),1,notifications table direct subscription,Không có unified notif hook,"Phase M6E: tạo useUnifiedNotifications wrapper"
+External Wallet / is_external,3,"useGiftHistory.ts:~15, useGiftBreakdown.ts:~60, mapRows.ts (is_external label)","TransactionRow.tsx:~40 (unified path)","Xoá FE filter; push vào RPC filter param"
+Pricing / price_usd,1,donations.price_usd_at_donation trong metadata,v_unified_transactions metadata.price_usd,Đã trong view; consumer cần đọc metadata JSON
+Counterparty Resolution,2,"usePublicDonationHistory.ts (enrich 6 cột ví), get_unified_counterparties RPC",get_unified_counterparties,Xoá FE enrich trong usePublicDonationHistory
+Search / Filter,2,"usePublicDonationHistory client-side filter (sent/received/swap/transfer), TransactionFilters (RPC-side via get_unified_counterparties)","TransactionFilters + RPC-side","Xoá client-side filter; dùng RPC params"
+Statistics / Global Stats,2,"get_donation_global_stats (legacy), get_unified_summary (unified)",get_unified_summary,"Phase M6C: migrate ExportCsvDialog + BenefactorsPage sang get_unified_summary"
+Dashboard (wallet center),1,WalletCenterContainer.tsx hybrid (get_user_nstats + reward_claims direct),Hybrid — chưa unified,Phase M6D
+Analytics,1,Chưa có analytics hook thống nhất,Chưa unified,Phase M6F

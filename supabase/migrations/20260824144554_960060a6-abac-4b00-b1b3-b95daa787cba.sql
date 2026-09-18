@@ -1,0 +1,2 @@
+REVOKE EXECUTE ON FUNCTION public.log_swap_failure(text, text, integer, uuid, text, integer, text, text, jsonb) FROM authenticated, anon, public;
+GRANT EXECUTE ON FUNCTION public.log_swap_failure(text, text, integer, uuid, text, integer, text, text, jsonb) TO service_role;

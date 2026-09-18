@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.enforce_btc_address_lock() FROM anon, authenticated, PUBLIC;

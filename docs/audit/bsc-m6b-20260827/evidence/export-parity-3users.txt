@@ -1,0 +1,40 @@
+EXPORT PARITY EVIDENCE — 2026-08-27
+Nguồn: psql production (PGHOST managed). Cửa sổ: donations created_at/occurred_at in [2026-08-01, 2026-09-01).
+
+=== 1. TỔNG SỐ TIỀN THEO TOKEN — donations cũ vs v_unified_transactions ===
+Định nghĩa "cũ": donations WHERE (sender_id=uid OR recipient_id=uid) AND (filter_status IS NULL OR <> 'filtered_spam')
+Định nghĩa "mới": v_unified_transactions WHERE user_id=uid AND source_table='donations'
+
+user            token chain old_c new_c old_amt                 new_amt                 diff
+angelhoangtydo  BNB   56    7     7     0.429                   0.429                   0.000
+angelhoangtydo  CAMLY 56    154   154   49163845                49163845                0
+angelhoangtydo  FUN   97    3     3     132428                  132428                  0
+angelhoangtydo  USDT  56    56    56    4779                    4779                    0
+angelkhanhi     CAMLY 56    67    67    57221991                57221991                0
+angelkhanhi     FUN   97    2     2     20998                   20998                   0
+angelkhanhi     USDT  56    58    58    7210.235483485775492318 7210.235483485775492318 0.000000000000000000
+angelthutrang   BNB   56    4     4     0.3555                  0.3555                  0.0000
+angelthutrang   CAMLY 56    70    70    47388670                47388670                0
+angelthutrang   FUN   97    4     4     111006.9                111006.9                0.0
+angelthutrang   USDT  56    53    53    5064.98                 5064.98                 0.00
+
+FULL OUTER JOIN → 0 dòng lệch, 0 dòng chỉ có một bên. Tổng theo token khớp TUYỆT ĐỐI.
+Tổng dòng: 220 (angelhoangtydo) / 131 (angelthutrang) / 127 (angelkhanhi) — khớp mốc test trước.
+
+=== 2. PHÉP TÍNH 1.683×2+196 ===
+Bất biến: legs = both_legs*2 + one_leg (luôn đúng theo cấu trúc view: 1 nhánh :out + 1 nhánh :in).
+Toàn bảng donations (loại spam): both=30281, one=2136 → formula=62698, actual=62698. Khớp.
+Snapshot theo cutoff (cửa sổ tháng 8):
+  <2026-08-26      : both=1577 one=193 legs=3347  (1577*2+193=3347 ✓)
+  <2026-08-26 12:00: both=1639 one=196 legs=3474  (✓)
+  <2026-08-27      : both=1666 one=196 legs=3528  (✓)
+  <2026-08-27 06:00: both=1684 one=196 legs=3564  (✓)
+Cặp (1683, 3560) KHÔNG tồn tại ở bất kỳ cutoff nào và vi phạm bất biến (1683*2+196=3562).
+KẾT LUẬN: 3.560 là lỗi đánh máy/đọc lệch snapshot, KHÔNG phải 2 dòng lệch thật.
+
+=== 3. PHÁT HIỆN MỚI (BLOCKER TRƯỚC ROLLOUT EXPORT) ===
+v_unified_transactions KHÔNG lọc filter_status='filtered_spam'.
+  donations: filter_status NULL = 32417, 'filtered_spam' = 40
+  legs (loại spam) = 62698 ; view donations rows = 62737 → chênh 39 legs (40 donation spam, 1 cái chỉ có 1 chân)
+Hook cũ usePublicDonationHistory CÓ loại spam. ⇒ Nếu thay consumer export ngay, file Excel sẽ thừa 39 dòng spam.
+Cần thêm cờ loại spam ở view/RPC (hoặc tham số _exclude_spam) TRƯỚC khi thay consumer đầu tiên.

@@ -1,0 +1,16 @@
+{
+  "tx_analyzed": 128,
+  "db_donation_rows": 122,
+  "db_transfer_rows": 73,
+  "rc_counts": {
+    "RC-15": 62,
+    "RC-16": 3,
+    "RC-11": 28,
+    "RC-12": 27,
+    "RC-17": 1
+  },
+  "unexplained": 0,
+  "missing_donations": 53,
+  "coinjoin_txs": 3,
+  "truth_table_rows": 316
+}

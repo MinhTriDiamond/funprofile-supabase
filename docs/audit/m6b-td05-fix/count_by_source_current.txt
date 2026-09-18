@@ -1,0 +1,7 @@
+   source_table   | count 
+------------------+-------
+ transactions     | 55335
+ donations        | 54431
+ wallet_transfers |  2161
+(3 rows)
+

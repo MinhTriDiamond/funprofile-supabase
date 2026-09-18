@@ -1,0 +1,1 @@
+ALTER TABLE public.reward_claims ALTER COLUMN user_id DROP NOT NULL;

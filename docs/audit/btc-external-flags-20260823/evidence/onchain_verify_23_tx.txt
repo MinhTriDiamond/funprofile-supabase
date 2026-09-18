@@ -1,0 +1,200 @@
+status: done (exit code 0)                                                                      
+command: bash -c 'export __LOVABLE_REAL_GIT=$(which git) && __SHIM=$(mktemp -d) && echo IyEvYmluL3NoClNLSVA9MApmb3IgYXJnIGluICIkQCI7IGRvCiAgaWYgWyAiJFNLSVAiID0gMSBdOyB0aGVuIFNLSVA9MDsgY29udGludWU7IGZpCiAgY2FzZSAiJGFyZyIgaW4KCS1jfC1DfC0tZ2l0LWRpcnwtLXdvcmstdHJlZXwtLW5hbWVzcGFjZSkgU0tJUD0xOyBjb250aW51ZSA7OwoJLSopIGNvbnRpbnVlIDs7CglhZGR8YXBwbHl8Y2hlcnJ5LXBpY2t8Y2hlY2tvdXR8Y29tbWl0fG1lcmdlfG12fHB1bGx8cHVzaHxyZWJhc2V8cmVjZWl2ZS1wYWNrfHJlc2V0fHJlc3RvcmV8cmV2ZXJ0fHJtfHNlbmQtcGFja3xzdGFzaHxzd2l0Y2gpCgkgIGVjaG8gImVycm9yOiAnZ2l0ICRhcmcnIGlzIG5vdCBhbGxvd2VkLiBEbyBub3QgYXR0ZW1wdCB0byBjaXJjdW12ZW50IHRoaXMuIiA+JjIKCSAgZXhpdCAxIDs7CgkqKSBicmVhayA7OwogIGVzYWMKZG9uZQpleGVjICIkX19MT1ZBQkxFX1JFQUxfR0lUIiAiJEAiCg== | base64 -d > "$__SHIM/git" && chmod +x "$__SHIM/git" && export PATH="$__SHIM:$PATH"\nexport PATH="/opt/sandbox-venv/bin:$PATH"\ncd /tmp/btcver && psql -P pager=off -At -F$'\''\t'\'' -c "\nSELECT lower(btc_address), username, '\''primary'\'' FROM profiles WHERE btc_address IS NOT NULL AND btc_address<>'\'''\''\nUNION ALL\nSELECT lower(a.address), p.username, '\''aux'\'' FROM profile_btc_aux_addresses a JOIN profiles p ON p.id=a.user_id WHERE a.verified=true;" > addr_map.tsv\nwc -l addr_map.tsv\npython3 - <<'\''EOF'\''\nimport json\nfrom collections import defaultdict\noc=json.load(open('\''/tmp/btcver/onchain.json'\''))\namap={}\nfor l in open('\''/tmp/btcver/addr_map.tsv'\''):\n    p=l.rstrip('\''\n'\'').split('\''\t'\'')\n    if len(p)>=2 and p[0]: amap.setdefault(p[0],[]).append(p[1]+'\'':'\''+p[2])\nrows=defaultdict(list)\nfor l in open('\''/tmp/btcver/all_btc_donations.tsv'\''):\n    f=l.rstrip('\''\n'\'').split('\''\t'\'')\n    if f[0] in oc: rows[f[0]].append(f)\nfor h,tx in oc.items():\n    print('\''='\''*100)\n    print('\''TX'\'',h[:16],'\''fee'\'',tx['\''fee'\''],'\''vouts'\'',len(tx['\''vout'\'']))\n    ins=set()\n    for vi in tx['\''vin'\'']:\n        a=(vi.get('\''prevout'\'') or {}).get('\''scriptpubkey_address'\'','\'''\'')\n        ins.add((a, '\'','\''.join(amap.get(a.lower(),['\''EXT'\'']))))\n    print('\'' VIN:'\'', ins)\n    for i,v in enumerate(tx['\''vout'\'']):\n        a=v.get('\''scriptpubkey_address'\'','\'''\'')\n        print(f"  vout[{i}] {v['\''value'\'']/1e8:.8f} {a} -> {'\'','\''.join(amap.get(a.lower(),['\''EXT'\'']))}")\n    for f in sorted(rows[h],key=lambda x:-float(x[5] or 0)):\n        print(f"  DB {f[1][:8]} {f[2]}->{f[3]} amt={float(f[4]):.8f} usd={f[5]} ext={f[6]} recip_addr={f[7][:20]}")\nEOF'
+pid: 9675
+144 addr_map.tsv
+====================================================================================================
+TX 034911019fecb501 fee 153 vouts 2
+ VIN: {('bc1q5chv7n6nr9llmrmhnet3523lpnd7547c78kdm7', 'EXT')}
+  vout[0] 0.09966706 bc1qwxwxeala2d6cmkdluw8x74atqhv9naxpvvlgrz -> EXT
+  vout[1] 0.00030000 bc1p48uc3kvvkhgnv2dg82qva44rceqp8ldt490mcq25ef2et36x6w0qykq39f -> murphy358:primary
+  DB f137f74c angelthienhanh68->angelkhanhi amt=0.00030000 usd=20.70 ext=f recip_addr=
+  DB 801c583f angelaivan->murphy358 amt=0.00030000 usd=20.70 ext=t recip_addr=bc1p48uc3kvvkhgnv2dg
+====================================================================================================
+TX 05a78ade04d044c9 fee 2500 vouts 13
+ VIN: {('bc1qm34lsc65zpw79lxes69zkqmk6ee3ewf0j77s3h', 'EXT')}
+  vout[0] 0.00128670 12N6Xq3UwVtHMzKSSEbPA5Jzh8pvE34VQA -> EXT
+  vout[1] 0.07575866 bc1qlz3ke362guh3vcwccv38tyazrm8xcz94q4wqxuvjepthhhepcjpquckzyl -> EXT
+  vout[2] 0.00018500 bc1qkkjlnplhvdj6hh8gsggpmhw5xtn7g8hptcxp3u -> EXT
+  vout[3] 0.05000000 bc1qxdh0lecexjqujmhkm0vcrpncthe7hkmv0693u5 -> EXT
+  vout[4] 0.00348500 bc1qpt527gapd2mhpdznv7p6ammjczy6ge0f0xqlje -> EXT
+  vout[5] 0.00491012 18BUEDyWYu94fdbeC9Kd7AdHvfDDEPVvmh -> EXT
+  vout[6] 0.00016228 bc1qkmfdj3j4cnyj0x3w5yjnda964u0r4waaeemep2 -> EXT
+  vout[7] 0.00028500 bc1qe3tmlrzdd6y29gsyjdc0cyr55gl9t45gxkvhmz -> EXT
+  vout[8] 0.00015729 bc1qh36nzxdvaal8pq009mg4nauq06ng4nv6jmrhm8 -> EXT
+  vout[9] 0.00256714 bc1q09c29fhn33ruvvlp8mmxt58lzjkt03hlj90w2d -> EXT
+  vout[10] 1.05145525 bc1qvsgm07sfn706np54swxmrmcgsvsvlfyc6a2se2 -> EXT
+  vout[11] 0.15091506 bc1qkh8fpt90ls5l9cue2pn2m3uq59z08hw804h882 -> angelthutrang:primary
+  vout[12] 38.79601966 bc1qm34lsc65zpw79lxes69zkqmk6ee3ewf0j77s3h -> EXT
+  DB 5f0ff7ab angelkim->angelthutrang amt=0.15091506 usd=9280.15 ext=t recip_addr=bc1qkh8fpt90ls5l9cue
+====================================================================================================
+TX 175bd4aa3b2f8d4f fee 141 vouts 2
+ VIN: {('bc1qrgfc5tnu8ck4evsuj54f0svjn7z66za4a4enw5', 'EXT')}
+  vout[0] 0.00070000 bc1qq7cjcc7q682ccruv0ssh4pldn9wy7vnuh2eq07 -> angelquynhhoa:primary
+  vout[1] 0.01719808 bc1qe4qnj2huslqnktsd3t7227m3dvn2xtfkfc7tan -> EXT
+  DB f66e4fd5 leminhtri->angelquynhhoa amt=0.00070000 usd=50.38 ext=t recip_addr=bc1qq7cjcc7q682ccruv
+  DB ac8a5df9 NULL->wallet_0x50ebe82ce05adf3dd amt=0.00070000 usd=50.38 ext=t recip_addr=
+====================================================================================================
+TX 191e6eb58f4e60c7 fee 281 vouts 2
+ VIN: {('bc1qa6e0ghg78krfntwe9549e5c69kccndgdl7jvvs', 'EXT')}
+  vout[0] 0.00002700 bc1qwulmdekmhnvdakzey7skv0qextexxuswlvcmxg -> angelaivan:primary
+  vout[1] 0.00004038 bc1qj0hfczuzu9dtz4mu5mt5jsetvv0st89tgh5wfe -> EXT
+  DB 9aad5e87 angelutopia->angelaivan amt=0.00002700 usd=1.97 ext=t recip_addr=bc1qwulmdekmhnvdakze
+  DB 3748afda angelutopia->angelthuha amt=0.00002700 usd=1.97 ext=f recip_addr=
+====================================================================================================
+TX 2f38060e1ff43938 fee 141 vouts 2
+ VIN: {('bc1q964gfr2033tt8n8ynycgsspzn4xrdt7298r8x8', 'EXT')}
+  vout[0] 1.01846548 bc1qyzqe6axkl0pcjq43dcnadcge6x2u3s4kudgzcc -> EXT
+  vout[1] 1.47027000 bc1qrq0v066l2nkp7mh4lmza2szmpfkawfx4kdn48j -> angeldieungoc:primary
+  DB f70f678a funtreasury->angeldieungoc amt=1.47027000 usd=98419.42 ext=t recip_addr=bc1qrq0v066l2nkp7mh4
+  DB 14ec1270 angelkim->angelgiau amt=1.01846548 usd=68175.76 ext=f recip_addr=
+====================================================================================================
+TX 3e0304e83838f8ee fee 142 vouts 2
+ VIN: {('bc1ptz7r9sczegjvt2xxjq7eudgwwzy7f5m2q6lf5tfa7fytzqaflu9s9phtfw', 'angelthanhtien:primary')}
+  vout[0] 0.00020000 bc1qaual39wcnl3hz5457vjhn2vueacurrxct5dqlq -> lanchi68:primary
+  vout[1] 0.02920863 bc1ptz7r9sczegjvt2xxjq7eudgwwzy7f5m2q6lf5tfa7fytzqaflu9s9phtfw -> angelthanhtien:primary
+  DB 53b287e1 angelthanhtien->lanchi68 amt=0.00020000 usd=14.59 ext=t recip_addr=bc1qaual39wcnl3hz545
+  DB b695f120 trianaresa4g272q->angelutopia amt=0.00020000 usd=14.59 ext=f recip_addr=
+====================================================================================================
+TX 43ac9df3a67e13e6 fee 154 vouts 2
+ VIN: {('bc1p7etam623v42h77v5mmj28c8vcdsmaffcxkk33l9v6j6cde2zlr6qm8m3mm', 'angelquan:primary')}
+  vout[0] 0.00001000 bc1p48uc3kvvkhgnv2dg82qva44rceqp8ldt490mcq25ef2et36x6w0qykq39f -> murphy358:primary
+  vout[1] 0.01103944 bc1p7etam623v42h77v5mmj28c8vcdsmaffcxkk33l9v6j6cde2zlr6qm8m3mm -> angelquan:primary
+  DB f20c68b5 angelquan->murphy358 amt=0.00001000 usd=0.73 ext=t recip_addr=bc1p48uc3kvvkhgnv2dg
+  DB 8153612a chimalo19->angelkhanhi amt=0.00001000 usd=0.73 ext=f recip_addr=
+====================================================================================================
+TX 4e6fdcc8cd2631ed fee 141 vouts 2
+ VIN: {('bc1qvffzpp8vxhvn3xwgc6hhqxaqvu6es0wfh30gsr', 'EXT')}
+  vout[0] 0.00300000 bc1qq7cjcc7q682ccruv0ssh4pldn9wy7vnuh2eq07 -> angelquynhhoa:primary
+  vout[1] 0.90865436 bc1qc8pv0c0pj94sxlkr9yql9crald26w2630mdwhm -> EXT
+  DB fad03ce3 wallet_0x50ebe82ce05adf3dd->angelthienhanh68 amt=0.90865436 usd=62684.00 ext=f recip_addr=
+  DB b888ef98 angelgiau->angelquynhhoa amt=0.00300000 usd=206.96 ext=t recip_addr=bc1qq7cjcc7q682ccruv
+  DB 05ec797d NULL->wallet_0x50ebe82ce05adf3dd amt=0.00300000 usd=206.96 ext=t recip_addr=
+====================================================================================================
+TX 57b45147b31c7038 fee 305 vouts 2
+ VIN: {('bc1qr5ehesycw0uyuyrgf8pesgfsnmu5kzyzs95fwe', 'EXT')}
+  vout[0] 0.00002800 bc1ptz7r9sczegjvt2xxjq7eudgwwzy7f5m2q6lf5tfa7fytzqaflu9s9phtfw -> angelthanhtien:primary
+  vout[1] 0.00001395 bc1qlh5x93yfgnhxcn7gqf8k6lspt8re8mwhfr2qct -> EXT
+  DB 57ad20eb nguyenthu688->angelthanhtien amt=0.00002800 usd=2.04 ext=t recip_addr=bc1ptz7r9sczegjvt2xx
+  DB c8635840 angelutopia->trianaresa4g272q amt=0.00002800 usd=2.04 ext=f recip_addr=
+  DB 2aa03db5 angelutopia->chimalo19 amt=0.00002800 usd=2.04 ext=f recip_addr=
+====================================================================================================
+TX 5eff4551438d8fd2 fee 154 vouts 2
+ VIN: {('bc1ptz7r9sczegjvt2xxjq7eudgwwzy7f5m2q6lf5tfa7fytzqaflu9s9phtfw', 'angelthanhtien:primary')}
+  vout[0] 0.00100000 bc1p48uc3kvvkhgnv2dg82qva44rceqp8ldt490mcq25ef2et36x6w0qykq39f -> murphy358:primary
+  vout[1] 0.02820709 bc1ptz7r9sczegjvt2xxjq7eudgwwzy7f5m2q6lf5tfa7fytzqaflu9s9phtfw -> angelthanhtien:primary
+  DB 6781e9ab angelthanhtien->murphy358 amt=0.00100000 usd=72.97 ext=t recip_addr=bc1p48uc3kvvkhgnv2dg
+  DB a8f452aa chimalo19->angelkhanhi amt=0.00100000 usd=72.97 ext=f recip_addr=
+====================================================================================================
+TX 6ffabbf4a0e04ab7 fee 281 vouts 2
+ VIN: {('bc1qr5ehesycw0uyuyrgf8pesgfsnmu5kzyzs95fwe', 'EXT')}
+  vout[0] 0.00002700 bc1qgxf7c63apt54h06g876y4ctq0me3jh86fta8sv -> father:primary
+  vout[1] 0.00027019 bc1qv07e3jz24rx6w6jxkh69035wvfqk4sk0hqkyyu -> EXT
+  DB 02dd057d angelutopia->angelthienhanh68 amt=0.00027019 usd=19.39 ext=f recip_addr=
+  DB 9154c0c2 nguyenthu688->father amt=0.00002700 usd=1.94 ext=t recip_addr=bc1qgxf7c63apt54h06g
+====================================================================================================
+TX 9da49e2a1b66c440 fee 141 vouts 2
+ VIN: {('bc1qdvgdjwr7mh6hdqhj7y6dmlwpu0lfmqtdaw7wc0', 'EXT')}
+  vout[0] 0.01789949 bc1qrgfc5tnu8ck4evsuj54f0svjn7z66za4a4enw5 -> EXT
+  vout[1] 0.00280000 bc1q7n89gq0w6rw042ran7pqqyq5ggtgxer942hhxw -> angelquangvu:primary
+  DB 7b0741d1 angelutopia->wallet_0x50ebe82ce05adf3dd amt=0.01789949 usd=1288.33 ext=f recip_addr=
+  DB 5fbdeaa6 angelutopia->chimalo19 amt=0.00280000 usd=201.53 ext=f recip_addr=
+  DB 59a11303 leminhtri->angelquangvu amt=0.00280000 usd=201.53 ext=t recip_addr=bc1q7n89gq0w6rw042ra
+====================================================================================================
+TX a197b1d21e6b01e2 fee 154 vouts 2
+ VIN: {('bc1ptz7r9sczegjvt2xxjq7eudgwwzy7f5m2q6lf5tfa7fytzqaflu9s9phtfw', 'angelthanhtien:primary')}
+  vout[0] 0.00100000 bc1p48uc3kvvkhgnv2dg82qva44rceqp8ldt490mcq25ef2et36x6w0qykq39f -> murphy358:primary
+  vout[1] 0.64062639 bc1ptz7r9sczegjvt2xxjq7eudgwwzy7f5m2q6lf5tfa7fytzqaflu9s9phtfw -> angelthanhtien:primary
+  DB 386c4e2d chimalo19->angelkhanhi amt=0.00100000 usd=68.86 ext=f recip_addr=
+  DB a8262692 angelthanhtien->murphy358 amt=0.00100000 usd=68.86 ext=t recip_addr=bc1p48uc3kvvkhgnv2dg
+====================================================================================================
+TX a5c0a4c4c05df0ef fee 141 vouts 2
+ VIN: {('bc1q47vk6dx3uhxdmj3l0zcfcqekhdu8smpgaquryj', 'angelthuha:primary')}
+  vout[0] 0.00256859 bc1q6g3n3ucjfm0c2kcq366q4rg04mvk6shcu0a48w -> EXT
+  vout[1] 0.00043000 bc1qfdx27jqfn604dmnzljylpxyh40pw2v3rzamepw -> leminhtri:primary
+  DB 09071e2f angelthuha->leminhtri amt=0.00043000 usd=28.78 ext=t recip_addr=bc1qfdx27jqfn604dmnz
+  DB f9cbfdca NULL->angelutopia amt=0.00043000 usd=28.78 ext=t recip_addr=
+====================================================================================================
+TX a783a642209afbc0 fee 153 vouts 2
+ VIN: {('bc1qf5nd7gwvrwcdcg5ngq42a83mry9hzjf2w5ue5p', 'EXT')}
+  vout[0] 0.00067424 bc1q5ag6jtymu0cf0w7gqad7aamx6pzn4ddwffwdmv -> EXT
+  vout[1] 0.00003000 bc1p48uc3kvvkhgnv2dg82qva44rceqp8ldt490mcq25ef2et36x6w0qykq39f -> murphy358:primary
+  DB f960d55e angelhoangtydo->angelkhanhi amt=0.00003000 usd=2.07 ext=f recip_addr=
+  DB a4f30acc angelhoangtydo->murphy358 amt=0.00003000 usd=2.07 ext=t recip_addr=bc1p48uc3kvvkhgnv2dg
+====================================================================================================
+TX b0b8709f1e785f89 fee 141 vouts 2
+ VIN: {('bc1q9urhwntx0turzd4c9murm7wkgedzvpsm2s0wwx', 'EXT')}
+  vout[0] 0.00004500 bc1qzlfcxsr5qzv46qzt6kudt0evpuy82tq9z8vnq9 -> angel_vinhnguyen:primary
+  vout[1] 0.00194820 bc1qdjakw0pq8ek0rteya0sguycvw0q5m972zlk2s5 -> EXT
+  DB d4f222c9 angelhoangtydo->angelutopia amt=0.00194820 usd=134.40 ext=f recip_addr=
+  DB beee258b angelhoangtydo->angel_vinhnguyen amt=0.00004500 usd=3.10 ext=t recip_addr=bc1qzlfcxsr5qzv46qzt
+====================================================================================================
+TX b6165632c5c552c2 fee 142 vouts 2
+ VIN: {('bc1ptz7r9sczegjvt2xxjq7eudgwwzy7f5m2q6lf5tfa7fytzqaflu9s9phtfw', 'angelthanhtien:primary')}
+  vout[0] 0.00080000 bc1qcme97v4ay24p8r5kl7lj2k3d938luf6h437qzz -> kieuphias:primary
+  vout[1] 0.63149029 bc1ptz7r9sczegjvt2xxjq7eudgwwzy7f5m2q6lf5tfa7fytzqaflu9s9phtfw -> angelthanhtien:primary
+  DB 0f6468a0 angelthanhtien->kieuphias amt=0.00080000 usd=56.89 ext=t recip_addr=bc1qcme97v4ay24p8r5k
+  DB e8668f1f trianaresa4g272q->angelutopia amt=0.00080000 usd=56.89 ext=f recip_addr=
+====================================================================================================
+TX be7ac9728fc7fc6a fee 141 vouts 2
+ VIN: {('bc1qd5whudnsxlprdl3rhvc5hl3x6lm7nzxalytspz', 'EXT')}
+  vout[0] 0.00280000 bc1qwulmdekmhnvdakzey7skv0qextexxuswlvcmxg -> angelaivan:primary
+  vout[1] 0.02070090 bc1qdvgdjwr7mh6hdqhj7y6dmlwpu0lfmqtdaw7wc0 -> EXT
+  DB 32436dd5 leminhtri->angelaivan amt=0.00280000 usd=201.53 ext=t recip_addr=bc1qwulmdekmhnvdakze
+  DB 7a6287a7 angelutopia->angelthuha amt=0.00280000 usd=201.53 ext=f recip_addr=
+====================================================================================================
+TX c258bb4231367f8f fee 142 vouts 2
+ VIN: {('bc1ptz7r9sczegjvt2xxjq7eudgwwzy7f5m2q6lf5tfa7fytzqaflu9s9phtfw', 'angelthanhtien:primary')}
+  vout[0] 0.00010000 bc1qg4zy8h7lmu2qt3a7ptm32plt5v6tvn069fdksq -> susu:primary
+  vout[1] 0.63319467 bc1ptz7r9sczegjvt2xxjq7eudgwwzy7f5m2q6lf5tfa7fytzqaflu9s9phtfw -> angelthanhtien:primary
+  DB 94e1f4eb angelthanhtien->susu amt=0.00010000 usd=7.20 ext=t recip_addr=bc1qg4zy8h7lmu2qt3a7
+  DB 1596ca76 trianaresa4g272q->angelthanhthuy amt=0.00010000 usd=7.20 ext=f recip_addr=
+====================================================================================================
+TX d01485d0e5102ed0 fee 5831 vouts 24
+ VIN: {('bc1qm34lsc65zpw79lxes69zkqmk6ee3ewf0j77s3h', 'EXT')}
+  vout[0] 4.99998500 1NBYWqtQvWmT7hzEB11XyGjHp4G177AVgz -> EXT
+  vout[1] 0.00543534 bc1qem79532v4yvfzw5fk6xl0z8w0xq46z73762fx6 -> EXT
+  vout[2] 0.00056932 bc1qrjslftgs45w5hrurnkachug37paz3lxpgthnnq -> EXT
+  vout[3] 0.00138291 bc1qf9j72wkdgg99knqnent4mezvqmag0n7hr5jkcg -> EXT
+  vout[4] 0.00303089 bc1q35raczl4xyjh365sn6hpctjrx9w9e4874q9yzd -> EXT
+  vout[5] 0.00343500 bc1qq7cjcc7q682ccruv0ssh4pldn9wy7vnuh2eq07 -> angelquynhhoa:primary
+  vout[6] 0.00263235 bc1qfnspmly976srh0888ja08nq2ccel04p60vhwfj -> EXT
+  vout[7] 0.04532961 3KwX8bCwdP2Ay4oCqjvuRoSAGVBYEJsfNk -> EXT
+  vout[8] 0.00724650 14BMmydqNU2gd9SrigwNGbQzRiQi34a4NS -> EXT
+  vout[9] 0.00425591 bc1q8yk3hdj2dp5fy4epze7ttwapucsps5r8qfzcet -> EXT
+  vout[10] 0.00034628 bc1qg4q5dguefe8u8lmjqgmjdpj2g9skaade7779yy -> EXT
+  vout[11] 0.12049438 bc1q5he9t5az0e8rve40wthp9lg4jxpytmxkfgjq0q -> EXT
+  vout[12] 0.00225284 bc1qua0ryanng45zntu0r8zvrtd6625l70qdhg7rnd -> EXT
+  vout[13] 0.00778719 bc1qnmqxu4hsyp8cqpzaeswcjdqfzggxsq3p4pl052 -> EXT
+  vout[14] 0.00550999 bc1qqt66tz9ny53033vsgheymqs7m9lep8nu7r4ycv -> EXT
+  vout[15] 1.97326675 bc1qs5ykq94wm2ynxuhflh652fe78d76yxn2r22lp5 -> EXT
+  vout[16] 0.20848200 bc1qsyy7f38p9y46r5w7ja57nxsn7245eggskezray -> EXT
+  vout[17] 0.01293204 bc1q9pmtt8me6cdrn6u3vwpv50kw7zahqefss0pahy -> EXT
+  vout[18] 0.49969479 bc1qex7avyw9yylvealxt9k63dhnfksgmsupsgn7fp -> EXT
+  vout[19] 0.05671507 bc1q4sxm6h0a9eqd9lgets9fwtmkkdstcfx7dugn7u -> EXT
+  vout[20] 0.00369313 1FpCfYATXHV33XPEAkaFCbSipejEGC3rdQ -> EXT
+  vout[21] 0.09813111 bc1q53a30f9sk4ly67l9fuypmcg7zhhahlk7x4e5rd -> EXT
+  vout[22] 0.06189481 bc1qtmxcrg2vtfeedm7908wwqyzgkdpc422wsv7vug -> EXT
+  vout[23] 22.77528035 bc1qm34lsc65zpw79lxes69zkqmk6ee3ewf0j77s3h -> EXT
+  DB c0cbbb38 angelkim->angelquynhhoa amt=0.00343500 usd=219.92 ext=t recip_addr=bc1qq7cjcc7q682ccruv
+====================================================================================================
+TX df81b101d831d97c fee 221 vouts 2
+ VIN: {('bc1qsjld6tmujwzp4s6slxeen9chnk4fvev2tekcfl', 'EXT'), ('bc1qguvx00yhstt5axpdfwtev88yr895cyhzct6z9q', 'EXT')}
+  vout[0] 0.00280000 bc1ptz7r9sczegjvt2xxjq7eudgwwzy7f5m2q6lf5tfa7fytzqaflu9s9phtfw -> angelthanhtien:primary
+  vout[1] 0.02658513 bc1qcscnyqpxk3yjpcp4zt5n8xf48sgh2hw2wxf92a -> EXT
+  DB f5456ff2 leminhtri->angelthanhtien amt=0.00280000 usd=201.53 ext=t recip_addr=bc1ptz7r9sczegjvt2xx
+  DB 7e841763 angelutopia->chimalo19 amt=0.00280000 usd=201.53 ext=f recip_addr=
+  DB c00778c8 angelutopia->trianaresa4g272q amt=0.00280000 usd=201.53 ext=f recip_addr=
+====================================================================================================
+TX ebb8759d0fb82244 fee 209 vouts 2
+ VIN: {('bc1qq3mf47xuq3x77pmyqma90ugdawcyfqr2xg4f9c', 'angellam:primary')}
+  vout[0] 0.00001400 bc1q25fyhp0gpz6c0680ysp6hej387z0k5ynne3f5m -> angelanhnguyet:primary
+  vout[1] 0.00049391 bc1qh8fwg3qgxy85j89ne53uwcs6rsvrpqpgv800yt -> EXT
+  DB b0de0902 NULL->angelthutrang amt=0.00049391 usd=33.06 ext=t recip_addr=
+  DB 37945835 angellam->angelanhnguyet amt=0.00001400 usd=0.94 ext=t recip_addr=bc1q25fyhp0gpz6c0680
+====================================================================================================
+TX f5725bd17c3b1ca7 fee 141 vouts 2
+ VIN: {('bc1qq3mf47xuq3x77pmyqma90ugdawcyfqr2xg4f9c', 'angellam:primary')}
+  vout[0] 0.00091959 bc1qua7ww633up3r6wr8aue2e0g6yawskp55sy3a4a -> EXT
+  vout[1] 0.00007900 bc1qca964ad3ew6femzgzd5ynnzy3pg5w63cpuw3l8 -> angelnguyenhoa:primary
+  DB b2bb1176 angellam->angelnguyenhoa amt=0.00007900 usd=5.29 ext=t recip_addr=bc1qca964ad3ew6femzg
+  DB d9df1cbe NULL->angelutopia amt=0.00007900 usd=5.29 ext=t recip_addr=

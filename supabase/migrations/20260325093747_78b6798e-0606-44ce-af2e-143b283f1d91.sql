@@ -1,0 +1,1 @@
+UPDATE profiles SET external_wallet_address = '0x449edF6ff95278eCaCd73D4BbE4bd34666EC062C' WHERE id = '5f9de7c5-0c80-49aa-8e1c-92d8058558e4' AND external_wallet_address IS NULL;

@@ -1,0 +1,26 @@
+flowchart TD
+    User([👤 User]) --> SwapTab[SwapTab.tsx\nhandleSwap]
+    SwapTab -->|"1. GET quote"| SwapQuoteEdge[swap-quote Edge\n0x.org proxy]
+    SwapQuoteEdge -->|"price data"| SwapTab
+    SwapTab -->|"2. requiresApproval"| Chain[BSC Chain]
+    SwapTab -->|"3. approveToken (if needed)"| Chain
+    SwapTab -->|"4. executeSwap via wagmi"| Chain
+    Chain -->|"tx_hash"| SwapTab
+    SwapTab -->|"5. INSERT swap_transactions"| DB[(swap_transactions)]
+    SwapTab -->|"toast.success"| UI[UI Feedback]
+    DB --> View[v_unified_transactions_primary\n⚠️ CHƯA XÁC NHẬN có swap chưa]
+    View --> UnifiedRPC[get_unified_transactions RPC]
+    UnifiedRPC --> HistoryHook[useUnifiedTransactionHistory]
+    
+    subgraph DEAD ["Dead/Backfill (không chạy)"]
+        BackfillSwap[backfill-swap-transactions]
+    end
+    BackfillSwap -.->|one-time backfill| DB
+
+    subgraph MISSING ["Missing (TD-12 — chưa có)"]
+        RecordSwapEdge[record-swap Edge\nchưa tồn tại]
+    end
+    
+    style DEAD fill:#fecaca
+    style MISSING fill:#fef9c3
+    style DB fill:#dbeafe

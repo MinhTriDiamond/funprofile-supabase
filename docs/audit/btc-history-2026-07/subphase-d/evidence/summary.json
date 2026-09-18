@@ -1,0 +1,18 @@
+{
+  "total_hd_input_back": 711,
+  "counts": {
+    "D_likely_valid": 447,
+    "C_review_new_policy": 113,
+    "A_exchange_certain": 77,
+    "B_suspect_high": 74
+  },
+  "A_exchange_certain": 77,
+  "B_suspect_high": 74,
+  "C_review_new_policy": 113,
+  "D_likely_valid": 447,
+  "users_impacted_by_A_or_B": 6,
+  "estimated_bad_donation_count": 393,
+  "estimated_bad_donation_btc": 2.00749578,
+  "max_tx_count_any_aux": 2262813,
+  "max_funded_btc_any_aux": 59354142.64376305
+}

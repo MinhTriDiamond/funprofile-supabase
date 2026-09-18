@@ -1,0 +1,21 @@
+surface,count_status,sum_status,usd_status,rank_status,primary_source,notes
+WalletHistory (TransactionHistoryPage),✅,✅,⚠,N/A,get_unified_transactions RPC,USD từ useTokenPrices client-side — FALLBACK_PRICES khi offline
+ProfileHistory (DonationsPage),⚠,⚠,⚠,N/A,usePublicDonationHistory hook (client 3×SELECT),DUP-01 — logic trùng với useGiftBreakdown; không dùng unified RPC
+TransactionHistoryPage (admin),✅,✅,⚠,N/A,get_unified_transactions RPC,Dùng unified RPC tốt; USD vẫn từ client token price
+DonationsPage (user public),⚠,⚠,⚠,N/A,usePublicDonationHistory + useGiftBreakdown,DUP-01/DUP-02 — 2 hooks tính cùng data; transactions reconciliation bị bỏ sót
+RecentTransactions (Feed widget),⚠,N/A,N/A,N/A,SELECT donations trực tiếp (chưa xác nhận),Chưa đủ evidence — cần kiểm tra component
+WalletCenter (WalletCenterContainer),⚠,⚠,N/A,N/A,get_my_rewards RPC + client .reduce() DUP-04,Claim total tính 2 lần: RPC + client reduce
+Benefactors (Donor leaderboard),✅,✅,⚠,✅,get_benefactor_leaderboard RPC,USD từ token_price_history server-side; SSOT tốt nhất hiện tại
+Recipient Leaderboard,✅,✅,⚠,✅,get_recipient_leaderboard RPC,Tương tự Benefactors — USD method chưa rõ (migration SQL chưa đọc được)
+Honor Board (CoverHonorBoard),✅,N/A,N/A,N/A,get_user_honor_stats RPC,Gọi RPC 2 lần trong cùng component — nên dùng 1 queryKey chung
+Founder Dashboard (Overview),✅,✅,N/A,N/A,get_founder_overview_stats RPC,SSOT tốt — chỉ cần snapshot delta
+Founder Dashboard (Economy),⚠,⚠,N/A,N/A,get_founder_economy_stats RPC + client .reduce() DUP-08,daily_flow được slice+reduce client-side — nên push vào SQL
+Founder Dashboard (PPLP),⚠,⚠,N/A,⚠,SELECT pplp_v2_validations + client .reduce() DUP-08,Direct table SELECT — cần RPC get_founder_pplp_stats
+Admin Dashboard (BlockchainTab),⚠,⚠,N/A,N/A,SELECT reward_claims + client .reduce() DUP-04,Cùng logic với WalletCenter — nên dùng chung RPC
+Treasury Public,❌,❌,❌,N/A,Chưa xác nhận — không tìm thấy component rõ ràng,Cần thêm evidence trong M6D
+Treasury Admin,❌,❌,❌,N/A,Chưa xác nhận,Cần thêm evidence trong M6D
+Analytics (ContentStats),⚠,⚠,N/A,N/A,get_content_stats_grouped_vn + client .reduce() DUP-09,grandTotal tính client-side — nên SQL SUM
+Export Excel,⚠,⚠,⚠,N/A,UnifiedTransactionRow[] client SUM (exportExcel.ts:65-85),Client-side SUM trên data đã fetch — OK nếu data đầy đủ
+Export PDF,❌,❌,❌,N/A,Chưa xác nhận — không tìm thấy,Cần thêm evidence
+Notification aggregates,❌,❌,❌,N/A,Chưa xác nhận,Cần thêm evidence trong M6D
+Feed stats (GlobalGiftStatsModal),⚠,✅,⚠,N/A,RPC data + useTokenPrices client-side,priceMap override BTC→BTCB/BNB→WBNB (GlobalGiftStatsModal.tsx:78-90) — inconsistent với RPC

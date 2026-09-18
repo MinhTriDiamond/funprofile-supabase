@@ -1,0 +1,14 @@
+token_symbol,price_source,rows,sum_usd
+BNB,historical,447,13692.91
+BNB,reference,910,63013.30
+BTC,historical,429,850327.31
+BTC,reference,121,6987459.25
+BTCB,historical,6,48053.86
+CAMLY,historical,15901,238450.62
+CAMLY,reference,3980,482418143.07
+CAMLY,,3,0.00
+FUN,testnet_skip,1558,0.00
+TONCOIN,unpriced_legacy,1,0.00
+USDT,historical,3693,143637.63
+USDT,reference,866,80628.56
+USDT,,3,0.00

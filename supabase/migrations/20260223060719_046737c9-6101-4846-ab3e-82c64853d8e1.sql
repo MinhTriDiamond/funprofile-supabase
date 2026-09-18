@@ -1,0 +1,1 @@
+ALTER TABLE public.notifications ADD COLUMN metadata JSONB DEFAULT NULL;

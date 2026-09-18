@@ -1,0 +1,5 @@
+=== Grep 1: forbidden literals in statistics/ ===
+(no matches — PASS)
+
+=== Grep 2: forbidden imports in statistics/ ===
+(no matches — PASS)

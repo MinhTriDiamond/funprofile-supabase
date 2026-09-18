@@ -1,0 +1,1 @@
+DROP FUNCTION IF EXISTS public.get_unified_transactions(uuid,text,text,text,text,text,timestamptz,timestamptz,text,int,int);

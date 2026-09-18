@@ -1,0 +1,7 @@
+         category          | count 
+---------------------------+-------
+ reconciliation_bnb        |   299
+ reconciliation_bep20_usdt |   269
+ reconciliation_btc        |    22
+(3 rows)
+

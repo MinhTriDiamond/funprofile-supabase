@@ -1,0 +1,17 @@
+== Baseline (target user 80c0a487..., 1906 rows in view) ==
+
+Q1: SELECT COUNT(*) FROM v_unified_transactions_primary WHERE user_id=X
+- Total: 874ms | Buffers hit: 223,560
+- Bottleneck: Nested Loop Anti Join on transactions t vs donations d + wallet_transfers w
+  = 730-762ms, ~214,404 buffers on that sub-plan alone
+
+Q2: SELECT * FROM v_unified_transactions_primary WHERE user_id=X ORDER BY occurred_at DESC LIMIT 50
+- Total: 872ms | Buffers hit: 223,470
+- Same anti-join bottleneck; LIMIT cannot push through WindowAgg.
+
+Root cause:
+- tx CTE filter:
+    WHERE NOT EXISTS (donations WHERE lower(d.tx_hash)=lower(t.tx_hash) AND d.chain_id=t.chain_id)
+      AND NOT EXISTS (wallet_transfers WHERE lower(w.tx_hash)=lower(t.tx_hash) AND w.chain_id=t.chain_id AND w.user_id=t.user_id)
+- No btree index on (lower(tx_hash), chain_id) on donations/wallet_transfers ⇒
+  Postgres picks Nested Loop Anti Join, re-scanning heaps per outer row.

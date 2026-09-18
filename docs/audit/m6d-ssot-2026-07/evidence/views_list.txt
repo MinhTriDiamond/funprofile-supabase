@@ -1,0 +1,6 @@
+            viewname            
+--------------------------------
+ v_unified_transactions_primary
+ v_unified_transactions
+(2 rows)
+

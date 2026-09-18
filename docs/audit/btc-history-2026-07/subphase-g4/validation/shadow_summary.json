@@ -1,0 +1,68 @@
+{
+  "shadow_write_stats": {
+    "cache_inserted": 4,
+    "review_inserted": 0,
+    "semantic_updated": 0,
+    "semantic_inserted": 5
+  },
+  "metrics_agg": {
+    "total_inputs": 5,
+    "total_outputs": 19,
+    "resolved_inputs": 0,
+    "resolved_outputs": 3,
+    "unknown_addresses": 16,
+    "change_outputs": 2,
+    "donation_outputs": 3,
+    "transfer_outputs": 0,
+    "review_outputs": 0,
+    "coinjoins": 0
+  },
+  "timings_ms": {
+    "fetch": 441.326676,
+    "resolve": 131.32683499999996,
+    "classify": 0.6145950000000084,
+    "persist": 49.40570500000001,
+    "total": 810.438492
+  },
+  "per_tx": {
+    "1da80ffa82575130fa7f9f9c42b0223d973a13ca562f96a173dd240113be8559": {
+      "v2_flows": 2,
+      "v2_donations": 0,
+      "v2_change": 0,
+      "v2_review": 0,
+      "coinjoin": false,
+      "legacy_donations": 2
+    },
+    "2f38060e1ff43938338cf853c86b1fcdf0635032a487fef3892bc3d08cae3b8c": {
+      "v2_flows": 2,
+      "v2_donations": 1,
+      "v2_change": 0,
+      "v2_review": 0,
+      "coinjoin": false,
+      "legacy_donations": 2,
+      "legacy_transfers": 2
+    },
+    "05a78ade04d044c9179b381566fad7cbcc4d0b8eb2df47550433f18b42a82935": {
+      "v2_flows": 13,
+      "v2_donations": 1,
+      "v2_change": 1,
+      "v2_review": 0,
+      "coinjoin": false,
+      "legacy_donations": 1,
+      "legacy_transfers": 1
+    },
+    "40f8c0567fff6d53c17d2ae47d134ae61795c8de761a0e9160138d2c39bb01d3": {
+      "v2_flows": 2,
+      "v2_donations": 1,
+      "v2_change": 1,
+      "v2_review": 0,
+      "coinjoin": false,
+      "legacy_donations": 1,
+      "legacy_transfers": 1
+    }
+  },
+  "legacy_donation_rows": 6,
+  "legacy_transfer_rows": 4,
+  "v2_semantic_rows": 19,
+  "note": "Aux addresses ch\u01b0a migrate v\u00e0o btc_ownership_snapshot \u21d2 parser v2 ch\u1ec9 resolve \u0111\u01b0\u1ee3c owner qua profiles.btc_address (primary). Diff donation count vs legacy l\u00e0 expected; s\u1ebd kh\u1edbp 100% sau G5 discovery+backfill."
+}

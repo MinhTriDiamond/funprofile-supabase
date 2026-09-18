@@ -1,0 +1,12 @@
+source_table,token_symbol,chain,c
+donations,FUN,bsc_testnet,2893
+donations,CAMLY,bsc,242
+transactions,CAMLY,bsc,23
+donations,BNB,bsc_testnet,20
+donations,USDT,bsc,12
+transactions,USDT,bsc,9
+donations,CAMLY,bsc_testnet,2
+wallet_transfers,USDT,bsc,2
+donations,BTC,btc,1
+transactions,FUN,bsc_testnet,1
+wallet_transfers,CAMLY,bsc,1

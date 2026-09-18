@@ -1,0 +1,1 @@
+GRANT INSERT, SELECT, UPDATE, DELETE ON public.btc_blocktime_staging_20260621 TO sandbox_exec;

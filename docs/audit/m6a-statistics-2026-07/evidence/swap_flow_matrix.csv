@@ -1,0 +1,7 @@
+producer,file,function,db_write,rpc_edge_call,edge,notification,history,feed,evidence
+SwapTab (FE Direct — Primary),src/components/wallet/SwapTab.tsx,handleSwap(),swap_transactions INSERT,swap-quote edge (GET 0x quote proxy),swap-quote/index.ts (quote only — không write DB),toast.success() chỉ FE,qua v_unified_transactions (nếu view bao gồm),KHÔNG tạo post,SwapTab.tsx:193-215
+backfill-swap-transactions (Dead),supabase/functions/backfill-swap-transactions/index.ts,handler(),swap_transactions INSERT,Không,backfill-swap-transactions/index.ts,Không,N/A — backfill,N/A,M6A audit: Dead/Backfill
+backfill-wallet-transfers (liên quan),supabase/functions/backfill-wallet-transfers/index.ts,handler(),wallet_transfers INSERT,Không,backfill-wallet-transfers/index.ts,Không,N/A — backfill,N/A,M6A audit: Dead/Backfill
+swap-quote (Edge — Quote Only),supabase/functions/swap-quote/index.ts,handler(),KHÔNG write DB,0x.org API proxy,swap-quote/index.ts,Không,N/A,N/A,swap-quote/index.ts:1-60
+useGiftBreakdown (FE — Read swap),src/hooks/useGiftBreakdown.ts,queryFn(),KHÔNG write,SELECT swap_transactions,Không,Không,GiftBreakdownDialog,Không,useGiftBreakdown.ts:~50-80
+usePublicDonationHistory (FE — Read swap),src/hooks/usePublicDonationHistory.ts,fetchDonations(),KHÔNG write,SELECT swap_transactions,Không,Không,HistoryTab,Không,usePublicDonationHistory.ts:~200-240

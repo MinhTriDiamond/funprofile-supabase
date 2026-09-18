@@ -1,0 +1,3 @@
+address,username,classification,tx_count,funded_btc,broad_don_count,broad_don_btc,top5_tx_hash,top5_recipients,suggested_verdict,reviewer_verdict,reviewer_note
+bc1qwvu3uw3p3zw79j6xlw57f6y5r8gmeq9e0kw2lz,father,B_suspect_high,2,19.50348389,0,0.0,"","",needs_manual,"",""
+bc1q2z09fduplj60pp45z6sx666pednannjlv0f6u4,father,B_suspect_high,2,17.79855274,0,0.0,"","",needs_manual,"",""

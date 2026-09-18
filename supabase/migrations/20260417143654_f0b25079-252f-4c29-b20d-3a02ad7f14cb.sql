@@ -1,0 +1,1 @@
+UPDATE public.donations SET amount = '0.000028' WHERE id = '251bc6f5-8723-48c6-bcf9-84fd7041f0f4' AND amount = '200000';

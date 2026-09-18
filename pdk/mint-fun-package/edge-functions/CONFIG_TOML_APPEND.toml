@@ -1,0 +1,71 @@
+# Edge Function config bổ sung cho supabase/config.toml của LoveHUB
+# Copy toàn bộ block dưới đây vào cuối supabase/config.toml (chỉ 1 file duy nhất).
+# Các function public (không verify JWT):
+
+[functions.pplp-attester-sign]
+verify_jwt = false
+
+[functions.pplp-auto-submit]
+verify_jwt = false
+
+[functions.pplp-batch-processor]
+verify_jwt = false
+
+[functions.pplp-epoch-snapshot]
+verify_jwt = false
+
+[functions.pplp-v25-aggregate]
+verify_jwt = false
+
+[functions.pplp-v25-vvu-calculate]
+verify_jwt = false
+
+[functions.pplp-v25-intent-calculator]
+verify_jwt = false
+
+[functions.pplp-v25-impact-calculator]
+verify_jwt = false
+
+[functions.pplp-v25-stability-calculator]
+verify_jwt = false
+
+[functions.pplp-v25-tier-assigner]
+verify_jwt = false
+
+[functions.pplp-v25-backfill]
+verify_jwt = false
+
+[functions.pplp-recovery-run]
+verify_jwt = false
+
+[functions.pplp-remint-stale]
+verify_jwt = false
+
+[functions.pplp-resplit-orphan-parents]
+verify_jwt = false
+
+[functions.pplp-split-stuck-throttled]
+verify_jwt = false
+
+# Các function user-facing (auto verify JWT trong code):
+
+[functions.pplp-evaluate]
+verify_jwt = false
+
+[functions.pplp-mint-fun]
+verify_jwt = false
+
+[functions.pplp-micro-preview]
+verify_jwt = false
+
+[functions.pplp-v25-mint-preview]
+verify_jwt = false
+
+[functions.pplp-v25-params]
+verify_jwt = false
+
+[functions.pplp-backlog-status]
+verify_jwt = false
+
+[functions.pplp-backlog-history]
+verify_jwt = false

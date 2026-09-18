@@ -1,0 +1,17 @@
+screen,route_or_component,file,datasource,hook,status
+WalletHistoryPage,/wallet/history,src/pages/WalletHistoryPage.tsx,RPC get_unified_transactions,useUnifiedTransactionHistory,Unified
+ProfileHistoryPage,/profile/:username/history,src/pages/ProfileHistoryPage.tsx,RPC get_unified_transactions,useUnifiedTransactionHistory,Unified
+DonationsPage (unified branch),/donations (flag ON),src/pages/Donations.tsx,RPC get_unified_transactions,useUnifiedTransactionHistory,Unified
+DonationsPage (legacy branch),/donations (flag OFF),src/pages/Donations.tsx,SystemDonationHistory → useAdminDonationHistory,useAdminDonationHistory,Legacy
+TransactionHistoryPage (shell),embedded,src/components/transactions/TransactionHistoryPage.tsx,RPC get_unified_transactions,useUnifiedTransactionHistory,Unified
+RecentTransactions (unified branch),WalletCenter (flag ON),src/components/wallet/RecentTransactions.tsx,RPC get_unified_transactions,useUnifiedTransactionHistory (via RecentUnifiedTransactions),Unified
+RecentTransactions (legacy branch),WalletCenter (flag OFF),src/components/wallet/RecentTransactions.tsx,donations + transactions tables,useTransactionHistory,Legacy
+WalletTransactionHistory (popup),Profile popup (flag OFF),src/components/profile/WalletTransactionHistory.tsx,donations + wallet_transfers + swap_transactions,usePublicDonationHistory,Legacy
+ProfileHistoryEntry (legacy fallback),ProfileHeader (flag OFF),src/components/profile/ProfileHistoryEntry.tsx,same as WalletTransactionHistory,usePublicDonationHistory,Legacy
+HistoryTab (wallet tabs),/wallet > tab Lịch sử,src/components/wallet/tabs/HistoryTab.tsx,donations + wallet_transfers + swap_transactions,usePublicDonationHistory,Legacy
+DonationHistoryTab (wallet tabs),/wallet > tab Quà tặng,src/components/wallet/DonationHistoryTab.tsx,donations table direct,useDonationHistory,Legacy
+DonationHistoryAdminTab,Admin > tab Donations,src/components/admin/DonationHistoryAdminTab.tsx,donations table direct,useAdminDonationHistory,Legacy
+AdminFinanceDonationsTab,Admin > Finance Donations,src/components/admin/FinanceDonationsTab.tsx,donations table (via admin hook),useAdminDonationHistory,Legacy
+BenefactorsPage leaderboard,/benefactors,src/pages/Benefactors.tsx,RPC get_benefactor_leaderboard + get_donation_global_stats,useBenefactorLeaderboard,Legacy/Hybrid
+TreasuryPublicPage,/treasury,src/pages/TreasuryPublicPage.tsx,useTreasuryPublicInflows (separate),useTreasuryPublicInflows,Legacy
+ClaimHistoryModal,Feed > Claim,src/components/feed/ClaimHistoryModal.tsx,claim_rewards table direct,useQuery direct,Legacy

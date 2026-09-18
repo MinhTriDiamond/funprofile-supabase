@@ -1,0 +1,1 @@
+UPDATE profiles SET is_banned = true, reward_status = 'banned' WHERE id IN ('7c42ea08-9f37-4fbd-9a3c-ed74d8f04fc1', 'f3098f9f-4de8-48f5-a4a0-0b1f0a3412e5');

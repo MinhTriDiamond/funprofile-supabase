@@ -1,0 +1,48 @@
+M6B — Preview dry-run mở rộng whitelist nhánh `transactions` của v_unified_transactions
+Ngày: 2026-08-27 (UTC)
+
+## Nguyên nhân gap (57 dòng)
+Điều kiện WHERE nhánh `transactions` hiện tại CHỈ whitelist:
+  (upper(token_symbol)='BTC' AND chain_id=0)
+  OR (chain_id=56 AND upper(token_symbol)='USDT')
+  OR (chain_id=56 AND upper(token_symbol)='BNB' AND token_address IS NULL)
+
+⇒ Không có nhánh nào cho CAMLY (chain 56/137) và FUN (chain 97).
+Dữ liệu nguồn KHÔNG lỗi: 57 dòng đều tồn tại đủ trong `transactions`, chỉ bị view loại ra.
+
+Phân bố 57 dòng:
+  CAMLY chain 56, token_address NULL                             : 38
+  CAMLY chain 56, token_address 0x0910...e413 (checksum)          : 12
+  CAMLY chain 56, token_address 0x0910...e413 (lowercase)         : 3
+  FUN   chain 97, token_address 0x39A1...0CD6                     : 3
+  CAMLY chain 137, token_address NULL                             : 1
+Khoảng thời gian: 2025-12-04 → 2026-06-13.
+
+## Giá trị ước lượng
+CAMLY ≈ 6.293.659 CAMLY (tổng 54 dòng CAMLY)
+FUN   ≈ 1.148 FUN (3 dòng, chain 97 = testnet)
+Không có BTC/USDT/BNB. Không ảnh hưởng báo cáo USD trọng yếu
+(CAMLY là token nội bộ giá rất nhỏ; FUN chain 97 là testnet).
+
+## Dry-run (CHƯA áp dụng)
+Whitelist đề xuất = whitelist cũ
+  OR (upper(token_symbol)='CAMLY' AND chain_id IN (56,137))
+  OR (upper(token_symbol)='FUN'   AND chain_id IN (56,97))
+
+Kết quả SELECT mô phỏng trên toàn bảng `transactions` (điều kiện thiếu counterpart
+donations/wallet_transfers giữ nguyên):
+
+ old_rows | new_rows | added_rows | removed_rows | still_excluded
+----------+----------+------------+--------------+----------------
+     1118 |     1175 |         57 |            0 |              0
+
+⇒ Đúng 57 dòng xuất hiện thêm, 0 dòng bị mất, 0 dòng còn bị loại. Không kéo dòng ngoài ý muốn.
+
+## ĐÃ ÁP DỤNG (CTO Confirm 2026-08-27) — phương án 54 dòng, LOẠI chain 97
+Whitelist thêm: CAMLY chain_id IN (56,137) · FUN chain_id = 56 (KHÔNG có 97).
+Kết quả thật sau CREATE OR REPLACE VIEW:
+ old_rows | new_rows | added_rows | removed_rows | chain97_in_view
+----------+----------+------------+--------------+-----------------
+     1118 |     1172 |         54 |            0 |               0
+Phân bố nhánh transactions trong view: USDT56=637 · BNB56=446 · CAMLY56=53 · BTC0=35 · CAMLY137=1.
+3 dòng FUN chain 97 (testnet) giữ nguyên trong bảng `transactions`, không lên view/export production.

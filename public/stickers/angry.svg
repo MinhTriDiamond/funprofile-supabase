@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  <circle cx="60" cy="60" r="56" fill="#FF6B6B" stroke="#CC3333" stroke-width="3"/>
+  <!-- angry eyes -->
+  <circle cx="42" cy="52" r="6" fill="#333"/>
+  <circle cx="78" cy="52" r="6" fill="#333"/>
+  <!-- angry eyebrows -->
+  <path d="M28 36 L52 44" stroke="#333" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+  <path d="M92 36 L68 44" stroke="#333" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+  <!-- angry mouth -->
+  <path d="M38 80 Q60 70 82 80" stroke="#333" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+</svg>

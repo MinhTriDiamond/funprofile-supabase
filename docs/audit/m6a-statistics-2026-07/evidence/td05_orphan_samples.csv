@@ -1,0 +1,8 @@
+note,source,suspected_source,evidence
+"Không có quyền truy cập SELECT trực tiếp vào bảng transactions qua psql trong môi trường audit read-only. Cần quyền DB admin hoặc Supabase Dashboard.","—","—","Audit chỉ có code-read access"
+"Producer 1: wallet-reconciliation-cron insert BTC rows","supabase/functions/wallet-reconciliation-cron/index.ts:196-209","chain=BTC / token_symbol=BTC / status=confirmed|pending","file:196-209"
+"Producer 2: wallet-reconciliation-cron insert USDT rows","supabase/functions/wallet-reconciliation-cron/index.ts:295-301","chain=bep20_usdt / token_symbol=USDT / status=confirmed","file:295-301"
+"Producer 3: wallet-reconciliation-cron insert BNB rows","supabase/functions/wallet-reconciliation-cron/index.ts:~310","chain=bnb / token_symbol=BNB / status=confirmed","file:~310"
+"Producer 4: approve-claim insert claim reward","supabase/functions/approve-claim/index.ts:256-284","metadata.type=claim_reward / token=CAMLY","file:256-284"
+"Idempotency: check-before-insert (non-atomic) để dedup tx_hash+user_id+from+to","supabase/functions/wallet-reconciliation-cron/index.ts:70-79","race condition — xem TD-10","file:70-79"
+"Kết luận: transactions KHÔNG phải projection của donations/wallet_transfers/swap_transactions","—","Loại giao dịch: on-chain reconciliation (BTC/USDT/BNB) + claim_reward","evidence: 2 producers riêng biệt"

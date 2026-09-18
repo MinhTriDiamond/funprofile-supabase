@@ -1,0 +1,1 @@
+UPDATE public.live_sessions SET status='processing', recording_status='stopped', archive_status='pending', archive_error=NULL, error_message=NULL, recording_error=NULL, cleanup_attempts=0, updated_at=now() WHERE mode='agora_webcam' AND status='failed' AND created_at > now() - interval '6 hours' AND recording_sid IS NOT NULL;

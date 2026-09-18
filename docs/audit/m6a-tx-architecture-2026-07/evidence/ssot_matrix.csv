@@ -1,0 +1,20 @@
+Module,Surface/File,Dùng v_unified_transactions,Dùng 4 RPC Unified,Status,Ghi chú
+Wallet History,WalletHistoryPage,✅,✅,✅ Unified,Flag ON luôn
+Profile History,ProfileHistoryPage,✅,✅,✅ Unified,Flag ON luôn
+Recent Tx,RecentTransactions,⚠️,⚠️,⚠️ Hybrid,Flag-gated; flag OFF → Legacy useTransactionHistory
+Dashboard / Summary,UnifiedTransactionSummary,✅,✅,✅ Unified,Dùng useUnifiedRowsForSummary
+History (Wallet tab),HistoryTab,❌,❌,❌ Legacy,usePublicDonationHistory + direct table
+Donation Tab,DonationHistoryTab,❌,❌,❌ Legacy,useDonationHistory direct
+Export (Unified),TransactionExportMenu,✅,✅,✅ Unified,get_unified_transactions trực tiếp
+Export (Legacy wallet),ExportTransactionsMenu,❌,❌,❌ Legacy,mapDonationsToRows từ donations table
+Benefactor Board,BenefactorsPage,❌,❌,❌ Legacy,get_benefactor_leaderboard + get_donation_global_stats
+Honor Board,CoverHonorBoard,❌,❌,❌ Legacy,get_user_nstats (pplp table)
+Feed (gift_celebration),GiftCelebrationCard/Feed,⚠️,⚠️,⚠️ Hybrid,posts table + CelebrationCardModal(unified detail)
+Notification,NotificationDropdown,❌,❌,❌ Legacy,notifications table direct subscription
+Admin (Donation History),DonationHistoryAdminTab,❌,❌,❌ Legacy,useAdminDonationHistory direct donations
+Admin (Reward),RewardApprovalTab,❌,❌,❌ Legacy,reward_claims + pending_claims direct
+Search / Counterparty,TransactionFilters,✅,✅,✅ Unified,get_unified_counterparties
+Charts / Analytics,UnifiedTransactionSummary,✅,✅,✅ Unified,get_unified_summary
+Treasury,TreasuryPublicPage,❌,❌,❌ Legacy,treasury_flows table riêng
+Claim Reward History,ClaimHistoryModal,❌,❌,❌ Legacy,claim_rewards direct
+Summary (Profile popup),WalletTransactionHistory,❌,❌,❌ Legacy,usePublicDonationHistory

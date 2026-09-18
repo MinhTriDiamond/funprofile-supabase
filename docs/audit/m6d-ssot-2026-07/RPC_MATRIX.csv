@@ -1,0 +1,11 @@
+rpc,scope,source,formula,pricing,notes
+get_unified_summary,per-user,v_unified_transactions_primary,"COUNT(*) FILTER (direction='in') / SUM(amount) FILTER (direction='in')","N/A (không quy USD)","Chỉ trả tổng theo token; không group by token — trả 1 row / (direction × chain × token) nếu chi tiết. Hiện KHÔNG dùng price_usd → không bị outlier."
+get_unified_transactions,per-user,v_unified_transactions_primary,"SELECT paginated","N/A","Có filter external_only, token_symbol, date range. Đã fix search + counterparty ở M5-UX6."
+get_unified_counterparties,per-user,v_unified_transactions_primary,"DISTINCT counterparty_user_id JOIN profiles","N/A","Dropdown động."
+get_unified_transaction_detail,per-user + tx_hash,v_unified_transactions (raw!),"1 row","N/A","⚠️ Consumer DUY NHẤT đọc raw view. Cần migrate sang _primary sau khi apply M6B-1."
+get_benefactor_leaderboard,global,donations,"SUM(amount_usd) GROUP BY sender_id","amount_usd tại thời điểm insert","❗ Bị outlier CAMLY $359M (audit benefactors-2026-07). Cần eligible filter."
+get_recipient_leaderboard,global,donations,"SUM(amount_usd) GROUP BY recipient_id","amount_usd tại thời điểm insert","Cùng nguồn ô nhiễm."
+get_donation_global_stats,global,donations,"SUM/COUNT tổng","amount_usd","Cùng nguồn ô nhiễm."
+get_wallet_public_stats,per-user,donations + wallet_transfers,"SUM amount theo token","N/A","Dùng cho Profile widget."
+get_dashboard_metrics,admin,donations + transactions,"COUNT rows, SUM usd","amount_usd","Admin dashboard."
+get_ecosystem_totals,global,donations,"SUM amount_usd","amount_usd","Trang landing."
