@@ -9,7 +9,8 @@ import { useLanguage } from '@/i18n/LanguageContext';
 import metamaskLogo from '@/assets/metamask-logo.png';
 import bitgetLogo from '@/assets/bitget-logo.png';
 import trustWalletLogo from '@/assets/trust-wallet-logo.png';
-import funWalletLogo from '@/assets/fun-wallet-logo.gif';
+import funWalletLogoAsset from '@/assets/fun-wallet-logo.gif.asset.json';
+const funWalletLogo = funWalletLogoAsset.url;
 
 interface WalletCardProps {
   walletAddress: string | null;

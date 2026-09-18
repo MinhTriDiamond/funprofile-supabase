@@ -184,7 +184,7 @@ export const AppNavbar = () => {
                   }`}
                 >
                   <img
-                    src={new URL('@/assets/tokens/fun-ecosystem-mint.gif', import.meta.url).href}
+                    src={funEcosystemMintAsset.url}
                     alt={t('navMintFunMoney')}
                     className="w-7 h-7 rounded-full"
                   />
