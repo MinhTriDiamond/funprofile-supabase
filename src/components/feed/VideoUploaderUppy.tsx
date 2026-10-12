@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { useLanguage } from '@/i18n/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -82,6 +83,7 @@ export const VideoUploaderUppy = ({
   disabled = false,
   selectedFile,
 }: VideoUploaderUppyProps) => {
+  const { t } = useLanguage();
   const [uploadState, setUploadState] = useState<UploadState>({
     status: 'idle',
     progress: 0,
@@ -144,13 +146,13 @@ export const VideoUploaderUppy = ({
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (isUploadingRef.current) {
         e.preventDefault();
-        e.returnValue = 'Video đang được tải lên. Bạn có chắc muốn rời đi?';
+        e.returnValue = t('vupLeaveWarning');
         return e.returnValue;
       }
     };
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, []);
+  }, [t]);
 
   // Retry
   const handleRetry = useCallback(() => {
@@ -215,7 +217,7 @@ export const VideoUploaderUppy = ({
 
         // Step 1: Get presigned URL from get-upload-url edge function
         const { data: { session } } = await supabase.auth.getSession();
-        if (!session) throw new Error('Chưa đăng nhập');
+        if (!session) throw new Error(t('vupNotLoggedIn'));
 
         const timestamp = Date.now();
         const randomString = Math.random().toString(36).substring(2, 15);
@@ -242,7 +244,7 @@ export const VideoUploaderUppy = ({
         }
 
         const { uploadUrl, publicUrl } = await presignResponse.json();
-        if (!uploadUrl || !publicUrl) throw new Error('Không nhận được URL upload từ server');
+        if (!uploadUrl || !publicUrl) throw new Error(t('vupNoUploadUrl'));
 
         logger.debug('[VideoUploader] Got presigned URL for R2, key:', key);
 
@@ -283,18 +285,18 @@ export const VideoUploaderUppy = ({
             if (xhr.status >= 200 && xhr.status < 300) {
               resolve();
             } else {
-              reject(new Error(`Upload thất bại: HTTP ${xhr.status}`));
+              reject(new Error(`${t('vupUploadFailedPrefix')}${xhr.status}`));
             }
           });
 
           xhr.addEventListener('error', () => {
             xhrRef.current = null;
-            reject(new Error('Lỗi mạng khi tải lên'));
+            reject(new Error(t('vupNetworkError')));
           });
 
           xhr.addEventListener('abort', () => {
             xhrRef.current = null;
-            reject(new Error('Upload đã bị hủy'));
+            reject(new Error(t('vupCancelled')));
           });
 
           xhr.open('PUT', uploadUrl);
@@ -311,7 +313,7 @@ export const VideoUploaderUppy = ({
         }));
 
         isUploadingRef.current = false;
-        toast.success('Video đã tải lên thành công!');
+        toast.success(t('vupSuccess'));
         
         onUploadCompleteRef.current({ 
           uid: key,
@@ -326,7 +328,7 @@ export const VideoUploaderUppy = ({
         uploadStartedRef.current = false;
         currentFileRef.current = null;
 
-        const errorMessage = error instanceof Error ? error.message : 'Lỗi không xác định';
+        const errorMessage = error instanceof Error ? error.message : t('vupUnknownError');
         
         setUploadState(prev => ({
           ...prev,
@@ -335,7 +337,7 @@ export const VideoUploaderUppy = ({
         }));
 
         onUploadErrorRef.current?.(error instanceof Error ? error : new Error(errorMessage));
-        toast.error(`Lỗi: ${errorMessage}`);
+        toast.error(`${t('vupErrorPrefix')}${errorMessage}`);
       }
     };
 
@@ -406,7 +408,7 @@ export const VideoUploaderUppy = ({
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <Video className="w-5 h-5 text-primary" />
-          <span className="font-medium text-sm">Tải video lên</span>
+          <span className="font-medium text-sm">{t('uploadVideo')}</span>
           {elapsedSeconds > 0 && uploadState.status !== 'ready' && (
             <span className="text-xs text-muted-foreground">({elapsedSeconds}s)</span>
           )}
@@ -423,7 +425,7 @@ export const VideoUploaderUppy = ({
       {uploadState.status === 'preparing' && (
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Loader2 className="w-4 h-4 animate-spin" />
-          <span>Đang chuẩn bị...</span>
+          <span>{t('vupPreparing')}</span>
         </div>
       )}
 
@@ -436,14 +438,14 @@ export const VideoUploaderUppy = ({
             <span className="font-medium text-primary">{Math.round(uploadState.progress)}%</span>
           </div>
           <div className="flex justify-between text-xs text-muted-foreground">
-            {uploadState.uploadSpeed > 0 && <span>Tốc độ: {formatSpeed(uploadState.uploadSpeed)}</span>}
+            {uploadState.uploadSpeed > 0 && <span>{t('vupSpeedPrefix')}{formatSpeed(uploadState.uploadSpeed)}</span>}
             <span className="flex items-center gap-1">
               <Clock className="w-3 h-3" />
-              Còn lại: {getETA()}
+              {t('tokRemaining')}{getETA()}
             </span>
           </div>
           <div className="p-2 bg-amber-500/10 border border-amber-500/20 rounded text-xs text-amber-600 dark:text-amber-400">
-            ⚠️ Vui lòng không đóng trình duyệt khi đang tải lên!
+            {t('vupDontClose')}
           </div>
         </div>
       )}
@@ -466,10 +468,10 @@ export const VideoUploaderUppy = ({
           <div className="flex items-center justify-between text-xs">
             <span className="text-green-600 dark:text-green-400 flex items-center gap-1">
               <CheckCircle className="w-3 h-3" />
-              Video đã sẵn sàng
+              {t('vupReady')}
             </span>
             <Button variant="ghost" size="sm" onClick={handleCancel} className="h-6 text-xs text-muted-foreground hover:text-destructive">
-              Xóa
+              {t('delete')}
             </Button>
           </div>
         </div>
@@ -480,15 +482,15 @@ export const VideoUploaderUppy = ({
         <div className="space-y-3">
           <div className="flex items-center gap-2 text-sm text-destructive">
             <AlertCircle className="w-4 h-4" />
-            <span>{uploadState.error || 'Đã xảy ra lỗi'}</span>
+            <span>{uploadState.error || t('errorOccurred')}</span>
           </div>
           <div className="flex gap-2">
             <Button variant="outline" size="sm" onClick={handleRetry} className="gap-1">
               <RefreshCw className="w-3 h-3" />
-              Thử lại
+              {t('walletRetry')}
             </Button>
             <Button variant="ghost" size="sm" onClick={handleCancel}>
-              Hủy
+              {t('cancel')}
             </Button>
           </div>
         </div>

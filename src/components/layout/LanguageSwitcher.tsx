@@ -13,7 +13,7 @@ const LanguageSwitcher = memo(({
   className,
   variant = 'pill'
 }: LanguageSwitcherProps) => {
-  const { language, setLanguage } = useLanguage();
+  const { language, setLanguage, t } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
 
   const toggleLanguage = () => {
@@ -105,7 +105,7 @@ const LanguageSwitcher = memo(({
           className
         )} 
         aria-label={`Switch to ${language === 'en' ? 'Vietnamese' : 'English'}`} 
-        title={language === 'en' ? 'Chuyển sang Tiếng Việt' : 'Switch to English'}
+        title={language === 'en' ? t('chrSwitchToVi') : t('chrSwitchToEn')}
       >
         <Globe className="w-5 h-5 text-primary" />
         <span className="absolute -bottom-1 -right-1 text-xs font-bold text-primary">
@@ -166,7 +166,7 @@ const LanguageSwitcher = memo(({
         className
       )} 
       aria-label={`Switch to ${language === 'en' ? 'Vietnamese' : 'English'}`} 
-      title={language === 'en' ? 'Chuyển sang Tiếng Việt' : 'Switch to English'}
+      title={language === 'en' ? t('chrSwitchToVi') : t('chrSwitchToEn')}
     >
       <Globe className="w-4 h-4 text-primary" />
       <span className={cn("transition-all duration-300", language === 'en' ? "text-primary" : "text-muted-foreground")}>

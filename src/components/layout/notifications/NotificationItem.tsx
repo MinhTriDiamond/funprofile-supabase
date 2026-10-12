@@ -65,7 +65,7 @@ interface NotificationItemProps {
 export function NotificationItem({ notification, onClick }: NotificationItemProps) {
   const [expanded, setExpanded] = useState(false);
   const dateLocale = useDateLocale();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const isFraud = FRAUD_TYPES.includes(notification.type);
   const isSystem = SYSTEM_TYPES.includes(notification.type);
 
@@ -74,7 +74,8 @@ export function NotificationItem({ notification, onClick }: NotificationItemProp
     notification.actor?.username || t('notifGenericUser'),
     notification.post?.content,
     notification.metadata,
-    t
+    t,
+    language
   );
 
   const toggleExpand = (e: React.MouseEvent) => {

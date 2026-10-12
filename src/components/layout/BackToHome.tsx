@@ -1,4 +1,5 @@
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useLanguage } from '@/i18n/LanguageContext';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { getParentRoute } from '@/config/parentRoutes';
@@ -45,6 +46,7 @@ function useSmartBack(fallback?: string) {
 
 /** Nút Quay lại nhỏ — mặc định sticky ở đầu trang con, dùng `inline` để render trong dòng. */
 export function BackToHomeBar({ className = '', fallback, inline = false }: BackProps) {
+  const { t } = useLanguage();
   const goBack = useSmartBack(fallback);
   const wrapperClass = inline
     ? `flex ${className}`
@@ -54,7 +56,7 @@ export function BackToHomeBar({ className = '', fallback, inline = false }: Back
       <Button
         variant="ghost"
         size="icon"
-        aria-label="Quay lại"
+        aria-label={t('goBack')}
         onClick={goBack}
         className="backdrop-blur-md bg-background/70 hover:bg-background/90 rounded-full"
       >
@@ -66,12 +68,13 @@ export function BackToHomeBar({ className = '', fallback, inline = false }: Back
 
 /** Nút lớn gradient cuối trang con — Quay lại trang trước (icon-only). */
 export function BackToHomeCTA({ className = '', fallback }: BackProps) {
+  const { t } = useLanguage();
   const goBack = useSmartBack(fallback);
   return (
     <div className={`pt-4 flex justify-center ${className}`}>
       <Button
         size="icon"
-        aria-label="Quay lại"
+        aria-label={t('goBack')}
         onClick={goBack}
         className="rounded-full h-14 w-14 bg-gradient-to-r from-emerald-500/90 via-amber-400/90 to-emerald-500/90 backdrop-blur-md text-white shadow-[0_8px_28px_-8px_hsl(45_95%_55%/0.5)] hover:shadow-[0_8px_36px_-4px_hsl(152_70%_45%/0.6)] transition-all duration-300 hover:scale-105"
       >

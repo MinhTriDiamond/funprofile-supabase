@@ -35,7 +35,7 @@ const FRAUD_TYPES: readonly string[] = FRAUD_NOTIF_TYPES;
 export const NotificationDropdown = ({ centerNavStyle = false, isActiveRoute = false }: NotificationDropdownProps) => {
   const navigate = useNavigate();
   const { userId } = useCurrentUser();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const dateLocale = useDateLocale();
   const [unreadCount, setUnreadCount] = useState(0);
   const [hasNewNotification, setHasNewNotification] = useState(false);
@@ -214,7 +214,8 @@ export const NotificationDropdown = ({ centerNavStyle = false, isActiveRoute = f
               notification.actor?.username || notification.actor?.full_name || t('notifGenericUser'),
               notification.post?.content,
               notification.metadata,
-              t
+              t,
+              language
             );
             const timeAgo = formatDistanceToNow(new Date(notification.created_at), { addSuffix: true, locale: dateLocale });
 

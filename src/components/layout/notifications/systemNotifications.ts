@@ -87,7 +87,6 @@ type Meta = Record<string, unknown> | null | undefined;
 
 const num = (v: unknown, fallback = 0): number =>
   v == null || Number.isNaN(Number(v)) ? fallback : Number(v);
-const vn = (v: unknown): string => num(v).toLocaleString('vi-VN');
 const str = (v: unknown): string => (typeof v === 'string' ? v : '');
 
 export interface SystemNotifText {
@@ -96,190 +95,195 @@ export interface SystemNotifText {
   tone?: 'default' | 'success' | 'warning' | 'danger' | 'info';
 }
 
+export type SystemNotifTranslator = (key: string) => string;
+export type SystemNotifFormatter = (v: unknown) => string;
+
 /**
  * Nội dung cho các loại thông báo hệ thống (tiếng Việt — nhất quán với các case
  * mint/live đã có sẵn trong utils.ts).
  */
-export const SYSTEM_NOTIF_TEXT: Record<string, (m: Meta) => SystemNotifText> = {
+export const SYSTEM_NOTIF_TEXT: Record<
+  string,
+  (m: Meta, t: SystemNotifTranslator, fmt: SystemNotifFormatter) => SystemNotifText
+> = {
   // ─── Ví BTC ───
-  btc_address_cleared: () => ({
+  btc_address_cleared: (_m, t) => ({
     tone: 'warning',
-    title: '₿ Địa chỉ BTC đã được xoá',
-    desc: 'Địa chỉ Bitcoin bạn khai trước đây không hợp lệ nên đã được xoá để tránh mất tiền. Vui lòng khai lại địa chỉ BTC chính xác trong phần Chỉnh sửa trang cá nhân.',
+    title: t('sntBtcClearedTitle'),
+    desc: t('sntBtcClearedDesc'),
   }),
   // ─── Nhiệm vụ / chuỗi ngày ───
-  quest_completed: (m) => ({
+  quest_completed: (m, t, fmt) => ({
     tone: 'success',
-    title: '🎯 Hoàn thành nhiệm vụ',
-    desc: `Bạn đã hoàn thành nhiệm vụ${str(m?.quest_title) ? ` "${str(m?.quest_title)}"` : ''}${
-      num(m?.ls_reward) ? ` và nhận +${vn(m?.ls_reward)} Light Score` : ''
+    title: t('sntQuestDoneTitle'),
+    desc: `${t('sntQuestDoneDescA')}${str(m?.quest_title) ? ` "${str(m?.quest_title)}"` : ''}${
+      num(m?.ls_reward) ? `${t('sntQuestDoneDescRewardA')}${fmt(m?.ls_reward)}${t('sntQuestDoneDescRewardB')}` : ''
     }.`,
   }),
-  streak_milestone: (m) => ({
+  streak_milestone: (m, t, fmt) => ({
     tone: 'success',
-    title: '🔥 Cột mốc chuỗi ngày',
-    desc: `Bạn đã duy trì chuỗi ${vn(m?.streak_days ?? m?.days ?? 0)} ngày liên tiếp. Tiếp tục giữ nhịp nhé!`,
+    title: t('sntStreakTitle'),
+    desc: `${t('sntStreakDescA')}${fmt(m?.streak_days ?? m?.days ?? 0)}${t('sntStreakDescB')}`,
   }),
-  sbt_issued_quest: (m) => ({
+  sbt_issued_quest: (m, t) => ({
     tone: 'success',
-    title: '🏅 Nhận huy hiệu từ nhiệm vụ',
-    desc: `Bạn được cấp huy hiệu${str(m?.sbt_type) ? ` ${str(m?.sbt_type)}` : ''} sau khi hoàn thành nhiệm vụ.`,
+    title: t('sntSbtQuestTitle'),
+    desc: `${t('sntSbtQuestDescA')}${str(m?.sbt_type) ? ` ${str(m?.sbt_type)}` : ''}${t('sntSbtQuestDescB')}`,
   }),
 
   // ─── Hộp bí ẩn ───
-  mystery_box_received: (m) => ({
+  mystery_box_received: (m, t) => ({
     tone: 'info',
-    title: '🎁 Bạn nhận được hộp bí ẩn',
-    desc: `Một hộp ${str(m?.tier) || 'bí ẩn'} đã vào kho của bạn. Mở ngay để nhận thưởng.`,
+    title: t('sntMysteryReceivedTitle'),
+    desc: `${t('sntMysteryReceivedDescA')}${str(m?.tier) || t('sntMysteryTierDefault')}${t('sntMysteryReceivedDescB')}`,
   }),
-  mystery_box_legendary: (m) => ({
+  mystery_box_legendary: (m, t) => ({
     tone: 'success',
-    title: '🌟 Hộp huyền thoại!',
-    desc: `Bạn vừa mở được phần thưởng hiếm${str(m?.reward_label) ? `: ${str(m?.reward_label)}` : ''}.`,
+    title: t('sntMysteryLegendaryTitle'),
+    desc: `${t('sntMysteryLegendaryDesc')}${str(m?.reward_label) ? `: ${str(m?.reward_label)}` : ''}.`,
   }),
-  mystery_box_expiring: (m) => ({
+  mystery_box_expiring: (m, t, fmt) => ({
     tone: 'warning',
-    title: '⏰ Hộp bí ẩn sắp hết hạn',
-    desc: `Bạn còn ${vn(m?.count ?? 1)} hộp chưa mở sẽ hết hạn sớm. Mở trước khi mất nhé.`,
+    title: t('sntMysteryExpiringTitle'),
+    desc: `${t('sntMysteryExpiringDescA')}${fmt(m?.count ?? 1)}${t('sntMysteryExpiringDescB')}`,
   }),
-  mystery_box_expired: (m) => ({
-    title: '🗑️ Hộp bí ẩn đã hết hạn',
-    desc: `${vn(m?.count ?? 1)} hộp chưa mở đã hết hạn và bị thu hồi.`,
+  mystery_box_expired: (m, t, fmt) => ({
+    title: t('sntMysteryExpiredTitle'),
+    desc: `${fmt(m?.count ?? 1)}${t('sntMysteryExpiredDescSuffix')}`,
   }),
 
   // ─── Linh thú Lumi ───
-  pet_evolved: (m) => ({
+  pet_evolved: (m, t) => ({
     tone: 'success',
-    title: '✨ Lumi đã tiến hoá',
-    desc: `Lumi của bạn đã tiến hoá${str(m?.stage) ? ` lên giai đoạn ${str(m?.stage)}` : ''}. Vào xem hình dáng mới!`,
+    title: t('sntPetEvolvedTitle'),
+    desc: `${t('sntPetEvolvedDescA')}${str(m?.stage) ? `${t('sntPetEvolvedDescStageA')}${str(m?.stage)}` : ''}${t('sntPetEvolvedDescB')}`,
   }),
-  pet_cheer_received: (m) => ({
+  pet_cheer_received: (m, t, fmt) => ({
     tone: 'info',
-    title: '👏 Lumi được cổ vũ',
-    desc: `Có người vừa cổ vũ Lumi của bạn${num(m?.xp) ? `, +${vn(m?.xp)} XP` : ''}.`,
+    title: t('sntPetCheerTitle'),
+    desc: `${t('sntPetCheerDescA')}${num(m?.xp) ? `${t('sntPetCheerDescXpA')}${fmt(m?.xp)}${t('sntPetCheerDescXpB')}` : ''}.`,
   }),
-  pet_cosmetic_received: (m) => ({
+  pet_cosmetic_received: (m, t) => ({
     tone: 'info',
-    title: '🎀 Nhận phụ kiện cho Lumi',
-    desc: `Bạn nhận được phụ kiện${str(m?.item_name) ? ` "${str(m?.item_name)}"` : ''} cho Lumi.`,
+    title: t('sntPetCosmeticTitle'),
+    desc: `${t('sntPetCosmeticDescA')}${str(m?.item_name) ? ` "${str(m?.item_name)}"` : ''}${t('sntPetCosmeticDescB')}`,
   }),
-  pet_xp_granted: (m) => ({
+  pet_xp_granted: (m, t, fmt) => ({
     tone: 'info',
-    title: '⚡ Lumi nhận XP',
-    desc: `Lumi của bạn được cộng ${vn(m?.xp ?? m?.amount)} XP.`,
+    title: t('sntPetXpTitle'),
+    desc: `${t('sntPetXpDescA')}${fmt(m?.xp ?? m?.amount)}${t('sntPetXpDescB')}`,
   }),
-  pet_shop_purchased: (m) => ({
+  pet_shop_purchased: (m, t) => ({
     tone: 'success',
-    title: '🛍️ Mua phụ kiện thành công',
-    desc: `Đơn hàng${str(m?.item_name) ? ` "${str(m?.item_name)}"` : ''} đã được xác nhận on-chain.`,
+    title: t('sntPetShopBoughtTitle'),
+    desc: `${t('sntPetShopBoughtDescA')}${str(m?.item_name) ? ` "${str(m?.item_name)}"` : ''}${t('sntPetShopBoughtDescB')}`,
   }),
-  pet_shop_failed: () => ({
+  pet_shop_failed: (_m, t) => ({
     tone: 'danger',
-    title: '⛔ Mua phụ kiện thất bại',
-    desc: 'Giao dịch không được xác nhận. Số CAMLY (nếu đã trừ) sẽ được đối soát lại.',
+    title: t('sntPetShopFailedTitle'),
+    desc: t('sntPetShopFailedDesc'),
   }),
-  pet_battle_challenge: () => ({
+  pet_battle_challenge: (_m, t) => ({
     tone: 'info',
-    title: '⚔️ Có lời thách đấu',
-    desc: 'Lumi của bạn vừa bị thách đấu tại Đấu trường. Vào nhận trận nhé.',
+    title: t('sntPetBattleChallengeTitle'),
+    desc: t('sntPetBattleChallengeDesc'),
   }),
-  pet_battle_result: (m) => ({
+  pet_battle_result: (m, t) => ({
     tone: 'info',
-    title: '🏆 Kết quả đấu trường',
-    desc: `Trận đấu đã kết thúc${str(m?.result) ? `: ${str(m?.result)}` : ''}. Xem chi tiết tại Đấu trường.`,
+    title: t('sntPetBattleResultTitle'),
+    desc: `${t('sntPetBattleResultDescA')}${str(m?.result) ? `: ${str(m?.result)}` : ''}${t('sntPetBattleResultDescB')}`,
   }),
-  pet_lumi_ready: () => ({
+  pet_lumi_ready: (_m, t) => ({
     tone: 'success',
-    title: '🐣 Lumi của bạn đã sẵn sàng',
-    desc: 'Linh thú Lumi đã được tạo cho bạn. Vào chăm sóc để nhận Light Score mỗi ngày.',
+    title: t('sntPetLumiReadyTitle'),
+    desc: t('sntPetLumiReadyDesc'),
   }),
-  buddy_invite: () => ({
+  buddy_invite: (_m, t) => ({
     tone: 'info',
-    title: '🤝 Lời mời vào Buddy Circle',
-    desc: 'Bạn được mời tham gia một vòng bạn đồng hành. Bấm để xem lời mời.',
+    title: t('sntBuddyInviteTitle'),
+    desc: t('sntBuddyInviteDesc'),
   }),
 
   // ─── Identity ───
-  guardian_accepted: () => ({
+  guardian_accepted: (_m, t) => ({
     tone: 'success',
-    title: '🛡️ Guardian đã đồng ý',
-    desc: 'Một người bảo hộ đã chấp nhận lời mời guardian của bạn.',
+    title: t('sntGuardianAcceptedTitle'),
+    desc: t('sntGuardianAcceptedDesc'),
   }),
-  guardian_declined: () => ({
+  guardian_declined: (_m, t) => ({
     tone: 'warning',
-    title: '🛡️ Guardian đã từ chối',
-    desc: 'Một người bảo hộ đã từ chối lời mời. Hãy mời người khác để đủ điều kiện phục hồi.',
+    title: t('sntGuardianDeclinedTitle'),
+    desc: t('sntGuardianDeclinedDesc'),
   }),
-  attestation_received: () => ({
+  attestation_received: (_m, t) => ({
     tone: 'success',
-    title: '✍️ Nhận chứng thực mới',
-    desc: 'Có người vừa chứng thực cho danh tính của bạn, điểm Trust sẽ được tính lại.',
+    title: t('sntAttestationTitle'),
+    desc: t('sntAttestationDesc'),
   }),
 
   // ─── Live (vận hành) ───
-  live_auto_ended: (m) => ({
+  live_auto_ended: (m, t) => ({
     tone: 'warning',
-    title: '⏹️ Phiên live đã tự kết thúc',
-    desc: `Phiên live của bạn được hệ thống kết thúc tự động${str(m?.reason) ? ` (${str(m?.reason)})` : ''}.`,
+    title: t('sntLiveAutoEndedTitle'),
+    desc: `${t('sntLiveAutoEndedDesc')}${str(m?.reason) ? ` (${str(m?.reason)})` : ''}.`,
   }),
-  live_reconnected: () => ({
+  live_reconnected: (_m, t) => ({
     tone: 'info',
-    title: '🔄 Phiên live đã kết nối lại',
-    desc: 'Tín hiệu phát đã được phục hồi, phiên live tiếp tục bình thường.',
+    title: t('sntLiveReconnectedTitle'),
+    desc: t('sntLiveReconnectedDesc'),
   }),
-  live_recording_missed: () => ({
+  live_recording_missed: (_m, t) => ({
     tone: 'warning',
-    title: '⚠️ Không ghi được bản lưu live',
-    desc: 'Hệ thống không bắt được bản ghi cho phiên live này nên sẽ không có video phát lại.',
+    title: t('sntLiveRecordingMissedTitle'),
+    desc: t('sntLiveRecordingMissedDesc'),
   }),
-  live_recording_failed: () => ({
+  live_recording_failed: (_m, t) => ({
     tone: 'danger',
-    title: '⛔ Ghi hình live thất bại',
-    desc: 'Quá trình ghi hình gặp lỗi. Bài đăng vẫn còn nhưng không có video phát lại.',
+    title: t('sntLiveRecordingFailedTitle'),
+    desc: t('sntLiveRecordingFailedDesc'),
   }),
-  live_replay_failed: () => ({
+  live_replay_failed: (_m, t) => ({
     tone: 'danger',
-    title: '⛔ Xử lý video phát lại thất bại',
-    desc: 'Video phát lại không xử lý được. Kỹ thuật đã nhận thông tin để kiểm tra.',
+    title: t('sntLiveReplayFailedTitle'),
+    desc: t('sntLiveReplayFailedDesc'),
   }),
 
   // ─── Tài khoản ───
-  account_unbanned: () => ({
+  account_unbanned: (_m, t) => ({
     tone: 'success',
-    title: '✅ Tài khoản đã được mở lại',
-    desc: 'Hạn chế trên tài khoản của bạn đã được gỡ. Bạn có thể sử dụng bình thường.',
+    title: t('sntAccountUnbannedTitle'),
+    desc: t('sntAccountUnbannedDesc'),
   }),
-  link_wallet_reminder: () => ({
+  link_wallet_reminder: (_m, t) => ({
     tone: 'info',
-    title: '🔗 Hãy liên kết ví của bạn',
-    desc: 'Liên kết ví để nhận phần thưởng FUN/CAMLY vào đúng địa chỉ của bạn.',
+    title: t('sntLinkWalletTitle'),
+    desc: t('sntLinkWalletDesc'),
   }),
 
   // ─── Vận hành / Admin ───
-  treasury_low_gas: (m) => ({
+  treasury_low_gas: (m, t, fmt) => ({
     tone: 'warning',
-    title: '⛽ Ví treasury sắp hết gas',
-    desc: `Số dư BNB còn ${str(m?.balance) || vn(m?.balance_bnb)} — hãy nạp thêm để không nghẽn giao dịch.`,
+    title: t('sntTreasuryGasTitle'),
+    desc: `${t('sntTreasuryGasDescA')}${str(m?.balance) || fmt(m?.balance_bnb)}${t('sntTreasuryGasDescB')}`,
   }),
-  treasury_low_camly: (m) => ({
+  treasury_low_camly: (m, t, fmt) => ({
     tone: 'warning',
-    title: '💰 Treasury sắp hết CAMLY',
-    desc: `Số dư CAMLY còn ${str(m?.balance) || vn(m?.balance_camly)} — cần bổ sung cho việc trả thưởng.`,
+    title: t('sntTreasuryCamlyTitle'),
+    desc: `${t('sntTreasuryCamlyDescA')}${str(m?.balance) || fmt(m?.balance_camly)}${t('sntTreasuryCamlyDescB')}`,
   }),
-  treasury_ledger_drift: () => ({
+  treasury_ledger_drift: (_m, t) => ({
     tone: 'danger',
-    title: '⚠️ Lệch sổ treasury',
-    desc: 'Phát hiện chênh lệch giữa sổ nội bộ và số dư on-chain. Cần đối soát ngay.',
+    title: t('sntTreasuryDriftTitle'),
+    desc: t('sntTreasuryDriftDesc'),
   }),
-  wallet_reconciliation_alert: (m) => ({
+  wallet_reconciliation_alert: (m, t, fmt) => ({
     tone: 'info',
-    title: '🧾 Kết quả đối soát ví',
-    desc: `Đã bổ sung ${vn(m?.txs_backfilled)} giao dịch thiếu${
-      num(m?.errors) ? `, ${vn(m?.errors)} lỗi cần xem` : ''
-    }${num(m?.runs) > 1 ? ` (gộp ${vn(m?.runs)} lượt quét trong 24h)` : ''}.`,
+    title: t('sntWalletReconTitle'),
+    desc: `${t('sntWalletReconDescA')}${fmt(m?.txs_backfilled)}${t('sntWalletReconDescB')}${
+      num(m?.errors) ? `, ${fmt(m?.errors)}${t('sntWalletReconDescErrSuffix')}` : ''
+    }${num(m?.runs) > 1 ? `${t('sntWalletReconDescRunsA')}${fmt(m?.runs)}${t('sntWalletReconDescRunsB')}` : ''}.`,
   }),
 };
-
 /**
  * Đường dẫn khi bấm vào một thông báo. Trả về null nếu không có đích phù hợp.
  */

@@ -217,11 +217,16 @@ export const getNotificationText = (
   username: string,
   postContent?: string | null,
   metadata?: NotificationMetadata | null,
-  t?: Translator
+  t?: Translator,
+  locale?: string
 ): { main: React.ReactNode; snippet?: string } => {
   const snippet = postContent ? truncateContent(postContent, 50) : undefined;
   // Fallback translator: returns the key itself (keeps things working if t is missing)
   const tr: Translator = t || ((k) => k);
+  // Locale-aware number formatter handed to SYSTEM_NOTIF_TEXT builders
+  // (locale defaults to vi-VN — the builders' original hard-coded behavior).
+  const fmt = (v: unknown): string =>
+    (typeof v === 'number' ? v : Number(v) || 0).toLocaleString(locale ?? 'vi-VN');
 
   let main: React.ReactNode;
 
@@ -357,14 +362,14 @@ export const getNotificationText = (
     }
     case 'mint_request_rejected': {
       const m = (metadata as Record<string, unknown>) || {};
-      const title = (m.title as string) || 'Lệnh mint FUN bị từ chối';
-      const message = (m.message as string) || 'Lệnh mint của bạn đã bị huỷ tự động.';
+      const title = (m.title as string) || tr('gnuMintRejectedTitleDefault');
+      const message = (m.message as string) || tr('gnuMintRejectedMsgDefault');
       const reason = m.reason as string | undefined;
       main = React.createElement(React.Fragment, null,
         React.createElement('strong', { className: 'block mb-0.5 text-destructive' }, '⛔ ' + title),
         React.createElement('span', { className: 'block text-muted-foreground' }, message),
         reason
-          ? React.createElement('span', { className: 'block mt-1 text-[11px] text-destructive/80 italic' }, 'Lý do: ' + reason)
+          ? React.createElement('span', { className: 'block mt-1 text-[11px] text-destructive/80 italic' }, tr('gnuMintRejectedReasonPrefix') + reason)
           : null
       );
       break;
@@ -376,44 +381,44 @@ export const getNotificationText = (
         : 5;
       main = React.createElement(React.Fragment, null,
         React.createElement('strong', { className: 'block mb-0.5 text-amber-600 dark:text-amber-400' },
-          '⏰ Video live sắp tự xoá'),
+          tr('gnuLiveExpiringTitle')),
         React.createElement('span', { className: 'block text-muted-foreground' },
-          `Video live của bạn sẽ tự xoá sau ${days} ngày. Hãy bấm vào bài đăng và "Tải về" để lưu MP4 trước khi hết hạn.`)
+          `${tr('gnuLiveExpiringDescA')}${days}${tr('gnuLiveExpiringDescB')}`)
       );
       break;
     }
     case 'live_replay_expired': {
       main = React.createElement(React.Fragment, null,
-        React.createElement('strong', { className: 'block mb-0.5' }, '🗑️ Video live đã hết hạn'),
+        React.createElement('strong', { className: 'block mb-0.5' }, tr('gnuLiveExpiredTitle')),
         React.createElement('span', { className: 'block text-muted-foreground' },
-          'Video live đã được tự xoá sau 30 ngày. Bài đăng vẫn còn nhưng không còn video phát lại.')
+          tr('gnuLiveExpiredDesc'))
       );
       break;
     }
     case 'fun_mint_signed': {
       const m = (metadata as Record<string, unknown>) || {};
-      const amount = m.amount != null ? Number(m.amount).toLocaleString('vi-VN') : '';
+      const amount = m.amount != null ? fmt(m.amount) : '';
       const action = (m.action as string) || '';
       const isChild = !!m.is_split_child;
       main = React.createElement(React.Fragment, null,
         React.createElement('strong', { className: 'block mb-0.5 text-blue-600 dark:text-blue-400' },
-          '✍️ Lệnh mint đã được ký' + (isChild ? ' (phần tách)' : '')),
+          tr('gnuMintSignedTitle') + (isChild ? tr('gnuMintSplitSuffix') : '')),
         React.createElement('span', { className: 'block text-muted-foreground' },
-          `Lệnh mint ${amount} FUN${action ? ` (${action})` : ''} đã đủ chữ ký multisig, chờ lên on-chain.`)
+          `${tr('gnuMintSignedDescA')}${amount}${tr('gnuMintFunMid')}${action ? ` (${action})` : ''}${tr('gnuMintSignedDescC')}`)
       );
       break;
     }
     case 'fun_mint_confirmed': {
       const m = (metadata as Record<string, unknown>) || {};
-      const amount = m.amount != null ? Number(m.amount).toLocaleString('vi-VN') : '';
+      const amount = m.amount != null ? fmt(m.amount) : '';
       const action = (m.action as string) || '';
       const txHash = (m.tx_hash as string) || '';
       const isChild = !!m.is_split_child;
       main = React.createElement(React.Fragment, null,
         React.createElement('strong', { className: 'block mb-0.5 text-green-600 dark:text-green-400' },
-          '✅ Mint thành công' + (isChild ? ' (phần tách)' : '')),
+          tr('gnuMintConfirmedTitle') + (isChild ? tr('gnuMintSplitSuffix') : '')),
         React.createElement('span', { className: 'block text-muted-foreground' },
-          `Đã mint ${amount} FUN${action ? ` (${action})` : ''} lên on-chain. Bấm để xem giao dịch.`),
+          `${tr('gnuMintConfirmedDescA')}${amount}${tr('gnuMintFunMid')}${action ? ` (${action})` : ''}${tr('gnuMintConfirmedDescC')}`),
         txHash
           ? React.createElement('span', { className: 'block mt-1 text-[11px] text-muted-foreground/80 font-mono' },
               txHash.slice(0, 10) + '...' + txHash.slice(-8))
@@ -427,27 +432,27 @@ export const getNotificationText = (
       const avatarSim = (m.avatar_similarity as number) ?? 0;
       main = React.createElement(React.Fragment, null,
         React.createElement('strong', { className: 'block mb-0.5 text-orange-600 dark:text-orange-400' },
-          '⚠️ Cảnh báo: có tài khoản mới giống bạn'),
+          tr('gnuImpersonationAlertTitle')),
         React.createElement('span', { className: 'block text-muted-foreground' },
-          `Tài khoản @${(m.suspect_username as string) || ''} có tên giống ${nameSim}% và ảnh giống ${avatarSim}%. Bấm để xác minh.`)
+          `${tr('gnuImpersonationDescA')}${(m.suspect_username as string) || ''}${tr('gnuImpersonationDescB')}${nameSim}${tr('gnuImpersonationDescC')}${avatarSim}${tr('gnuImpersonationDescD')}`)
       );
       break;
     }
     case 'impersonation_confirmed': {
       main = React.createElement(React.Fragment, null,
         React.createElement('strong', { className: 'block mb-0.5 text-emerald-600 dark:text-emerald-400' },
-          '✅ Báo cáo mạo danh đã được xử lý'),
+          tr('gnuImpersonationConfirmedTitle')),
         React.createElement('span', { className: 'block text-muted-foreground' },
-          'Quản trị viên đã xem xét và xử lý tài khoản mạo danh bạn báo cáo.')
+          tr('gnuImpersonationConfirmedDesc'))
       );
       break;
     }
     case 'impersonation_dismissed': {
       main = React.createElement(React.Fragment, null,
         React.createElement('strong', { className: 'block mb-0.5' },
-          'ℹ️ Cảnh báo mạo danh đã được đóng'),
+          tr('gnuImpersonationDismissedTitle')),
         React.createElement('span', { className: 'block text-muted-foreground' },
-          'Quản trị viên đánh giá đây không phải tài khoản mạo danh.')
+          tr('gnuImpersonationDismissedDesc'))
       );
       break;
     }
@@ -455,7 +460,7 @@ export const getNotificationText = (
       // Các loại thông báo hệ thống (nhiệm vụ, hộp bí ẩn, Lumi, identity, treasury, live…)
       const build = SYSTEM_NOTIF_TEXT[type];
       if (build) {
-        const { title, desc, tone } = build(metadata as Record<string, unknown> | null | undefined);
+        const { title, desc, tone } = build(metadata as Record<string, unknown> | null | undefined, tr, fmt);
         main = React.createElement(React.Fragment, null,
           React.createElement('strong', { className: `block mb-0.5 ${TONE_CLASS[tone || 'default']}` }, title),
           React.createElement('span', { className: 'block text-muted-foreground' }, desc)
