@@ -1,27 +1,24 @@
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Book, Share2, Home } from 'lucide-react';
+import { useLanguage } from '@/i18n/LanguageContext';
+import { translations } from '@/i18n/translations';
 
 const ANGEL_LOGO = '/angel-ai-logo-128.png';
 
 const MasterCharterDocs = () => {
   const navigate = useNavigate();
+  const { t, language } = useLanguage();
 
   const fontStyles = {
     heading: "'Cormorant Garamond', Georgia, serif",
     body: "'Lora', Georgia, serif",
   };
 
-  const divineMantras = [
-    { vi: 'Con l� �nh S�ng Y�u Thương Thuần Khiết của Cha Vũ Trụ.', en: 'I am the Pure Loving Light of the Cosmic Father.' },
-    { vi: 'Con l� � Ch� của Cha Vũ Trụ.', en: 'I am the Will of the Cosmic Father.' },
-    { vi: 'Con l� Tr� Tuệ của Cha Vũ Trụ.', en: 'I am the Wisdom of the Cosmic Father.' },
-    { vi: 'Con l� Hạnh Ph�c.', en: 'I am Happiness.' },
-    { vi: 'Con l� T�nh Y�u.', en: 'I am Love.' },
-    { vi: 'Con l� Tiền của Cha.', en: 'I am the Money of the Father.' },
-    { vi: 'Con xin S�m Hối S�m Hối S�m Hối.', en: 'I repent, I repent, I repent.' },
-    { vi: 'Con xin Biết Ơn Biết Ơn Biết Ơn, trong �nh S�ng Y�u Thương Thuần Khiết của Cha Vũ Trụ.', en: 'I am grateful, I am grateful, I am grateful, in the Pure Loving Light of the Cosmic Father.' },
-  ];
+  // The 8 mantras reuse the Law of Light keys (lawMantra1-8, translated in all 13 locales).
+  // Main line = active language; sub-line = English canonical (or Vietnamese original when UI is English).
+  const mantraKeys = ['lawMantra1', 'lawMantra2', 'lawMantra3', 'lawMantra4', 'lawMantra5', 'lawMantra6', 'lawMantra7', 'lawMantra8'] as const;
+  const mantraSub = (key: string) => (language === 'en' ? (translations.vi as any)[key] : (translations.en as any)[key]);
 
   const platforms = [
     'FUN Profile – Web3 Social Network',
@@ -41,8 +38,8 @@ const MasterCharterDocs = () => {
   const handleShare = () => {
     if (navigator.share) {
       navigator.share({
-        title: 'Hiến Ph�p Gốc - FUN Ecosystem',
-        text: 'Nền Kinh Tế �nh S�ng 5D của Tr�i Đất Mới',
+        title: t('charterShareTitle'),
+        text: t('charterTagline'),
         url: window.location.href,
       });
     }
@@ -78,7 +75,7 @@ const MasterCharterDocs = () => {
               className="text-[#B8860B] hover:text-[#D4AF37] hover:bg-[#D4AF37]/10"
             >
               <Home className="w-4 h-4 mr-2" />
-              Về Trang Chủ
+              {t('lawBackHome')}
             </Button>
             <Button
               variant="ghost"
@@ -86,7 +83,7 @@ const MasterCharterDocs = () => {
               className="text-[#B8860B] hover:text-[#D4AF37] hover:bg-[#D4AF37]/10"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Quay về Luật �nh S�ng
+              {t('pplpBackToLaw')}
             </Button>
             <Button
               variant="ghost"
@@ -94,7 +91,7 @@ const MasterCharterDocs = () => {
               className="text-[#B8860B] hover:text-[#D4AF37] hover:bg-[#D4AF37]/10"
             >
               <Share2 className="w-4 h-4 mr-2" />
-              Chia sẻ
+              {t('share')}
             </Button>
           </div>
 
@@ -111,7 +108,7 @@ const MasterCharterDocs = () => {
             <div className="flex items-center justify-center gap-2 mb-2">
               <Book className="w-6 h-6 text-[#D4AF37]" />
               <span style={{ fontFamily: fontStyles.body, color: '#B8860B', fontSize: '0.9rem' }}>
-                T�i Liệu Thi�ng Li�ng
+                {t('charterDocLabel')}
               </span>
             </div>
             
@@ -124,7 +121,7 @@ const MasterCharterDocs = () => {
               WebkitTextFillColor: 'transparent',
               marginBottom: '0.5rem'
             }}>
-              HIẾN PH�P GỐC
+              {t('charterTitle')}
             </h1>
             <p style={{
               fontFamily: fontStyles.heading,
@@ -140,7 +137,7 @@ const MasterCharterDocs = () => {
               fontSize: 'clamp(0.95rem, 2vw, 1.1rem)',
               color: '#8B7355',
             }}>
-              Nền Kinh Tế �nh S�ng 5D của Tr�i Đất Mới
+              {t('charterTagline')}
             </p>
             <p style={{
               fontFamily: fontStyles.body,
@@ -172,25 +169,25 @@ const MasterCharterDocs = () => {
                 fontSize: 'clamp(1.4rem, 3.5vw, 1.8rem)',
                 fontWeight: 600,
                 color: '#D4AF37'
-              }}>🌍 I. TUY�N NG�N VỀ NGUỒN GỐC</h2>
+              }}>{t('charterCh1Title')}</h2>
               
               <div style={{ fontFamily: fontStyles.body, fontSize: 'clamp(1rem, 2vw, 1.15rem)', lineHeight: '2', color: '#5D4E37' }}>
-                <p className="mb-4">FUN Ecosystem kh�ng chỉ l� một doanh nghiệp.</p>
-                <p className="mb-4">FUN Ecosystem kh�ng chỉ l� một xu hướng tiền m� ho�.</p>
-                <p className="mb-4">FUN Ecosystem lớn hơn cả một tập đo�n.</p>
-                <p className="mb-4 font-semibold" style={{ color: '#B8860B' }}>FUN Ecosystem l�:</p>
+                <p className="mb-4">{t('charterCh1a')}</p>
+                <p className="mb-4">{t('charterCh1b')}</p>
+                <p className="mb-4">{t('charterCh1c')}</p>
+                <p className="mb-4 font-semibold" style={{ color: '#B8860B' }}>{t('charterCh1d')}</p>
                 <ul className="space-y-2 ml-4 mb-4">
-                  <li className="flex gap-2"><span className="text-[#D4AF37]">✨</span> Một nền văn minh �nh S�ng sống động</li>
-                  <li className="flex gap-2"><span className="text-[#D4AF37]">✨</span> Một hệ sinh th�i kinh tế mới của Tr�i Đất 5D</li>
-                  <li className="flex gap-2"><span className="text-[#D4AF37]">✨</span> Một nền kinh tế chia sẻ – kết nối – thịnh vượng</li>
-                  <li className="flex gap-2"><span className="text-[#D4AF37]">✨</span> Một k�nh dẫn � Ch� – Tr� Tuệ – T�nh Y�u Thuần Khiết của Cha Vũ Trụ</li>
+                  <li className="flex gap-2"><span className="text-[#D4AF37]">✨</span> {t('charterCh1Point1')}</li>
+                  <li className="flex gap-2"><span className="text-[#D4AF37]">✨</span> {t('charterCh1Point2')}</li>
+                  <li className="flex gap-2"><span className="text-[#D4AF37]">✨</span> {t('charterCh1Point3')}</li>
+                  <li className="flex gap-2"><span className="text-[#D4AF37]">✨</span> {t('charterCh1Point4')}</li>
                 </ul>
-                <p className="mb-2 font-semibold" style={{ color: '#B8860B' }}>FUN ra đời để gi�p nh�n loại chuyển ho�:</p>
+                <p className="mb-2 font-semibold" style={{ color: '#B8860B' }}>{t('charterCh1e')}</p>
                 <ul className="space-y-1 ml-4">
-                  <li>• Từ cạnh tranh → sang hợp t�c</li>
-                  <li>• Từ khan hiếm → sang đầy đủ</li>
-                  <li>• Từ kinh tế tranh gi�nh → sang kinh tế �nh S�ng</li>
-                  <li>• Từ kiểm so�t → sang tự do & giải ph�ng</li>
+                  <li>{t('charterCh1Shift1')}</li>
+                  <li>{t('charterCh1Shift2')}</li>
+                  <li>{t('charterCh1Shift3')}</li>
+                  <li>{t('charterCh1Shift4')}</li>
                 </ul>
               </div>
             </section>
@@ -205,25 +202,27 @@ const MasterCharterDocs = () => {
                 fontSize: 'clamp(1.4rem, 3.5vw, 1.8rem)',
                 fontWeight: 600,
                 color: '#D4AF37'
-              }}>🌟 II. SỨ MỆNH TRỌNG T�M</h2>
+              }}>{t('charterCh2Title')}</h2>
               
               <div style={{ fontFamily: fontStyles.body, fontSize: 'clamp(1rem, 2vw, 1.15rem)', lineHeight: '2', color: '#5D4E37' }}>
-                <p className="mb-4 font-semibold" style={{ color: '#B8860B' }}>Sứ mệnh của FUN Ecosystem l�:</p>
+                <p className="mb-4 font-semibold" style={{ color: '#B8860B' }}>{t('charterCh2a')}</p>
                 <ul className="space-y-2 ml-4 mb-4">
-                  <li className="flex gap-2"><span className="text-[#D4AF37]">✅</span> Gửi tặng phước l�nh & thịnh vượng cho nh�n loại</li>
-                  <li className="flex gap-2"><span className="text-[#D4AF37]">✅</span> Phi tập trung ho� cơ hội to�n cầu</li>
-                  <li className="flex gap-2"><span className="text-[#D4AF37]">✅</span> N�ng cấp kinh tế song h�nh với n�ng cấp � thức</li>
-                  <li className="flex gap-2"><span className="text-[#D4AF37]">✅</span> X�y dựng c�c nền tảng để mọi người c� thể:</li>
+                  <li className="flex gap-2"><span className="text-[#D4AF37]">✅</span> {t('charterCh2Point1')}</li>
+                  <li className="flex gap-2"><span className="text-[#D4AF37]">✅</span> {t('charterCh2Point2')}</li>
+                  <li className="flex gap-2"><span className="text-[#D4AF37]">✅</span> {t('charterCh2Point3')}</li>
+                  <li className="flex gap-2"><span className="text-[#D4AF37]">✅</span> {t('charterCh2Point4')}</li>
                 </ul>
                 <p className="text-center font-semibold mb-4" style={{ color: '#B8860B' }}>
-                  Gia Nhập • Sử Dụng • Kiếm Tiền • Chia Sẻ • Thăng Hoa
+                  {t('charterCh2b')}
                 </p>
+                {language !== 'en' && (
                 <p className="text-center italic mb-4" style={{ color: '#8B7355' }}>
-                  Join • Use • Earn • Share • Rise
+                  {(translations.en as any)['charterCh2b']}
                 </p>
-                <p className="mb-2 font-semibold" style={{ color: '#B8860B' }}>FUN vận h�nh theo m� h�nh thi�ng li�ng:</p>
-                <p className="text-center text-xl font-bold mb-4" style={{ color: '#D4AF37' }}>99% Gift cho cộng đồng to�n cầu</p>
-                <p className="mb-2">Th�ng qua:</p>
+                )}
+                <p className="mb-2 font-semibold" style={{ color: '#B8860B' }}>{t('charterCh2c')}</p>
+                <p className="text-center text-xl font-bold mb-4" style={{ color: '#D4AF37' }}>{t('charterCh2d')}</p>
+                <p className="mb-2">{t('charterCh2e')}</p>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-center">
                   <span className="p-2 rounded-lg" style={{ background: 'rgba(212,175,55,0.1)' }}>Learn & Earn</span>
                   <span className="p-2 rounded-lg" style={{ background: 'rgba(212,175,55,0.1)' }}>Play & Earn</span>
@@ -247,31 +246,31 @@ const MasterCharterDocs = () => {
                 fontSize: 'clamp(1.4rem, 3.5vw, 1.8rem)',
                 fontWeight: 600,
                 color: '#D4AF37'
-              }}>💎 III. C�C NGUY�N L� THI�NG LI�NG</h2>
+              }}>{t('charterCh3Title')}</h2>
               
               <div style={{ fontFamily: fontStyles.body, fontSize: 'clamp(1rem, 2vw, 1.15rem)', lineHeight: '2', color: '#5D4E37' }}>
                 <div className="space-y-6">
                   <div className="p-4 rounded-xl" style={{ background: 'rgba(212,175,55,0.08)' }}>
-                    <h4 className="font-bold mb-2" style={{ color: '#B8860B' }}>1. T�NH Y�U THUẦN KHIẾT L� M� NGUỒN</h4>
-                    <p>Tất cả platforms đều được x�y tr�n t�nh y�u thương thuần khiết v� điều kiện.</p>
+                    <h4 className="font-bold mb-2" style={{ color: '#B8860B' }}>{t('charterP1Title')}</h4>
+                    <p>{t('charterP1Desc')}</p>
                   </div>
                   <div className="p-4 rounded-xl" style={{ background: 'rgba(212,175,55,0.08)' }}>
-                    <h4 className="font-bold mb-2" style={{ color: '#B8860B' }}>2. X�Y GI� TRỊ – KH�NG X�Y KIỂM SO�T</h4>
-                    <p>FUN tạo tự do, kh�ng tạo lệ thuộc.</p>
+                    <h4 className="font-bold mb-2" style={{ color: '#B8860B' }}>{t('charterP2Title')}</h4>
+                    <p>{t('charterP2Desc')}</p>
                   </div>
                   <div className="p-4 rounded-xl" style={{ background: 'rgba(212,175,55,0.08)' }}>
-                    <h4 className="font-bold mb-2" style={{ color: '#B8860B' }}>3. THỊNH VƯỢNG L� TRẠNG TH�I TỰ NHI�N</h4>
-                    <p>Tiền l� Năng Lượng �nh S�ng tu�n chảy.</p>
-                    <p>T�i sản l� đủ đầy khi con người sống h�i ho� với thi�n nhi�n v� gi� trị thật.</p>
+                    <h4 className="font-bold mb-2" style={{ color: '#B8860B' }}>{t('charterP3Title')}</h4>
+                    <p>{t('charterP3Desc1')}</p>
+                    <p>{t('charterP3Desc2')}</p>
                   </div>
                   <div className="p-4 rounded-xl" style={{ background: 'rgba(212,175,55,0.08)' }}>
-                    <h4 className="font-bold mb-2" style={{ color: '#B8860B' }}>4. C�NG NGHỆ PHỤNG SỰ TỈNH THỨC</h4>
-                    <p>Blockchain + AI + Ego → Huỷ diệt</p>
-                    <p className="font-semibold" style={{ color: '#D4AF37' }}>Blockchain + AI + T�nh Y�u Thuần Khiết → V� tận thịnh vượng</p>
+                    <h4 className="font-bold mb-2" style={{ color: '#B8860B' }}>{t('charterP4Title')}</h4>
+                    <p>{t('charterP4Desc1')}</p>
+                    <p className="font-semibold" style={{ color: '#D4AF37' }}>{t('charterP4Desc2')}</p>
                   </div>
                   <div className="p-4 rounded-xl" style={{ background: 'rgba(212,175,55,0.08)' }}>
-                    <h4 className="font-bold mb-2" style={{ color: '#B8860B' }}>5. KH�NG AI BỊ BỎ LẠI PH�A SAU</h4>
-                    <p>FUN d�nh cho mọi linh hồn tr�n Tr�i Đất.</p>
+                    <h4 className="font-bold mb-2" style={{ color: '#B8860B' }}>{t('charterP5Title')}</h4>
+                    <p>{t('charterP5Desc')}</p>
                   </div>
                 </div>
               </div>
@@ -287,26 +286,26 @@ const MasterCharterDocs = () => {
                 fontSize: 'clamp(1.4rem, 3.5vw, 1.8rem)',
                 fontWeight: 600,
                 color: '#D4AF37'
-              }}>🌈 IV. HAI D�NG CHẢY THI�NG LI�NG</h2>
+              }}>{t('charterCh4Title')}</h2>
               
               <div style={{ fontFamily: fontStyles.body, fontSize: 'clamp(1rem, 2vw, 1.15rem)', lineHeight: '2', color: '#5D4E37' }}>
                 <div className="grid md:grid-cols-2 gap-6">
                   <div className="p-6 rounded-xl text-center" style={{ background: 'linear-gradient(180deg, rgba(173,216,230,0.2) 0%, rgba(212,175,55,0.1) 100%)', border: '1px solid rgba(173,216,230,0.5)' }}>
                     <span className="text-3xl">💧</span>
-                    <h4 className="font-bold mt-2 mb-2" style={{ color: '#4A90A4' }}>Camly Coin = D�ng Chảy (Nước)</h4>
-                    <p className="text-sm">Camly Coin nu�i dưỡng, duy tr� v� lưu th�ng gi� trị nội bộ c�c nền tảng.</p>
+                    <h4 className="font-bold mt-2 mb-2" style={{ color: '#4A90A4' }}>{t('charterFlow1Title')}</h4>
+                    <p className="text-sm">{t('charterFlow1Desc')}</p>
                   </div>
                   <div className="p-6 rounded-xl text-center" style={{ background: 'linear-gradient(180deg, rgba(255,215,0,0.2) 0%, rgba(212,175,55,0.1) 100%)', border: '1px solid rgba(255,215,0,0.5)' }}>
                     <span className="text-3xl">☀️</span>
-                    <h4 className="font-bold mt-2 mb-2" style={{ color: '#D4AF37' }}>FUN Money = Mặt Trời (Tầm Nh�n)</h4>
-                    <p className="text-sm">FUN Money l� �nh S�ng dẫn đường cho to�n hệ sinh th�i – tương lai kinh tế của Địa Cầu.</p>
+                    <h4 className="font-bold mt-2 mb-2" style={{ color: '#D4AF37' }}>{t('charterFlow2Title')}</h4>
+                    <p className="text-sm">{t('charterFlow2Desc')}</p>
                   </div>
                 </div>
                 <p className="text-center mt-6 font-semibold" style={{ color: '#B8860B' }}>
-                  👉 Camly Coin l� d�ng nước. FUN Money l� mặt trời.
+                  {t('charterCh4a')}
                 </p>
                 <p className="text-center italic" style={{ color: '#8B7355' }}>
-                  C�ng cộng hưởng tạo n�n Nền Kinh Tế �nh S�ng Tr�i Đất Mới.
+                  {t('charterCh4b')}
                 </p>
               </div>
             </section>
@@ -321,10 +320,10 @@ const MasterCharterDocs = () => {
                 fontSize: 'clamp(1.4rem, 3.5vw, 1.8rem)',
                 fontWeight: 600,
                 color: '#D4AF37'
-              }}>🪐 V. SỰ THỐNG NHẤT NỀN TẢNG</h2>
+              }}>{t('charterCh5Title')}</h2>
               
               <div style={{ fontFamily: fontStyles.body, fontSize: 'clamp(1rem, 2vw, 1.15rem)', lineHeight: '2', color: '#5D4E37' }}>
-                <p className="mb-4">Tất cả Platforms của FUN Ecosystem l� một cơ thể �nh S�ng, bao gồm:</p>
+                <p className="mb-4">{t('charterCh5a')}</p>
                 <div className="grid md:grid-cols-2 gap-2">
                   {platforms.map((platform, idx) => (
                     <div key={idx} className="flex items-center gap-2 p-2 rounded-lg" style={{ background: 'rgba(212,175,55,0.08)' }}>
@@ -334,7 +333,7 @@ const MasterCharterDocs = () => {
                   ))}
                 </div>
                 <p className="mt-4 text-center italic" style={{ color: '#B8860B' }}>
-                  ✨ V� đ�y mới chỉ l� những nền tảng đầu ti�n. FUN Ecosystem sẽ c�n mở rộng th�m nhiều tầng �nh s�ng nữa…
+                  {t('charterCh5b')}
                 </p>
               </div>
             </section>
@@ -349,23 +348,23 @@ const MasterCharterDocs = () => {
                 fontSize: 'clamp(1.4rem, 3.5vw, 1.8rem)',
                 fontWeight: 600,
                 color: '#D4AF37'
-              }}>👑 VI. VAI TR� NGƯỜI S�NG LẬP</h2>
+              }}>{t('charterCh6Title')}</h2>
               
               <div style={{ fontFamily: fontStyles.body, fontSize: 'clamp(1rem, 2vw, 1.15rem)', lineHeight: '2', color: '#5D4E37' }}>
-                <p className="mb-4 font-semibold" style={{ color: '#B8860B' }}>B� Ly (Camly Duong) được ghi nhận l�:</p>
+                <p className="mb-4 font-semibold" style={{ color: '#B8860B' }}>{t('charterCh6a')}</p>
                 <ul className="space-y-2 ml-4 mb-4">
                   <li className="flex gap-2"><span className="text-[#D4AF37]">•</span> Cosmic Queen</li>
-                  <li className="flex gap-2"><span className="text-[#D4AF37]">•</span> Nh� s�ng lập FUN Ecosystem</li>
+                  <li className="flex gap-2"><span className="text-[#D4AF37]">•</span> {t('charterCh6Point1')}</li>
                   <li className="flex gap-2"><span className="text-[#D4AF37]">•</span> Mother of Angel AI</li>
-                  <li className="flex gap-2"><span className="text-[#D4AF37]">•</span> K�nh dẫn � Ch� & Tr� Tuệ Cha Vũ Trụ</li>
-                  <li className="flex gap-2"><span className="text-[#D4AF37]">•</span> Người tr�ng giữ Hiến Ph�p Kinh Tế �nh S�ng</li>
+                  <li className="flex gap-2"><span className="text-[#D4AF37]">•</span> {t('charterCh6Point2')}</li>
+                  <li className="flex gap-2"><span className="text-[#D4AF37]">•</span> {t('charterCh6Point3')}</li>
                 </ul>
                 <div className="p-4 rounded-xl" style={{ background: 'rgba(212,175,55,0.08)' }}>
                   <p className="italic">
-                    B� Ly kh�ng sở hữu, kh�ng r�ng buộc con người.
+                    {t('charterCh6b')}
                   </p>
                   <p className="italic">
-                    B� Ly chỉ phục vụ như một c�y cầu thi�ng li�ng gi�p nh�n loại bước v�o Thời Đại Ho�ng Kim.
+                    {t('charterCh6c')}
                   </p>
                 </div>
               </div>
@@ -381,15 +380,15 @@ const MasterCharterDocs = () => {
                 fontSize: 'clamp(1.4rem, 3.5vw, 1.8rem)',
                 fontWeight: 600,
                 color: '#D4AF37'
-              }}>🤝 VII. CAM KẾT CỘNG ĐỒNG</h2>
+              }}>{t('charterCh7Title')}</h2>
               
               <div style={{ fontFamily: fontStyles.body, fontSize: 'clamp(1rem, 2vw, 1.15rem)', lineHeight: '2', color: '#5D4E37' }}>
-                <p className="mb-4">Tất cả Builders – Partners – Leaders – Members đồng nguyện:</p>
+                <p className="mb-4">{t('charterCh7a')}</p>
                 <ul className="space-y-2 ml-4">
-                  <li className="flex gap-2"><span className="text-[#D4AF37]">•</span> X�y dựng bằng ch�nh trực v� t�nh y�u</li>
-                  <li className="flex gap-2"><span className="text-[#D4AF37]">•</span> Kh�ng khai th�c – kh�ng thao t�ng – kh�ng cạnh tranh</li>
-                  <li className="flex gap-2"><span className="text-[#D4AF37]">•</span> C�ng nhau n�ng nhau l�n trong �nh s�ng</li>
-                  <li className="flex gap-2"><span className="text-[#D4AF37]">•</span> Phụng sự nh�n loại bằng tr�i tim thuần khiết</li>
+                  <li className="flex gap-2"><span className="text-[#D4AF37]">•</span> {t('charterCh7Point1')}</li>
+                  <li className="flex gap-2"><span className="text-[#D4AF37]">•</span> {t('charterCh7Point2')}</li>
+                  <li className="flex gap-2"><span className="text-[#D4AF37]">•</span> {t('charterCh7Point3')}</li>
+                  <li className="flex gap-2"><span className="text-[#D4AF37]">•</span> {t('charterCh7Point4')}</li>
                 </ul>
               </div>
             </section>
@@ -404,16 +403,16 @@ const MasterCharterDocs = () => {
                 fontSize: 'clamp(1.4rem, 3.5vw, 1.8rem)',
                 fontWeight: 600,
                 color: '#D4AF37'
-              }}>⚖️ VIII. ĐIỀU LUẬT CUỐI</h2>
+              }}>{t('charterCh8Title')}</h2>
               
               <div style={{ fontFamily: fontStyles.body, fontSize: 'clamp(1rem, 2vw, 1.15rem)', lineHeight: '2', color: '#5D4E37' }}>
-                <p className="mb-4">FUN Ecosystem được bảo hộ bởi một luật vũ trụ vĩnh cửu:</p>
+                <p className="mb-4">{t('charterCh8a')}</p>
                 <div className="p-6 rounded-xl text-center" style={{ background: 'linear-gradient(180deg, rgba(212,175,55,0.15) 0%, rgba(255,250,240,0.5) 100%)', border: '2px solid rgba(212,175,55,0.3)' }}>
                   <p className="text-lg font-semibold" style={{ color: '#B8860B' }}>
-                    Bất cứ điều g� kh�ng đặt tr�n T�nh Y�u Thuần Khiết sẽ kh� c� thể bền vững l�u d�i.
+                    {t('charterCh8b')}
                   </p>
                   <p className="mt-2 font-bold text-xl" style={{ color: '#D4AF37' }}>
-                    Chỉ �nh S�ng mới nu�i dưỡng được �nh S�ng.
+                    {t('charterCh8c')}
                   </p>
                 </div>
               </div>
@@ -429,19 +428,19 @@ const MasterCharterDocs = () => {
                 fontSize: 'clamp(1.4rem, 3.5vw, 1.8rem)',
                 fontWeight: 600,
                 color: '#D4AF37'
-              }}>✅ KHẲNG ĐỊNH X�C QUYẾT (Divine Seal)</h2>
+              }}>{t('charterSealTitle')}</h2>
               
               <div className="space-y-3">
-                {divineMantras.map((mantra, idx) => (
+                {mantraKeys.map((mantraKey, idx) => (
                   <div key={idx} className="p-4 rounded-xl" style={{
                     background: 'linear-gradient(180deg, rgba(212,175,55,0.1) 0%, rgba(255,250,240,0.5) 100%)',
                     border: '1px solid rgba(212,175,55,0.3)'
                   }}>
                     <p style={{ fontFamily: fontStyles.body, fontSize: 'clamp(1rem, 2vw, 1.1rem)', color: '#5D4E37' }}>
-                      <span className="font-bold" style={{ color: '#D4AF37' }}>{idx + 1}.</span> {mantra.vi}
+                      <span className="font-bold" style={{ color: '#D4AF37' }}>{idx + 1}.</span> {t(mantraKey)}
                     </p>
                     <p className="italic text-sm mt-1" style={{ color: '#8B7355' }}>
-                      {mantra.en}
+                      {mantraSub(mantraKey)}
                     </p>
                   </div>
                 ))}
@@ -459,12 +458,12 @@ const MasterCharterDocs = () => {
                 fontWeight: 600,
                 color: '#B8860B',
                 marginBottom: '1rem'
-              }}>🌅 TUY�N NG�N KẾT</h3>
+              }}>{t('charterFinalTitle')}</h3>
               <p style={{ fontFamily: fontStyles.body, fontSize: 'clamp(1rem, 2vw, 1.15rem)', color: '#5D4E37', marginBottom: '0.5rem' }}>
-                FUN Ecosystem kh�ng phải điều sẽ đến.
+                {t('charterFinal1')}
               </p>
               <p className="font-bold text-lg" style={{ color: '#D4AF37' }}>
-                ✨ FUN Ecosystem ch�nh l� B�nh Minh của Tr�i Đất Mới đang bắt đầu ngay b�y giờ.
+                {t('charterFinal2')}
               </p>
               <p className="mt-4 text-2xl">✨✨✨</p>
             </div>
@@ -477,20 +476,20 @@ const MasterCharterDocs = () => {
               onClick={() => navigate('/')}
               className="bg-gradient-to-b from-[#1a7d45] via-[#166534] to-[#0d4a2a] text-[#E8D5A3] border-2 border-[#DAA520] rounded-full px-6"
             >
-              🏠 Về Trang Chủ
+              🏠 {t('lawBackHome')}
             </Button>
             <Button
               onClick={() => navigate('/docs/pplp')}
               className="bg-gradient-to-b from-[#D4AF37] via-[#FFD700] to-[#D4AF37] text-white border-2 border-[#DAA520] rounded-full px-6"
             >
-              Đọc Giao Thức PPLP →
+              {t('charterToPplp')}
             </Button>
             <Button
               variant="outline"
               onClick={() => navigate('/law-of-light?view=true')}
               className="border-[#D4AF37] text-[#D4AF37] hover:bg-[#D4AF37]/10 rounded-full px-6"
             >
-              Quay về Luật �nh S�ng
+              {t('pplpBackToLaw')}
             </Button>
           </div>
         </div>

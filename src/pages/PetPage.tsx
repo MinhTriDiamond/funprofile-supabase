@@ -17,12 +17,12 @@ import { resolvePetSprite, resolveFrameSprite, resolveHatSprite, resolveAuraSpri
 import { cn } from '@/lib/utils';
 
 const MOOD_LABEL: Record<string, string> = {
-  happy: 'Vui vẻ',
-  excited: 'Hào hứng',
-  calm: 'Bình an',
-  sad: 'Buồn',
-  hungry: 'Đói',
-  sleepy: 'Buồn ngủ',
+  happy: 'petMoodHappy',
+  excited: 'petMoodExcited',
+  calm: 'petMoodCalm',
+  sad: 'petMoodSad',
+  hungry: 'petMoodHungry',
+  sleepy: 'petMoodSleepy',
 };
 
 export default function PetPage() {
@@ -48,7 +48,7 @@ export default function PetPage() {
         <BackToHomeBar fallback="/" inline />
         <header className="flex items-center gap-2">
           <Sparkles className="w-5 h-5 text-purple-500" />
-          <h1 className="text-xl font-bold">Linh thú Lumi</h1>
+          <h1 className="text-xl font-bold">{t('petTitleLumi')}</h1>
           <PetGuideLink className="ml-auto" />
         </header>
 
@@ -91,9 +91,9 @@ export default function PetPage() {
                 <Badge variant="secondary">{STAGE_NAMES[pet.evolution_stage]}</Badge>
               </div>
               <div className="text-sm text-muted-foreground flex flex-wrap gap-x-3 gap-y-1">
-                <span>Cấp <b className="text-foreground">{pet.level}</b></span>
+                <span>{t('petLevelLabel')}<b className="text-foreground">{pet.level}</b></span>
                 <span>XP <b className="text-foreground">{pet.xp}</b></span>
-                <span>Tâm trạng <b className="text-foreground">{MOOD_LABEL[pet.mood] ?? pet.mood}</b></span>
+                <span>{t('petMoodLabel')}<b className="text-foreground">{MOOD_LABEL[pet.mood] ? t(MOOD_LABEL[pet.mood]) : pet.mood}</b></span>
               </div>
             </div>
           </Card>
@@ -102,18 +102,18 @@ export default function PetPage() {
             <div className="flex items-start gap-3">
               <Sparkles className="w-6 h-6 text-purple-500 shrink-0 mt-0.5" />
               <div className="text-sm text-muted-foreground">
-                <p className="text-foreground font-medium mb-1">Bạn chưa có Linh thú Lumi</p>
+                <p className="text-foreground font-medium mb-1">{t('petNoneTitle')}</p>
                 <p>
                   {isAuthenticated
-                    ? 'Hãy tương tác (đăng bài, tặng quà, tham gia hoạt động) để Lumi xuất hiện và đồng hành cùng bạn.'
-                    : 'Đăng nhập để bắt đầu nuôi Linh thú Lumi của riêng bạn.'}
+                    ? t('petNoneDescAuth')
+                    : t('petNoneDescGuest')}
                 </p>
               </div>
             </div>
             <div className="flex flex-wrap gap-2">
               <Button asChild size="sm">
                 <Link to={isAuthenticated ? '/' : '/auth'}>
-                  {isAuthenticated ? '✨ Bắt đầu tương tác' : '🚀 Đăng nhập để bắt đầu'}
+                  {isAuthenticated ? t('petCtaAuth') : t('petCtaGuest')}
                 </Link>
               </Button>
               <Button asChild size="sm" variant="outline">

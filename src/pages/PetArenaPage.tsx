@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
+import { useLanguage } from '@/i18n/LanguageContext';
 import { useLocation } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -29,6 +30,7 @@ import { BuddyCirclePanel } from '@/modules/pet/components/BuddyCirclePanel';
 import { Heart } from 'lucide-react';
 
 export default function PetArenaPage() {
+  const { t } = useLanguage();
   const { userId } = useCurrentUser();
   const { data: opponents } = useArenaOpponents();
   const { data: battles } = useMyBattles();
@@ -56,7 +58,7 @@ export default function PetArenaPage() {
   const onChallenge = async (opponentId: string) => {
     try {
       await challenge.mutateAsync(opponentId);
-      toast.success('Đã gửi lời mời so tài Ánh Sáng!');
+      toast.success(t('parInviteSent'));
     } catch (e) {
       toast.error(petBattleErrorToMessage(e));
     }
@@ -99,7 +101,7 @@ export default function PetArenaPage() {
       <FacebookNavbar />
       <div className="container mx-auto max-w-4xl px-3 py-4 space-y-4">
         <MiniGameAppBar
-          title="So tài Lumi"
+          title={t('queNavArena')}
           icon={BicepsFlexed}
           iconClassName="w-5 h-5 text-orange-500"
           right={<PetGuideLink />}
@@ -111,42 +113,40 @@ export default function PetArenaPage() {
         <PetRiskBanner />
 
         <p className="text-sm text-muted-foreground">
-          Mời Lumi của thành viên khác cùng so tài Ánh Sáng. Mỗi lần giao lưu gồm 5 vòng
-          dựa trên ATK/DEF/SPD/LCK sinh từ cấp độ + trang phục + lượt vỗ tay 7 ngày.
-          Không tốn token, chỉ một chút XP để cùng tiến hoá. Giới hạn 10 lần / 24h để giữ cân bằng.
+          {t('parDesc')}
         </p>
 
         <ArenaHowToCard />
 
         <Tabs value={activeTab} onValueChange={setActiveTab} id="buddy">
           <TabsList>
-            <TabsTrigger value="opponents">Bạn so tài</TabsTrigger>
+            <TabsTrigger value="opponents">{t('parTabOpponents')}</TabsTrigger>
             <TabsTrigger value="pending">
-              Lời mời {pending.length > 0 && <Badge variant="destructive" className="ml-1 h-5">{pending.length}</Badge>}
+              {t('parTabInvites')}{pending.length > 0 && <Badge variant="destructive" className="ml-1 h-5">{pending.length}</Badge>}
             </TabsTrigger>
-            <TabsTrigger value="history">Hành trình</TabsTrigger>
+            <TabsTrigger value="history">{t('parTabHistory')}</TabsTrigger>
             <TabsTrigger value="leaderboard">
-              <Trophy className="w-3 h-3 mr-1" /> Bảng vinh danh
+              <Trophy className="w-3 h-3 mr-1" />{t('parTabHonor')}
             </TabsTrigger>
             <TabsTrigger value="buddy">
-              <Heart className="w-3 h-3 mr-1" /> Đôi bạn cùng tiến
+              <Heart className="w-3 h-3 mr-1" />{t('parTabBuddies')}
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="opponents" className="space-y-2">
             <div className="flex items-center justify-between gap-2 pb-1">
               <p className="text-xs text-muted-foreground">
-                Mọi Lumi đang sẵn sàng giao lưu, kể cả cấp 1.
+                {t('parAllReady')}
               </p>
               <Button size="sm" variant="outline" onClick={() => setInviteOpen(true)}>
-                <UserPlus className="w-4 h-4 mr-1" /> Tìm &amp; mời bạn cụ thể
+                <UserPlus className="w-4 h-4 mr-1" />{t('parFindInvite')}
               </Button>
             </div>
             {!opponents?.length ? (
               <div className="text-sm text-muted-foreground text-center py-8 space-y-3">
-                <div>Chưa có thành viên nào sẵn sàng so tài. Hãy mời bạn thân nhé!</div>
+                <div>{t('parEmptyOpponents')}</div>
                 <Button size="sm" variant="secondary" onClick={() => setInviteOpen(true)}>
-                  <UserPlus className="w-4 h-4 mr-1" /> Tìm bạn cụ thể để mời
+                  <UserPlus className="w-4 h-4 mr-1" />{t('parFindInvite2')}
                 </Button>
               </div>
             ) : opponents.map(op => (
@@ -164,7 +164,7 @@ export default function PetArenaPage() {
                   </div>
                 </div>
                 <Button size="sm" onClick={() => onChallenge(op.user_id)} disabled={challenge.isPending}>
-                  Mời so tài
+                  {t('parInviteBtn')}
                 </Button>
               </Card>
             ))}
@@ -172,7 +172,7 @@ export default function PetArenaPage() {
 
           <TabsContent value="pending" className="space-y-2">
             {pending.length === 0 ? (
-              <div className="text-sm text-muted-foreground text-center py-8">Chưa có lời mời nào đang chờ.</div>
+              <div className="text-sm text-muted-foreground text-center py-8">{t('parEmptyInvites')}</div>
             ) : pending.map(b => {
               const isOpp = b.opponent_id === userId;
               const other = isOpp ? b.challenger_profile : b.opponent_profile;
@@ -187,20 +187,20 @@ export default function PetArenaPage() {
                     </Avatar>
                     <div className="min-w-0">
                       <div className="font-medium truncate">
-                        {isOpp ? `${otherName} mời bạn so tài` : `Đã gửi tới ${otherName}`}
+                        {isOpp ? `${otherName}${t('parInviteFromSuffix')}` : `${t('parSentToPrefix')}${otherName}`}
                       </div>
                       <div className="text-xs text-muted-foreground truncate">
-                        Lv.{otherSnap.pet_level} · Hết hạn {format(new Date(b.expires_at), 'dd/MM HH:mm')}
+                        Lv.{otherSnap.pet_level}{t('parExpires')}{format(new Date(b.expires_at), 'dd/MM HH:mm')}
                       </div>
                     </div>
                   </div>
                   {isOpp ? (
                     <div className="flex gap-2 shrink-0">
-                      <Button size="sm" variant="outline" onClick={() => decline.mutate(b.id)}>Để dịp khác</Button>
-                      <Button size="sm" onClick={() => onAccept(b.id)} disabled={accept.isPending}>So tài ngay</Button>
+                      <Button size="sm" variant="outline" onClick={() => decline.mutate(b.id)}>{t('parDecline')}</Button>
+                      <Button size="sm" onClick={() => onAccept(b.id)} disabled={accept.isPending}>{t('parAccept')}</Button>
                     </div>
                   ) : (
-                    <Badge variant="secondary" className="shrink-0">Đang chờ hồi âm</Badge>
+                    <Badge variant="secondary" className="shrink-0">{t('parWaiting')}</Badge>
                   )}
                 </Card>
               );
@@ -209,7 +209,7 @@ export default function PetArenaPage() {
 
           <TabsContent value="history" className="space-y-2">
             {resolved.length === 0 ? (
-              <div className="text-sm text-muted-foreground text-center py-8">Chưa có lần so tài nào.</div>
+              <div className="text-sm text-muted-foreground text-center py-8">{t('parEmptyHistory')}</div>
             ) : resolved.map(b => {
               const won = b.winner_id === userId;
               const draw = b.winner_id === null;
@@ -226,14 +226,14 @@ export default function PetArenaPage() {
                       <AvatarFallback>{otherName[0]}</AvatarFallback>
                     </Avatar>
                     <div className="min-w-0">
-                      <div className="font-medium truncate">cùng {otherName}</div>
+                      <div className="font-medium truncate">{t('parWithPrefix')}{otherName}</div>
                       <div className="text-xs text-muted-foreground truncate">
                         Lv.{otherSnap.pet_level} · {format(new Date(b.resolved_at ?? b.created_at), 'dd/MM HH:mm')}
                       </div>
                     </div>
                   </div>
                   <Badge variant={won ? 'default' : draw ? 'secondary' : 'destructive'} className="shrink-0">
-                    {draw ? 'Cân bằng' : won ? 'Toả sáng' : 'Chưa toả sáng'}
+                    {draw ? t('parDraw') : won ? t('parWon') : t('parLost')}
                   </Badge>
                 </Card>
               );
@@ -243,7 +243,7 @@ export default function PetArenaPage() {
 
           <TabsContent value="leaderboard" className="space-y-2">
             {!leaderboard?.length ? (
-              <div className="text-sm text-muted-foreground text-center py-8">Mùa Ánh Sáng này chưa có dữ liệu.</div>
+              <div className="text-sm text-muted-foreground text-center py-8">{t('parEmptySeason')}</div>
             ) : leaderboard.map((row, i) => (
               <Card key={row.user_id} className="p-3 flex items-center justify-between text-sm">
                 <div className="flex items-center gap-3">
@@ -255,11 +255,11 @@ export default function PetArenaPage() {
                   <div>
                     <div className="font-medium">{row.username ?? row.display_name ?? 'Ẩn danh'}</div>
                     <div className="text-xs text-muted-foreground">
-                      {row.wins} toả sáng · {row.losses} luyện thêm · {row.draws} cân bằng
+                      {row.wins}{t('parStatsA')}{row.losses}{t('parStatsB')}{row.draws}{t('parStatsC')}
                     </div>
                   </div>
                 </div>
-                <Badge variant="default">{row.points} điểm</Badge>
+                <Badge variant="default">{row.points}{t('parPointsSuffix')}</Badge>
               </Card>
             ))}
           </TabsContent>

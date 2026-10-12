@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { useLanguage } from '@/i18n/LanguageContext';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -36,11 +37,11 @@ const RARITY_STYLES: Record<ShopRarity, string> = {
 };
 
 const RARITY_LABEL: Record<ShopRarity, string> = {
-  common: 'Thường',
-  rare: 'Hiếm',
-  epic: 'Đặc biệt',
-  legendary: 'Huyền thoại',
-  cosmic: 'Vũ trụ',
+  common: 'pshRarityCommon',
+  rare: 'pshRarityRare',
+  epic: 'pshRarityEpic',
+  legendary: 'pshRarityLegendary',
+  cosmic: 'pshRarityCosmic',
 };
 
 function formatCamly(n: number): string {
@@ -56,6 +57,7 @@ function ShopItemCard({
   petLevel: number;
   onBuy: (item: ShopItem) => void;
 }) {
+  const { t } = useLanguage();
   const sprite = resolveItemSprite(item.slot, item.slug, 3);
   const owned = item.owned;
   const levelLow = petLevel < item.level_required;
@@ -121,14 +123,14 @@ function ShopItemCard({
         </div>
         {owned ? (
           <Badge className="bg-emerald-500 hover:bg-emerald-500 gap-1">
-            <Check className="w-3 h-3" /> Đã có
+            <Check className="w-3 h-3" />{t('pshOwned')}
           </Badge>
         ) : levelLow ? (
           <Badge variant="outline" className="gap-1 text-amber-700 border-amber-500/40">
             <Lock className="w-3 h-3" /> Lv {item.level_required}
           </Badge>
         ) : outOfStock ? (
-          <Badge variant="outline">Hết hàng</Badge>
+          <Badge variant="outline">{t('pshSoldOut')}</Badge>
         ) : (
           <Button size="sm" onClick={() => onBuy(item)} className="h-7 text-xs">
             Mua
@@ -140,6 +142,7 @@ function ShopItemCard({
 }
 
 export default function PetShopPage() {
+  const { t } = useLanguage();
   const { userId: _uid } = useCurrentUser();
   void _uid;
   const { data: items, isLoading } = usePetShopCatalog();
@@ -166,7 +169,7 @@ export default function PetShopPage() {
 
   const handleSelect = (item: ShopItem) => {
     if (shopBlocked) {
-      toast.error('Linh thú đang bị hạn chế. Vui lòng kháng nghị trước khi mua thêm trang phục.');
+      toast.error(t('pshRestricted'));
       return;
     }
     setSelected(item);
@@ -177,22 +180,20 @@ export default function PetShopPage() {
       <PetRiskBanner />
       <header className="space-y-2">
         <MiniGameAppBar
-          title="Cửa hàng Lumi"
+          title={t('queNavShop')}
           icon={Sparkles}
           right={
             <>
               <Button size="sm" variant="outline" onClick={() => setInventoryOpen(true)} className="h-8 gap-1.5">
                 <Backpack className="w-4 h-4" />
-                Tủ đồ của tôi
+                {t('pshWardrobe')}
               </Button>
               <PetGuideLink />
             </>
           }
         />
         <p className="text-sm text-muted-foreground">
-          Dùng CAMLY trên ví BSC để mua trang phục riêng cho Linh thú. Mỗi giao
-          dịch sẽ chuyển CAMLY tới ví treasury rồi tự động cấp trang phục sau
-          1 xác nhận on-chain. Đồ đã mua sẽ nằm trong <span className="font-medium text-foreground">Tủ đồ của tôi</span> — bấm <span className="font-medium text-foreground">Trang bị</span> để Lumi mặc lên.
+          {t('pshDescA')}<span className="font-medium text-foreground">{t('pshWardrobe')}</span>{t('pshDescB')}<span className="font-medium text-foreground">{t('pshEquip')}</span>{t('pshDescC')}
         </p>
         <div className="flex flex-wrap gap-1">
           {(['all', 'common', 'rare', 'epic', 'legendary', 'cosmic'] as const).map(
@@ -204,7 +205,7 @@ export default function PetShopPage() {
                 className="h-7 text-xs capitalize"
                 onClick={() => setFilterRarity(r as ShopRarity | 'all')}
               >
-                {r === 'all' ? 'Tất cả' : RARITY_LABEL[r as ShopRarity]}
+                {r === 'all' ? t('benAll') : t(RARITY_LABEL[r as ShopRarity])}
               </Button>
             ),
           )}
@@ -217,14 +218,14 @@ export default function PetShopPage() {
       <Tabs value={tab} onValueChange={(v) => setTab(v as 'catalog' | 'feed')}>
         <div className="flex flex-wrap items-center justify-between gap-2">
           <TabsList>
-            <TabsTrigger value="catalog">Cửa hàng</TabsTrigger>
-            <TabsTrigger value="feed">Giao dịch gần đây</TabsTrigger>
+            <TabsTrigger value="catalog">{t('pshTabCatalog')}</TabsTrigger>
+            <TabsTrigger value="feed">{t('pshTabFeed')}</TabsTrigger>
           </TabsList>
           <a
             href="/treasury"
             className="text-xs text-primary hover:underline inline-flex items-center gap-1"
           >
-            Xem Treasury công khai →
+            {t('mbpTreasury')}
           </a>
         </div>
 
@@ -237,7 +238,7 @@ export default function PetShopPage() {
             </div>
           ) : filtered.length === 0 ? (
             <div className="rounded-xl border border-dashed p-8 text-center text-sm text-muted-foreground">
-              Chưa có trang phục nào đang được bán.
+              {t('pshEmpty')}
             </div>
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">

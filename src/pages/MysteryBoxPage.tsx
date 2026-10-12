@@ -34,14 +34,14 @@ export default function MysteryBoxPage() {
                 {t('mysteryBox')}
               </h1>
               <p className="text-sm text-muted-foreground mt-1">
-                Mở hộp để nhận Light Score, CAMLY, vật phẩm Pet và nhiều phần thưởng khác.
+                {t('mbpSubtitle')}
               </p>
             </div>
             <a
               href="/treasury"
               className="text-xs text-primary hover:underline inline-flex items-center gap-1 mt-2"
             >
-              Xem Treasury công khai →
+              {t('mbpTreasury')}
             </a>
           </header>
 

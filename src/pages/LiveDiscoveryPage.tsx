@@ -10,8 +10,10 @@ import { useActiveLiveSessions } from '@/modules/live/useLiveSession';
 import { formatDistanceToNow } from 'date-fns';
 import { useDateLocale } from '@/hooks/useDateLocale';
 import { LiveAvatarBadge } from '@/components/live/LiveAvatarBadge';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 export default function LiveDiscoveryPage() {
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const dateLocale = useDateLocale();
   const { liveFriends, isLoading: friendsLoading } = useFollowingLiveStatus();
@@ -35,7 +37,7 @@ export default function LiveDiscoveryPage() {
           </div>
           <div>
             <h1 className="text-xl font-bold">Live</h1>
-            <p className="text-sm text-muted-foreground">Xem bạn bè và mọi người đang phát trực tiếp</p>
+            <p className="text-sm text-muted-foreground">{t('ldpSubtitle')}</p>
           </div>
         </div>
 
@@ -60,7 +62,7 @@ export default function LiveDiscoveryPage() {
               <section className="mb-6">
                 <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3 flex items-center gap-2">
                   <Users className="w-4 h-4" />
-                  Bạn bè đang live
+                  {t('ldpFriendsLive')}
                 </h2>
                 <div className="space-y-3">
                   {liveFriends.map((s) => (
@@ -84,14 +86,14 @@ export default function LiveDiscoveryPage() {
               <section className="mb-6">
                 <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3 flex items-center gap-2">
                   <Radio className="w-4 h-4" />
-                  Đang diễn ra
+                  {t('ldpHappening')}
                 </h2>
                 <div className="space-y-3">
                 {otherSessions.map((s) => (
                     <LiveSessionRow
                       key={s.id}
                       sessionId={s.id}
-                      title={s.title || 'Phát trực tiếp'}
+                      title={s.title || t('ldpDefaultTitle')}
                       viewerCount={s.viewer_count}
                       startedAt={s.started_at}
                       host={{
@@ -112,8 +114,8 @@ export default function LiveDiscoveryPage() {
                 <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
                   <Radio className="w-8 h-8 opacity-40" />
                 </div>
-                <p className="font-medium text-foreground">Không có ai đang live</p>
-                <p className="text-sm mt-1">Hãy quay lại sau nhé!</p>
+                <p className="font-medium text-foreground">{t('ldpEmptyTitle')}</p>
+                <p className="text-sm mt-1">{t('ldpEmptyDesc')}</p>
               </div>
             )}
           </>
@@ -135,6 +137,7 @@ interface LiveSessionRowProps {
 }
 
 function LiveSessionRow({ title, viewerCount, startedAt, host, onWatch, isFriend }: LiveSessionRowProps) {
+  const { t } = useLanguage();
   const dateLocale = useDateLocale();
   return (
     <Card className="p-4 hover:bg-accent/30 transition-colors cursor-pointer" onClick={onWatch}>
@@ -153,7 +156,7 @@ function LiveSessionRow({ title, viewerCount, startedAt, host, onWatch, isFriend
             <span className="font-semibold text-sm truncate">{host.username}</span>
             {isFriend && (
               <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded font-medium shrink-0">
-                Bạn bè
+                {t('ldpFriendBadge')}
               </span>
             )}
           </div>
@@ -170,7 +173,7 @@ function LiveSessionRow({ title, viewerCount, startedAt, host, onWatch, isFriend
 
         <Button size="sm" variant="destructive" className="shrink-0 gap-1.5" onClick={(e) => { e.stopPropagation(); onWatch(); }}>
           <Radio className="w-3.5 h-3.5" />
-          Xem
+          {t('ldpWatch')}
         </Button>
       </div>
     </Card>

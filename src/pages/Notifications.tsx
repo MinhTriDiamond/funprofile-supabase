@@ -46,18 +46,19 @@ interface NotificationWithActor {
 }
 
 const FraudDetails = ({ type, metadata: m, formatWithEmails }: { type: string; metadata: Record<string, any>; formatWithEmails: (u: string[] | undefined, e: Record<string, string> | undefined, l?: number) => string }) => {
+  const { t } = useLanguage();
   const items: string[] = [];
   if (type === "admin_shared_device") {
     const userList = formatWithEmails(m?.usernames, m?.flagged_emails, 10);
-    if (userList) items.push(`Tài khoản: ${userList}`);
+    if (userList) items.push(`${t('notFraudAccounts')}${userList}`);
   } else if (type === "admin_email_farm") {
     const userList = formatWithEmails(m?.usernames, m?.flagged_emails, 10);
     const emails = m?.emails?.slice(0, 10)?.join(', ');
-    if (userList) items.push(`Tài khoản: ${userList}`);
+    if (userList) items.push(`${t('notFraudAccounts')}${userList}`);
     else if (emails) items.push(`Emails: ${emails}`);
   } else if (type === "admin_blacklisted_ip") {
     const userList = formatWithEmails(m?.known_usernames, m?.flagged_emails, 10);
-    if (userList) items.push(`Liên quan: ${userList}`);
+    if (userList) items.push(`${t('notFraudRelated')}${userList}`);
   } else if (type === "admin_fraud_daily" && m?.alerts?.length) {
     m.alerts.forEach((a: string) => items.push(a));
   }
@@ -231,95 +232,97 @@ const Notifications = () => {
     }).join(', ');
   };
 
+  const fmtNum = (v: unknown) => (Number(v) || 0).toLocaleString(dateLocale?.code ?? 'vi-VN');
+
   const getNotificationText = (notification: NotificationWithActor) => {
     const actorName = notification.actor?.username || t('anonymous');
     const m = notification.metadata;
     if (notification.type === "post_tagged") {
-      return `${actorName} đã gắn thẻ bạn trong một bài viết`;
+      return `${actorName}${t('notTagged')}`;
     }
     
     switch (notification.type) {
       case "like":
-        return `${actorName} đã thích bài viết của bạn`;
+        return `${actorName}${t('notLiked')}`;
       case "love":
-        return `${actorName} đã yêu thích bài viết của bạn`;
+        return `${actorName}${t('notLoved')}`;
       case "care":
-        return `${actorName} đã thương thương bài viết của bạn`;
+        return `${actorName}${t('notCared')}`;
       case "haha":
-        return `${actorName} đã cười với bài viết của bạn`;
+        return `${actorName}${t('notHaha')}`;
       case "wow":
-        return `${actorName} đã ngạc nhiên với bài viết của bạn`;
+        return `${actorName}${t('notWow')}`;
       case "sad":
-        return `${actorName} đã buồn với bài viết của bạn`;
+        return `${actorName}${t('notSad')}`;
       case "angry":
-        return `${actorName} đã phẫn nộ với bài viết của bạn`;
+        return `${actorName}${t('notAngry')}`;
       case "pray":
-        return `${actorName} đã gửi lời biết ơn với bài viết của bạn`;
+        return `${actorName}${t('notGrateful')}`;
       case "comment":
-        return `${actorName} đã bình luận về bài viết của bạn`;
+        return `${actorName}${t('notCommented')}`;
       case "comment_like":
-        return `${actorName} đã thích bình luận của bạn`;
+        return `${actorName}${t('notLikedComment')}`;
       case "comment_reply":
-        return `${actorName} đã trả lời bình luận của bạn`;
+        return `${actorName}${t('notRepliedComment')}`;
       case "share":
-        return `${actorName} đã chia sẻ bài viết của bạn`;
+        return `${actorName}${t('notShared')}`;
       case "donation":
-        return `${actorName} đã tặng quà cho bạn`;
+        return `${actorName}${t('notGifted')}`;
       case "friend_request":
-        return `${actorName} đã gửi lời mời kết bạn`;
+        return `${actorName}${t('notFriendRequest')}`;
       case "friend_accepted":
-        return `${actorName} đã chấp nhận lời mời kết bạn`;
+        return `${actorName}${t('notFriendAccepted')}`;
       case "friend_removed":
-        return `${actorName} đã hủy kết bạn với bạn`;
+        return `${actorName}${t('notUnfriended')}`;
       case "reward_approved":
-        return "🎉 Chúc mừng! Phần thưởng của bạn đã được duyệt";
+        return t("notRewardApproved");
       case "reward_rejected":
-        return "📋 Yêu cầu nhận thưởng cần được xem xét lại";
+        return t("notRewardReview");
       case "claim_reward":
-        return "FUN Profile Treasury đã chuyển phần thưởng CAMLY về ví của bạn";
+        return t("notRewardSent");
       case "account_banned":
-        return "⚠️ Tài khoản của bạn đã bị hạn chế";
+        return t("notRestricted");
       case "live_started":
-        return `🔴 ${actorName} đang phát trực tiếp`;
+        return `🔴 ${actorName}${t('notLiveSuffix')}`;
       case "admin_shared_device": {
         const summary = m?.device_hash
-          ? `🔴 Cảnh báo: Thiết bị ${(m.device_hash as string).slice(0, 8)}... có ${m.user_count || '?'} TK`
-          : '🔴 Cảnh báo: Phát hiện thiết bị dùng chung';
+          ? `${t('notFraudDeviceA')}${(m.device_hash as string).slice(0, 8)}${t('notFraudDeviceB')}${m.user_count || '?'}${t('notFraudAccountsSuffix')}`
+          : t('notFraudDevice');
         return summary;
       }
       case "admin_email_farm": {
         const summary = m?.email_base
-          ? `🔴 Cảnh báo: Cụm email "${m.email_base}" có ${m.count || '?'} TK`
-          : '🔴 Cảnh báo: Phát hiện cụm email farm';
+          ? `${t('notFraudEmailA')}${m.email_base}${t('notFraudEmailB')}${m.count || '?'}${t('notFraudAccountsSuffix')}`
+          : t('notFraudEmail');
         return summary;
       }
       case "admin_blacklisted_ip": {
         const summary = m?.ip_address
-          ? `🔴 Cảnh báo: Đăng nhập từ IP bị chặn ${m.ip_address}`
-          : '🔴 Cảnh báo: Đăng nhập từ IP bị chặn';
+          ? `${t('notFraudIpA')}${m.ip_address}`
+          : t('notFraudIp');
         return summary;
       }
       case "admin_fraud_daily": {
         const summary = m?.alerts_count
-          ? `📊 Báo cáo gian lận: ${m.alerts_count} cảnh báo`
-          : '📊 Báo cáo gian lận';
+          ? `${t('notFraudReportA')}${m.alerts_count}${t('notFraudReportB')}`
+          : t('notFraudReport');
         return summary;
       }
       case "pet_cheer_received":
-        return `${actorName} đã cổ vũ Linh thú của bạn 🎉`;
+        return `${actorName}${t('notPetCheered')}`;
       case "pet_evolved":
-        return `✨ Linh thú của bạn đã tiến hoá${m?.to_stage ? ` thành ${m.to_stage}` : ''}!`;
+        return `${t('notPetEvolvedA')}${m?.to_stage ? `${t('notPetEvolvedB')}${m.to_stage}` : ''}!`;
       case "pet_cosmetic_received":
-        return `🎁 Linh thú nhận được trang phục mới${m?.cosmetic_name ? `: ${m.cosmetic_name}` : ''}`;
+        return `${t('notPetCosmetic')}${m?.cosmetic_name ? `: ${m.cosmetic_name}` : ''}`;
       case "pet_xp_granted":
-        return `⭐ Linh thú của bạn nhận thêm ${m?.xp ?? ''} XP`;
+        return `${t('notPetXpA')}${m?.xp ?? ''} XP`;
       default: {
         const build = SYSTEM_NOTIF_TEXT[notification.type];
         if (build) {
-          const { title, desc } = build(m as Record<string, unknown> | null);
+          const { title, desc } = build(m as Record<string, unknown> | null, t, fmtNum);
           return `${title} — ${desc}`;
         }
-        return "🔔 Bạn có thông báo mới từ hệ thống";
+        return t("notSystemNew");
       }
     }
 
@@ -364,14 +367,14 @@ const Notifications = () => {
   const unreadCount = notifications.filter(n => !n.read).length;
 
   const filterOptions = [
-    { value: "all", label: "Tất cả", icon: Bell },
+    { value: "all", label: t("benAll"), icon: Bell },
     { value: "reactions", label: "Reactions", icon: Heart },
-    { value: "comments", label: "Bình luận", icon: MessageCircle },
-    { value: "shares", label: "Chia sẻ", icon: Share2 },
-    { value: "donations", label: "Tặng thưởng", icon: Gift },
-    { value: "friends", label: "Bạn bè", icon: UserPlus },
-    { value: "pet", label: "Linh thú", icon: Sparkles },
-    { value: "system", label: "Hệ thống", icon: Shield },
+    { value: "comments", label: t("notTabComments"), icon: MessageCircle },
+    { value: "shares", label: t("notTabShares"), icon: Share2 },
+    { value: "donations", label: t("notTabDonations"), icon: Gift },
+    { value: "friends", label: t("friTitle"), icon: UserPlus },
+    { value: "pet", label: t("notTabPet"), icon: Sparkles },
+    { value: "system", label: t("notTabSystem"), icon: Shield },
   ];
 
   const handlePullRefresh = useCallback(async () => {
@@ -394,7 +397,7 @@ const Notifications = () => {
             </Button>
             <div className="flex items-center gap-2">
               <Bell className="h-5 w-5 text-primary" />
-              <h1 className="text-lg font-semibold">Thông báo</h1>
+              <h1 className="text-lg font-semibold">{t('setTabNotifications')}</h1>
               {unreadCount > 0 && (
                 <Badge 
                   variant="secondary" 
@@ -414,7 +417,7 @@ const Notifications = () => {
               className="text-primary text-sm"
             >
               <CheckCheck className="h-4 w-4 mr-1" />
-              Đọc tất cả
+              {t('notMarkAll')}
             </Button>
           )}
         </div>
@@ -448,7 +451,7 @@ const Notifications = () => {
         <PullToRefreshContainer onRefresh={handlePullRefresh}>
           <div className="divide-y divide-border">
             {isLoading ? (
-              <div className="p-3 space-y-3" aria-label="Đang tải thông báo">
+              <div className="p-3 space-y-3" aria-label={t("notLoadingLabel")}>
                 {[0, 1, 2, 3, 4, 5].map((i) => (
                   <div key={i} className="flex items-start gap-3 py-2">
                     <div className="skeleton-shimmer w-10 h-10 rounded-full shrink-0" />
@@ -466,8 +469,8 @@ const Notifications = () => {
                 </div>
                 <p className="text-muted-foreground">
                   {filter === "all" 
-                    ? "Chưa có thông báo nào" 
-                    : "Không có thông báo nào thuộc loại này"}
+                    ? t("notEmptyAll") 
+                    : t("notEmptyFilter")}
                 </p>
               </div>
             ) : (
@@ -477,7 +480,7 @@ const Notifications = () => {
                 <div className="border-b-2 border-destructive/30 bg-destructive/5">
                   <div className="px-4 py-2 flex items-center gap-2 bg-destructive/10 border-b border-destructive/20">
                     <Shield className="h-4 w-4 text-destructive" />
-                    <span className="text-sm font-semibold text-destructive">🛡️ Cảnh báo bảo mật</span>
+                    <span className="text-sm font-semibold text-destructive">{t('notSecurityAlert')}</span>
                     <Badge variant="secondary" className="bg-destructive text-destructive-foreground text-xs ml-auto">
                       {fraudNotifications.length}
                     </Badge>
@@ -516,9 +519,9 @@ const Notifications = () => {
                               className="text-xs text-destructive hover:underline mt-1 flex items-center gap-1"
                             >
                               {expandedNotifications.has(notification.id) ? (
-                                <>Thu gọn <ChevronUp className="h-3 w-3" /></>
+                                <>{t('notCollapse')}<ChevronUp className="h-3 w-3" /></>
                               ) : (
-                                <>Xem chi tiết <ChevronDown className="h-3 w-3" /></>
+                                <>{t('notExpand')}<ChevronDown className="h-3 w-3" /></>
                               )}
                             </button>
                             {expandedNotifications.has(notification.id) && (
@@ -593,9 +596,9 @@ const Notifications = () => {
                           className="text-xs text-primary hover:underline mt-1 flex items-center gap-1"
                         >
                           {expandedNotifications.has(notification.id) ? (
-                            <>Thu gọn <ChevronUp className="h-3 w-3" /></>
+                            <>{t('notCollapse')}<ChevronUp className="h-3 w-3" /></>
                           ) : (
-                            <>Xem chi tiết <ChevronDown className="h-3 w-3" /></>
+                            <>{t('notExpand')}<ChevronDown className="h-3 w-3" /></>
                           )}
                         </button>
                         {expandedNotifications.has(notification.id) && (
