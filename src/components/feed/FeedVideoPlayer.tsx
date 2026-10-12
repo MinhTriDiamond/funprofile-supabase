@@ -1,4 +1,5 @@
 import { memo, useEffect, useId, useCallback, useMemo, useRef, useState, Suspense } from 'react';
+import { useLanguage } from '@/i18n/LanguageContext';
 import { cn } from '@/lib/utils';
 import { FacebookVideoPlayer } from '@/components/ui/FacebookVideoPlayer';
 import { VideoErrorBoundary } from '@/components/ui/VideoErrorBoundary';
@@ -66,6 +67,7 @@ export const FeedVideoPlayer = memo(({
   compact = false,
   onError,
 }: FeedVideoPlayerProps) => {
+  const { t } = useLanguage();
   const autoId = useId();
   const coordId = itemId || feedId || autoId;
   const normalizedSrc = useMemo(() => normalizeR2Url(src), [src]);
@@ -272,7 +274,7 @@ export const FeedVideoPlayer = memo(({
             </VideoErrorBoundary>
           ) : blockChunkedOnIos ? (
             <div className="flex h-full w-full items-center justify-center bg-black p-4 text-center text-sm text-white/80">
-              Replay đang được xử lý HLS cho Safari.
+              {t('fvpReplayProcessing')}
             </div>
           ) : isChunked ? (
             <VideoErrorBoundary>
@@ -345,7 +347,7 @@ export const FeedVideoPlayer = memo(({
               type="button"
               onClick={(e) => { e.preventDefault(); e.stopPropagation(); downloadChunkedVideo(src); }}
               className="pointer-events-auto w-9 h-9 bg-black/60 hover:bg-black/80 rounded-full flex items-center justify-center text-white transition-colors"
-              title="Tải video về máy"
+              title={t('fvpDownloadVideo')}
             >
               <Download className="w-4 h-4" />
             </button>
@@ -359,7 +361,7 @@ export const FeedVideoPlayer = memo(({
                 else downloadDirectMp4(normalizedSrc);
               }}
               className="pointer-events-auto w-9 h-9 bg-black/60 hover:bg-black/80 rounded-full flex items-center justify-center text-white transition-colors"
-              title="Tải MP4 về máy"
+              title={t('fvpDownloadMp4')}
             >
               <Download className="w-4 h-4" />
             </button>

@@ -54,16 +54,17 @@ function formatAmount(n: number, token?: string): string {
   return formatNumber(n, decimals);
 }
 
-const SOURCE_LABEL: Record<string, string> = {
-  donations: 'Quà nội bộ',
-  donations_internal: 'Quà nội bộ',
-  donations_external: 'Nạp ví ngoài',
-  wallet_transfers: 'Chuyển ví',
-  swaps: 'Swap',
+const SOURCE_LABEL_KEY: Record<string, string> = {
+  donations: 'ggsSourceInternalGift',
+  donations_internal: 'ggsSourceInternalGift',
+  donations_external: 'ggsSourceExternalTopup',
+  wallet_transfers: 'ggsSourceWalletTransfer',
 };
 
 export const GlobalGiftStatsModal = memo(({ open, onOpenChange, direction, totalUsd, mode = 'gift' }: Props) => {
   const { t } = useLanguage();
+  const sourceLabel = (source: string) =>
+    SOURCE_LABEL_KEY[source] ? t(SOURCE_LABEL_KEY[source] as any) : source === 'swaps' ? 'Swap' : source;
   const { data: prices } = useTokenPrices();
 
   const priceMap = (() => {
@@ -145,9 +146,9 @@ export const GlobalGiftStatsModal = memo(({ open, onOpenChange, direction, total
             {pricesUnavailable ? (
               <span
                 className="text-base font-semibold text-muted-foreground"
-                title="Chưa có giá thị trường"
+                title={t('ggsNoPriceTitle')}
               >
-                Chưa có giá
+                {t('ggsNoPrice')}
               </span>
             ) : (
               formatCompactUsd(displayTotal)
@@ -162,7 +163,7 @@ export const GlobalGiftStatsModal = memo(({ open, onOpenChange, direction, total
             </div>
           ) : pricesUnavailable ? (
             <p className="text-center text-muted-foreground py-6 text-sm">
-              Chưa có giá thị trường — thống kê USD tạm thời không khả dụng.
+              {t('ggsNoPriceNote')}
             </p>
           ) : aggregated.length === 0 ? (
             <p className="text-center text-muted-foreground py-6 text-sm">—</p>
@@ -185,7 +186,7 @@ export const GlobalGiftStatsModal = memo(({ open, onOpenChange, direction, total
                     <td className="py-2 font-semibold">{r.token}</td>
                     {mode === 'flow' && (
                       <td className="py-2 text-xs text-muted-foreground">
-                        {SOURCE_LABEL[(r as any).source] || (r as any).source}
+                        {sourceLabel((r as any).source)}
                       </td>
                     )}
                     <td className="py-2 text-right tabular-nums">{formatNumber(r.count)}</td>
@@ -198,7 +199,7 @@ export const GlobalGiftStatsModal = memo(({ open, onOpenChange, direction, total
                               <span className="cursor-help text-muted-foreground underline decoration-dotted">—</span>
                             </TooltipTrigger>
                             <TooltipContent side="left" className="max-w-[220px]">
-                              FUN đang ở giai đoạn testnet, chưa có tỷ giá quy đổi USD.
+                              {t('ggsFunTestnetNote')}
                             </TooltipContent>
                           </Tooltip>
                         </TooltipProvider>

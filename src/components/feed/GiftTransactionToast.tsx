@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
+import { useLanguage } from '@/i18n/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Gift, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -18,13 +19,14 @@ const DISMISS_MS = 8000; // 8 giây mỗi toast rồi chuyển sang lệnh tiế
 /**
  * Format số có dấu chấm phân cách hàng nghìn (format tiếng Việt)
  */
-const formatNumber = (num: string | number): string => {
+const formatNumber = (num: string | number, locale: string): string => {
   const n = typeof num === 'string' ? parseFloat(num) : num;
   if (isNaN(n)) return '0';
-  return n.toLocaleString('vi-VN');
+  return n.toLocaleString(locale);
 };
 
 export function GiftTransactionToast() {
+  const { t, language } = useLanguage();
   const [currentToast, setCurrentToast] = useState<ToastItem | null>(null);
   const queueRef = useRef<ToastItem[]>([]);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -71,8 +73,8 @@ export function GiftTransactionToast() {
           const shortenAddr = (addr: string) =>
             addr ? `${addr.slice(0, 6)}...${addr.slice(-4)}` : '';
 
-          let recipientName = 'Người nhận';
-          let senderName = d.sender_address ? shortenAddr(d.sender_address) : 'Ẩn danh';
+          let recipientName = t('recipientLabel');
+          let senderName = d.sender_address ? shortenAddr(d.sender_address) : t('anonymous');
 
           const ids = [recipientId, senderId].filter(Boolean);
           if (ids.length > 0) {
@@ -140,14 +142,12 @@ export function GiftTransactionToast() {
         <div className="flex items-start gap-2">
           <Gift className="w-5 h-5 mt-0.5 shrink-0 text-white" />
           <p className="text-sm leading-relaxed">
-            🎁 Chúc mừng <strong>{currentToast.recipientName}</strong> đã được nhận quà của Cha Fath Uni và Bé Angel Camly Dương{' '}
-            <strong>{formatNumber(currentToast.amount)} {currentToast.token}</strong> qua kênh dẫn{' '}
-            <strong>{currentToast.senderName}</strong> 🌟💰✨💎🌈
+            {t('gttCongratsPrefix')}<strong>{currentToast.recipientName}</strong>{t('gttReceivedFrom')}<strong>{formatNumber(currentToast.amount, language === 'vi' ? 'vi-VN' : 'en-US')} {currentToast.token}</strong>{t('gttViaChannel')}<strong>{currentToast.senderName}</strong> 🌟💰✨💎🌈
           </p>
         </div>
         {queueRef.current.length > 0 && (
           <div className="mt-1.5 text-xs text-white/70 text-right">
-            +{queueRef.current.length} lệnh đang chờ
+            +{queueRef.current.length}{t('gttQueueSuffix')}
           </div>
         )}
       </div>

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useLanguage } from '@/i18n/LanguageContext';
 import { ChevronLeft, Search } from 'lucide-react';
 import {
   Dialog,
@@ -9,53 +10,53 @@ import {
 
 // Danh sách cảm xúc theo Facebook
 const FEELINGS = [
-  { emoji: '😊', label: 'hạnh phúc' },
-  { emoji: '🥰', label: 'có phúc' },
-  { emoji: '😍', label: 'được yêu' },
-  { emoji: '😢', label: 'buồn' },
-  { emoji: '🥺', label: 'đáng yêu' },
-  { emoji: '🙏', label: 'biết ơn' },
-  { emoji: '🤩', label: 'hào hứng' },
-  { emoji: '💕', label: 'đang yêu' },
-  { emoji: '🤪', label: 'điên' },
-  { emoji: '😲', label: 'cảm kích' },
-  { emoji: '😄', label: 'sung sướng' },
-  { emoji: '✨', label: 'tuyệt vời' },
-  { emoji: '😌', label: 'thư thái' },
-  { emoji: '💪', label: 'mạnh mẽ' },
-  { emoji: '🎉', label: 'phấn khích' },
-  { emoji: '😴', label: 'mệt mỏi' },
-  { emoji: '😤', label: 'tức giận' },
-  { emoji: '🤔', label: 'suy nghĩ' },
-  { emoji: '😎', label: 'cool' },
-  { emoji: '🥳', label: 'vui vẻ' },
-  { emoji: '😇', label: 'may mắn' },
-  { emoji: '🤗', label: 'ấm áp' },
-  { emoji: '😋', label: 'ngon miệng' },
-  { emoji: '🥱', label: 'buồn ngủ' },
+  { emoji: '😊', labelKey: 'feelHappy' },
+  { emoji: '🥰', labelKey: 'feelBlessed' },
+  { emoji: '😍', labelKey: 'feelLoved' },
+  { emoji: '😢', labelKey: 'fadFeelingSad' },
+  { emoji: '🥺', labelKey: 'feelLovely' },
+  { emoji: '🙏', labelKey: 'feelGrateful' },
+  { emoji: '🤩', labelKey: 'feelExcited' },
+  { emoji: '💕', labelKey: 'feelInLove' },
+  { emoji: '🤪', labelKey: 'feelCrazy' },
+  { emoji: '😲', labelKey: 'feelAppreciative' },
+  { emoji: '😄', labelKey: 'feelJoyful' },
+  { emoji: '✨', labelKey: 'fadFeelingFantastic' },
+  { emoji: '😌', labelKey: 'feelRelaxed' },
+  { emoji: '💪', labelKey: 'feelStrong' },
+  { emoji: '🎉', labelKey: 'feelThrilled' },
+  { emoji: '😴', labelKey: 'feelTired' },
+  { emoji: '😤', labelKey: 'fadFeelingAngry' },
+  { emoji: '🤔', labelKey: 'feelThoughtful' },
+  { emoji: '😎', labelKey: 'fadFeelingCool' },
+  { emoji: '🥳', labelKey: 'feelFun' },
+  { emoji: '😇', labelKey: 'fadFeelingLucky' },
+  { emoji: '🤗', labelKey: 'feelWarm' },
+  { emoji: '😋', labelKey: 'fadFeelingYummy' },
+  { emoji: '🥱', labelKey: 'feelSleepy' },
 ];
 
 const ACTIVITIES = [
-  { emoji: '🎉', label: 'Đang ăn mừng' },
-  { emoji: '👀', label: 'Đang xem' },
-  { emoji: '🎮', label: 'Đang chơi' },
-  { emoji: '🎧', label: 'Đang nghe' },
-  { emoji: '🍽️', label: 'Đang ăn' },
-  { emoji: '☕', label: 'Đang uống' },
-  { emoji: '✈️', label: 'Đang đi đến' },
-  { emoji: '📚', label: 'Đang đọc' },
-  { emoji: '💼', label: 'Đang làm việc' },
-  { emoji: '🏃', label: 'Đang tập thể dục' },
-  { emoji: '🛒', label: 'Đang mua sắm' },
-  { emoji: '🎬', label: 'Đang xem phim' },
-  { emoji: '🎤', label: 'Đang hát' },
-  { emoji: '💻', label: 'Đang code' },
-  { emoji: '🎨', label: 'Đang vẽ' },
-  { emoji: '📝', label: 'Đang viết' },
-  { emoji: '🧘', label: 'Đang thiền' },
-  { emoji: '🎸', label: 'Đang chơi nhạc' },
-  { emoji: '🏠', label: 'Đang ở nhà' },
-  { emoji: '🌙', label: 'Đang ngủ' },
+  { emoji: '🎉', labelKey: 'actCelebrating' },
+  { emoji: '👀', labelKey: 'actWatching' },
+  { emoji: '🎮', labelKey: 'actPlaying' },
+  { emoji: '🎧', labelKey: 'actListening' },
+  { emoji: '🍽️', labelKey: 'actEating' },
+  { emoji: '☕', labelKey: 'actDrinking' },
+  { emoji: '✈️', labelKey: 'actTravelingTo' },
+  { emoji: '📚', labelKey: 'actReading' },
+  { emoji: '💼', labelKey: 'actWorking' },
+  { emoji: '🏃', labelKey: 'actExercising' },
+  { emoji: '🛒', labelKey: 'actShopping' },
+  { emoji: '🎬', labelKey: 'actMovie' },
+  { emoji: '🎤', labelKey: 'actSinging' },
+  { emoji: '💻', labelKey: 'actCoding' },
+  { emoji: '🎨', labelKey: 'actPainting' },
+  { emoji: '📝', labelKey: 'actWriting' },
+  { emoji: '🧘', labelKey: 'actMeditating' },
+  { emoji: '🎸', labelKey: 'actMusic' },
+  { emoji: '🏠', labelKey: 'actAtHome' },
+  { emoji: '🌙', labelKey: 'actSleeping' },
 ];
 
 export interface FeelingActivity {
@@ -71,15 +72,16 @@ interface FeelingActivityDialogProps {
 }
 
 export const FeelingActivityDialog = ({ isOpen, onClose, onSelect }: FeelingActivityDialogProps) => {
+  const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState<'feeling' | 'activity'>('feeling');
   const [searchQuery, setSearchQuery] = useState('');
 
   const filteredItems = activeTab === 'feeling'
-    ? FEELINGS.filter(f => f.label.toLowerCase().includes(searchQuery.toLowerCase()))
-    : ACTIVITIES.filter(a => a.label.toLowerCase().includes(searchQuery.toLowerCase()));
+    ? FEELINGS.filter(f => t(f.labelKey).toLowerCase().includes(searchQuery.toLowerCase()))
+    : ACTIVITIES.filter(a => t(a.labelKey).toLowerCase().includes(searchQuery.toLowerCase()));
 
-  const handleSelect = (item: { emoji: string; label: string }) => {
-    onSelect({ ...item, type: activeTab });
+  const handleSelect = (item: { emoji: string; labelKey: string }) => {
+    onSelect({ emoji: item.emoji, label: t(item.labelKey), type: activeTab });
     setSearchQuery('');
     onClose();
   };
@@ -96,7 +98,7 @@ export const FeelingActivityDialog = ({ isOpen, onClose, onSelect }: FeelingActi
               <ChevronLeft className="w-5 h-5" />
             </button>
             <DialogTitle className="flex-1 text-center font-bold pr-9">
-              Bạn đang cảm thấy thế nào?
+              {t('fadTitle')}
             </DialogTitle>
           </div>
         </DialogHeader>
@@ -111,7 +113,7 @@ export const FeelingActivityDialog = ({ isOpen, onClose, onSelect }: FeelingActi
             }`}
             onClick={() => setActiveTab('feeling')}
           >
-            Cảm xúc
+            {t('emotionsTitle')}
           </button>
           <button
             className={`flex-1 py-3 font-semibold transition-colors ${
@@ -121,7 +123,7 @@ export const FeelingActivityDialog = ({ isOpen, onClose, onSelect }: FeelingActi
             }`}
             onClick={() => setActiveTab('activity')}
           >
-            Hoạt động
+            {t('emojiActivities')}
           </button>
         </div>
 
@@ -130,7 +132,7 @@ export const FeelingActivityDialog = ({ isOpen, onClose, onSelect }: FeelingActi
           <div className="flex items-center gap-2 px-3 py-2 bg-secondary rounded-full">
             <Search className="w-4 h-4 text-muted-foreground shrink-0" />
             <input
-              placeholder="Tìm kiếm"
+              placeholder={t('search')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="bg-transparent border-none outline-none flex-1 text-sm"
@@ -147,12 +149,12 @@ export const FeelingActivityDialog = ({ isOpen, onClose, onSelect }: FeelingActi
               className="flex items-center gap-3 p-3 hover:bg-secondary rounded-lg transition-colors text-left"
             >
               <span className="text-2xl">{item.emoji}</span>
-              <span className="text-sm">{item.label}</span>
+              <span className="text-sm">{t(item.labelKey)}</span>
             </button>
           ))}
           {filteredItems.length === 0 && (
             <div className="col-span-2 py-8 text-center text-muted-foreground">
-              Không tìm thấy kết quả
+              {t('noResults')}
             </div>
           )}
         </div>

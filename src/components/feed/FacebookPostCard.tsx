@@ -99,7 +99,7 @@ const FacebookPostCardComponent = ({
 
   const handleDelete = useCallback(async () => {
     if (isDeleting) return;
-    const confirmed = window.confirm('Xóa bài viết này? Hành động này sẽ ẩn bài viết khỏi feed và trang cá nhân.');
+    const confirmed = window.confirm(t('fpcDeleteConfirm'));
     if (!confirmed) return;
     setIsDeleting(true);
     try {
@@ -217,6 +217,7 @@ interface PostContentBlockProps {
 }
 
 const PostContentBlock = ({ content, shareUrl, onOpenShare }: PostContentBlockProps) => {
+  const { t } = useLanguage();
   const [menuOpen, setMenuOpen] = useState(false);
   const [selectMode, setSelectMode] = useState(false);
   const blockRef = useRef<HTMLDivElement | null>(null);
@@ -260,7 +261,7 @@ const PostContentBlock = ({ content, shareUrl, onOpenShare }: PostContentBlockPr
       <div
         ref={blockRef}
         role="article"
-        aria-label="Nội dung bài viết. Nhấn giữ để mở tùy chọn sao chép"
+        aria-label={t('fpcContentAria')}
         tabIndex={0}
         onKeyDown={handleKeyDown}
         className={`px-4 pb-3 outline-none focus-visible:ring-2 focus-visible:ring-ring/40 rounded-sm ${selectionClass}`}

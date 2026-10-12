@@ -1,4 +1,5 @@
 import { useId, type CSSProperties } from 'react';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 /**
  * FUN ECOSYSTEM logo — giữ nguyên 100% ảnh nhận diện gốc. Thêm MỘT dải ánh
@@ -19,6 +20,7 @@ import { useId, type CSSProperties } from 'react';
  *  - Chạy liên tục bất kể cài đặt "Reduce Motion" của hệ điều hành.
  */
 export default function FunEcosystemLogo({ size }: { size: number }) {
+  const { t } = useLanguage();
   const uid = useId().replace(/[^a-zA-Z0-9]/g, '');
   const rainbowId = `funInfRainbow-${uid}`;
   const blurXL = `funInfBlurXL-${uid}`;
@@ -57,7 +59,7 @@ export default function FunEcosystemLogo({ size }: { size: number }) {
     >
       <img
         src="/fun-ecosystem-center.png"
-        alt="FUN Ecosystem — biểu tượng vô cực năng lượng ánh sáng"
+        alt={t('felLogoAlt')}
         style={{ width: size, height: size }}
         loading="lazy"
         className="object-contain rounded-full"

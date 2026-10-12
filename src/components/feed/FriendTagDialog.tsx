@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { useLanguage } from '@/i18n/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -30,6 +31,7 @@ export const FriendTagDialog = ({
   selectedFriends,
   onTagFriends,
 }: FriendTagDialogProps) => {
+  const { t } = useLanguage();
   const [friends, setFriends] = useState<TaggedFriend[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -122,7 +124,7 @@ export const FriendTagDialog = ({
     <Dialog open={isOpen} onOpenChange={onClose} modal={true}>
       <DialogContent className="sm:max-w-[425px] p-0 max-h-[80vh] flex flex-col z-[200]">
         <DialogHeader className="p-4 border-b border-border">
-          <DialogTitle className="text-center">Gắn thẻ bạn bè</DialogTitle>
+          <DialogTitle className="text-center">{t('tagFriends')}</DialogTitle>
         </DialogHeader>
 
         {/* Search Input */}
@@ -130,7 +132,7 @@ export const FriendTagDialog = ({
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
-              placeholder="Tìm kiếm bạn bè..."
+              placeholder={t('friendTagSearchPlaceholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-9"
@@ -141,7 +143,7 @@ export const FriendTagDialog = ({
         {/* Selected Friends Preview */}
         {selected.length > 0 && (
           <div className="px-4 py-2 border-b border-border">
-            <p className="text-xs text-muted-foreground mb-2">Đã chọn ({selected.length})</p>
+            <p className="text-xs text-muted-foreground mb-2">{t('ftdSelected')} ({selected.length})</p>
             <div className="flex flex-wrap gap-2">
               {selected.map(friend => (
                 <div
@@ -178,7 +180,7 @@ export const FriendTagDialog = ({
               <div className="text-center py-8 text-muted-foreground">
                 <Users className="w-12 h-12 mx-auto mb-2 opacity-50" />
                 <p className="text-sm">
-                  {friends.length === 0 ? 'Chưa có bạn bè nào' : 'Không tìm thấy bạn bè'}
+                  {friends.length === 0 ? t('friendTagEmpty') : t('friendTagNoMatch')}
                 </p>
               </div>
             ) : (

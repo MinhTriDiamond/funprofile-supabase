@@ -113,7 +113,7 @@ const GiftCelebrationCardComponent = ({
     return () => clearTimeout(timer);
   }, [isNew, post.created_at]);
   const navigate = useNavigate();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const dateLocale = useDateLocale();
   const cardRef = useRef<HTMLDivElement>(null);
   const hasPlayedRef = useRef(false);
@@ -232,7 +232,8 @@ const GiftCelebrationCardComponent = ({
   }, []);
 
   const rawAmount = post.gift_amount ? Number(post.gift_amount) : 0;
-  const amount = rawAmount === 0 ? '0' : rawAmount < 1 ? rawAmount.toLocaleString('vi-VN', { maximumFractionDigits: 8 }) : rawAmount.toLocaleString('vi-VN', { maximumFractionDigits: 6 });
+  const amountLocale = language === 'vi' ? 'vi-VN' : 'en-US';
+  const amount = rawAmount === 0 ? '0' : rawAmount < 1 ? rawAmount.toLocaleString(amountLocale, { maximumFractionDigits: 8 }) : rawAmount.toLocaleString(amountLocale, { maximumFractionDigits: 6 });
   const token = post.gift_token || 'FUN';
   const metadataChainId = typeof postMeta?.chain_id === 'number'
     ? postMeta.chain_id
@@ -279,7 +280,7 @@ const GiftCelebrationCardComponent = ({
   };
   const fallbackRecipientName = parseRecipientFromContent();
 
-  const recipientDisplayName = recipientProfile?.display_name || recipientProfile?.username || fallbackRecipientName || 'Người nhận';
+  const recipientDisplayName = recipientProfile?.display_name || recipientProfile?.username || fallbackRecipientName || t('recipientLabel');
   const recipientUsername = recipientProfile?.username || fallbackRecipientName || 'recipient';
 
   const scanUrl = post.tx_hash
@@ -358,7 +359,7 @@ const GiftCelebrationCardComponent = ({
       {/* "New" badge */}
       {isNew && (
         <div className="absolute top-2 right-2 z-10 bg-yellow-400 text-emerald-900 text-[10px] font-bold px-2 py-0.5 rounded-full shadow-lg">
-          ✨ Mới
+          {t('gccNewBadge')}
         </div>
       )}
 

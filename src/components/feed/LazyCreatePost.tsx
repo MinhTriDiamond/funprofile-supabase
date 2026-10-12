@@ -145,7 +145,7 @@ const PlaceholderShell = ({ onOpen, loading, compact = false }: PlaceholderShell
               ? 'flex-1 truncate rounded-full bg-secondary px-4 py-1.5 text-left text-sm text-muted-foreground transition-colors hover:bg-secondary/80'
               : 'flex-1 truncate rounded-full bg-secondary px-4 py-2.5 text-left text-sm text-muted-foreground transition-colors hover:bg-secondary/80'
           }
-          aria-label="Tạo bài viết mới"
+          aria-label={t('lcpCreatePostAria')}
         >
           {loading ? t('loadingShort') : getComposerPlaceholder(profile, t)}
         </button>
@@ -163,7 +163,7 @@ const PlaceholderShell = ({ onOpen, loading, compact = false }: PlaceholderShell
               onClick={() => onOpen('media')}
               onMouseEnter={preloadComposer}
               icon={<ImagePlus />}
-              label="Ảnh"
+              label={t('lcpPhoto')}
               colorClass="text-emerald-500"
               variant="iconOnly"
             />
@@ -171,7 +171,7 @@ const PlaceholderShell = ({ onOpen, loading, compact = false }: PlaceholderShell
               onClick={() => onOpen('feeling')}
               onMouseEnter={preloadComposer}
               icon={<SmilePlus />}
-              label="Cảm xúc"
+              label={t('lcpFeeling')}
               colorClass="text-amber-500"
               variant="iconOnly"
             />
