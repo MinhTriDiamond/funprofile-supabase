@@ -29,3 +29,32 @@ e2e/.auth/
 test-results/
 playwright-report/
 playwright/.cache/
+
+# Local migration artifacts — NEVER COMMIT
+migration-auth/
+migration-temp/
+
+# Local migration state / credentials
+migration-state/.work/
+*.pgpass
+.pgpass
+
+# Local migration state
+migration-state/
+
+# Python cache / local backups
+scripts/__pycache__/
+*.bak
+
+# Local migration snapshots — may contain source project config/keys
+migration-snapshot/
+
+# Local migration environment — NEVER COMMIT
+.env.migration.local
+
+# Python bytecode ở mọi thư mục
+__pycache__/
+*.py[cod]
+
+# Migration logs — bảo vệ cả file không có đuôi .log
+migration-logs/
