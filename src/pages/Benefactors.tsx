@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useLanguage } from '@/i18n/LanguageContext';
 import { useQuery } from '@tanstack/react-query';
 import { usePersistedTab } from '@/hooks/usePersistedTab';
 import { useNavigate } from 'react-router-dom';
@@ -39,6 +40,7 @@ type TimeRange = 'day' | 'week' | 'month' | 'all';
 type SegmentKey = 'usd' | 'token' | 'ecosystem';
 
 const Benefactors = () => {
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = usePersistedTab('benefactors-tab', 'donors', ['donors', 'recipients'] as const);
   const [segment, setSegment] = usePersistedTab<SegmentKey>('benefactors-segment', 'usd', ['usd', 'token', 'ecosystem'] as const);
@@ -123,13 +125,13 @@ const Benefactors = () => {
         {/* Statistics Hero (generic) */}
         <div className="py-6">
           <StatisticsHero
-            title="Bảng Vinh Danh Mạnh Thường Quân"
-            subtitle="Vinh danh những tấm lòng vàng đã đóng góp cho cộng đồng FUN Profile"
+            title={t('benTitle')}
+            subtitle={t('benSubtitle')}
             icon={<Crown className="h-5 w-5" />}
             metrics={[
               {
                 key: 'total_usd',
-                label: 'Tổng giá trị',
+                label: t('benStatTotal'),
                 value: formatUsdCompact(globalStats?.totalDonatedUsd || 0),
                 description: 'USD',
                 icon: <DollarSign className="h-5 w-5" />,
@@ -137,21 +139,21 @@ const Benefactors = () => {
               },
               {
                 key: 'contributors',
-                label: 'Người đóng góp',
+                label: t('benStatDonors'),
                 value: formatCountCompact(globalStats?.totalDonors || 0),
                 icon: <Users className="h-5 w-5" />,
                 color: 'primary',
               },
               {
                 key: 'recipients',
-                label: 'Người nhận',
+                label: t('benStatRecipients'),
                 value: formatCountCompact(globalStats?.totalRecipients || 0),
                 icon: <UserCheck className="h-5 w-5" />,
                 color: 'primary',
               },
               {
                 key: 'transactions',
-                label: 'Giao dịch',
+                label: t('benStatTx'),
                 value: formatCountCompact(globalStats?.totalDonations || 0),
                 icon: <Receipt className="h-5 w-5" />,
                 color: 'primary',
@@ -166,7 +168,7 @@ const Benefactors = () => {
         {globalStats?.totalsByToken && Object.keys(globalStats.totalsByToken).length > 0 && (
           <div className="mb-4">
             <TokenOverviewStrip
-              title="Tổng quan theo token"
+              title={t('benTokenTitle')}
               activeSymbol={segment === 'token' ? tokenSymbol ?? undefined : undefined}
               onSelect={(sym) => {
                 setTokenSymbol(sym);
@@ -191,16 +193,16 @@ const Benefactors = () => {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="day">Hôm nay</SelectItem>
-              <SelectItem value="week">Tuần này</SelectItem>
-              <SelectItem value="month">Tháng này</SelectItem>
-              <SelectItem value="all">Tất cả</SelectItem>
+              <SelectItem value="day">{t('benToday')}</SelectItem>
+              <SelectItem value="week">{t('benWeek')}</SelectItem>
+              <SelectItem value="month">{t('benMonth')}</SelectItem>
+              <SelectItem value="all">{t('benAll')}</SelectItem>
             </SelectContent>
           </Select>
 
           <Button variant="outline" size="sm" onClick={() => setExportDialogOpen(true)}>
             <Download className="w-4 h-4 mr-2" />
-            Xuất CSV
+            {t('benExport')}
           </Button>
         </div>
 
@@ -218,11 +220,11 @@ const Benefactors = () => {
                   <TabsList className="grid w-full grid-cols-2 mb-4">
                     <TabsTrigger value="donors" className="gap-2">
                       <TrendingUp className="w-4 h-4" />
-                      Tặng nhiều nhất
+                      {t('benTopGivers')}
                     </TabsTrigger>
                     <TabsTrigger value="recipients" className="gap-2">
                       <Heart className="w-4 h-4" />
-                      Nhận nhiều nhất
+                      {t('benTopReceivers')}
                     </TabsTrigger>
                   </TabsList>
 
@@ -231,7 +233,7 @@ const Benefactors = () => {
                       rows={donorRows}
                       isLoading={isDonorsLoading}
                       emptyIcon={<Gift className="w-12 h-12" />}
-                      emptyText="Chưa có dữ liệu tặng thưởng"
+                      emptyText={t('benEmptyGift')}
                       onRowClick={(id) => navigate(`/profile/${id}`)}
                     />
                   </TabsContent>
@@ -241,7 +243,7 @@ const Benefactors = () => {
                       rows={recipientRows}
                       isLoading={isRecipientsLoading}
                       emptyIcon={<Heart className="w-12 h-12" />}
-                      emptyText="Chưa có dữ liệu nhận thưởng"
+                      emptyText={t('benEmptyReceive')}
                       onRowClick={(id) => navigate(`/profile/${id}`)}
                     />
                   </TabsContent>

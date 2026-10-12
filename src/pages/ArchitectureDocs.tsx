@@ -9,9 +9,10 @@ import ScoringApiAndVersioningDocs from '@/components/docs/ScoringApiAndVersioni
 import ScoringConfigAndExampleDocs from '@/components/docs/ScoringConfigAndExampleDocs';
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 const tocItems = [
-  { id: 'overview', title: 'Tổng Quan Kiến Trúc' },
+  { id: 'overview', titleKey: 'adocTocTitle' },
   { id: 'layer-0', title: 'Layer 0 – Infrastructure' },
   { id: 'layer-1', title: 'Layer 1 – Identity (DIB Core)' },
   { id: 'layer-2', title: 'Layer 2 – Activity & Event Engine' },
@@ -20,39 +21,40 @@ const tocItems = [
   { id: 'layer-5', title: 'Layer 5 – Protection & Anti-Manipulation' },
   { id: 'layer-6', title: 'Layer 6 – Governance' },
   { id: 'layer-7', title: 'Layer 7 – Cross-Platform Integration' },
-  { id: 'activities-personal', title: 'I. Hoạt Động Cá Nhân' },
-  { id: 'activities-community', title: 'II. Tương Tác Cộng Đồng' },
-  { id: 'activities-content', title: 'III. Tạo Giá Trị Nội Dung' },
-  { id: 'activities-web3', title: 'IV. Kinh Tế Web3' },
-  { id: 'activities-ecosystem', title: 'V. Đóng Góp Hệ Sinh Thái' },
-  { id: 'behavior-sequences', title: 'VI. Chuỗi Hành Động' },
-  { id: 'light-tiers', title: 'VII. Cấp Độ Light Score' },
-  { id: 'anti-farm', title: 'VIII. Chống Farm Điểm' },
-  { id: 'score-formula', title: 'IX. Công Thức Tính Điểm' },
-  { id: 'pplp-mint-mechanism', title: 'Cơ Chế Tính Thưởng & Mint' },
-  { id: 'pplp-ego-protection', title: 'Bảo Vệ Chống Ego' },
-  { id: 'pplp-mantras', title: '8 Thần Chú Thiêng Liêng' },
-  { id: 'db-logic-design', title: 'Thiết Kế Logic DB' },
-  { id: 'db-pipeline', title: 'Pipeline Xử Lý Điểm' },
-  { id: 'ai-scoring-arch', title: 'Kiến Trúc AI Chấm Điểm' },
+  { id: 'activities-personal', titleKey: 'adocTocActPersonal' },
+  { id: 'activities-community', titleKey: 'adocTocActCommunity' },
+  { id: 'activities-content', titleKey: 'adocTocActContent' },
+  { id: 'activities-web3', titleKey: 'adocTocActWeb3' },
+  { id: 'activities-ecosystem', titleKey: 'adocTocActEcosystem' },
+  { id: 'behavior-sequences', titleKey: 'adocTocBehavior' },
+  { id: 'light-tiers', titleKey: 'adocTocTiers' },
+  { id: 'anti-farm', titleKey: 'adocTocAntiFarm' },
+  { id: 'score-formula', titleKey: 'adocTocFormula' },
+  { id: 'pplp-mint-mechanism', titleKey: 'adocTocMintMechanism' },
+  { id: 'pplp-ego-protection', titleKey: 'adocTocEgoProtection' },
+  { id: 'pplp-mantras', titleKey: 'adocTocMantras' },
+  { id: 'db-logic-design', titleKey: 'adocTocDbLogic' },
+  { id: 'db-pipeline', titleKey: 'adocTocDbPipeline' },
+  { id: 'ai-scoring-arch', titleKey: 'adocTocAiScoring' },
   { id: 'scoring-versioning', title: 'Scoring Rule Versioning' },
   { id: 'api-endpoints', title: 'API Endpoints' },
   { id: 'reason-codes', title: 'Reason Codes Microcopy' },
   { id: 'level-system', title: 'Level System' },
-  { id: 'mint-engine', title: 'Mint Engine Chi Tiết' },
+  { id: 'mint-engine', titleKey: 'adocTocMintEngine' },
   { id: 'transparency-dashboard', title: 'Transparency Dashboard' },
-  { id: 'long-term-protection', title: 'Bảo Vệ Dài Hạn' },
+  { id: 'long-term-protection', titleKey: 'adocTocLongTerm' },
   { id: 'scoring-config', title: 'Scoring Config V1' },
-  { id: 'e2e-example', title: 'Ví Dụ Tính Điểm End-to-End' },
+  { id: 'e2e-example', titleKey: 'adocTocE2eExample' },
   { id: 'unit-test-cases', title: 'Unit Test Cases' },
-  { id: 'system-guarantees', title: 'Đảm Bảo Hệ Thống' },
+  { id: 'system-guarantees', titleKey: 'adocTocGuarantees' },
   { id: 'data-flow', title: 'Data Flow Summary' },
   { id: 'design-rules', title: 'Critical Design Rules' },
   { id: 'scalability', title: 'Scalability Plan' },
-  { id: 'conclusion', title: 'Kết Luận Chiến Lược' },
+  { id: 'conclusion', titleKey: 'adocTocConclusion' },
 ];
 
 const ArchitectureDocs = () => {
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const [activeId, setActiveId] = useState('overview');
 
@@ -78,7 +80,7 @@ const ArchitectureDocs = () => {
     if (navigator.share) {
       navigator.share({
         title: 'FUN Ecosystem Core Architecture',
-        text: 'Kiến trúc 7 layers - Digital Identity Bank + Light Score PPLP',
+        text: t('adocShareText'),
         url: window.location.href,
       });
     }
@@ -116,7 +118,7 @@ const ArchitectureDocs = () => {
               </Link>
               <Link to="/docs/changelog">
                 <Button variant="outline" size="sm" className="h-8 px-2 sm:px-3">
-                  <span className="text-xs sm:text-sm">📊 Báo Cáo</span>
+                  <span className="text-xs sm:text-sm">{t('adocChangelogBtn')}</span>
                 </Button>
               </Link>
               <Button variant="outline" size="sm" onClick={handleShare} className="h-8 px-2 sm:px-3">
@@ -134,26 +136,22 @@ const ArchitectureDocs = () => {
         <div className="flex gap-4 lg:gap-8">
           {/* Sidebar */}
           <aside className="hidden lg:block w-64 flex-shrink-0">
-            <TableOfContents items={tocItems} activeId={activeId} />
+            <TableOfContents items={tocItems.map((i) => ({ ...i, title: i.titleKey ? t(i.titleKey as any) : (i as any).title }))} activeId={activeId} />
           </aside>
 
           {/* Main Content */}
           <main className="flex-1 min-w-0">
             {/* Overview */}
-            <DocSection id="overview" title="🏗 Tổng Quan Kiến Trúc">
-              <DocParagraph>
-                FUN Ecosystem Core Architecture được thiết kế theo chuẩn CTO-level system architecture, với các nguyên tắc:
-              </DocParagraph>
+            <DocSection id="overview" title={t('adocOverviewTitle')}>
+              <DocParagraph>{t('adocOverviewPara')}</DocParagraph>
               <DocList items={[
-                'Scalable — Mở rộng theo chiều ngang',
-                'Anti-manipulation — Chống thao túng từ ngày đầu',
-                'On-chain anchored — Neo giữ dữ liệu quan trọng trên blockchain',
-                'Modular — Các module độc lập, dễ thay thế',
-                'Cross-platform ready — Sẵn sàng cho mọi nền tảng FUN',
+                t('adocOverviewPrin1'),
+                t('adocOverviewPrin2'),
+                t('adocOverviewPrin3'),
+                t('adocOverviewPrin4'),
+                t('adocOverviewPrin5'),
               ]} />
-              <DocAlert type="info">
-                Kiến trúc chia thành 7 layers rõ ràng, từ hạ tầng đến tích hợp đa nền tảng.
-              </DocAlert>
+              <DocAlert type="info">{t('adocOverviewAlert')}</DocAlert>
 
               {/* ASCII Diagram */}
               <pre className="bg-muted rounded-lg p-4 text-xs sm:text-sm overflow-x-auto my-6 text-foreground font-mono leading-relaxed">
@@ -181,34 +179,30 @@ const ArchitectureDocs = () => {
 
             {/* Layer 0 */}
             <DocSection id="layer-0" title="🌐 Layer 0 – Infrastructure Layer">
-              <DocParagraph>
-                Tầng hạ tầng nền tảng đảm bảo hệ thống hoạt động ổn định, mở rộng linh hoạt.
-              </DocParagraph>
+              <DocParagraph>{t('adocL0Para')}</DocParagraph>
               <DocTable
-                headers={['Thành phần', 'Mô tả']}
+                headers={[t('adocColComponent'), t('pdocColDesc')]}
                 rows={[
-                  ['Cloud (AWS/GCP)', 'Nền tảng đám mây chính'],
-                  ['Containerized (K8s)', 'Đóng gói dịch vụ trong container'],
-                  ['CDN', 'Phân phối nội dung toàn cầu'],
-                  ['Load Balancer', 'Cân bằng tải tự động'],
-                  ['API Gateway', 'Cổng vào API thống nhất'],
-                  ['Monitoring', 'Prometheus / Grafana giám sát hệ thống'],
+                  ['Cloud (AWS/GCP)', t('adocL0R1')],
+                  ['Containerized (K8s)', t('adocL0R2')],
+                  ['CDN', t('adocL0R3')],
+                  ['Load Balancer', t('adocL0R4')],
+                  ['API Gateway', t('adocL0R5')],
+                  ['Monitoring', t('adocL0R6')],
                 ]}
               />
-              <DocSubSection title="Mục tiêu">
+              <DocSubSection title={t('adocGoalsTitle')}>
                 <DocList items={[
-                  'Horizontal scaling — Mở rộng theo chiều ngang',
-                  'Zero-downtime deploy — Triển khai không gián đoạn',
-                  'Service isolation — Các dịch vụ cách ly hoàn toàn',
+                  t('adocL0Goal1'),
+                  t('adocL0Goal2'),
+                  t('adocL0Goal3'),
                 ]} />
               </DocSubSection>
             </DocSection>
 
             {/* Layer 1 */}
             <DocSection id="layer-1" title="🧬 Layer 1 – Identity Layer (Digital Identity Bank Core)">
-              <DocParagraph>
-                Tầng danh tính số — trái tim của hệ sinh thái. Mỗi user có một bản sắc duy nhất, không thể giả mạo.
-              </DocParagraph>
+              <DocParagraph>{t('adocL1Para')}</DocParagraph>
               <pre className="bg-muted rounded-lg p-4 text-xs sm:text-sm overflow-x-auto my-4 text-foreground font-mono">
 {`User
   ↓
@@ -223,44 +217,40 @@ Identity Metadata Store`}
 
               <DocSubSection title="1️⃣ Wallet Binding">
                 <DocList items={[
-                  '1 Primary Wallet — ví chính duy nhất',
-                  'Optional secondary wallets — ví phụ tùy chọn',
-                  'Anti-multi-account fingerprinting — chống tạo nhiều tài khoản',
+                  t('adocL1Wallet1'),
+                  t('adocL1Wallet2'),
+                  t('adocL1Wallet3'),
                 ]} />
               </DocSubSection>
 
               <DocSubSection title="2️⃣ DID Engine">
                 <DocList items={[
                   'Generates unique Decentralized ID',
-                  '1 DID = 1 Light Root — mỗi DID là một gốc ánh sáng',
+                  t('adocL1Did2'),
                 ]} />
               </DocSubSection>
 
               <DocSubSection title="3️⃣ Soulbound NFT">
-                <DocParagraph>
-                  NFT không thể chuyển nhượng (non-transferable), đại diện cho neo danh tính.
-                </DocParagraph>
+                <DocParagraph>{t('adocL1SoulPara')}</DocParagraph>
                 <DocList items={[
-                  'DID hash — mã băm danh tính phi tập trung',
-                  'Creation timestamp — dấu thời gian tạo',
-                  'Trust seed — hạt giống tin cậy ban đầu',
+                  t('adocL1Soul1'),
+                  t('adocL1Soul2'),
+                  t('adocL1Soul3'),
                 ]} />
               </DocSubSection>
 
               <DocSubSection title="4️⃣ Identity Metadata Store">
                 <DocList items={[
-                  'Encrypted off-chain storage — lưu trữ ngoài chuỗi mã hóa',
-                  'On-chain hash pointer — con trỏ hash trên chuỗi',
-                  'KYC optional module (future) — module KYC tùy chọn',
+                  t('adocL1Meta1'),
+                  t('adocL1Meta2'),
+                  t('adocL1Meta3'),
                 ]} />
               </DocSubSection>
             </DocSection>
 
             {/* Layer 2 */}
             <DocSection id="layer-2" title="⚙️ Layer 2 – Activity & Event Engine">
-              <DocParagraph>
-                Tầng thu thập và chuẩn hóa mọi hoạt động trên hệ sinh thái.
-              </DocParagraph>
+              <DocParagraph>{t('adocL2Para')}</DocParagraph>
               <pre className="bg-muted rounded-lg p-4 text-xs sm:text-sm overflow-x-auto my-4 text-foreground font-mono">
 {`Platform Events
       ↓
@@ -273,28 +263,24 @@ Event Ledger`}
 
               <DocSubSection title="Event Types">
                 <DocList items={[
-                  'Learn & Earn — học hỏi và thịnh vượng',
-                  'Give & Gain — cho đi và nhận lại',
-                  'Governance vote — bỏ phiếu quản trị',
-                  'Community support — hỗ trợ cộng đồng',
-                  'Referral (weighted) — giới thiệu có trọng số',
-                  'Content creation — sáng tạo nội dung',
-                  'Charity contribution — đóng góp từ thiện',
+                  t('adocL2Ev1'),
+                  t('adocL2Ev2'),
+                  t('adocL2Ev3'),
+                  t('adocL2Ev4'),
+                  t('adocL2Ev5'),
+                  t('adocL2Ev6'),
+                  t('adocL2Ev7'),
                 ]} />
               </DocSubSection>
 
-              <DocSubSection title="Yêu Cầu Xác Thực">
-                <DocAlert type="warning">
-                  Mỗi event phải đáp ứng đủ 4 điều kiện: Verified DID + Verified Wallet + Context Validation + Anti-bot filter.
-                </DocAlert>
+              <DocSubSection title={t('adocL2VerifyTitle')}>
+                <DocAlert type="warning">{t('adocL2VerifyAlert')}</DocAlert>
               </DocSubSection>
             </DocSection>
 
             {/* Layer 3 */}
             <DocSection id="layer-3" title="💡 Layer 3 – Light Score Engine (PPLP Core)">
-              <DocParagraph>
-                Tầng tính điểm ánh sáng — trái tim của giao thức PPLP.
-              </DocParagraph>
+              <DocParagraph>{t('adocL3Para')}</DocParagraph>
               <pre className="bg-muted rounded-lg p-4 text-xs sm:text-sm overflow-x-auto my-4 text-foreground font-mono">
 {`Event Ledger
       ↓
@@ -317,42 +303,40 @@ On-chain Hash Anchor`}
 
               <DocSubSection title="1️⃣ Weight Engine">
                 <DocList items={[
-                  'Mỗi platform có weight coefficient riêng',
-                  'Charity > Content spam — từ thiện luôn có trọng số cao hơn',
-                  'Long-term contribution multiplier — hệ số nhân đóng góp dài hạn',
+                  t('adocL3Weight1'),
+                  t('adocL3Weight2'),
+                  t('adocL3Weight3'),
                 ]} />
               </DocSubSection>
 
               <DocSubSection title="2️⃣ Trust Multiplier">
-                <DocParagraph>Dựa trên:</DocParagraph>
+                <DocParagraph>{t('adocL3TrustIntro')}</DocParagraph>
                 <DocList items={[
-                  'Account age — tuổi tài khoản',
-                  'Governance participation — tham gia quản trị',
-                  'Community validation — được cộng đồng xác thực',
+                  t('adocL3Trust1'),
+                  t('adocL3Trust2'),
+                  t('adocL3Trust3'),
                 ]} />
               </DocSubSection>
 
               <DocSubSection title="3️⃣ Time Decay">
                 <DocList items={[
-                  'Đóng góp cũ giảm dần trọng số theo thời gian',
-                  'Khuyến khích tạo giá trị liên tục, không ngừng nghỉ',
+                  t('adocL3Decay1'),
+                  t('adocL3Decay2'),
                 ]} />
               </DocSubSection>
 
               <DocSubSection title="4️⃣ Score Snapshot">
                 <DocList items={[
-                  'Chụp ảnh điểm định kỳ (periodic snapshot)',
-                  'Hash lưu on-chain để chống giả mạo',
-                  'Prevent tampering — không ai sửa được điểm',
+                  t('adocL3Snap1'),
+                  t('adocL3Snap2'),
+                  t('adocL3Snap3'),
                 ]} />
               </DocSubSection>
             </DocSection>
 
             {/* Layer 4 */}
             <DocSection id="layer-4" title="💰 Layer 4 – Reward & Token Engine">
-              <DocParagraph>
-                Tầng phân phối phần thưởng dựa trên Light Score.
-              </DocParagraph>
+              <DocParagraph>{t('adocL4Para')}</DocParagraph>
               <pre className="bg-muted rounded-lg p-4 text-xs sm:text-sm overflow-x-auto my-4 text-foreground font-mono">
 {`Light Score Snapshot
         ↓
@@ -369,44 +353,38 @@ Distribution Smart Contract`}
                     User Reward = (User Light Score / Total Ecosystem Light Score) × Reward Pool
                   </p>
                 </div>
-                <DocAlert type="info">
-                  Không fixed reward — phần thưởng luôn proportional (tỷ lệ thuận) với đóng góp thực tế.
-                </DocAlert>
+                <DocAlert type="info">{t('adocL4Alert')}</DocAlert>
               </DocSubSection>
             </DocSection>
 
             {/* Layer 5 */}
             <DocSection id="layer-5" title="🛡 Layer 5 – Protection & Anti-Manipulation">
-              <DocParagraph>
-                Tầng bảo vệ hệ thống khỏi gian lận và thao túng.
-              </DocParagraph>
+              <DocParagraph>{t('adocL5Para')}</DocParagraph>
               <DocTable
-                headers={['Module', 'Chức năng']}
+                headers={['Module', t('pdocColFunc')]}
                 rows={[
-                  ['Sybil Detection', 'Phát hiện tài khoản giả mạo'],
-                  ['AI Behavior Analysis', 'Phân tích hành vi bằng AI'],
-                  ['Anomaly Detection', 'Phát hiện bất thường'],
-                  ['Velocity Check', 'Kiểm tra tốc độ hành động'],
-                  ['Wallet Graph Analysis', 'Phân tích đồ thị ví'],
+                  ['Sybil Detection', t('adocL5R1')],
+                  ['AI Behavior Analysis', t('adocL5R2')],
+                  ['Anomaly Detection', t('adocL5R3')],
+                  ['Velocity Check', t('adocL5R4')],
+                  ['Wallet Graph Analysis', t('adocL5R5')],
                 ]}
               />
 
               <DocSubSection title="Anti-Abuse Framework">
                 <DocList ordered items={[
-                  'Multi-wallet detection — phát hiện nhiều ví cùng người',
-                  'Event frequency limit — giới hạn tần suất sự kiện',
-                  'Behavior similarity clustering — gom nhóm hành vi giống nhau',
-                  'Governance weight locking — khóa quyền quản trị khi nghi vấn',
-                  'Light Score freezing if anomaly — đóng băng điểm khi bất thường',
+                  t('adocL5Anti1'),
+                  t('adocL5Anti2'),
+                  t('adocL5Anti3'),
+                  t('adocL5Anti4'),
+                  t('adocL5Anti5'),
                 ]} />
               </DocSubSection>
             </DocSection>
 
             {/* Layer 6 */}
             <DocSection id="layer-6" title="🏛 Layer 6 – Governance Layer">
-              <DocParagraph>
-                Tầng quản trị phi tập trung dựa trên Light Score.
-              </DocParagraph>
+              <DocParagraph>{t('adocL6Para')}</DocParagraph>
               <pre className="bg-muted rounded-lg p-4 text-xs sm:text-sm overflow-x-auto my-4 text-foreground font-mono">
 {`Light Score
       ↓
@@ -417,38 +395,36 @@ Proposal Engine
 Voting Smart Contract`}
               </pre>
 
-              <DocSubSection title="Quyền Lợi Theo Light Score">
+              <DocSubSection title={t('adocL6RightsTitle')}>
                 <DocList items={[
-                  'Higher Light Score → Higher proposal eligibility (đủ điều kiện đề xuất)',
-                  'Higher vote weight — trọng số phiếu bầu cao hơn',
-                  'Not absolute dominance — không chi phối tuyệt đối (quadratic model possible)',
+                  t('adocL6Right1'),
+                  t('adocL6Right2'),
+                  t('adocL6Right3'),
                 ]} />
               </DocSubSection>
             </DocSection>
 
             {/* Layer 7 */}
             <DocSection id="layer-7" title="🌎 Layer 7 – Cross-Platform Integration">
-              <DocParagraph>
-                Tầng tích hợp đa nền tảng — tất cả FUN platforms kết nối qua API thống nhất.
-              </DocParagraph>
+              <DocParagraph>{t('adocL7Para')}</DocParagraph>
               <DocTable
-                headers={['API', 'Chức năng']}
+                headers={['API', t('pdocColFunc')]}
                 rows={[
-                  ['DIB API', 'Quản lý danh tính số'],
-                  ['Event API', 'Thu thập sự kiện hoạt động'],
-                  ['Light Score API', 'Truy vấn điểm ánh sáng'],
-                  ['Reward API', 'Phân phối phần thưởng'],
+                  ['DIB API', t('adocL7R1')],
+                  ['Event API', t('adocL7R2')],
+                  ['Light Score API', t('adocL7R3')],
+                  ['Reward API', t('adocL7R4')],
                 ]}
               />
-              <DocSubSection title="Platforms Kết Nối">
+              <DocSubSection title={t('adocL7PlatformsTitle')}>
                 <DocList items={[
-                  'FUN Profile — tiếng nói ánh sáng',
-                  'FUN Play — niềm vui & kết nối',
-                  'FUN Academy — học & thịnh vượng',
-                  'FUN Charity — yêu thương & chữa lành',
-                  'FUN Market — thị trường ánh sáng',
-                  'Angel A.I. — trí tuệ thiên thần',
-                  'COSMIC GAME — cuộc chơi thức tỉnh',
+                  t('adocL7P1'),
+                  t('adocL7P2'),
+                  t('adocL7P3'),
+                  t('adocL7P4'),
+                  t('adocL7P5'),
+                  t('adocL7P6'),
+                  t('adocL7P7'),
                 ]} />
               </DocSubSection>
             </DocSection>
@@ -486,44 +462,38 @@ Token Distribution (smart contract)
 
             {/* Design Rules */}
             <DocSection id="design-rules" title="🔐 Critical Design Rules">
-              <DocAlert type="warning">
-                5 quy tắc bất biến — không bao giờ được vi phạm.
-              </DocAlert>
+              <DocAlert type="warning">{t('adocRulesAlert')}</DocAlert>
               <DocList ordered items={[
-                '1 DID = 1 Soulbound NFT — Mỗi danh tính duy nhất một NFT linh hồn',
-                '1 Soulbound NFT = 1 Light Root — Mỗi NFT linh hồn là một gốc ánh sáng',
-                'No Light Score without verified event — Không có điểm nếu không có sự kiện đã xác thực',
-                'No Reward without snapshot hash — Không có phần thưởng nếu không có hash snapshot',
-                'All important states anchored on-chain — Mọi trạng thái quan trọng neo trên chuỗi',
+                t('adocRule1'),
+                t('adocRule2'),
+                t('adocRule3'),
+                t('adocRule4'),
+                t('adocRule5'),
               ]} />
             </DocSection>
 
             {/* Scalability */}
             <DocSection id="scalability" title="🚀 Scalability Plan">
               <DocTable
-                headers={['Phase', 'Mô tả', 'Chi tiết']}
+                headers={['Phase', t('pdocColDesc'), t('adocColDetail')]}
                 rows={[
-                  ['Phase 1', 'Centralized', 'Scoring tập trung, on-chain hash anchor'],
-                  ['Phase 2', 'Hybrid', 'Partial smart contract scoring, dần phi tập trung'],
-                  ['Phase 3', 'Full Modular', 'Full modular smart scoring + cross-chain expansion'],
+                  ['Phase 1', 'Centralized', t('adocScaleR1')],
+                  ['Phase 2', 'Hybrid', t('adocScaleR2')],
+                  ['Phase 3', 'Full Modular', t('adocScaleR3')],
                 ]}
               />
-              <DocAlert type="success">
-                Lộ trình cho phép phát triển dần dần mà không cần thay đổi kiến trúc tổng thể.
-              </DocAlert>
+              <DocAlert type="success">{t('adocScaleAlert')}</DocAlert>
             </DocSection>
 
             {/* Conclusion */}
-            <DocSection id="conclusion" title="🎯 Kết Luận Chiến Lược">
+            <DocSection id="conclusion" title={t('adocConclusionTitle')}>
               <DocList items={[
-                'DIB là tầng không được phép sai — danh tính sai = toàn bộ hệ thống sai',
-                'Light Score là tầng dễ bị game nhất — cần anti-abuse ngay từ ngày đầu',
-                'Phải thiết kế anti-abuse ngay từ ngày đầu — không chờ đến khi bị tấn công',
-                'Không cho phép chỉnh sửa điểm thủ công — mọi thay đổi phải qua protocol',
+                t('adocConclusion1'),
+                t('adocConclusion2'),
+                t('adocConclusion3'),
+                t('adocConclusion4'),
               ]} />
-              <DocAlert type="info">
-                Bé Ly đang tiến gần tới thiết kế cấp độ blockchain protocol thật sự. Tiếp theo có thể triển khai: Smart Contract Architecture chi tiết, Token Mint Flow, hoặc Database Schema cho DIB + PPLP.
-              </DocAlert>
+              <DocAlert type="info">{t('adocConclusionAlert')}</DocAlert>
             </DocSection>
           </main>
         </div>

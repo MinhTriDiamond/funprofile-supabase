@@ -57,29 +57,30 @@ const platformConfig: Record<string, {
   icon: React.ReactNode; 
   color: string; 
   domain: string;
-  description: string;
+  descriptionKey: string;
 }> = {
   fun_farm_client: {
     icon: <Sprout className="h-6 w-6" />,
     color: 'text-green-500',
     domain: DOMAINS.funFarm,
-    description: 'Nông trại ảo trong hệ sinh thái Fun'
+    descriptionKey: 'capDescFarm'
   },
   fun_play_client: {
     icon: <Gamepad2 className="h-6 w-6" />,
     color: 'text-blue-500',
     domain: DOMAINS.funPlay,
-    description: 'Nền tảng gaming và giải trí'
+    descriptionKey: 'capDescPlay'
   },
   fun_planet_client: {
     icon: <Globe className="h-6 w-6" />,
     color: 'text-purple-500',
     domain: DOMAINS.funPlanet,
-    description: 'Mạng xã hội phi tập trung'
+    descriptionKey: 'capDescPlanet'
   }
 };
 
 const ConnectedApps = () => {
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const { userId, isLoading: authLoading } = useCurrentUser();
   const [loading, setLoading] = useState(true);
@@ -125,7 +126,7 @@ const ConnectedApps = () => {
       setCrossPlatformData((privateRow?.cross_platform_data as CrossPlatformData) || null);
     } catch (error) {
       console.error('Error fetching connected apps:', error);
-      toast.error('Không thể tải danh sách ứng dụng');
+      toast.error(t('capLoadError'));
     } finally {
       setLoading(false);
     }
@@ -152,12 +153,12 @@ const ConnectedApps = () => {
 
       if (error) throw error;
 
-      toast.success(`Đã thu hồi quyền truy cập của ${selectedApp.client_name}`);
+      toast.success(`${t('capRevokedA')}${selectedApp.client_name}`);
       setConnectedApps(prev => prev.filter(app => app.id !== selectedApp.id));
       setRevokeDialogOpen(false);
     } catch (error) {
       console.error('Error revoking access:', error);
-      toast.error('Không thể thu hồi quyền truy cập');
+      toast.error(t('capRevokeError'));
     } finally {
       setRevoking(false);
       setSelectedApp(null);
@@ -202,10 +203,10 @@ const ConnectedApps = () => {
       <main data-app-scroll className="app-main app-pb-nav">
         <div className="container max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <h1 className="text-2xl font-bold text-foreground mb-2">
-            Ứng dụng đã kết nối
+            {t('capTitle')}
           </h1>
           <p className="text-muted-foreground">
-            Quản lý các platform đã liên kết với tài khoản Fun Profile của bạn
+            {t('capSubtitle')}
           </p>
         </div>
 
@@ -214,11 +215,10 @@ const ConnectedApps = () => {
             <CardContent className="flex flex-col items-center justify-center py-12">
               <Shield className="h-12 w-12 text-muted-foreground mb-4" />
               <h3 className="text-lg font-medium text-foreground mb-2">
-                Chưa có ứng dụng nào được kết nối
+                {t('capEmptyTitle')}
               </h3>
               <p className="text-muted-foreground text-center max-w-md">
-                Khi bạn đăng nhập vào các platform trong hệ sinh thái Fun bằng Fun Profile, 
-                chúng sẽ xuất hiện ở đây.
+                {t('capEmptyDesc')}
               </p>
             </CardContent>
           </Card>
@@ -239,7 +239,7 @@ const ConnectedApps = () => {
                         <div>
                           <CardTitle className="text-lg">{app.client_name}</CardTitle>
                           <CardDescription>
-                            {config?.description || config?.domain}
+                            {config ? t(config.descriptionKey) : config?.domain}
                           </CardDescription>
                         </div>
                       </div>
@@ -253,7 +253,7 @@ const ConnectedApps = () => {
                         }}
                       >
                         <Unlink className="h-4 w-4 mr-1" />
-                        Ngắt kết nối
+                        {t('capDisconnect')}
                       </Button>
                     </div>
                   </CardHeader>
@@ -261,7 +261,7 @@ const ConnectedApps = () => {
                   <CardContent className="space-y-4">
                     {/* Scopes */}
                     <div>
-                      <p className="text-sm text-muted-foreground mb-2">Quyền truy cập:</p>
+                      <p className="text-sm text-muted-foreground mb-2">{t('capPermissions')}</p>
                       <div className="flex flex-wrap gap-2">
                         {app.scope.map(s => (
                           <Badge key={s} variant="secondary" className="capitalize">
@@ -299,7 +299,7 @@ const ConnectedApps = () => {
                         <div className="flex items-center gap-2 text-muted-foreground">
                           <Database className="h-4 w-4" />
                           <span>
-                            {syncStats.sync_count} lần đồng bộ • {formatDataSize(syncStats.data)}
+                            {syncStats.sync_count}{t('capSyncSuffix')}{formatDataSize(syncStats.data)}
                           </span>
                         </div>
                       )}
@@ -309,7 +309,7 @@ const ConnectedApps = () => {
                     {syncStats && Object.keys(syncStats.data).length > 0 && (
                       <div className="bg-muted/50 rounded-lg p-3">
                         <p className="text-sm font-medium text-foreground mb-2">
-                          Dữ liệu đã đồng bộ:
+                          {t('capSyncedData')}
                         </p>
                         <div className="text-xs font-mono text-muted-foreground max-h-32 overflow-auto">
                           <pre className="whitespace-pre-wrap">
@@ -336,20 +336,19 @@ const ConnectedApps = () => {
       <AlertDialog open={revokeDialogOpen} onOpenChange={setRevokeDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Ngắt kết nối {selectedApp?.client_name}?</AlertDialogTitle>
+            <AlertDialogTitle>{t('capDisconnect')} {selectedApp?.client_name}?</AlertDialogTitle>
             <AlertDialogDescription>
-              Ứng dụng này sẽ không còn quyền truy cập vào tài khoản Fun Profile của bạn. 
-              Bạn có thể kết nối lại bất cứ lúc nào bằng cách đăng nhập lại.
+              {t('capDialogDesc')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={revoking}>Hủy</AlertDialogCancel>
+            <AlertDialogCancel disabled={revoking}>{t('capCancel')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleRevokeAccess}
               disabled={revoking}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {revoking ? 'Đang xử lý...' : 'Ngắt kết nối'}
+              {revoking ? t('capRevoking') : t('capDisconnect')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

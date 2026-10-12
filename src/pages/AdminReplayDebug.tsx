@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useLanguage } from '@/i18n/LanguageContext';
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { RefreshCw, RotateCcw, Satellite, Shield, TestTube2, Trash2, Search, Wrench, AlertTriangle, Activity } from "lucide-react";
@@ -167,6 +168,7 @@ function archiveProgress(row: ReplayDebugRow) {
 }
 
 export default function AdminReplayDebug() {
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const { isAdmin, isLoading } = useAdminRole();
   const [rows, setRows] = useState<ReplayDebugRow[]>([]);
@@ -178,7 +180,7 @@ export default function AdminReplayDebug() {
 
   useEffect(() => {
     if (!isLoading && !isAdmin) {
-      toast.error("Bạn không có quyền truy cập trang này");
+      toast.error(t("ardNoAccess"));
       navigate("/");
     }
   }, [isAdmin, isLoading, navigate]);
@@ -192,7 +194,7 @@ export default function AdminReplayDebug() {
       setLiveRows(liveData.sessions || []);
       setActiveAgoraRecordingCount(Number(liveData.active_agora_recording_count || 0));
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Không tải �‘ược replay debug");
+      toast.error(error instanceof Error ? error.message : t("ardLoadFail"));
     } finally {
       setLoading(false);
     }
@@ -220,10 +222,10 @@ export default function AdminReplayDebug() {
         action === "repair_long_rtmp_archive" ||
         action === "diagnose_replay_archive"
       ) setCfResult(data);
-      toast.success("Đã chạy thao tác debug");
+      toast.success(t("ardActionDone"));
       await load();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Thao tác thất bại");
+      toast.error(error instanceof Error ? error.message : t("ardActionFail"));
     } finally {
       setBusyAction(null);
     }
@@ -258,8 +260,8 @@ export default function AdminReplayDebug() {
       { label: "< 1h", min: 0, max: 1 },
       { label: "1–6h", min: 1, max: 6 },
       { label: "6–24h", min: 6, max: 24 },
-      { label: "1–3 ngày", min: 24, max: 72 },
-      { label: "> 3 ngày", min: 72, max: Infinity },
+      { label: t("ardAge13"), min: 24, max: 72 },
+      { label: t("ardAge3p"), min: 72, max: Infinity },
     ];
     return buckets.map((b) => ({
       ...b,
@@ -319,18 +321,18 @@ export default function AdminReplayDebug() {
                     });
                     const data = await res.json();
                     setCfResult(data);
-                    toast.success(`Quét xong: ${data.cf_total} UID trên CF, ${data.candidates_total} có thể xoá`);
+                    toast.success(`${t("ardScanPrefix")}${data.cf_total}${t("ardScanMid")}${data.candidates_total}${t("ardScanSuffix")}`);
                   } catch (e) { toast.error(String(e)); } finally { setBusyAction(null); }
                 }}
                 disabled={!!busyAction}
               >
                 <Search className="mr-2 h-4 w-4" />
-                Quét orphan CF Stream
+                {t('ardScanOrphan')}
               </Button>
               <Button
                 variant="destructive"
                 onClick={async () => {
-                  if (!confirm("Xoá thật các UID orphan + archived trên Cloudflare Stream? (tối đa 200 UID/lần)")) return;
+                  if (!confirm(t("ardConfirmDelete"))) return;
                   setBusyAction("orphan_delete");
                   try {
                     const { data: { session } } = await supabase.auth.getSession();
@@ -341,13 +343,13 @@ export default function AdminReplayDebug() {
                     });
                     const data = await res.json();
                     setCfResult(data);
-                    toast.success(`Đã xoá ${data.deleted_count}/${data.candidates_total} UID. Còn lại sẽ xoá ở lần sau.`);
+                    toast.success(`${t("ardDeletedPrefix")}${data.deleted_count}/${data.candidates_total}${t("ardDeletedSuffix")}`);
                   } catch (e) { toast.error(String(e)); } finally { setBusyAction(null); }
                 }}
                 disabled={!!busyAction}
               >
                 <Trash2 className="mr-2 h-4 w-4" />
-                Dọn orphan (xoá thật)
+                {t('ardCleanup')}
               </Button>
             </div>
           </div>
@@ -384,7 +386,7 @@ export default function AdminReplayDebug() {
               <TabsTrigger value="recording-health">Recording Health</TabsTrigger>
               <TabsTrigger value="stuck">
                 <AlertTriangle className="mr-1 h-3.5 w-3.5" />
-                Replay kẹt ({stuckRows.length})
+                {t('ardStuckPrefix')}{stuckRows.length})
               </TabsTrigger>
             </TabsList>
 
@@ -616,9 +618,9 @@ export default function AdminReplayDebug() {
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0">
                   <div>
-                    <CardTitle className="text-base">Phân bổ theo độ tuổi (updated_at)</CardTitle>
+                    <CardTitle className="text-base">{t('ardAgeDistTitle')}</CardTitle>
                     <p className="text-xs text-muted-foreground mt-1">
-                      Tổng {stuckRows.length} replay đang kẹt (chưa có r2_video_url).
+                      {t('ardStuckSummaryPrefix')}{stuckRows.length}{t('ardStuckSummarySuffix')}
                     </p>
                   </div>
                   <div className="flex flex-wrap gap-2">
@@ -634,7 +636,7 @@ export default function AdminReplayDebug() {
                     <Button
                       size="sm"
                       onClick={() => {
-                        if (!confirm(`Repair nhanh tối đa 100 replay RTMP kẹt và đưa lại vào pipeline?`)) return;
+                        if (!confirm(t("ardConfirmRepair"))) return;
                         void runAction("repair_stuck_r2_archive", undefined, { dry_run: false, limit: 100 });
                       }}
                       disabled={!!busyAction || stuckRows.length === 0}
@@ -678,16 +680,16 @@ export default function AdminReplayDebug() {
 
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-base">Số lượng theo archive_status / archive_phase</CardTitle>
+                  <CardTitle className="text-base">{t('ardStatusCountTitle')}</CardTitle>
                 </CardHeader>
                 <CardContent className="p-0">
                   <Table>
                     <TableHeader>
                       <TableRow>
                         <TableHead>archive_status / archive_phase</TableHead>
-                        <TableHead className="text-right">Số lượng</TableHead>
-                        <TableHead>Cũ nhất (updated_at)</TableHead>
-                        <TableHead>Mới nhất</TableHead>
+                        <TableHead className="text-right">{t('ardColCount')}</TableHead>
+                        <TableHead>{t('ardColOldest')}</TableHead>
+                        <TableHead>{t('ardColNewest')}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -705,7 +707,7 @@ export default function AdminReplayDebug() {
                       {groupedStuck.length === 0 && (
                         <TableRow>
                           <TableCell colSpan={4} className="py-8 text-center text-muted-foreground">
-                            Không có replay nào đang kẹt 🎉
+                            {t('ardNoneStuck')}
                           </TableCell>
                         </TableRow>
                       )}
@@ -716,7 +718,7 @@ export default function AdminReplayDebug() {
 
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-base">Chi tiết replay kẹt ({stuckRows.length})</CardTitle>
+                  <CardTitle className="text-base">{t('ardStuckDetailPrefix')}{stuckRows.length})</CardTitle>
                 </CardHeader>
                 <CardContent className="p-0">
                   <Table>

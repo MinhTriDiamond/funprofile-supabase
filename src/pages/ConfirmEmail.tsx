@@ -4,10 +4,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Loader2, CheckCircle, XCircle, Mail } from "lucide-react";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 type State = "loading" | "success" | "error";
 
 export default function ConfirmEmail() {
+  const { t } = useLanguage();
   const [params] = useSearchParams();
   const navigate = useNavigate();
   const token = params.get("token");
@@ -18,7 +20,7 @@ export default function ConfirmEmail() {
   useEffect(() => {
     if (!token) {
       setState("error");
-      setMessage("Thiếu mã xác nhận trong liên kết.");
+      setMessage(t("cemMissingToken"));
       return;
     }
     let cancelled = false;
@@ -28,7 +30,7 @@ export default function ConfirmEmail() {
         if (cancelled) return;
         if (error || (data as any)?.error) {
           setState("error");
-          setMessage((data as any)?.error || error?.message || "Xác nhận thất bại");
+          setMessage((data as any)?.error || error?.message || t("cemFailed"));
           return;
         }
         setEmail((data as any)?.email || null);
@@ -36,11 +38,11 @@ export default function ConfirmEmail() {
       } catch (err: any) {
         if (cancelled) return;
         setState("error");
-        setMessage(err?.message || "Lỗi hệ thống");
+        setMessage(err?.message || t("cemSystemError"));
       }
     })();
     return () => { cancelled = true; };
-  }, [token]);
+  }, [token, t]);
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-background">
@@ -49,11 +51,11 @@ export default function ConfirmEmail() {
           <div className="mx-auto mb-2 w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
             <Mail className="w-6 h-6 text-primary" />
           </div>
-          <CardTitle>Xác nhận email FUN Ecosystem</CardTitle>
+          <CardTitle>{t("cemTitle")}</CardTitle>
           <CardDescription>
-            {state === "loading" && "Đang xác nhận liên kết..."}
-            {state === "success" && "Tài khoản đã được kích hoạt 💖"}
-            {state === "error" && "Liên kết không sử dụng được"}
+            {state === "loading" && t("cemLoading")}
+            {state === "success" && t("cemSuccess")}
+            {state === "error" && t("cemLinkBad")}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -63,15 +65,15 @@ export default function ConfirmEmail() {
           {state === "success" && (
             <div className="text-center space-y-3">
               <CheckCircle className="w-12 h-12 text-emerald-500 mx-auto" />
-              <p className="text-sm text-muted-foreground">{email ? `Email ${email} đã được xác nhận.` : "Email đã được xác nhận."} Bạn có thể đăng nhập ngay bây giờ.</p>
-              <Button className="w-full" onClick={() => navigate("/auth")}>Đăng nhập</Button>
+              <p className="text-sm text-muted-foreground">{email ? `${t("cemEmailConfirmedA")}${email}${t("cemEmailConfirmedB")}` : t("cemEmailConfirmedPlain")}{t("cemLoginNow")}</p>
+              <Button className="w-full" onClick={() => navigate("/auth")}>{t("cemLoginBtn")}</Button>
             </div>
           )}
           {state === "error" && (
             <div className="text-center space-y-3">
               <XCircle className="w-12 h-12 text-destructive mx-auto" />
               <p className="text-sm text-muted-foreground">{message}</p>
-              <Button asChild variant="outline" className="w-full"><Link to="/auth">Quay lại đăng nhập</Link></Button>
+              <Button asChild variant="outline" className="w-full"><Link to="/auth">{t("cemBackToLogin")}</Link></Button>
             </div>
           )}
         </CardContent>

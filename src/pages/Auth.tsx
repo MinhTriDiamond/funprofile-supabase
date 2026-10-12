@@ -219,9 +219,9 @@ const Auth = () => {
               <div className="flex items-start gap-3">
                 <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-semibold">Đăng nhập đang tạm gián đoạn</p>
+                  <p className="text-sm font-semibold">{t('authOutageTitle')}</p>
                   <p className="mt-1 text-sm text-amber-800">
-                    Lovable Cloud đang phản hồi chậm hoặc mất kết nối tạm thời. Vui lòng đợi 1–2 phút rồi bấm Thử lại trước khi đăng nhập.
+                    {t('authOutageDesc')}
                   </p>
                 </div>
                 <Button
@@ -233,7 +233,7 @@ const Auth = () => {
                   className="shrink-0 border-amber-300 bg-white/70 text-amber-900 hover:bg-white"
                 >
                   <RefreshCw className={`mr-1.5 h-3.5 w-3.5 ${authHealthChecking ? 'animate-spin' : ''}`} />
-                  Thử lại
+                  {t('authRetry')}
                 </Button>
               </div>
             </div>

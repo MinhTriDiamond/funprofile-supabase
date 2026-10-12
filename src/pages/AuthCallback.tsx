@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useLanguage } from '@/i18n/LanguageContext';
 import { useNavigate } from 'react-router-dom';
 import { Loader2, CheckCircle2, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -16,6 +17,7 @@ import {
  * Hoặc dạng cũ: /auth/callback#access_token=...&refresh_token=...
  */
 export default function AuthCallback() {
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [errorMsg, setErrorMsg] = useState('');
@@ -65,7 +67,7 @@ export default function AuthCallback() {
           if (error) {
             logger.error('[AuthCallback] verifyOtp failed:', error);
             setStatus('error');
-            setErrorMsg(isTransientAuthError(error) ? SUPABASE_AUTH_TRANSIENT_MESSAGE : (error.message || 'Xác thực không thành công.'));
+            setErrorMsg(isTransientAuthError(error) ? SUPABASE_AUTH_TRANSIENT_MESSAGE : (error.message || t('acbAuthFailed')));
             return;
           }
 
@@ -101,11 +103,11 @@ export default function AuthCallback() {
         }
 
         setStatus('error');
-        setErrorMsg('Liên kết xác thực không hợp lệ hoặc đã hết hạn.');
+        setErrorMsg(t('acbInvalidLink'));
       } catch (err) {
         logger.error('[AuthCallback] Unexpected error:', err);
         setStatus('error');
-        setErrorMsg(isTransientAuthError(err) ? SUPABASE_AUTH_TRANSIENT_MESSAGE : (err instanceof Error ? err.message : 'Có lỗi xảy ra.'));
+        setErrorMsg(isTransientAuthError(err) ? SUPABASE_AUTH_TRANSIENT_MESSAGE : (err instanceof Error ? err.message : t('vemGenericError')));
       }
     };
 
@@ -118,8 +120,8 @@ export default function AuthCallback() {
         {status === 'loading' && (
           <>
             <Loader2 className="w-16 h-16 text-primary animate-spin mx-auto" />
-            <h1 className="text-xl font-bold text-foreground">Đang xác thực email...</h1>
-            <p className="text-muted-foreground">Chỉ một chút nữa thôi 💖</p>
+            <h1 className="text-xl font-bold text-foreground">{t('acbVerifying')}</h1>
+            <p className="text-muted-foreground">{t('acbAlmostThere')}</p>
           </>
         )}
 
@@ -128,9 +130,9 @@ export default function AuthCallback() {
             <div className="w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-950/30 flex items-center justify-center mx-auto">
               <CheckCircle2 className="w-8 h-8 text-emerald-600" />
             </div>
-            <h1 className="text-xl font-bold text-foreground">Xác thực thành công! 🎉</h1>
+            <h1 className="text-xl font-bold text-foreground">{t('vemSuccessTitle')}</h1>
             <p className="text-muted-foreground">
-              Đang chuyển bạn vào FUN Ecosystem...
+              {t('acbRedirecting')}
             </p>
           </>
         )}
@@ -140,10 +142,10 @@ export default function AuthCallback() {
             <div className="w-16 h-16 rounded-full bg-red-100 dark:bg-red-950/30 flex items-center justify-center mx-auto">
               <XCircle className="w-8 h-8 text-red-600" />
             </div>
-            <h1 className="text-xl font-bold text-foreground">Xác thực thất bại</h1>
+            <h1 className="text-xl font-bold text-foreground">{t('vemFailedTitle')}</h1>
             <p className="text-muted-foreground">{errorMsg}</p>
             <Button onClick={() => navigate('/auth', { replace: true })} className="w-full">
-              Quay lại đăng nhập
+              {t('cemBackToLogin')}
             </Button>
           </>
         )}
