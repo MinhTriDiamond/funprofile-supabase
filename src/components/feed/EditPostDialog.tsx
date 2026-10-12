@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useLanguage } from '@/i18n/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { uploadToR2, deleteFromR2 } from '@/utils/r2Upload';
 import { deleteVideoByUrl } from '@/utils/streamHelpers';
@@ -16,10 +17,6 @@ import { LocationCheckin } from './LocationCheckin';
 
 const MAX_CONTENT_LENGTH = 20000;
 
-const postSchema = z.object({
-  content: z.string().max(MAX_CONTENT_LENGTH, `Post must be less than ${MAX_CONTENT_LENGTH.toLocaleString()} characters`),
-});
-
 interface EditPostDialogProps {
   post: {
     id: string;
@@ -36,6 +33,10 @@ interface EditPostDialogProps {
 }
 
 export const EditPostDialog = ({ post, isOpen, onClose, onPostUpdated, currentUserId }: EditPostDialogProps) => {
+  const { t } = useLanguage();
+  const postSchema = z.object({
+    content: z.string().max(MAX_CONTENT_LENGTH, `${t('epdMaxLengthPrefix')}${MAX_CONTENT_LENGTH.toLocaleString()}${t('epdMaxLengthSuffix')}`),
+  });
   const [content, setContent] = useState(post.content);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(post.image_url);
@@ -76,12 +77,12 @@ export const EditPostDialog = ({ post, isOpen, onClose, onPostUpdated, currentUs
     const file = e.target.files?.[0];
     if (file) {
       if (file.size > FILE_LIMITS.IMAGE_MAX_SIZE) {
-        toast.error('Image must be less than 100MB');
+        toast.error(t('epdImageTooLarge'));
         return;
       }
 
       try {
-        toast.loading('Compressing image...');
+        toast.loading(t('compressing'));
         const compressed = await compressImage(file, {
           maxWidth: FILE_LIMITS.POST_IMAGE_MAX_WIDTH,
           maxHeight: FILE_LIMITS.POST_IMAGE_MAX_HEIGHT,
@@ -97,7 +98,7 @@ export const EditPostDialog = ({ post, isOpen, onClose, onPostUpdated, currentUs
         setUppyVideoResult(null);
       } catch (error) {
         toast.dismiss();
-        toast.error('Failed to process image');
+        toast.error(t('epdImageProcessFailed'));
       }
     }
   };
@@ -106,14 +107,14 @@ export const EditPostDialog = ({ post, isOpen, onClose, onPostUpdated, currentUs
     const file = e.target.files?.[0];
     if (file) {
       if (file.size > FILE_LIMITS.VIDEO_MAX_SIZE) {
-        toast.error('Video must be less than 2GB');
+        toast.error(t('epdVideoTooLarge'));
         return;
       }
 
       try {
         const duration = await getVideoDuration(file);
         if (duration > FILE_LIMITS.VIDEO_MAX_DURATION) {
-          toast.error('Video must be less than 120 minutes');
+          toast.error(t('epdVideoTooLong'));
           return;
         }
       } catch (err) {
@@ -151,18 +152,18 @@ export const EditPostDialog = ({ post, isOpen, onClose, onPostUpdated, currentUs
     
     // Check if video is still uploading
     if (isVideoUploading) {
-      toast.error('Vui lòng đợi video upload xong');
+      toast.error(t('editPostWaitVideo'));
       return;
     }
     
     if (!content.trim() && !imageFile && !imagePreview && !videoPreview && !uppyVideoResult) {
-      toast.error('Please add some content');
+      toast.error(t('epdAddContent'));
       return;
     }
 
     // Check content length
     if (content.length > MAX_CONTENT_LENGTH) {
-      toast.error(`Nội dung quá dài (${content.length.toLocaleString()}/${MAX_CONTENT_LENGTH.toLocaleString()} ký tự)`);
+      toast.error(`${t('epdTooLongPrefix')}${content.length.toLocaleString()}/${MAX_CONTENT_LENGTH.toLocaleString()}${t('epdTooLongSuffix')}`);
       return;
     }
 
@@ -178,7 +179,7 @@ export const EditPostDialog = ({ post, isOpen, onClose, onPostUpdated, currentUs
       // Get session for access token
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
-        toast.error('Vui lòng đăng nhập để cập nhật bài viết');
+        toast.error(t('editPostNeedLogin'));
         setLoading(false);
         return;
       }
@@ -263,9 +264,14 @@ export const EditPostDialog = ({ post, isOpen, onClose, onPostUpdated, currentUs
                 .eq('id', donation.sender_id)
                 .single();
 
-              const senderName = senderProfile?.username || 'Người dùng';
+              const senderName = senderProfile?.username || t('user');
               const amount = parseFloat(donation.amount) || 0;
-              const newChatContent = `🎁 ${senderName} đã tặng bạn ${amount.toLocaleString()} ${donation.token_symbol}!\n\n${extractedGiftMessage ? `"${extractedGiftMessage}"\n\n` : ''}💰 TX: ${donation.tx_hash.slice(0, 18)}...\n\n👉 Nhấn "Xem Card Chúc Mừng" để xem chi tiết!`;
+              const newChatContent = t('giftChatMessage')
+                .replace('{sender}', senderName)
+                .replace('{amount}', amount.toLocaleString())
+                .replace('{token}', donation.token_symbol)
+                .replace('{message}', extractedGiftMessage ? `"${extractedGiftMessage}"\n\n` : '')
+                .replace('{tx}', donation.tx_hash.slice(0, 18));
 
               await supabase
                 .from('messages')
@@ -276,12 +282,12 @@ export const EditPostDialog = ({ post, isOpen, onClose, onPostUpdated, currentUs
         }
       }
 
-      toast.success('Post updated successfully');
+      toast.success(t('epdUpdateSuccess'));
       onPostUpdated();
       onClose();
     } catch (error: unknown) {
       console.error('Error updating post:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to update post');
+      toast.error(error instanceof Error ? error.message : t('epdUpdateFailed'));
     } finally {
       setLoading(false);
     }
@@ -294,7 +300,7 @@ export const EditPostDialog = ({ post, isOpen, onClose, onPostUpdated, currentUs
       <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-hidden flex flex-col p-0">
           <DialogHeader className="p-4 border-b border-border shrink-0">
-            <DialogTitle className="text-center text-xl font-bold">Chỉnh sửa bài viết</DialogTitle>
+            <DialogTitle className="text-center text-xl font-bold">{t('editPost')}</DialogTitle>
           </DialogHeader>
           
           <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
@@ -303,7 +309,7 @@ export const EditPostDialog = ({ post, isOpen, onClose, onPostUpdated, currentUs
               {location && (
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <MapPin className="w-4 h-4" style={{ color: '#E74852' }} />
-                  <span>Tại </span>
+                  <span>{t('epdAt')}</span>
                   <button
                     type="button"
                     onClick={() => setShowLocationDialog(true)}
@@ -324,7 +330,7 @@ export const EditPostDialog = ({ post, isOpen, onClose, onPostUpdated, currentUs
               {/* Content Input with Emoji */}
               <div className="relative">
                 <Textarea
-                  placeholder="Ánh sáng trong tim bạn đang muốn nói điều gì?"
+                  placeholder={t('createPostPlaceholder')}
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
                   className="min-h-[120px] resize-none border-0 focus-visible:ring-0 text-lg placeholder:text-muted-foreground pr-10"
@@ -357,7 +363,7 @@ export const EditPostDialog = ({ post, isOpen, onClose, onPostUpdated, currentUs
                     onUploadError={() => {
                       setIsVideoUploading(false);
                       setPendingVideoFile(null);
-                      toast.error('Video upload failed');
+                      toast.error(t('createPostErrVideoFailed'));
                     }}
                     onUploadStart={() => setIsVideoUploading(true)}
                     onRemove={() => {
@@ -410,7 +416,7 @@ export const EditPostDialog = ({ post, isOpen, onClose, onPostUpdated, currentUs
               {/* Add to Post - Facebook style colored icons */}
               <div className="border border-border rounded-lg p-3">
                 <div className="flex items-center justify-between">
-                  <span className="font-semibold text-sm">Thêm vào bài viết của bạn</span>
+                  <span className="font-semibold text-sm">{t('addToYourPost')}</span>
                   <div className="flex items-center gap-0.5 overflow-x-auto scrollbar-hide">
                     {/* Media - Green */}
                     <label className="w-9 h-9 min-w-[36px] rounded-full hover:bg-secondary flex items-center justify-center transition-colors cursor-pointer">
@@ -444,7 +450,7 @@ export const EditPostDialog = ({ post, isOpen, onClose, onPostUpdated, currentUs
                         taggedFriends.length > 0 ? 'bg-blue-100 dark:bg-blue-900/30' : ''
                       }`}
                       disabled={loading}
-                      title="Gắn thẻ bạn bè"
+                      title={t('editPostTitleTagFriends')}
                     >
                       <UserPlus className="w-6 h-6" style={{ color: '#1877F2' }} />
                     </button>
@@ -470,7 +476,7 @@ export const EditPostDialog = ({ post, isOpen, onClose, onPostUpdated, currentUs
                       type="button"
                       className="w-9 h-9 min-w-[36px] rounded-full hover:bg-secondary flex items-center justify-center transition-colors opacity-50 cursor-not-allowed"
                       disabled
-                      title="GIF (Sắp có)"
+                      title={t('editPostTitleGifSoon')}
                     >
                       <Clapperboard className="w-6 h-6" style={{ color: '#3BC7BD' }} />
                     </button>
@@ -480,7 +486,7 @@ export const EditPostDialog = ({ post, isOpen, onClose, onPostUpdated, currentUs
                       type="button"
                       className="w-9 h-9 min-w-[36px] rounded-full hover:bg-secondary flex items-center justify-center transition-colors"
                       disabled={loading}
-                      title="Thêm"
+                      title={t('editPostTitleMore')}
                     >
                       <MoreHorizontal className="w-6 h-6 text-muted-foreground" />
                     </button>
@@ -493,7 +499,7 @@ export const EditPostDialog = ({ post, isOpen, onClose, onPostUpdated, currentUs
             <div className="p-4 border-t border-border shrink-0">
               <div className="flex gap-2">
                 <Button type="button" variant="outline" onClick={onClose} disabled={loading || isVideoUploading}>
-                  Huỷ
+                  {t('cancelButton')}
                 </Button>
                 <Button 
                   type="submit" 
@@ -501,7 +507,7 @@ export const EditPostDialog = ({ post, isOpen, onClose, onPostUpdated, currentUs
                   className="flex-1"
                 >
                   {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                  {isVideoUploading ? 'Đang tải video...' : loading ? 'Đang cập nhật...' : 'Lưu thay đổi'}
+                  {isVideoUploading ? t('editPostBtnVideoUploading') : loading ? t('editPostBtnUpdating') : t('editPostBtnSave')}
                 </Button>
               </div>
             </div>

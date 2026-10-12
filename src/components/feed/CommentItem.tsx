@@ -374,7 +374,7 @@ export const CommentItem = ({
         shareUrl={commentShareUrl}
         onShare={handleShare}
         onSelectText={handleSelectText}
-        title="Tùy chọn bình luận"
+        title={t('cmiOptionsTitle')}
       />
     </div>
   );

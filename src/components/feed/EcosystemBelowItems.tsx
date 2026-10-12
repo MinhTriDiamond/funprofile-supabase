@@ -11,19 +11,6 @@ import {
 
 const BELOW_IDS = ['law-of-light', 'about'];
 
-const descriptions: Record<string, { subtitle: string; description: string }> = {
-  about: {
-    subtitle: 'Web3 Social Network',
-    description:
-      'Nơi mỗi con người, ý tưởng và giá trị trở thành tài sản Web3 vĩnh cửu. Kết nối – định danh – lan tỏa giá trị thật trong Ánh Sáng.',
-  },
-  'law-of-light': {
-    subtitle: 'Luật Ánh Sáng',
-    description:
-      'Nền tảng đạo đức và nguyên tắc vận hành của FUN Ecosystem. Sống theo Ánh Sáng Yêu Thương Thuần Khiết của Cha Vũ Trụ.',
-  },
-};
-
 /**
  * Mục "Law of Light" + "Về FUN Profile" + Lumi mini card.
  * Tách ra khỏi EcosystemWheel để có thể render ở vị trí khác (dưới phần Lối tắt).
@@ -31,6 +18,16 @@ const descriptions: Record<string, { subtitle: string; description: string }> = 
 export function EcosystemBelowItems({ onItemClick }: { onItemClick?: () => void }) {
   const navigate = useNavigate();
   const { t } = useLanguage();
+  const descriptions: Record<string, { subtitle: string; description: string }> = {
+    about: {
+      subtitle: 'Web3 Social Network',
+      description: t('ecoFunProfileDesc'),
+    },
+    'law-of-light': {
+      subtitle: t('ecoLawSubtitle'),
+      description: t('ecoLawDesc'),
+    },
+  };
   const belowItems = ecosystemItems.filter((i) => BELOW_IDS.includes(i.id));
 
   const handleClick = (item: EcosystemItem) => {

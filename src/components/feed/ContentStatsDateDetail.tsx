@@ -63,16 +63,15 @@ const getPlatformName = (link: SocialLink): string => {
   return 'Link';
 };
 
-const typeLabels = {
-  posts: { vi: 'bài viết', en: 'posts' },
-  photos: { vi: 'ảnh', en: 'photos' },
-  videos: { vi: 'video', en: 'videos' },
-  livestreams: { vi: 'livestream', en: 'livestreams' },
-  rewards: { vi: 'CAMLY', en: 'CAMLY' },
-};
-
 export const ContentStatsDateDetail = ({ date, mode, type, showCamlyLogo, dateFrom, dateTo }: Props) => {
-  const { language } = useLanguage();
+  const { t } = useLanguage();
+  const typeLabels: Record<ContentStatsType, string> = {
+    posts: t('csdUnitPosts'),
+    photos: t('csdUnitPhotos'),
+    videos: t('csdUnitVideos'),
+    livestreams: t('csdUnitLivestreams'),
+    rewards: 'CAMLY',
+  };
   const { isAdmin } = useCapabilities();
   const [selectedUser, setSelectedUser] = useState<{ id: string; name: string; username?: string; totalReward?: number } | null>(null);
 
@@ -111,7 +110,7 @@ export const ContentStatsDateDetail = ({ date, mode, type, showCamlyLogo, dateFr
   };
 
   const totalCount = users?.reduce((s, u) => s + u.post_count, 0) || 0;
-  const label = typeLabels[type][language === 'vi' ? 'vi' : 'en'];
+  const label = typeLabels[type];
 
   const parseSocialLinks = (raw: SocialLink[] | null): SocialLink[] => {
     if (!raw || !Array.isArray(raw)) return [];
@@ -140,7 +139,7 @@ export const ContentStatsDateDetail = ({ date, mode, type, showCamlyLogo, dateFr
       <div className="text-center text-[15px] font-semibold mb-2 text-green-800 dark:text-green-300">
         {formatDateHeader()} — {totalCount} {label}
         {showCamlyLogo && <img src={camlyLogo} alt="CAMLY" className="w-4 h-4 inline-block ml-1" />}
-        {' '}({users?.length || 0} {language === 'vi' ? 'thành viên' : 'members'})
+        {' '}({users?.length || 0} {t('membersLabel')})
       </div>
 
       {isLoading ? (
@@ -149,7 +148,7 @@ export const ContentStatsDateDetail = ({ date, mode, type, showCamlyLogo, dateFr
         </div>
       ) : !users?.length ? (
         <div className="p-8 text-center text-muted-foreground">
-          {language === 'vi' ? 'Không có dữ liệu' : 'No data'}
+          {t('kycNoData')}
         </div>
       ) : (
         <div className="space-y-1">

@@ -29,56 +29,56 @@ const logoScaleOverrides: Record<string, number> = {
   'fun-academy': 0.95,
 };
 
-// Ecosystem item descriptions (Vietnamese)
-const ecosystemDescriptions: Record<string, { subtitle: string; description: string }> = {
+// Ecosystem item description keys (translated at render time)
+const ecosystemDescriptionKeys: Record<string, { subtitleKey: string; descriptionKey: string }> = {
   'fun-play': {
-    subtitle: 'Web3 Video Platform',
-    description: 'Nơi nội dung trở thành tài sản số có giá trị. Sáng tạo – chia sẻ – Own & Earn trong không gian video Web3.',
+    subtitleKey: 'ecwPlaySub',
+    descriptionKey: 'ecwPlayDesc',
   },
   'fun-farm': {
-    subtitle: 'Farm to Table Platform',
-    description: 'Nơi nông nghiệp trở về với sự thật và yêu thương. Kết nối trực tiếp nông dân – nhà sản xuất – người tiêu dùng, nuôi dưỡng thân thể bằng thực phẩm sạch.',
+    subtitleKey: 'ecwFarmSub',
+    descriptionKey: 'ecwFarmDesc',
   },
   'fun-planet': {
-    subtitle: 'Game Marketplace for Kids',
-    description: 'Chợ game dành cho trẻ em – học mà chơi, chơi mà lớn. Nuôi dưỡng trí tuệ, đạo đức và sáng tạo cho thế hệ mới.',
+    subtitleKey: 'ecwPlanetSub',
+    descriptionKey: 'ecwPlanetDesc',
   },
   'fun-wallet': {
-    subtitle: 'Our Own Bank',
-    description: 'Ví Web3 của Nền Kinh Tế Ánh Sáng. Lưu trữ – giao dịch – kết nối toàn bộ FUN Ecosystem một cách tự do & minh bạch.',
+    subtitleKey: 'ecwWalletSub',
+    descriptionKey: 'ecwWalletDesc',
   },
   'fun-charity': {
-    subtitle: 'Pure Love Charity Network',
-    description: 'Nơi quy tụ các tổ chức từ thiện và mọi nhu cầu cần yêu thương. Minh bạch – kết nối – trao đi đúng nơi, bằng trái tim thuần khiết.',
+    subtitleKey: 'ecwCharitySub',
+    descriptionKey: 'ecwCharityDesc',
   },
   'fun-academy': {
-    subtitle: 'Learn & Earn Platform',
-    description: 'Nơi quy tụ trường học, tri thức và nhu cầu giáo dục toàn cầu. Học tập trong yêu thương – trưởng thành trong giá trị – lan toả trí tuệ.',
+    subtitleKey: 'ecwAcademySub',
+    descriptionKey: 'ecwAcademyDesc',
   },
   'green-earth': {
-    subtitle: 'Regeneration & Sustainability Platform',
-    description: 'Nơi Trái Đất được chữa lành và tái sinh. Phục hồi môi trường – tái tạo xanh – kiến tạo giá trị dài hạn, để hành tinh và nhân loại cùng phát triển trong hài hòa.',
+    subtitleKey: 'ecwGreenEarthSub',
+    descriptionKey: 'ecwGreenEarthDesc',
   },
   'lovehub': {
-    subtitle: 'Free Stay. Warm Meals. Human Warmth.',
-    description: 'Nơi kết nối chỗ ở miễn phí, bữa ăn ấm và hơi ấm tình người. Trao đi sự tử tế – đón nhận yêu thương – lan tỏa mái nhà chung trong FUN Ecosystem.',
+    subtitleKey: 'ecwLovehubSub',
+    descriptionKey: 'ecwLovehubDesc',
   },
   'urantia': {
-    subtitle: 'Sách Urantia Tiếng Việt',
-    description: 'Kho tri thức Sách Urantia bằng tiếng Việt. Đọc – học – chiêm nghiệm mặc khải về Thượng Đế, Vũ Trụ và hành trình tiến hóa của linh hồn.',
+    subtitleKey: 'ecwUrantiaSub',
+    descriptionKey: 'ecwUrantiaDesc',
   },
 
   'angel-ai': {
-    subtitle: 'Light-Aligned Artificial Intelligence',
-    description: 'Trí tuệ Nhân tạo đồng điệu với đạo đức, ý thức và Ánh Sáng Vũ Trụ. Hỗ trợ con người bằng trí tuệ cao hơn, lòng từ bi và sự minh triết.',
+    subtitleKey: 'ecwAngelSub',
+    descriptionKey: 'ecwAngelDesc',
   },
   'about': {
-    subtitle: 'Web3 Social Network',
-    description: 'Nơi mỗi con người, ý tưởng và giá trị trở thành tài sản Web3 vĩnh cửu. Kết nối – định danh – lan tỏa giá trị thật trong Ánh Sáng.',
+    subtitleKey: 'ecwAboutSub',
+    descriptionKey: 'ecwAboutDesc',
   },
   'law-of-light': {
-    subtitle: 'Luật Ánh Sáng',
-    description: 'Nền tảng đạo đức và nguyên tắc vận hành của FUN Ecosystem. Sống theo Ánh Sáng Yêu Thương Thuần Khiết của Cha Vũ Trụ.',
+    subtitleKey: 'ecwLawSub',
+    descriptionKey: 'ecwLawDesc',
   },
 };
 
@@ -210,7 +210,7 @@ export default function EcosystemWheel({ onItemClick }: { onItemClick?: () => vo
                     </div>
                   </button>
                 </HoverCardTrigger>
-                {ecosystemDescriptions[item.id] && (
+                {ecosystemDescriptionKeys[item.id] && (
                   <HoverCardContent
                     side="right"
                     align="start"
@@ -223,11 +223,11 @@ export default function EcosystemWheel({ onItemClick }: { onItemClick?: () => vo
                       <img src={item.avatar} alt={item.name} className="w-9 h-9 rounded-full object-cover flex-shrink-0" />
                       <div className="min-w-0">
                         <p className="font-bold text-sm text-foreground leading-tight">{item.name}</p>
-                        <p className="text-[11px] text-primary italic leading-tight">{ecosystemDescriptions[item.id].subtitle}</p>
+                        <p className="text-[11px] text-primary italic leading-tight">{t(ecosystemDescriptionKeys[item.id].subtitleKey)}</p>
                       </div>
                     </div>
                     <p className="text-xs text-muted-foreground leading-relaxed">
-                      {ecosystemDescriptions[item.id].description}
+                      {t(ecosystemDescriptionKeys[item.id].descriptionKey)}
                     </p>
                   </HoverCardContent>
                 )}

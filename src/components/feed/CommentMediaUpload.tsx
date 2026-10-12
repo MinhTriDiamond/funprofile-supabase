@@ -1,4 +1,5 @@
 import { useState, useRef, Suspense } from 'react';
+import { useLanguage } from '@/i18n/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { uploadToR2 } from '@/utils/r2Upload';
 import { Button } from '@/components/ui/button';
@@ -23,6 +24,7 @@ export const CommentMediaUpload = ({
   onGifSelect,
   onStickerSelect,
 }: CommentMediaUploadProps) => {
+  const { t } = useLanguage();
   const [uploading, setUploading] = useState(false);
   const [preview, setPreview] = useState<{ url: string; type: 'image' | 'video' } | null>(null);
   const [showGifPicker, setShowGifPicker] = useState(false);
@@ -36,7 +38,7 @@ export const CommentMediaUpload = ({
     // Get session for access token
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
-      toast.error('Vui lòng đăng nhập để tải media lên');
+      toast.error(t('commentMediaNeedLogin'));
       return;
     }
 

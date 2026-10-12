@@ -32,7 +32,7 @@ type ViewMode = 'day' | 'week' | 'month';
 const PAGE_SIZE = 30;
 
 export const ContentStatsModal = ({ open, onOpenChange, type, title, icon: Icon, showCamlyLogo }: ContentStatsModalProps) => {
-  const { language } = useLanguage();
+  const { t } = useLanguage();
   const todayVN = getTodayVN();
   const [mode, setMode] = useState<ViewMode>('day');
   const [limit, setLimit] = useState(PAGE_SIZE);
@@ -96,14 +96,14 @@ export const ContentStatsModal = ({ open, onOpenChange, type, title, icon: Icon,
   };
 
   const modeLabels = {
-    day: language === 'vi' ? 'Ngày' : 'Day',
-    week: language === 'vi' ? 'Tuần' : 'Week',
-    month: language === 'vi' ? 'Tháng' : 'Month',
+    day: t('csmDay'),
+    week: t('csmWeek'),
+    month: t('csmMonth'),
   };
 
   const valueLabel = type === 'rewards'
-    ? (language === 'vi' ? 'Số lượng' : 'Amount')
-    : (language === 'vi' ? 'Số lượng' : 'Count');
+    ? t('conPageAmount')
+    : t('chgColCount');
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -156,7 +156,7 @@ export const ContentStatsModal = ({ open, onOpenChange, type, title, icon: Icon,
                 </div>
               ) : !rows?.length ? (
                 <div className="p-8 text-center text-muted-foreground">
-                  {language === 'vi' ? 'Chưa có dữ liệu' : 'No data'}
+                  {t('csmNoData')}
                 </div>
               ) : (
                 <table className="w-full">
@@ -183,7 +183,7 @@ export const ContentStatsModal = ({ open, onOpenChange, type, title, icon: Icon,
                             {formatLabel(row.period)}
                             {isToday && (
                               <span className="ml-1 text-[11px] uppercase text-green-700 dark:text-green-200 font-bold">
-                                {language === 'vi' ? 'Hôm nay' : 'Today'}
+                                {t('today')}
                               </span>
                             )}
                           </td>
@@ -208,13 +208,13 @@ export const ContentStatsModal = ({ open, onOpenChange, type, title, icon: Icon,
                 onClick={() => setLimit(l => l + PAGE_SIZE)}
                 className="w-full text-center text-sm text-primary hover:underline py-0.5"
               >
-                {language === 'vi' ? 'Xem thêm...' : 'Load more...'}
+                {t('csmLoadMore')}
               </button>
             )}
 
             <div className="text-center text-[15px] font-semibold text-green-800 dark:text-green-300">
               <span className="inline-flex items-center gap-1">
-                {language === 'vi' ? 'Tổng' : 'Total'}: <span className="font-bold">{formatNumber(grandTotal)}</span>
+                {t('claimTotal')}: <span className="font-bold">{formatNumber(grandTotal)}</span>
                 {showCamlyLogo && (
                   <img src={camlyLogo} alt="CAMLY" className="w-4 h-4 inline-block" />
                 )}
