@@ -1,6 +1,5 @@
 import { Wallet, getWalletConnectConnector } from '@rainbow-me/rainbowkit';
-import funWalletLogoAsset from '@/assets/fun-wallet-logo.gif.asset.json';
-const funWalletLogo = funWalletLogoAsset.url;
+import funWalletLogo from '@/assets/fun-wallet-logo.gif';
 
 export interface FunWalletOptions {
   projectId: string;

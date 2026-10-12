@@ -169,7 +169,7 @@ function SummaryTable({ summary, activeFilter, btcOnChain }: { summary: Donation
                         <TableCell className="text-right px-2 py-1 whitespace-nowrap">
                           <span className="text-sm font-semibold text-green-600">{formatAmount(recv?.amount ?? 0, language)}</span>
                           {sym === 'BTC' && !isBtcWithOnChain && (recv?.amount ?? 0) > 100 && (
-                            <span className="ml-1 text-[9px] text-orange-500 font-medium" title="Số liệu từ DB chưa đối soát blockchain">⚠️</span>
+                            <span className="ml-1 text-[9px] text-orange-500 font-medium" title={t('htbDbNotReconciled')}>⚠️</span>
                           )}
                         </TableCell>
                         <TableCell className="text-right px-2 py-1 whitespace-nowrap">
@@ -182,7 +182,7 @@ function SummaryTable({ summary, activeFilter, btcOnChain }: { summary: Donation
                         <TableCell className="text-right px-2 py-1 whitespace-nowrap">
                           <span className="text-sm font-semibold text-red-600">{formatAmount(sent?.amount ?? 0, language)}</span>
                           {sym === 'BTC' && !isBtcWithOnChain && (sent?.amount ?? 0) > 100 && (
-                            <span className="ml-1 text-[9px] text-orange-500 font-medium" title="Số liệu từ DB chưa đối soát blockchain">⚠️</span>
+                            <span className="ml-1 text-[9px] text-orange-500 font-medium" title={t('htbDbNotReconciled')}>⚠️</span>
                           )}
                         </TableCell>
                         <TableCell className="text-right px-2 py-1 whitespace-nowrap">
@@ -318,7 +318,7 @@ function DonationCard({ d, userId, btcPrice }: { d: DonationRecord; userId: stri
           <Badge variant="outline" className={isSent ? 'border-red-500 text-red-600 bg-red-50 dark:bg-red-950/30 text-xs' : 'border-green-500 text-green-600 bg-green-50 dark:bg-green-950/30 text-xs'}>
             {isSent ? <ArrowUpRight className="w-3 h-3 mr-0.5" /> : <ArrowDownLeft className="w-3 h-3 mr-0.5" />}
             {isTransfer && !transferResolvedInternal
-              ? (isSent ? t('transferOut') || 'Chuyển ví' : t('transferIn') || 'Nhận ví ngoài')
+              ? (isSent ? t('transferOut') : t('transferIn'))
               : (isSent ? t('giftedBadge') : t('receivedBadge'))}
           </Badge>
           {isExternal && (
@@ -406,7 +406,7 @@ function DonationCard({ d, userId, btcPrice }: { d: DonationRecord; userId: stri
 
 /** Card for pure on-chain BTC transactions (no donation record) */
 function OnchainBtcCard({ tx, btcPrice }: { tx: BtcTransaction; btcPrice: number }) {
-  const { language } = useLanguage();
+  const { t, language } = useLanguage();
   const usdValue = tx.amount * btcPrice;
   const dateStr = new Date(tx.timestamp * 1000);
 
@@ -415,7 +415,7 @@ function OnchainBtcCard({ tx, btcPrice }: { tx: BtcTransaction; btcPrice: number
       <div className="flex items-center justify-between">
         <Badge variant="outline" className={tx.type === 'received' ? 'border-green-500 text-green-600 bg-green-50 dark:bg-green-950/30 text-xs' : 'border-red-500 text-red-600 bg-red-50 dark:bg-red-950/30 text-xs'}>
           {tx.type === 'received' ? <ArrowDownLeft className="w-3 h-3 mr-0.5" /> : <ArrowUpRight className="w-3 h-3 mr-0.5" />}
-          {tx.type === 'received' ? 'Nhận' : 'Gửi'}
+          {tx.type === 'received' ? t('receive') : t('send')}
         </Badge>
         <div className="flex items-center gap-1.5">
           <Badge variant="secondary" className="bg-orange-100 text-orange-700 border-orange-200 text-[10px] px-1 py-0">
@@ -493,7 +493,7 @@ function HistoryTabLegacy({ walletAddress, userDisplayName, userAvatarUrl, usern
     const elapsed = now - lastScanRef.current;
     if (elapsed < SCAN_COOLDOWN) {
       const remaining = Math.ceil((SCAN_COOLDOWN - elapsed) / 60000);
-      toast.info(`Vui lòng chờ ${remaining} phút trước khi quét lại`);
+      toast.info(t('htbScanCooldown', { minutes: remaining }));
       return;
     }
     lastScanRef.current = now;
@@ -518,7 +518,7 @@ function HistoryTabLegacy({ walletAddress, userDisplayName, userAvatarUrl, usern
       } else {
         hasError = true;
         console.error('scan-btc error:', btcResult.status === 'rejected' ? btcResult.reason : btcResult.value.error);
-        toast.error('Quét BTC đang lỗi hệ thống');
+        toast.error(t('htbScanBtcError'));
       }
 
       // Refetch data
@@ -528,17 +528,17 @@ function HistoryTabLegacy({ walletAddress, userDisplayName, userAvatarUrl, usern
       ]);
 
       if (totalNew > 0) {
-        toast.success(`Tìm thấy ${totalNew} giao dịch mới!`);
+        toast.success(t('htbScanFoundNew', { count: totalNew }));
       } else if (!hasError) {
-        toast.info('Không có giao dịch mới');
+        toast.info(t('htbScanNoNew'));
       }
     } catch (err) {
       console.error('Scan error:', err);
-      toast.error('Lỗi khi quét giao dịch');
+      toast.error(t('htbScanError'));
     } finally {
       setScanning(false);
     }
-  }, [fetchDonations, fetchSummary]);
+  }, [fetchDonations, fetchSummary, t]);
 
   // Unified BTC entries: merge on-chain + donation, deduplicate by tx_hash/txid
   const unifiedBtcEntries = useMemo<UnifiedBtcEntry[]>(() => {
@@ -659,7 +659,7 @@ function HistoryTabLegacy({ walletAddress, userDisplayName, userAvatarUrl, usern
           onClick={handleScanBtc}
           disabled={scanning}
           className="ml-2 h-7 px-2"
-          title="Quét giao dịch mới"
+          title={t('htbScanTooltip')}
         >
           <RefreshCw className={cn("w-4 h-4", scanning && "animate-spin")} />
         </Button>
@@ -667,13 +667,13 @@ function HistoryTabLegacy({ walletAddress, userDisplayName, userAvatarUrl, usern
           iconOnly
           getRows={() => mapDonationsToRows(donations, effectiveUserId)}
           meta={{
-            title: `Lịch sử giao dịch — ${userDisplayName ?? username ?? ''}`,
-            userDisplayName: userDisplayName ?? username ?? 'Người dùng',
+            title: t('htbExportTitle', { name: userDisplayName ?? username ?? '' }),
+            userDisplayName: userDisplayName ?? username ?? t('user'),
             userWalletAddress: walletAddress,
             dateRangeLabel:
               fromDate || toDate
                 ? `${fromDate ? format(fromDate, 'dd/MM/yyyy') : '…'} → ${toDate ? format(toDate, 'dd/MM/yyyy') : '…'}`
-                : 'Toàn bộ',
+                : t('claimDateRangeAll'),
             isOwner: !!currentUserId && currentUserId === effectiveUserId,
             surface: 'wallet_history',
             filterParams: {
@@ -704,17 +704,17 @@ function HistoryTabLegacy({ walletAddress, userDisplayName, userAvatarUrl, usern
             <SelectValue placeholder="Token" />
           </SelectTrigger>
           <SelectContent className="z-[9999]">
-            <SelectItem value="all">Tất cả</SelectItem>
+            <SelectItem value="all">{t('filterAll')}</SelectItem>
             {TOKEN_ORDER.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
           </SelectContent>
         </Select>
 
         <div className="ml-auto flex items-center gap-1">
           <Button size="sm" variant="outline" onClick={handleSetToday} className="h-7 text-xs px-2">
-            Hôm nay
+            {t('walletToday')}
           </Button>
           <Button size="sm" variant="outline" onClick={handleSet7Days} className="h-7 text-xs px-2">
-            7 ngày
+            {t('donation7Days')}
           </Button>
           <Popover>
             <PopoverTrigger asChild>
@@ -868,6 +868,7 @@ import { TransactionHistoryPage as _TransactionHistoryPage } from '@/components/
 import { ShadowProbe as _ShadowProbe } from '@/components/transactions/ShadowProbe';
 
 export function HistoryTab(props: Props) {
+  const { t } = useLanguage();
   const { enabled } = _useUnifiedHistoryEnabled();
   const { userId: currentUserId } = useCurrentUser();
   const effectiveUserId = props.targetUserId || currentUserId;
@@ -877,7 +878,7 @@ export function HistoryTab(props: Props) {
       <_TransactionHistoryPage
         scope="self"
         targetUserId={effectiveUserId}
-        userDisplayName={props.userDisplayName || 'Tôi'}
+        userDisplayName={props.userDisplayName || t('whpMe')}
         userWalletAddress={props.walletAddress ?? null}
         syncUrl={false}
       />

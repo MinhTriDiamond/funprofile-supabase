@@ -1,4 +1,5 @@
 import { Progress } from '@/components/ui/progress';
+import { useLanguage } from '@/i18n/LanguageContext';
 import { ShieldCheck } from 'lucide-react';
 
 interface IISIndicatorProps {
@@ -7,13 +8,14 @@ interface IISIndicatorProps {
 }
 
 export function IISIndicator({ value, showDetail = true }: IISIndicatorProps) {
+  const { t } = useLanguage();
   const pct = Math.min(100, (value / 1.5) * 100);
   const colorClass = value >= 1.2
     ? 'bg-emerald-500'
     : value >= 0.8
     ? 'bg-amber-500'
     : 'bg-rose-500';
-  const label = value >= 1.2 ? 'Trong sáng' : value >= 0.8 ? 'Bình thường' : 'Cảnh báo';
+  const label = value >= 1.2 ? t('iisLabelPure') : value >= 0.8 ? t('iisLabelNormal') : t('iisLabelWarning');
 
   return (
     <div className="space-y-1.5">

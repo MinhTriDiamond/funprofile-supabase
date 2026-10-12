@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useLanguage } from '@/i18n/LanguageContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -17,6 +18,7 @@ interface V25Score {
 }
 
 export function LightScoreV25Card() {
+  const { t } = useLanguage();
   const [score, setScore] = useState<V25Score | null>(null);
   const [tier, setTier] = useState<string>('Seed Light');
   const [iis, setIis] = useState<number>(1.0);
@@ -61,7 +63,7 @@ export function LightScoreV25Card() {
       <Card className="border-0 shadow-lg bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-950">
         <CardContent className="py-6 text-center">
           <Sparkles className="w-10 h-10 mx-auto text-muted-foreground mb-2" />
-          <p className="text-sm text-muted-foreground">PPLP v2.5 Light Score chưa được tính. Hãy chờ lần aggregate kế tiếp hoặc liên hệ admin chạy backfill.</p>
+          <p className="text-sm text-muted-foreground">{t('lsvNotComputed')}</p>
         </CardContent>
       </Card>
     );
@@ -112,7 +114,7 @@ export function LightScoreV25Card() {
               <span className="font-semibold">{Math.round(score.pls).toLocaleString()}</span>
             </div>
             <p className="text-[11px] text-muted-foreground">
-              Trọng số α = {score.alpha} · Consistency × {score.consistency_multiplier.toFixed(2)} · Reliability × {score.reliability_multiplier.toFixed(2)}
+              {t('lsvWeightAlpha')}{score.alpha} · Consistency × {score.consistency_multiplier.toFixed(2)} · Reliability × {score.reliability_multiplier.toFixed(2)}
             </p>
           </TabsContent>
 
@@ -122,7 +124,7 @@ export function LightScoreV25Card() {
               <span className="font-semibold">{Math.round(score.nls).toLocaleString()}</span>
             </div>
             <p className="text-[11px] text-muted-foreground">
-              Trọng số β = {score.beta} · Đo năng lực lan tỏa ánh sáng cho người khác.
+              {t('lsvWeightBeta')}{score.beta}{t('lsvNetworkDescSuffix')}
             </p>
           </TabsContent>
 
@@ -132,7 +134,7 @@ export function LightScoreV25Card() {
               <span className="font-semibold">{Math.round(score.lls).toLocaleString()}</span>
             </div>
             <p className="text-[11px] text-muted-foreground">
-              Trọng số γ = {score.gamma} · Khuyến khích di sản dài hạn.
+              {t('lsvWeightGamma')}{score.gamma}{t('lsvLegacyDescSuffix')}
             </p>
           </TabsContent>
         </Tabs>
