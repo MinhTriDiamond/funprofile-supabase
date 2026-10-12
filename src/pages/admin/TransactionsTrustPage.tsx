@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useLanguage } from '@/i18n/LanguageContext';
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -70,6 +71,7 @@ function riskColor(r: string) {
 }
 
 const TransactionsTrustPage = () => {
+  const { t } = useLanguage();
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
@@ -77,8 +79,7 @@ const TransactionsTrustPage = () => {
         <div>
           <h1 className="text-xl font-semibold">Transaction Trust — Registry &amp; Suspicious</h1>
           <p className="text-sm text-muted-foreground">
-            Phase 1.5 — Quản lý whitelist token, hàng đợi suspicious, và báo cáo coverage của
-            <code className="mx-1">fetch-wallet-history</code>.
+            {t('ttpSubtitleA')}<code className="mx-1">fetch-wallet-history</code>{t('ttpSubtitleB')}
           </p>
         </div>
       </div>
@@ -100,6 +101,7 @@ const TransactionsTrustPage = () => {
 
 // ===== Registry Tab =====
 const RegistryTab = () => {
+  const { t } = useLanguage();
   const [rows, setRows] = useState<RegistryRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
@@ -128,7 +130,7 @@ const RegistryTab = () => {
 
   const saveForm = async () => {
     if (!form.symbol || !form.name) {
-      toast.error("Symbol và Name bắt buộc");
+      toast.error(t("ttpSymbolNameRequired"));
       return;
     }
     const addr = form.token_address.trim().toLowerCase() || null;
@@ -145,7 +147,7 @@ const RegistryTab = () => {
       source: form.source,
     });
     if (error) toast.error(error.message);
-    else { toast.success("Đã thêm vào Registry"); setForm({ ...form, token_address: "", symbol: "", name: "" }); load(); }
+    else { toast.success(t("ttpAdded")); setForm({ ...form, token_address: "", symbol: "", name: "" }); load(); }
   };
 
   const toggleActive = async (r: RegistryRow) => {
@@ -154,7 +156,7 @@ const RegistryTab = () => {
       .update({ is_active: !r.is_active })
       .eq("id", r.id);
     if (error) toast.error(error.message);
-    else { toast.success("Đã cập nhật"); load(); }
+    else { toast.success(t("ttpUpdated")); load(); }
   };
 
   const changeRisk = async (r: RegistryRow, risk: string) => {
@@ -163,13 +165,13 @@ const RegistryTab = () => {
       .update({ risk_level: risk })
       .eq("id", r.id);
     if (error) toast.error(error.message);
-    else { toast.success("Đã đổi risk level"); load(); }
+    else { toast.success(t("ttpRiskChanged")); load(); }
   };
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
       <Card className="lg:col-span-1">
-        <CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2"><Plus className="h-4 w-4" /> Thêm token</CardTitle></CardHeader>
+        <CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2"><Plus className="h-4 w-4" />{t('ttpAddToken')}</CardTitle></CardHeader>
         <CardContent className="space-y-3">
           <div className="grid grid-cols-2 gap-2">
             <div>
@@ -182,7 +184,7 @@ const RegistryTab = () => {
             </div>
           </div>
           <div>
-            <Label className="text-xs">Contract address (để trống = native)</Label>
+            <Label className="text-xs">{t('ttpContractLabel')}</Label>
             <Input value={form.token_address} onChange={(e) => setForm({ ...form, token_address: e.target.value })} placeholder="0x..." />
           </div>
           <div className="grid grid-cols-2 gap-2">
@@ -217,7 +219,7 @@ const RegistryTab = () => {
               <Input value={form.source} onChange={(e) => setForm({ ...form, source: e.target.value })} />
             </div>
           </div>
-          <Button onClick={saveForm} className="w-full">Thêm vào Registry</Button>
+          <Button onClick={saveForm} className="w-full">{t('ttpAddToRegistry')}</Button>
         </CardContent>
       </Card>
 
@@ -240,7 +242,7 @@ const RegistryTab = () => {
                 </tr>
               </thead>
               <tbody>
-                {loading && <tr><td colSpan={6} className="py-4 text-center text-muted-foreground">Đang tải...</td></tr>}
+                {loading && <tr><td colSpan={6} className="py-4 text-center text-muted-foreground">{t('ttpLoading')}</td></tr>}
                 {!loading && rows.map((r) => (
                   <tr key={r.id} className="border-b hover:bg-muted/30">
                     <td className="py-2 px-2 font-mono text-xs">{r.chain_id}<div className="text-[10px] text-muted-foreground">{r.network}</div></td>
@@ -276,6 +278,7 @@ const RegistryTab = () => {
 
 // ===== Suspicious Tab =====
 const SuspiciousTab = () => {
+  const { t } = useLanguage();
   const [rows, setRows] = useState<SuspiciousRow[]>([]);
   const [filter, setFilter] = useState<string>("all");
   const [loading, setLoading] = useState(false);
@@ -296,10 +299,10 @@ const SuspiciousTab = () => {
   useEffect(() => { load(); }, [filter]);
 
   const approveAsAllowed = async (r: SuspiciousRow) => {
-    if (!r.raw_token_address) { toast.error("Native không thể auto-approve"); return; }
-    const symbol = prompt("Symbol hiển thị (chuẩn của Cha):", r.raw_symbol || "") || "";
+    if (!r.raw_token_address) { toast.error(t("ttpNativeNoApprove")); return; }
+    const symbol = prompt(t("ttpPromptSymbol"), r.raw_symbol || "") || "";
     if (!symbol) return;
-    const name = prompt("Tên token:", r.raw_symbol || "") || symbol;
+    const name = prompt(t("ttpPromptName"), r.raw_symbol || "") || symbol;
     const decimals = Number(prompt("Decimals:", String(r.raw_decimals || 18)) || "18");
     const { error } = await supabase.rpc("tt_approve_suspicious", {
       p_event_id: r.id,
@@ -308,7 +311,7 @@ const SuspiciousTab = () => {
       p_decimals: decimals,
     });
     if (error) { toast.error(error.message); return; }
-    toast.success("Đã duyệt + ghi audit");
+    toast.success(t("ttpApprovedAudit"));
     load();
   };
 
@@ -316,13 +319,13 @@ const SuspiciousTab = () => {
     if (!r.raw_token_address) return;
     const { error } = await supabase.rpc("tt_block_suspicious", { p_event_id: r.id });
     if (error) { toast.error(error.message); return; }
-    toast.success("Đã chặn contract + ghi audit");
+    toast.success(t("ttpBlockedAudit"));
     load();
   };
 
   const ignore = async (r: SuspiciousRow) => {
     const { error } = await supabase.rpc("tt_ignore_suspicious", { p_event_id: r.id });
-    if (error) toast.error(error.message); else { toast.success("Đã bỏ qua + ghi audit"); load(); }
+    if (error) toast.error(error.message); else { toast.success(t("ttpIgnoredAudit")); load(); }
   };
 
   return (
@@ -333,7 +336,7 @@ const SuspiciousTab = () => {
           <Select value={filter} onValueChange={setFilter}>
             <SelectTrigger className="w-48"><SelectValue /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Tất cả lý do</SelectItem>
+              <SelectItem value="all">{t('ttpAllReasons')}</SelectItem>
               <SelectItem value="unknown_contract">unknown_contract</SelectItem>
               <SelectItem value="symbol_collision">symbol_collision</SelectItem>
               <SelectItem value="decimals_mismatch">decimals_mismatch</SelectItem>
@@ -359,8 +362,8 @@ const SuspiciousTab = () => {
               </tr>
             </thead>
             <tbody>
-              {loading && <tr><td colSpan={8} className="py-4 text-center text-muted-foreground">Đang tải...</td></tr>}
-              {!loading && rows.length === 0 && <tr><td colSpan={8} className="py-4 text-center text-muted-foreground">Không có sự kiện nào.</td></tr>}
+              {loading && <tr><td colSpan={8} className="py-4 text-center text-muted-foreground">{t('ttpLoading')}</td></tr>}
+              {!loading && rows.length === 0 && <tr><td colSpan={8} className="py-4 text-center text-muted-foreground">{t('ttpNoEvents')}</td></tr>}
               {rows.map((r) => (
                 <tr key={r.id} className="border-b hover:bg-muted/30">
                   <td className="py-2 px-2 text-xs text-muted-foreground">{new Date(r.last_seen_at).toLocaleString("vi-VN")}</td>
@@ -377,7 +380,7 @@ const SuspiciousTab = () => {
                         <Button size="sm" variant="outline" onClick={() => blockContract(r)}><Ban className="h-3 w-3" /></Button>
                       </>
                     )}
-                    <Button size="sm" variant="ghost" onClick={() => ignore(r)}>Bỏ qua</Button>
+                    <Button size="sm" variant="ghost" onClick={() => ignore(r)}>{t('ttpIgnore')}</Button>
                   </td>
                 </tr>
               ))}
@@ -391,6 +394,7 @@ const SuspiciousTab = () => {
 
 // ===== Coverage Tab =====
 const CoverageTab = () => {
+  const { t } = useLanguage();
   const [data, setData] = useState<CoverageRow | null>(null);
   const [alerts, setAlerts] = useState<DriftAlert[]>([]);
   const [loading, setLoading] = useState(false);
@@ -411,7 +415,7 @@ const CoverageTab = () => {
 
   const ackAlert = async (id: string) => {
     const { error } = await supabase.rpc("tt_ack_drift", { p_alert_id: id });
-    if (error) toast.error(error.message); else { toast.success("Đã xác nhận alert"); load(); }
+    if (error) toast.error(error.message); else { toast.success(t("ttpAlertAcked")); load(); }
   };
 
   return (
@@ -426,7 +430,7 @@ const CoverageTab = () => {
             <div className={`text-2xl font-bold ${(data?.coverage_pct ?? 0) >= 95 ? "text-emerald-600" : "text-amber-600"}`}>
               {data?.coverage_pct != null ? `${data.coverage_pct}%` : "—"}
             </div>
-            <div className="text-[10px] text-muted-foreground mt-1">{(data?.coverage_pct ?? 0) >= 95 ? "Đủ điều kiện Phase 2" : "Cần mở rộng registry"}</div>
+            <div className="text-[10px] text-muted-foreground mt-1">{(data?.coverage_pct ?? 0) >= 95 ? t("ttpPhase2Ready") : t("ttpNeedRegistry")}</div>
           </CardContent>
         </Card>
       </div>
@@ -450,7 +454,7 @@ const CoverageTab = () => {
                   <td className="py-2 px-2 text-xs text-muted-foreground">{t.last_seen ? new Date(t.last_seen).toLocaleString("vi-VN") : "—"}</td>
                 </tr>
               ))}
-              {(!data || data.top_suspicious.length === 0) && <tr><td colSpan={4} className="py-4 text-center text-muted-foreground">Chưa có dữ liệu.</td></tr>}
+              {(!data || data.top_suspicious.length === 0) && <tr><td colSpan={4} className="py-4 text-center text-muted-foreground">{t('ttpNoDataYet')}</td></tr>}
             </tbody>
           </table>
         </CardContent>
@@ -459,13 +463,13 @@ const CoverageTab = () => {
       <Card>
         <CardHeader className="pb-3"><CardTitle className="text-base">Registry Drift Alerts</CardTitle></CardHeader>
         <CardContent>
-          {alerts.length === 0 && <div className="text-sm text-muted-foreground py-4 text-center">Không có alert.</div>}
+          {alerts.length === 0 && <div className="text-sm text-muted-foreground py-4 text-center">{t('ttpNoAlerts')}</div>}
           <div className="space-y-2">
             {alerts.map((a) => (
               <div key={a.id} className={`p-3 rounded border ${a.ack ? "opacity-60" : "border-amber-500/50 bg-amber-500/5"}`}>
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <div className="font-semibold text-sm">{a.reason} — {a.event_count} events (ngưỡng {a.threshold})</div>
+                    <div className="font-semibold text-sm">{a.reason} — {a.event_count}{t('ttpEventsMid')}{a.threshold}{t('ttpCloseParen')}</div>
                     <div className="text-xs text-muted-foreground">{new Date(a.window_start).toLocaleString("vi-VN")} → {new Date(a.window_end).toLocaleString("vi-VN")}</div>
                     <div className="text-[11px] mt-1 font-mono">{JSON.stringify(a.sample_contracts).slice(0, 200)}…</div>
                   </div>
