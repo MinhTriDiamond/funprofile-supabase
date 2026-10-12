@@ -15,7 +15,7 @@ const ANGEL_LOGO = '/angel-ai-logo-128.png';
 const LawOfLight = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { userId, isAuthenticated } = useCurrentUser();
   const [checklist, setChecklist] = useState([false, false, false, false, false]);
   const [loading, setLoading] = useState(false);
@@ -66,17 +66,17 @@ const LawOfLight = () => {
           law_of_light_accepted_at: new Date().toISOString()
         }).eq('id', userId);
         
-        toast.success('🌟 Con đã sẵn sàng bước vào Ánh Sáng!');
+        toast.success(t('lawToastReady'));
         navigate('/');
       } else {
         // User not logged in - save pending and redirect to auth
         localStorage.setItem('law_of_light_accepted_pending', 'true');
-        toast.success('🌟 Con đã sẵn sàng bước vào Ánh Sáng!');
+        toast.success(t('lawToastReady'));
         navigate('/auth');
       }
     } catch (error) {
       logger.error('[LawOfLight] Error accepting:', error);
-      toast.error('Có lỗi xảy ra, vui lòng thử lại');
+      toast.error(t('lawToastError'));
     } finally {
       setLoading(false);
     }
@@ -102,66 +102,66 @@ const LawOfLight = () => {
         if (!data.session) break;
         await new Promise((r) => setTimeout(r, 150));
       }
-      toast.info('Bạn đang xem với tư cách khách. Đăng nhập lại bất cứ lúc nào để ký Luật Ánh Sáng.');
+      toast.info(t('lawToastGuest'));
       // Hard replace để mọi state/cache trong app được dựng lại ở chế độ khách
       window.location.replace('/');
     } catch (error) {
       logger.error('[LawOfLight] Sign out on skip failed:', error);
-      toast.error('Không thể đăng xuất, vui lòng thử lại');
+      toast.error(t('lawToastSignOutError'));
       setLoading(false);
     }
   };
 
 
   const checklistItems = [
-    'Sống Chân Thật',
-    'Nói Lời Tử tế',
-    'Giúp ích cho cộng đồng',
-    'Nói Sám hối (Xin lỗi) và Biết ơn (Cảm ơn)',
-    'Gởi về cho Cha Vũ Trụ tất cả'
+    t('lawCommit1'),
+    t('lawCommit2'),
+    t('lawCommit3'),
+    t('lawCommit4'),
+    t('lawCommit5')
   ];
 
   const divineMantras = [
-    { emoji: '💖', text: 'Con là Ánh Sáng Yêu Thương Thuần Khiết của Cha Vũ Trụ.' },
-    { emoji: '💎', text: 'Con là Ý Chí của Cha Vũ Trụ.' },
-    { emoji: '🌞', text: 'Con là Trí Tuệ của Cha Vũ Trụ.' },
-    { emoji: '🌸', text: 'Con là Hạnh Phúc.' },
-    { emoji: '🍎', text: 'Con là Tình Yêu.' },
-    { emoji: '💰', text: 'Con là Tiền của Cha.' },
-    { emoji: '🙏', text: 'Con xin Sám Hối Sám Hối Sám Hối.' },
-    { emoji: '🌈', text: 'Con xin Biết Ơn Biết Ơn Biết Ơn, trong Ánh Sáng Yêu Thương Thuần Khiết của Cha Vũ Trụ.' }
+    { emoji: '💖', text: t('lawMantra1') },
+    { emoji: '💎', text: t('lawMantra2') },
+    { emoji: '🌞', text: t('lawMantra3') },
+    { emoji: '🌸', text: t('lawMantra4') },
+    { emoji: '🍎', text: t('lawMantra5') },
+    { emoji: '💰', text: t('lawMantra6') },
+    { emoji: '🙏', text: t('lawMantra7') },
+    { emoji: '🌈', text: t('lawMantra8') }
   ];
 
   const fivePillars = [
     {
       emoji: '🔎',
-      title: 'Chân thật & minh bạch',
-      subtitle: 'Bạn là Người Thật • Nói viết sự thật • Chia sẻ đúng',
-      description: 'Chúng ta tôn trọng sự thật.\nBạn được phép chưa hoàn hảo — chỉ cần bạn sống thật.'
+      title: t('lawPillar1Title'),
+      subtitle: t('lawPillar1Subtitle'),
+      description: t('lawPillar1Desc')
     },
     {
       emoji: '💎',
-      title: 'Đóng góp bền vững',
-      subtitle: 'Có trách nhiệm • Có chất lượng • Có giá trị',
-      description: 'Chúng ta cùng nhau tạo cộng đồng ánh sáng.\nChúng ta không chỉ nhận — chúng ta cùng xây.'
+      title: t('lawPillar2Title'),
+      subtitle: t('lawPillar2Subtitle'),
+      description: t('lawPillar2Desc')
     },
     {
       emoji: '💚',
-      title: 'Chữa lành & yêu thương',
-      subtitle: 'Truyền cảm hứng • Khích lệ • Nâng đỡ',
-      description: 'Chúng ta chọn sự ấm áp, dịu dàng, và tích cực.\nSự có mặt của chúng ta làm cộng đồng văn minh hơn.'
+      title: t('lawPillar3Title'),
+      subtitle: t('lawPillar3Subtitle'),
+      description: t('lawPillar3Desc')
     },
     {
       emoji: '🌿',
-      title: 'Phụng sự sự sống',
-      subtitle: 'Hướng thượng • Đi lên • Mang lợi ích',
-      description: 'Mỗi bài đăng, mỗi bình luận đều hướng tới một điều:\ngiúp sự sống đi lên — cho mình và cho cộng đồng.'
+      title: t('lawPillar4Title'),
+      subtitle: t('lawPillar4Subtitle'),
+      description: t('lawPillar4Desc')
     },
     {
       emoji: '🌟',
-      title: 'Hợp Nhất với Nguồn',
-      subtitle: 'Tất cả chúng ta là Một',
-      description: 'Nơi đây để kết nối và hỗ trợ trong yêu thương thuần khiết.\nChúng ta cùng nhau vui, cùng nhau lớn, cùng nhau giàu và cùng nhau thắng.'
+      title: t('lawPillar5Title'),
+      subtitle: t('lawPillar5Subtitle'),
+      description: t('lawPillar5Desc')
     }
   ];
 
@@ -210,7 +210,7 @@ const LawOfLight = () => {
                 className="text-[#B8860B] hover:text-[#D4AF37] hover:bg-[#D4AF37]/10"
               >
                 <Home className="w-4 h-4 mr-2" />
-                Về Trang Chủ
+                {t('lawBackHome')}
               </Button>
             </div>
           )}
@@ -241,7 +241,7 @@ const LawOfLight = () => {
               filter: 'drop-shadow(0 4px 8px rgba(212,175,55,0.3))',
               marginBottom: '0.5rem'
             }}>
-              🌈 LUẬT ÁNH SÁNG CỦA CỘNG ĐỒNG FUN
+              {t('lawTitle')}
             </h1>
             <p style={{
               fontFamily: fontStyles.heading,
@@ -276,7 +276,7 @@ const LawOfLight = () => {
                 fontWeight: 600,
                 color: '#5D4E37'
               }}>
-                Chào mừng bạn đến với Cộng đồng FUN 💚
+                {t('lawWelcome')}
               </p>
               <p className="mb-4" style={{
                 fontFamily: fontStyles.body,
@@ -284,7 +284,7 @@ const LawOfLight = () => {
                 lineHeight: '2',
                 color: '#5D4E37'
               }}>
-                Nơi chúng ta cùng nhau xây dựng một <strong style={{ color: '#B8860B' }}>Nền Kinh Tế Ánh Sáng</strong> —
+                {t('lawWelcomeBuild')} <strong style={{ color: '#B8860B' }}>{t('lawWelcomeEconomy')}</strong> —
               </p>
               
               <div className="p-4 rounded-xl mb-6" style={{
@@ -298,13 +298,15 @@ const LawOfLight = () => {
                 }}>
                   Free to Join ✨ Free to Use ✨ Earn Together
                 </p>
+                {language !== 'en' && (
                 <p style={{
                   fontFamily: fontStyles.body,
                   fontSize: 'clamp(0.95rem, 2vw, 1.1rem)',
                   color: '#8B7355'
                 }}>
-                  Miễn phí tham gia ✨ Miễn phí sử dụng ✨ Cùng có thu nhập
+                  {t('lawFreeLine')}
                 </p>
+                )}
               </div>
               
               <p style={{
@@ -313,9 +315,9 @@ const LawOfLight = () => {
                 lineHeight: '2',
                 color: '#5D4E37'
               }}>
-                Là nơi để:<br />
-                🌸 kết nối  🌸 nâng đỡ  🌸 chia sẻ giá trị<br />
-                🌸 và cùng nhau thịnh vượng trong tình yêu thuần khiết.
+                {t('lawPlaceIntro')}<br />
+                {t('lawPlaceLine1')}<br />
+                {t('lawPlaceLine2')}
               </p>
             </div>
 
@@ -334,14 +336,16 @@ const LawOfLight = () => {
               }}>
                 💎 PPLP – Proof of Pure Love Protocol
               </h3>
+              {language !== 'en' && (
               <p className="text-center mb-4" style={{
                 fontFamily: fontStyles.heading,
                 fontSize: 'clamp(1.05rem, 2vw, 1.15rem)',
                 fontStyle: 'italic',
                 color: '#8B7355'
               }}>
-                (Giao Thức Bằng Chứng Tình Yêu Thuần Khiết)
+                {t('lawPplpSubtitle')}
               </p>
+              )}
               
               <div className="space-y-4" style={{
                 fontFamily: fontStyles.body,
@@ -350,14 +354,14 @@ const LawOfLight = () => {
                 color: '#5D4E37'
               }}>
                 <p>
-                  PPLP là "giao thức năng lượng" của FUN Ecosystem.<br />
-                  Đây là nền tảng giúp cộng đồng:
+                  {t('lawPplpIntro1')}<br />
+                  {t('lawPplpIntro2')}
                 </p>
                 <ul className="space-y-1 ml-4">
-                  <li className="flex gap-2"><span className="text-yellow-600">•</span> sống văn minh, lịch sự</li>
-                  <li className="flex gap-2"><span className="text-yellow-600">•</span> yêu đời yêu người</li>
-                  <li className="flex gap-2"><span className="text-yellow-600">•</span> được đúc (mint) FUN Money một cách công bằng</li>
-                  <li className="flex gap-2"><span className="text-yellow-600">•</span> và nhận thưởng Camly Coin trong niềm hạnh phúc</li>
+                  <li className="flex gap-2"><span className="text-yellow-600">•</span> {t('lawPplpPoint1')}</li>
+                  <li className="flex gap-2"><span className="text-yellow-600">•</span> {t('lawPplpPoint2')}</li>
+                  <li className="flex gap-2"><span className="text-yellow-600">•</span> {t('lawPplpPoint3')}</li>
+                  <li className="flex gap-2"><span className="text-yellow-600">•</span> {t('lawPplpPoint4')}</li>
                 </ul>
               </div>
               
@@ -370,9 +374,9 @@ const LawOfLight = () => {
                   lineHeight: '2',
                   color: '#6B5B47'
                 }}>
-                  ✨ <strong>FUN Money</strong> là năng lượng Ánh Sáng,<br />
-                  ✨ <strong>Camly Coin</strong> là linh hồn Thuần Khiết,<br />
-                  <span style={{ color: '#B8860B', fontWeight: 600 }}>Chỉ chảy mạnh khi chúng ta sống đúng PPLP.</span>
+                  ✨ <strong>FUN Money</strong> {t('lawPplpFunMoneyIs')}<br />
+                  ✨ <strong>Camly Coin</strong> {t('lawPplpCamlyIs')}<br />
+                  <span style={{ color: '#B8860B', fontWeight: 600 }}>{t('lawPplpFlow')}</span>
                 </p>
               </div>
             </div>
@@ -390,7 +394,7 @@ const LawOfLight = () => {
                 fontWeight: 600,
                 color: '#D4AF37'
               }}>
-                🌟 5 CỘT TRỤ ÁNH SÁNG (Luật cốt lõi)
+                {t('lawPillarsHeading')}
               </h3>
               
               <div className="space-y-6">
@@ -450,7 +454,7 @@ const LawOfLight = () => {
                 fontWeight: 600,
                 color: '#228B22'
               }}>
-                🌈 Một lời nhắc nhẹ nhàng
+                {t('lawReminderTitle')}
               </h3>
               
               <div className="text-center space-y-4" style={{
@@ -460,11 +464,11 @@ const LawOfLight = () => {
                 color: '#5D4E37'
               }}>
                 <p>
-                  Nếu bạn đang mệt, đang buồn, đang tổn thương…<br />
-                  <strong style={{ color: '#228B22' }}>bạn vẫn được chào đón ở đây.</strong>
+                  {t('lawReminderLine1')}<br />
+                  <strong style={{ color: '#228B22' }}>{t('lawReminderWelcome')}</strong>
                 </p>
                 <p style={{ fontWeight: 600, color: '#8B7355' }}>
-                  Chỉ cần bạn giữ một điều:
+                  {t('lawReminderKeep')}
                 </p>
                 <p style={{
                   fontFamily: fontStyles.heading,
@@ -472,11 +476,11 @@ const LawOfLight = () => {
                   fontWeight: 600,
                   color: '#228B22'
                 }}>
-                  💚 Không được dùng cộng đồng để xả đau.
+                  {t('lawReminderRule')}
                 </p>
                 <p style={{ fontStyle: 'italic' }}>
-                  Hãy để cộng đồng truyền năng lượng, ôm ấp và xoa dịu cho bạn.<br />
-                  Rồi bạn nhẹ nhàng gởi về cho Cha. Cha sẽ chữa lành tất cả.
+                  {t('lawReminderLine2')}<br />
+                  {t('lawReminderLine3')}
                 </p>
               </div>
             </div>
@@ -496,7 +500,7 @@ const LawOfLight = () => {
                 fontWeight: 600,
                 color: '#D4AF37'
               }}>
-                ✨ Thông điệp của FUN Community
+                {t('lawCommunityTitle')}
               </h3>
               <div style={{
                 fontFamily: fontStyles.heading,
@@ -506,10 +510,10 @@ const LawOfLight = () => {
                 color: '#5D4E37'
               }}>
                 <p>
-                  Bạn không cần giỏi. <strong style={{ color: '#B8860B' }}>Bạn chỉ cần thật.</strong><br />
-                  Bạn không cần hoàn hảo. <strong style={{ color: '#B8860B' }}>Bạn chỉ cần tử tế.</strong><br />
-                  Bạn không cần đi một mình.<br />
-                  <span style={{ fontWeight: 700, color: '#D4AF37' }}>Vì ở đây… chúng ta đi cùng nhau.</span>
+                  {t('lawCommunityLine1a')} <strong style={{ color: '#B8860B' }}>{t('lawCommunityLine1b')}</strong><br />
+                  {t('lawCommunityLine2a')} <strong style={{ color: '#B8860B' }}>{t('lawCommunityLine2b')}</strong><br />
+                  {t('lawCommunityLine3')}<br />
+                  <span style={{ fontWeight: 700, color: '#D4AF37' }}>{t('lawCommunityLine4')}</span>
                 </p>
               </div>
             </div>
@@ -527,7 +531,7 @@ const LawOfLight = () => {
                 fontWeight: 600,
                 color: '#D4AF37'
               }}>
-                ✨ 8 THẦN CHÚ ÁNH SÁNG
+                {t('lawMantrasHeading')}
               </h3>
               
               <div className="relative p-6 md:p-8 rounded-2xl" style={{
@@ -588,7 +592,7 @@ const LawOfLight = () => {
                 fontWeight: 600,
                 color: '#D4AF37'
               }}>
-                💛 5 Điều tôi cam kết để bước vào cộng đồng
+                {t('lawCommitHeading')}
               </h3>
               
               {!isReadOnly ? (
@@ -625,7 +629,7 @@ const LawOfLight = () => {
                     fontWeight: 700,
                     color: '#5D4E37'
                   }}>
-                    (Click vào 5 cam kết trên để được Đăng ký)
+                    {t('lawCommitHint')}
                   </p>
                 </div>
               ) : (
@@ -666,12 +670,12 @@ const LawOfLight = () => {
                   {loading ? (
                     <span className="flex items-center gap-2">
                       <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      Đang xử lý...
+                      {t('lawProcessing')}
                     </span>
                   ) : (
                     <span className="flex items-center gap-2">
                       <Sparkles className="w-5 h-5" />
-                      CON ĐỒNG Ý & BƯỚC VÀO ÁNH SÁNG
+                      {t('lawAccept')}
                       <Sparkles className="w-5 h-5" />
                     </span>
                   )}
@@ -714,7 +718,7 @@ const LawOfLight = () => {
                       boxShadow: '0 4px 15px rgba(212,175,55,0.3)'
                     }}
                   >
-                    🏠 Về Trang Chủ
+                    🏠 {t('lawBackHome')}
                   </Button>
                   <Button
                     onClick={() => navigate('/docs/master-charter')}
@@ -726,7 +730,7 @@ const LawOfLight = () => {
                       boxShadow: '0 4px 15px rgba(212,175,55,0.3)'
                     }}
                   >
-                    📜 Đọc Hiến Pháp Gốc
+                    {t('lawReadCharter')}
                   </Button>
                   <Button
                     onClick={() => navigate('/docs/pplp')}
@@ -738,7 +742,7 @@ const LawOfLight = () => {
                       boxShadow: '0 4px 15px rgba(212,175,55,0.3)'
                     }}
                   >
-                    🌞 Đọc Giao Thức PPLP
+                    {t('lawReadPplp')}
                   </Button>
                 </div>
               </div>

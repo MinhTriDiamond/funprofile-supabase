@@ -9,6 +9,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Landmark, RefreshCw, Sparkles, Users, Heart } from 'lucide-react';
 import { usePetLeaderboard } from '@/modules/pet/hooks/usePublicPet';
+import { useLanguage } from '@/i18n/LanguageContext';
 import { resolvePetSprite, STAGE_NAMES } from '@/modules/pet/lib/petAssets';
 
 interface LightCommunityMember {
@@ -41,6 +42,7 @@ const isValidTab = (v: string | null | undefined): v is LeaderboardTab =>
   !!v && (VALID_TABS as readonly string[]).includes(v);
 
 const Leaderboard = () => {
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const { tab: tabParam } = useParams<{ tab?: string }>();
   const [searchParams] = useSearchParams();
@@ -150,7 +152,7 @@ const Leaderboard = () => {
                 <Users className="w-5 h-5 text-emerald-500" />
               </div>
               <p className="text-sm text-muted-foreground">
-                Cộng đồng FUN Profile và những Linh thú toả sáng
+                {t('lbSubtitle')}
               </p>
             </div>
           </div>
@@ -161,7 +163,7 @@ const Leaderboard = () => {
                 <Users className="w-4 h-4 mr-1.5" /> Light Community
               </TabsTrigger>
               <TabsTrigger value="pet">
-                <Sparkles className="w-4 h-4 mr-1.5" /> Linh thú
+                <Sparkles className="w-4 h-4 mr-1.5" />{t('lbTabPets')}
               </TabsTrigger>
             </TabsList>
 
@@ -196,7 +198,7 @@ const Leaderboard = () => {
                     </div>
                   ))}
                   {members.length === 0 && (
-                    <div className="text-center py-8 text-muted-foreground">Chưa có dữ liệu cộng đồng</div>
+                    <div className="text-center py-8 text-muted-foreground">{t('lbEmptyCommunity')}</div>
                   )}
                 </div>
               )}
@@ -235,7 +237,7 @@ const Leaderboard = () => {
                     </div>
                   ))}
                   {petRows.length === 0 && (
-                    <div className="text-center py-8 text-muted-foreground">Chưa có Linh thú nào hiển thị công khai</div>
+                    <div className="text-center py-8 text-muted-foreground">{t('lbEmptyPets')}</div>
                   )}
                 </div>
               )}

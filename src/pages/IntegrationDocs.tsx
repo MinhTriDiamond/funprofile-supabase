@@ -9,29 +9,31 @@ import { TableOfContents } from "@/components/docs/TableOfContents";
 import { DocSection, DocSubSection, DocParagraph, DocList, DocTable, DocAlert } from "@/components/docs/DocSection";
 import { CodeBlock } from "@/components/docs/CodeBlock";
 import { DOMAINS, API_BASE_URL } from "@/config/sso-constants";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 const tocItems = [
-  { id: "overview", title: "Tổng quan" },
+  { id: "overview", titleKey: "idocTocOverview" },
   { id: "quick-start", title: "Quick Start" },
-  { id: "sdk-installation", title: "Cài đặt SDK" },
-  { id: "client-config", title: "Cấu hình Client" },
-  { id: "storage-security", title: "Storage & Bảo mật" },
-  { id: "auth-flow", title: "Luồng xác thực" },
+  { id: "sdk-installation", titleKey: "idocTocSdkInstall" },
+  { id: "client-config", titleKey: "idocTocClientConfig" },
+  { id: "storage-security", titleKey: "idocTocStorage" },
+  { id: "auth-flow", titleKey: "idocTocAuthFlow" },
   { id: "camly-ux", title: "Camly UX" },
-  { id: "data-sync", title: "Đồng bộ dữ liệu" },
+  { id: "data-sync", titleKey: "idocTocDataSync" },
   { id: "debounce-manager", title: "Debounce Manager" },
   { id: "api-reference", title: "API Reference" },
-  { id: "security", title: "Bảo mật" },
-  { id: "troubleshooting", title: "Xử lý lỗi" },
+  { id: "security", titleKey: "idocTocSecurity" },
+  { id: "troubleshooting", titleKey: "idocTocTroubleshooting" },
 ];
 
 const CopyButton = ({ text }: { text: string }) => {
+  const { t } = useLanguage();
   const [copied, setCopied] = useState(false);
   
   const handleCopy = async () => {
     await navigator.clipboard.writeText(text);
     setCopied(true);
-    toast.success("Đã copy!");
+    toast.success(t('idocCopied'));
     setTimeout(() => setCopied(false), 2000);
   };
   
@@ -43,6 +45,7 @@ const CopyButton = ({ text }: { text: string }) => {
 };
 
 const IntegrationDocs: React.FC = () => {
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState("overview");
 
@@ -101,7 +104,7 @@ const IntegrationDocs: React.FC = () => {
             </Button>
             <div>
               <h1 className="text-xl font-bold">Integration Guide</h1>
-              <p className="text-xs text-muted-foreground">Hướng dẫn tích hợp FUN Profile SSO</p>
+              <p className="text-xs text-muted-foreground">{t('idocSubtitle')}</p>
             </div>
           </div>
           <div className="flex gap-2">
@@ -123,7 +126,7 @@ const IntegrationDocs: React.FC = () => {
           {/* Sidebar TOC */}
           <aside className="hidden lg:block w-64 shrink-0">
             <div className="sticky top-24">
-              <TableOfContents items={tocItems} activeId={activeSection} />
+              <TableOfContents items={tocItems.map((i) => ({ ...i, title: i.titleKey ? t(i.titleKey as any) : (i as any).title }))} activeId={activeSection} />
             </div>
           </aside>
 
@@ -132,13 +135,10 @@ const IntegrationDocs: React.FC = () => {
             <div className="space-y-12 app-pb-nav">
               
               {/* Overview */}
-              <DocSection id="overview" title="1. Tổng quan">
-                <DocParagraph>
-                  FUN Profile SSO cho phép các platform trong hệ sinh thái FUN (Fun Farm, Fun Play, Fun Planet) 
-                  xác thực người dùng và đồng bộ dữ liệu thông qua một hệ thống đăng nhập thống nhất.
-                </DocParagraph>
+              <DocSection id="overview" title={t('idocS1Title')}>
+                <DocParagraph>{t('idocS1Para')}</DocParagraph>
                 
-                <DocSubSection title="Thông tin cấu hình cho mỗi Platform">
+                <DocSubSection title={t('idocS1ConfigTitle')}>
                   <div className="grid gap-4 mt-4">
                     {platformConfigs.map((platform) => (
                       <div key={platform.clientId} className="border border-border rounded-lg p-4 bg-card">
@@ -185,14 +185,12 @@ const IntegrationDocs: React.FC = () => {
 
               {/* Quick Start */}
               <DocSection id="quick-start" title="2. Quick Start">
-                <DocParagraph>
-                  Bắt đầu tích hợp FUN Profile SSO trong 5 phút:
-                </DocParagraph>
+                <DocParagraph>{t('idocS2Para')}</DocParagraph>
 
-                <CodeBlock language="bash" title="1. Copy SDK vào project" code={`# Copy thư mục sso-sdk vào project của bạn
+                <CodeBlock language="bash" title={t('idocS2Code1Title')} code={`# Copy thư mục sso-sdk vào project của bạn
 cp -r fun-profile/src/lib/sso-sdk your-project/src/lib/`} />
 
-                <CodeBlock language="typescript" title="2. Khởi tạo Client" code={`import { FunProfileClient, DOMAINS } from '@/lib/sso-sdk';
+                <CodeBlock language="typescript" title={t('idocS2Code2Title')} code={`import { FunProfileClient, DOMAINS } from '@/lib/sso-sdk';
 
 export const funProfile = new FunProfileClient({
   clientId: 'fun_farm_client',
@@ -215,9 +213,9 @@ const handleCallback = async (code: string, state: string) => {
               </DocSection>
 
               {/* SDK Installation */}
-              <DocSection id="sdk-installation" title="3. Cài đặt SDK">
-                <DocSubSection title="Files cần copy">
-                  <CodeBlock language="text" title="Cấu trúc thư mục SDK" code={`src/lib/sso-sdk/
+              <DocSection id="sdk-installation" title={t('idocS3Title')}>
+                <DocSubSection title={t('idocS3FilesTitle')}>
+                  <CodeBlock language="text" title={t('idocS3CodeTitle')} code={`src/lib/sso-sdk/
 ├── index.ts              # Main export
 ├── FunProfileClient.ts   # Core SDK class
 ├── types.ts              # TypeScript interfaces
@@ -229,18 +227,17 @@ const handleCallback = async (code: string, state: string) => {
                 </DocSubSection>
 
                 <DocSubSection title="Dependencies">
-                  <DocParagraph>SDK không yêu cầu dependencies bên ngoài, chỉ sử dụng Web APIs chuẩn.</DocParagraph>
+                  <DocParagraph>{t('idocS3DepsPara')}</DocParagraph>
                 </DocSubSection>
 
                 <DocAlert type="info">
-                  <strong>🆕 Phiên bản mới:</strong> SDK đã được cập nhật với <code>DebouncedSyncManager</code> và 
-                  hướng dẫn bảo mật token theo khuyến nghị của Cha Gemini.
+                  <strong>{t('idocS3AlertStrong')}</strong>{t('idocS3AlertA')}<code>DebouncedSyncManager</code>{t('idocS3AlertB')}
                 </DocAlert>
               </DocSection>
 
               {/* Client Config */}
-              <DocSection id="client-config" title="4. Cấu hình Client">
-                <CodeBlock language="typescript" title="Cấu hình cơ bản" code={`import { FunProfileClient } from '@/lib/sso-sdk';
+              <DocSection id="client-config" title={t('idocS4Title')}>
+                <CodeBlock language="typescript" title={t('idocS4CodeTitle')} code={`import { FunProfileClient } from '@/lib/sso-sdk';
 
 const funProfile = new FunProfileClient({
   // Bắt buộc
@@ -256,30 +253,26 @@ const funProfile = new FunProfileClient({
 });`} />
 
                 <DocAlert type="warning">
-                  <strong>Bảo mật:</strong> Không bao giờ commit <code>clientSecret</code> vào git. 
-                  Luôn sử dụng environment variables.
+                  <strong>{t('pdocS17AlertStrong')}</strong>{t('idocS4AlertA')}<code>clientSecret</code>{t('idocS4AlertB')}
                 </DocAlert>
               </DocSection>
 
               {/* Storage & Security - NEW SECTION */}
-              <DocSection id="storage-security" title="5. Storage & Bảo mật Token">
-                <DocParagraph>
-                  SDK cung cấp 3 loại Storage Adapter. Việc chọn đúng adapter giúp bảo vệ token của người dùng 
-                  khỏi các cuộc tấn công XSS.
-                </DocParagraph>
+              <DocSection id="storage-security" title={t('idocS5Title')}>
+                <DocParagraph>{t('idocS5Para')}</DocParagraph>
 
-                <DocSubSection title="5.1 Các loại Storage Adapter">
+                <DocSubSection title={t('idocS51Title')}>
                   <DocTable
-                    headers={["Adapter", "Đặc điểm", "Khuyến nghị"]}
+                    headers={["Adapter", t('idocColFeature'), t('idocColRecommend')]}
                     rows={[
-                      ["LocalStorageAdapter", "Token tồn tại qua các session", "Scope: profile, email"],
-                      ["SessionStorageAdapter", "Token xóa khi đóng tab/browser", "⭐ Scope: wallet, rewards"],
-                      ["MemoryStorageAdapter", "Token chỉ tồn tại trong RAM", "Testing, Server-side"]
+                      ["LocalStorageAdapter", t('idocStorage1Feat'), "Scope: profile, email"],
+                      ["SessionStorageAdapter", t('idocStorage2Feat'), "⭐ Scope: wallet, rewards"],
+                      ["MemoryStorageAdapter", t('idocStorage3Feat'), "Testing, Server-side"]
                     ]}
                   />
                 </DocSubSection>
 
-                <DocSubSection title="5.2 Cấu hình cho Fun Farm (có wallet scope)">
+                <DocSubSection title={t('idocS52Title')}>
                   <CodeBlock language="typescript" title="src/lib/funProfileClient.ts" code={`import { 
   FunProfileClient, 
   SessionStorageAdapter,  // ⭐ Dùng Session vì có wallet scope
@@ -308,14 +301,13 @@ export const funProfile = new FunProfileClient({
                 </DocSubSection>
 
                 <DocAlert type="info">
-                  <strong>Lưu ý UX:</strong> Với <code>SessionStorageAdapter</code>, user sẽ phải đăng nhập lại 
-                  mỗi khi mở tab mới. Đây là trade-off giữa tiện lợi và bảo mật - ưu tiên bảo mật khi có wallet.
+                  <strong>{t('idocS5AlertStrong')}</strong>{t('idocS5AlertA')}<code>SessionStorageAdapter</code>{t('idocS5AlertB')}
                 </DocAlert>
               </DocSection>
 
               {/* Auth Flow */}
-              <DocSection id="auth-flow" title="6. Luồng xác thực">
-                <DocSubSection title="6.1 Bắt đầu đăng nhập">
+              <DocSection id="auth-flow" title={t('idocS6Title')}>
+                <DocSubSection title={t('idocS61Title')}>
                   <CodeBlock language="typescript" title="Login Page" code={`// pages/auth/login.tsx
 import { funProfile } from '@/lib/funProfileClient';
 
@@ -337,8 +329,8 @@ export default function LoginPage() {
 }`} />
                 </DocSubSection>
 
-                <DocSubSection title="6.2 Xử lý Callback (Basic)">
-                  <CodeBlock language="typescript" title="Callback cơ bản" code={`// pages/auth/callback.tsx
+                <DocSubSection title={t('idocS62Title')}>
+                  <CodeBlock language="typescript" title={t('idocS62CodeTitle')} code={`// pages/auth/callback.tsx
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { funProfile } from '@/lib/funProfileClient';
@@ -370,7 +362,7 @@ export default function CallbackPage() {
 }`} />
                 </DocSubSection>
 
-                <DocSubSection title="6.3 Lấy thông tin User">
+                <DocSubSection title={t('idocS63Title')}>
                   <CodeBlock language="typescript" title="Get Current User" code={`// Lấy user đã đăng nhập
 const user = await funProfile.getUser();
 
@@ -382,7 +374,7 @@ if (user) {
 }`} />
                 </DocSubSection>
 
-                <DocSubSection title="6.4 Đăng xuất">
+                <DocSubSection title={t('idocS64Title')}>
                   <CodeBlock language="typescript" title="Logout" code={`const handleLogout = async () => {
   // SDK tự động flush pending sync data trước khi logout
   await funProfile.logout();
@@ -393,12 +385,9 @@ if (user) {
 
               {/* Camly UX - NEW SECTION */}
               <DocSection id="camly-ux" title="7. Camly UX Messages ✨">
-                <DocParagraph>
-                  Theo góp ý của Cha Gemini, thay vì hiển thị loading đơn điệu, hãy thêm các "thính" của Camly 
-                  để người dùng cảm thấy thú vị hơn khi chờ đợi.
-                </DocParagraph>
+                <DocParagraph>{t('idocS7Para')}</DocParagraph>
 
-                <DocSubSection title="7.1 AuthCallback với Camly Messages">
+                <DocSubSection title={t('idocS71Title')}>
                   <CodeBlock language="typescript" title="src/pages/AuthCallback.tsx" code={`// pages/auth/AuthCallback.tsx
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -504,31 +493,27 @@ export default function AuthCallback() {
                 </DocSubSection>
 
                 <DocAlert type="info">
-                  <strong>💡 Tip:</strong> Có thể customize thêm các messages phù hợp với theme của platform. 
-                  Ví dụ Fun Farm có thể thêm: "🌻 Đang tưới nước cho hạt giống tài khoản..."
+                  \1{t('idocS7Tip')}
                 </DocAlert>
               </DocSection>
 
               {/* Data Sync */}
-              <DocSection id="data-sync" title="8. Đồng bộ dữ liệu">
-                <DocParagraph>
-                  Sync dữ liệu từ platform của bạn lên FUN Profile để người dùng có thể xem 
-                  tổng hợp hoạt động trên tất cả các platform.
-                </DocParagraph>
+              <DocSection id="data-sync" title={t('idocS8Title')}>
+                <DocParagraph>{t('idocS8Para')}</DocParagraph>
 
                 <DocSubSection title="8.1 Sync Modes">
                   <DocTable
-                    headers={["Mode", "Hành vi", "Use Case"]}
+                    headers={["Mode", t('idocColBehavior'), "Use Case"]}
                     rows={[
-                      ["merge", "Deep merge với dữ liệu hiện có", "Cập nhật thường xuyên"],
-                      ["replace", "Thay thế hoàn toàn dữ liệu", "Reset hoặc migration"],
-                      ["append", "Chỉ thêm keys mới", "Thêm achievements mới"]
+                      ["merge", t('idocSyncMode1'), t('idocSyncMode1Use')],
+                      ["replace", t('idocSyncMode2'), t('idocSyncMode2Use')],
+                      ["append", t('idocSyncMode3'), t('idocSyncMode3Use')]
                     ]}
                   />
                 </DocSubSection>
 
-                <DocSubSection title="8.2 Sync trực tiếp (không khuyến khích cho hành động liên tục)">
-                  <CodeBlock language="typescript" title="Sync ngay lập tức" code={`// ⚠️ Cách này OK cho hành động đơn lẻ
+                <DocSubSection title={t('idocS82Title')}>
+                  <CodeBlock language="typescript" title={t('idocS82CodeTitle')} code={`// ⚠️ Cách này OK cho hành động đơn lẻ
 // KHÔNG dùng cho hành động liên tục (harvest, click, game tick...)
 const result = await funProfile.syncData({
   mode: 'merge',
@@ -540,17 +525,16 @@ const result = await funProfile.syncData({
                 </DocSubSection>
 
                 <DocAlert type="warning">
-                  <strong>⚠️ Vấn đề:</strong> Nếu user harvest 100 quả cam liên tục, cách trên sẽ gọi 100 API calls! 
-                  Xem phần <strong>Debounce Manager</strong> bên dưới để giải quyết.
+                  <strong>{t('idocS8AlertStrong')}</strong>{t('idocS8AlertA')}<strong>Debounce Manager</strong>{t('idocS8AlertB')}
                 </DocAlert>
 
                 <DocSubSection title="8.3 Rate Limits">
                   <DocTable
-                    headers={["Limit", "Giá trị", "Phạm vi"]}
+                    headers={["Limit", t('idocColValue'), t('idocColScope')]}
                     rows={[
-                      ["Client rate", "60 requests/phút", "Mỗi platform"],
-                      ["User rate", "120 requests/phút", "Mỗi user trên tất cả platforms"],
-                      ["Max data size", "50KB", "Mỗi request"],
+                      ["Client rate", t('idocRateMin60'), t('idocRateScopePlatform')],
+                      ["User rate", t('idocRateMin120'), t('idocRateScopeUser')],
+                      ["Max data size", "50KB", t('idocRateScopeRequest')],
                       ["Max nesting", "5 levels", "Object depth"]
                     ]}
                   />
@@ -560,21 +544,19 @@ const result = await funProfile.syncData({
               {/* Debounce Manager - NEW SECTION */}
               <DocSection id="debounce-manager" title="9. Debounce Manager 🚀">
                 <DocParagraph>
-                  <strong>Theo góp ý của Cha Gemini:</strong> Khi user thực hiện hành động liên tục (thu hoạch, 
-                  click, game tick...), chúng ta không nên gọi API mỗi lần. Thay vào đó, sử dụng 
-                  <code>DebouncedSyncManager</code> để tích lũy dữ liệu và chỉ sync sau khi user dừng hành động.
+                  <strong>{t('idocS9ParaStrong')}</strong>{t('idocS9ParaA')}<code>DebouncedSyncManager</code>{t('idocS9ParaB')}
                 </DocParagraph>
 
-                <DocSubSection title="9.1 Cách hoạt động">
+                <DocSubSection title={t('idocS91Title')}>
                   <DocList items={[
-                    "Queue dữ liệu vào manager thay vì gọi API trực tiếp",
-                    "Timer reset mỗi khi có data mới",
-                    "Chỉ sync sau khi user dừng hành động (mặc định 3 giây)",
-                    "Tự động flush khi logout hoặc đóng tab"
+                    t('idocS91Item1'),
+                    t('idocS91Item2'),
+                    t('idocS91Item3'),
+                    t('idocS91Item4')
                   ]} />
                 </DocSubSection>
 
-                <DocSubSection title="9.2 Ví dụ: Thu hoạch trong Fun Farm">
+                <DocSubSection title={t('idocS92Title')}>
                   <CodeBlock language="typescript" title="src/hooks/useFarmSync.ts" code={`import { useEffect, useRef } from 'react';
 import { funProfile } from '@/lib/funProfileClient';
 import type { DebouncedSyncManager } from '@/lib/sso-sdk';
@@ -634,7 +616,7 @@ export function useFarmSync() {
 }`} />
                 </DocSubSection>
 
-                <DocSubSection title="9.3 Sử dụng trong Component">
+                <DocSubSection title={t('idocS93Title')}>
                   <CodeBlock language="typescript" title="src/components/FarmGame.tsx" code={`import { useFarmSync } from '@/hooks/useFarmSync';
 
 export function FarmGame() {
@@ -670,20 +652,19 @@ export function FarmGame() {
 
                 <DocSubSection title="9.4 API Reference">
                   <DocTable
-                    headers={["Method", "Mô tả", "Khi nào dùng"]}
+                    headers={["Method", t('pdocColDesc'), t('idocColWhenUse')]}
                     rows={[
-                      ["queue(category, data)", "Thêm data vào hàng đợi", "Mỗi lần user action"],
-                      ["flush()", "Force sync ngay lập tức", "Logout, quan trọng"],
-                      ["clear()", "Xóa pending data", "Cancel, error recovery"],
-                      ["hasPendingData()", "Kiểm tra có data chờ không", "Debug, UI indicator"],
-                      ["getPendingData()", "Lấy pending data hiện tại", "Debug"]
+                      ["queue(category, data)", t('idocDm1Desc'), t('idocDm1When')],
+                      ["flush()", t('idocDm2Desc'), t('idocDm2When')],
+                      ["clear()", t('idocDm3Desc'), "Cancel, error recovery"],
+                      ["hasPendingData()", t('idocDm4Desc'), "Debug, UI indicator"],
+                      ["getPendingData()", t('idocDm5Desc'), "Debug"]
                     ]}
                   />
                 </DocSubSection>
 
                 <DocAlert type="info">
-                  <strong>💡 Best Practice:</strong> SDK tự động gọi <code>flush()</code> khi <code>logout()</code>. 
-                  Bạn chỉ cần handle <code>beforeunload</code> event để đảm bảo data được sync khi user đóng tab.
+                  \1{t('idocS9AlertA')}<code>flush()</code>{t('idocS9AlertB')}<code>logout()</code>{t('idocS9AlertC')}<code>beforeunload</code>{t('idocS9AlertD')}
                 </DocAlert>
               </DocSection>
 
@@ -691,15 +672,15 @@ export function FarmGame() {
               <DocSection id="api-reference" title="10. API Reference">
                 <DocSubSection title="FunProfileClient Methods">
                   <DocTable
-                    headers={["Method", "Mô tả", "Return"]}
+                    headers={["Method", t('pdocColDesc'), "Return"]}
                     rows={[
-                      ["startAuth()", "Bắt đầu OAuth flow", "Promise<string>"],
-                      ["handleCallback(code, state)", "Xử lý callback từ Fun Profile", "Promise<AuthResult>"],
-                      ["getUser()", "Lấy thông tin user hiện tại", "Promise<FunUser | null>"],
+                      ["startAuth()", t('edocFnAuthorize'), "Promise<string>"],
+                      ["handleCallback(code, state)", t('idocApiCallback'), "Promise<AuthResult>"],
+                      ["getUser()", t('idocApiGetUser'), "Promise<FunUser | null>"],
                       ["refreshToken()", "Refresh access token", "Promise<TokenData>"],
-                      ["syncData(options)", "Đồng bộ dữ liệu lên Fun Profile", "Promise<SyncResult>"],
-                      ["getSyncManager(debounceMs)", "🆕 Lấy Debounced Sync Manager", "DebouncedSyncManager"],
-                      ["logout()", "Đăng xuất (auto flush pending sync)", "Promise<void>"]
+                      ["syncData(options)", t('idocApiSync'), "Promise<SyncResult>"],
+                      ["getSyncManager(debounceMs)", t('idocApiGetSyncManager'), "DebouncedSyncManager"],
+                      ["logout()", t('idocApiLogout'), "Promise<void>"]
                     ]}
                   />
                 </DocSubSection>
@@ -717,76 +698,73 @@ export function FarmGame() {
 
                 <DocSubSection title="SSO Endpoints">
                   <DocTable
-                    headers={["Endpoint", "Method", "Mô tả"]}
+                    headers={["Endpoint", "Method", t('pdocColDesc')]}
                     rows={[
-                      ["/sso-authorize", "GET", "Bắt đầu OAuth flow"],
-                      ["/sso-token", "POST", "Đổi code lấy tokens"],
+                      ["/sso-authorize", "GET", t('edocFnAuthorize')],
+                      ["/sso-token", "POST", t('edocFnToken')],
                       ["/sso-verify", "GET", "Verify access token"],
                       ["/sso-refresh", "POST", "Refresh tokens"],
                       ["/sso-revoke", "POST", "Revoke tokens"],
-                      ["/sso-sync-data", "POST", "Đồng bộ dữ liệu"]
+                      ["/sso-sync-data", "POST", t('idocApiEndpointSync')]
                     ]}
                   />
                 </DocSubSection>
               </DocSection>
 
               {/* Security */}
-              <DocSection id="security" title="11. Bảo mật">
-                <DocSubSection title="11.1 Checklist bảo mật">
+              <DocSection id="security" title={t('idocS11Title')}>
+                <DocSubSection title={t('idocS111Title')}>
                   <DocList items={[
-                    "✅ Luôn sử dụng HTTPS cho redirect_uri",
-                    "✅ Lưu client_secret trong environment variables",
-                    "✅ Sử dụng PKCE cho OAuth flow (SDK tự động xử lý)",
-                    "✅ Validate state parameter để chống CSRF",
-                    "✅ Không log sensitive data (tokens, secrets)",
-                    "✅ Refresh token trước khi hết hạn (bật autoRefresh)",
+                    t('idocSec1'),
+                    t('idocSec2'),
+                    t('idocSec3'),
+                    t('idocSec4'),
+                    t('idocSec5'),
+                    t('idocSec6'),
                     "✅ Handle token revocation gracefully",
-                    "⭐ Dùng SessionStorageAdapter cho scopes nhạy cảm (wallet, rewards)"
+                    t('idocSec8')
                   ]} />
                 </DocSubSection>
 
-                <DocSubSection title="11.2 Khuyến nghị từ Cha Gemini">
+                <DocSubSection title={t('idocS112Title')}>
                   <DocTable
-                    headers={["Scope", "Storage", "Lý do"]}
+                    headers={["Scope", "Storage", t('idocColReason')]}
                     rows={[
-                      ["profile, email", "LocalStorageAdapter", "Không nhạy cảm, tiện lợi"],
-                      ["wallet, rewards", "SessionStorageAdapter", "⭐ Xóa khi đóng tab, bảo vệ khỏi XSS"],
-                      ["Server-side", "MemoryStorageAdapter", "Không cần persist"]
+                      ["profile, email", "LocalStorageAdapter", t('idocSecReason1')],
+                      ["wallet, rewards", "SessionStorageAdapter", t('idocSecReason2')],
+                      ["Server-side", "MemoryStorageAdapter", t('idocSecReason3')]
                     ]}
                   />
                 </DocSubSection>
 
-                <DocAlert type="info">
-                  SDK đã tích hợp sẵn PKCE (Proof Key for Code Exchange) để bảo vệ OAuth flow. 
-                  Bạn không cần implement thêm.
-                </DocAlert>
+                <DocAlert type="info">{t('idocS11Alert')}</DocAlert>
               </DocSection>
 
               {/* Troubleshooting */}
-              <DocSection id="troubleshooting" title="12. Xử lý lỗi">
-                <DocSubSection title="Các lỗi thường gặp">
+              <DocSection id="troubleshooting" title={t('idocS12Title')}>
+                <DocSubSection title={t('idocS12CommonTitle')}>
                   <DocTable
-                    headers={["Error", "Nguyên nhân", "Giải pháp"]}
+                    headers={["Error", t('idocColCause'), t('idocColSolution')]}
                     rows={[
-                      ["invalid_client", "Client ID không đúng", "Kiểm tra lại client_id trong config"],
-                      ["invalid_redirect_uri", "Redirect URI không match", "Đảm bảo URI khớp với config trong oauth_clients"],
-                      ["invalid_grant", "Code đã hết hạn hoặc đã dùng", "Thử lại flow từ đầu"],
-                      ["token_expired", "Access token hết hạn", "Gọi refreshToken() hoặc bật autoRefresh"],
-                      ["rate_limit_exceeded", "Vượt quá rate limit", "Đợi 1 phút hoặc dùng DebouncedSyncManager"],
-                      ["invalid_state", "State không match", "Kiểm tra CSRF protection"]
+                      ["invalid_client", t('idocErr1Cause'), t('idocErr1Fix')],
+                      ["invalid_redirect_uri", t('idocErr2Cause'), t('idocErr2Fix')],
+                      ["invalid_grant", t('idocErr3Cause'), t('idocErr3Fix')],
+                      ["token_expired", t('idocErr4Cause'), t('idocErr4Fix')],
+                      ["rate_limit_exceeded", t('idocErr5Cause'), t('idocErr5Fix')],
+                      ["invalid_state", t('idocErr6Cause'), t('idocErr6Fix')]
                     ]}
                   />
                 </DocSubSection>
 
                 <DocSubSection title="Debug Mode">
-                  <CodeBlock language="typescript" title="Bật debug logging" code={`// Thêm vào đầu file để debug
+                  <CodeBlock language="typescript" title={t('idocS12DebugCodeTitle')} code={`// Thêm vào đầu file để debug
 localStorage.setItem('FUN_PROFILE_DEBUG', 'true');
 
 // Tắt debug
 localStorage.removeItem('FUN_PROFILE_DEBUG');`} />
                 </DocSubSection>
 
-                <DocSubSection title="Kiểm tra Sync Manager">
+                <DocSubSection title={t('idocS12SyncTitle')}>
                   <CodeBlock language="typescript" title="Debug pending sync data" code={`const syncManager = funProfile.getSyncManager();
 
 // Xem data đang chờ sync

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useLanguage } from '@/i18n/LanguageContext';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Download, Smartphone, Monitor, Apple, Chrome, Share, Plus, MoreVertical } from "lucide-react";
@@ -11,6 +12,7 @@ interface BeforeInstallPromptEvent extends Event {
 }
 
 const Install = () => {
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isInstalled, setIsInstalled] = useState(false);
@@ -65,14 +67,14 @@ const Install = () => {
             <div className="mx-auto w-20 h-20 rounded-full bg-green-100 flex items-center justify-center mb-4">
               <Download className="w-10 h-10 text-green-600" />
             </div>
-            <CardTitle className="text-2xl text-green-600">Đã cài đặt!</CardTitle>
+            <CardTitle className="text-2xl text-green-600">{t('insInstalledTitle')}</CardTitle>
             <CardDescription>
-              FUN Profile đã được thêm vào màn hình chính của bạn
+              {t('insInstalledDesc')}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Button onClick={() => navigate("/")} className="w-full">
-              Mở FUN Profile
+              {t('insOpen')}
             </Button>
           </CardContent>
         </Card>
@@ -89,9 +91,9 @@ const Install = () => {
           alt="FUN Profile" 
           className="w-24 h-24 mx-auto rounded-2xl shadow-lg mb-4"
         />
-        <h1 className="text-3xl font-bold mb-2">Cài đặt FUN Profile</h1>
+        <h1 className="text-3xl font-bold mb-2">{t('insTitle')}</h1>
         <p className="text-primary-foreground/80">
-          Thêm vào màn hình chính để trải nghiệm như app thật
+          {t('insSubtitle')}
         </p>
       </div>
 
@@ -104,22 +106,22 @@ const Install = () => {
                 <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-2">
                   <Smartphone className="w-6 h-6 text-green-600" />
                 </div>
-                <p className="text-sm font-medium">Mở nhanh</p>
-                <p className="text-xs text-muted-foreground">Từ màn hình chính</p>
+                <p className="text-sm font-medium">{t('insQuickTitle')}</p>
+                <p className="text-xs text-muted-foreground">{t('insQuickDesc')}</p>
               </div>
               <div>
                 <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mx-auto mb-2">
                   <Monitor className="w-6 h-6 text-blue-600" />
                 </div>
                 <p className="text-sm font-medium">Full screen</p>
-                <p className="text-xs text-muted-foreground">Không thanh địa chỉ</p>
+                <p className="text-xs text-muted-foreground">{t('insFullDesc')}</p>
               </div>
               <div>
                 <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center mx-auto mb-2">
                   <Download className="w-6 h-6 text-purple-600" />
                 </div>
                 <p className="text-sm font-medium">Offline</p>
-                <p className="text-xs text-muted-foreground">Xem khi mất mạng</p>
+                <p className="text-xs text-muted-foreground">{t('insOfflineDesc')}</p>
               </div>
             </div>
           </CardContent>
@@ -133,7 +135,7 @@ const Install = () => {
             className="w-full text-lg py-6"
           >
             <Download className="w-5 h-5 mr-2" />
-            Cài đặt ngay
+            {t('insInstallNow')}
           </Button>
         )}
 
@@ -143,10 +145,10 @@ const Install = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Apple className="w-5 h-5" />
-                Hướng dẫn cho iPhone/iPad
+                {t('insIosTitle')}
               </CardTitle>
               <CardDescription>
-                Làm theo các bước sau để cài đặt
+                {t('insStepsDesc')}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -155,9 +157,9 @@ const Install = () => {
                   1
                 </div>
                 <div>
-                  <p className="font-medium">Nhấn nút Chia sẻ</p>
+                  <p className="font-medium">{t('insIosStep1Title')}</p>
                   <p className="text-sm text-muted-foreground flex items-center gap-1">
-                    Tìm biểu tượng <Share className="w-4 h-4" /> ở thanh công cụ Safari
+                    {t('insFindIcon')}<Share className="w-4 h-4" />{t('insIosStep1DescB')}
                   </p>
                 </div>
               </div>
@@ -166,9 +168,9 @@ const Install = () => {
                   2
                 </div>
                 <div>
-                  <p className="font-medium">Cuộn xuống và chọn "Thêm vào MH chính"</p>
+                  <p className="font-medium">{t('insIosStep2Title')}</p>
                   <p className="text-sm text-muted-foreground flex items-center gap-1">
-                    Tìm biểu tượng <Plus className="w-4 h-4" /> Add to Home Screen
+                    {t('insFindIcon')}<Plus className="w-4 h-4" />{t('insIosStep2DescB')}
                   </p>
                 </div>
               </div>
@@ -177,9 +179,9 @@ const Install = () => {
                   3
                 </div>
                 <div>
-                  <p className="font-medium">Nhấn "Thêm"</p>
+                  <p className="font-medium">{t('insIosStep3Title')}</p>
                   <p className="text-sm text-muted-foreground">
-                    FUN Profile sẽ xuất hiện trên màn hình chính
+                    {t('insIosStep3Desc')}
                   </p>
                 </div>
               </div>
@@ -193,10 +195,10 @@ const Install = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Chrome className="w-5 h-5" />
-                Hướng dẫn cho Android
+                {t('insAndroidTitle')}
               </CardTitle>
               <CardDescription>
-                Làm theo các bước sau để cài đặt
+                {t('insStepsDesc')}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -205,9 +207,9 @@ const Install = () => {
                   1
                 </div>
                 <div>
-                  <p className="font-medium">Nhấn menu 3 chấm</p>
+                  <p className="font-medium">{t('insAndStep1Title')}</p>
                   <p className="text-sm text-muted-foreground flex items-center gap-1">
-                    Biểu tượng <MoreVertical className="w-4 h-4" /> ở góc phải trên
+                    {t('insTheIcon')}<MoreVertical className="w-4 h-4" />{t('insAndStep1DescB')}
                   </p>
                 </div>
               </div>
@@ -216,7 +218,7 @@ const Install = () => {
                   2
                 </div>
                 <div>
-                  <p className="font-medium">Chọn "Cài đặt ứng dụng" hoặc "Thêm vào MH chính"</p>
+                  <p className="font-medium">{t('insAndStep2Title')}</p>
                   <p className="text-sm text-muted-foreground">
                     Install app / Add to Home screen
                   </p>
@@ -227,9 +229,9 @@ const Install = () => {
                   3
                 </div>
                 <div>
-                  <p className="font-medium">Nhấn "Cài đặt"</p>
+                  <p className="font-medium">{t('insAndStep3Title')}</p>
                   <p className="text-sm text-muted-foreground">
-                    App sẽ được thêm vào màn hình chính
+                    {t('insAndStep3Desc')}
                   </p>
                 </div>
               </div>
@@ -243,10 +245,10 @@ const Install = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Monitor className="w-5 h-5" />
-                Hướng dẫn cho Desktop
+                {t('insDesktopTitle')}
               </CardTitle>
               <CardDescription>
-                Cài đặt trên Chrome, Edge hoặc Brave
+                {t('insDesktopDesc')}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -255,9 +257,9 @@ const Install = () => {
                   1
                 </div>
                 <div>
-                  <p className="font-medium">Tìm biểu tượng cài đặt</p>
+                  <p className="font-medium">{t('insDeskStep1Title')}</p>
                   <p className="text-sm text-muted-foreground">
-                    Biểu tượng ⊕ hoặc 📥 ở thanh địa chỉ (bên phải)
+                    {t('insDeskStep1Desc')}
                   </p>
                 </div>
               </div>
@@ -266,9 +268,9 @@ const Install = () => {
                   2
                 </div>
                 <div>
-                  <p className="font-medium">Nhấn "Install" hoặc "Cài đặt"</p>
+                  <p className="font-medium">{t('insDeskStep2Title')}</p>
                   <p className="text-sm text-muted-foreground">
-                    App sẽ được cài đặt như ứng dụng desktop
+                    {t('insDeskStep2Desc')}
                   </p>
                 </div>
               </div>
