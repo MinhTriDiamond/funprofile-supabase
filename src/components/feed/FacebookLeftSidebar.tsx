@@ -217,7 +217,7 @@ export const LeftSidebar = ({ onItemClick }: FacebookLeftSidebarProps) => {
             <div className="w-9 h-9 rounded-full bg-secondary flex items-center justify-center text-gray-600">
               <Settings className="w-5 h-5" />
             </div>
-            <span className="font-medium text-sm">Cài đặt</span>
+            <span className="font-medium text-sm">{t('settings')}</span>
           </button>
 
           <button
@@ -228,8 +228,8 @@ export const LeftSidebar = ({ onItemClick }: FacebookLeftSidebarProps) => {
               <RefreshCw className="w-5 h-5" />
             </div>
             <div className="flex flex-col items-start">
-              <span className="font-medium text-sm">Cập nhật app</span>
-              <span className="text-xs text-muted-foreground">Tải phiên bản mới nhất</span>
+              <span className="font-medium text-sm">{t('navUpdateApp')}</span>
+              <span className="text-xs text-muted-foreground">{t('flsDownloadLatest')}</span>
             </div>
           </button>
 

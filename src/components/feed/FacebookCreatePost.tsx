@@ -77,38 +77,38 @@ import {
 const MAX_CONTENT_LENGTH = 20000;
 const MAX_ATTACHMENTS = MEDIA_LIMITS.maxTotalMediaPerPost;
 const FRIENDLY_PLACEHOLDERS = [
-  'Bạn muốn chia sẻ điều tích cực gì hôm nay?',
-  'Hôm nay bạn biết ơn điều gì?',
-  'Chia sẻ khoảnh khắc FUN & RICH của bạn...',
+  'fcpPhSharePositive',
+  'fcpPhGratitudeToday',
+  'fcpPhMoment',
 ];
 const INSPIRATION_CHIPS = [
-  { id: 'gratitude', label: '💚 Biết ơn', text: 'Hôm nay mình biết ơn ' },
-  { id: 'inspire', label: '🌈 Truyền cảm hứng', text: 'Một điều tích cực mình muốn lan tỏa là ' },
-  { id: 'win', label: '🚀 Thành công hôm nay', text: 'Thành công nhỏ hôm nay của mình là ' },
-  { id: 'moment', label: '📸 Khoảnh khắc đẹp', text: 'Khoảnh khắc đẹp nhất hôm nay: ' },
-  { id: 'love', label: '🎁 Gửi yêu thương', text: 'Gửi một chút yêu thương đến ' },
+  { id: 'gratitude', labelKey: 'fcpChipGratitudeLabel', textKey: 'fcpChipGratitudeText' },
+  { id: 'inspire', labelKey: 'fcpChipInspireLabel', textKey: 'fcpChipInspireText' },
+  { id: 'win', labelKey: 'fcpChipWinLabel', textKey: 'fcpChipWinText' },
+  { id: 'moment', labelKey: 'fcpChipMomentLabel', textKey: 'fcpChipMomentText' },
+  { id: 'love', labelKey: 'fcpChipLoveLabel', textKey: 'fcpChipLoveText' },
 ];
 
 const legacyPostSchema = z.object({
-  content: z.string().max(MAX_CONTENT_LENGTH, `Nội dung tối đa ${MAX_CONTENT_LENGTH.toLocaleString()} ký tự`),
+  content: z.string().max(MAX_CONTENT_LENGTH, 'fcpContentMax'),
 });
 
 const CLEAN_FRIENDLY_PLACEHOLDERS = [
-  'Bạn đang biết ơn điều gì hôm nay?',
-  'Chia sẻ điều tích cực đến cộng đồng...',
-  'Chia sẻ khoảnh khắc FUN & RICH của bạn...',
+  'fcpPhGratitudeClean',
+  'fcpPhPositiveCommunity',
+  'fcpPhMoment',
 ];
 
 const CLEAN_INSPIRATION_CHIPS = [
-  { id: 'gratitude', label: '💚 Biết ơn', text: 'Hôm nay mình biết ơn ' },
-  { id: 'inspire', label: '🌈 Truyền cảm hứng', text: 'Một điều tích cực mình muốn lan tỏa là ' },
-  { id: 'win', label: '🚀 Thành công hôm nay', text: 'Thành công nhỏ hôm nay của mình là ' },
-  { id: 'moment', label: '📸 Khoảnh khắc đẹp', text: 'Khoảnh khắc đẹp nhất hôm nay: ' },
-  { id: 'love', label: '🎁 Gửi yêu thương', text: 'Gửi một chút yêu thương đến ' },
+  { id: 'gratitude', labelKey: 'fcpChipGratitudeLabel', textKey: 'fcpChipGratitudeText' },
+  { id: 'inspire', labelKey: 'fcpChipInspireLabel', textKey: 'fcpChipInspireText' },
+  { id: 'win', labelKey: 'fcpChipWinLabel', textKey: 'fcpChipWinText' },
+  { id: 'moment', labelKey: 'fcpChipMomentLabel', textKey: 'fcpChipMomentText' },
+  { id: 'love', labelKey: 'fcpChipLoveLabel', textKey: 'fcpChipLoveText' },
 ];
 
 const postSchema = z.object({
-  content: z.string().max(MAX_CONTENT_LENGTH, `Nội dung tối đa ${MAX_CONTENT_LENGTH.toLocaleString()} ký tự`),
+  content: z.string().max(MAX_CONTENT_LENGTH, 'fcpContentMax'),
 });
 
 function createDraftId() {
@@ -213,22 +213,22 @@ type CloseComposerOptions = {
   forcePrompt?: boolean;
 };
 
-const AI_ACTIONS: Array<{ label: string; action: AiAssistAction; icon: typeof PenLine }> = [
-  { label: 'Viết tiếp nội dung', action: 'continue', icon: PenLine },
-  { label: 'Làm câu chữ hay hơn', action: 'polish', icon: Wand2 },
-  { label: 'Viết bài biết ơn', action: 'gratitude', icon: CheckCircle2 },
-  { label: 'Tạo caption truyền cảm hứng', action: 'caption', icon: Feather },
-  { label: 'Rút gọn bài viết', action: 'shorter', icon: Sparkles },
-  { label: 'Tạo hashtag', action: 'hashtag', icon: Hash },
+const AI_ACTIONS: Array<{ labelKey: string; action: AiAssistAction; icon: typeof PenLine }> = [
+  { labelKey: 'fcpAiContinue', action: 'continue', icon: PenLine },
+  { labelKey: 'fcpAiPolish', action: 'polish', icon: Wand2 },
+  { labelKey: 'fcpAiGratitude', action: 'gratitude', icon: CheckCircle2 },
+  { labelKey: 'fcpAiCaption', action: 'caption', icon: Feather },
+  { labelKey: 'fcpAiShorter', action: 'shorter', icon: Sparkles },
+  { labelKey: 'fcpAiHashtag', action: 'hashtag', icon: Hash },
 ];
 
-const CLEAN_AI_ACTIONS: Array<{ label: string; action: AiAssistAction; icon: typeof PenLine }> = [
-  { label: 'Viết tiếp nội dung', action: 'continue', icon: PenLine },
-  { label: 'Làm câu chữ hay hơn', action: 'polish', icon: Wand2 },
-  { label: 'Viết bài biết ơn', action: 'gratitude', icon: CheckCircle2 },
-  { label: 'Tạo caption truyền cảm hứng', action: 'caption', icon: Feather },
-  { label: 'Rút gọn bài viết', action: 'shorter', icon: Sparkles },
-  { label: 'Tạo hashtag', action: 'hashtag', icon: Hash },
+const CLEAN_AI_ACTIONS: Array<{ labelKey: string; action: AiAssistAction; icon: typeof PenLine }> = [
+  { labelKey: 'fcpAiContinue', action: 'continue', icon: PenLine },
+  { labelKey: 'fcpAiPolish', action: 'polish', icon: Wand2 },
+  { labelKey: 'fcpAiGratitude', action: 'gratitude', icon: CheckCircle2 },
+  { labelKey: 'fcpAiCaption', action: 'caption', icon: Feather },
+  { labelKey: 'fcpAiShorter', action: 'shorter', icon: Sparkles },
+  { labelKey: 'fcpAiHashtag', action: 'hashtag', icon: Hash },
 ];
 
 export const CreatePost = ({ onPostCreated, initialAction }: FacebookCreatePostProps) => {
@@ -452,7 +452,7 @@ export const CreatePost = ({ onPostCreated, initialAction }: FacebookCreatePostP
     runningUploadsRef.current.add(draft.id);
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error('Session hết hạn');
+      if (!session) throw new Error(t('fcpSessionExpired'));
       const accessToken = session.access_token;
       const updater = updateAttachmentRef.current;
       if (!updater) return;
@@ -496,8 +496,8 @@ export const CreatePost = ({ onPostCreated, initialAction }: FacebookCreatePostP
       updater?.(draft.id, {
         uploadStatus: 'error',
         error: draft.kind === 'video'
-          ? 'Không thể tải video lên. Vui lòng thử lại.'
-          : (err?.message || 'Tải lên thất bại'),
+          ? t('fcpVideoUploadFailed')
+          : (err?.message || t('uploadFailed')),
       });
     } finally {
       runningUploadsRef.current.delete(draft.id);
@@ -858,7 +858,7 @@ export const CreatePost = ({ onPostCreated, initialAction }: FacebookCreatePostP
         const isVideo = attachment.kind === 'video';
         updateAttachment(attachment.id, {
           uploadStatus: 'error',
-          error: isVideo ? 'Không thể tải video lên. Vui lòng thử lại.' : (error?.message || 'Tải lên thất bại'),
+          error: isVideo ? t('fcpVideoUploadFailed') : (error?.message || t('uploadFailed')),
         });
         throw error;
       }
@@ -874,7 +874,7 @@ export const CreatePost = ({ onPostCreated, initialAction }: FacebookCreatePostP
     }
     // Nếu media đang upload nền, chờ xong thay vì chặn (Facebook-style)
     if (attachments.some((attachment) => attachment.uploadStatus === 'uploading' || attachment.uploadStatus === 'local')) {
-      toast.info('Đang hoàn tất tải media... bài sẽ tự đăng ngay khi xong.', { duration: 3000 });
+      toast.info(t('fcpMediaUploadFinishing'), { duration: 3000 });
       setLoading(true);
       try {
         await new Promise<void>((resolve, reject) => {
@@ -883,12 +883,12 @@ export const CreatePost = ({ onPostCreated, initialAction }: FacebookCreatePostP
             const list = attachmentsRef.current;
             if (list.every((a) => a.uploadStatus === 'uploaded' || a.uploadStatus === 'error')) {
               const bad = list.find((a) => a.uploadStatus === 'error');
-              if (bad) reject(new Error(bad.error || 'Tải media thất bại'));
+              if (bad) reject(new Error(bad.error || t('fcpMediaUploadFailed')));
               else resolve();
               return;
             }
             if (Date.now() - started > 5 * 60 * 1000) {
-              reject(new Error('Tải media quá lâu, vui lòng thử lại.'));
+              reject(new Error(t('fcpMediaUploadTimeout')));
               return;
             }
             setTimeout(tick, 250);
@@ -897,14 +897,14 @@ export const CreatePost = ({ onPostCreated, initialAction }: FacebookCreatePostP
         });
       } catch (err: any) {
         setLoading(false);
-        toast.error(err?.message || 'Tải media thất bại');
+        toast.error(err?.message || t('fcpMediaUploadFailed'));
         return;
       }
       // Đã tải xong, tiếp tục submit
     }
 
     if (attachments.some((attachment) => attachment.uploadStatus === 'error')) {
-      toast.error('Vui lòng thử lại hoặc xóa media bị lỗi trước khi đăng.');
+      toast.error(t('fcpMediaErrorRetry'));
       return;
     }
     if (content.length > MAX_CONTENT_LENGTH) {
@@ -921,7 +921,7 @@ export const CreatePost = ({ onPostCreated, initialAction }: FacebookCreatePostP
     }
     const validation = postSchema.safeParse({ content: content.trim() });
     if (!validation.success) {
-      toast.error(validation.error.errors[0].message);
+      toast.error(t(validation.error.errors[0].message, { count: MAX_CONTENT_LENGTH.toLocaleString() }));
       return;
     }
 
@@ -953,7 +953,7 @@ export const CreatePost = ({ onPostCreated, initialAction }: FacebookCreatePostP
       userId: userId || '',
       privacy,
       profile: {
-        username: profile?.username || 'Bạn',
+        username: profile?.username || t('youLabel'),
         display_name: profile?.display_name || profile?.full_name || null,
         avatar_url: profile?.avatar_url || null,
       },
@@ -1009,8 +1009,8 @@ export const CreatePost = ({ onPostCreated, initialAction }: FacebookCreatePostP
       if (lightLang && (lightLang.level === 'toxic' || lightLang.level === 'negative')) {
         const msg = lightLang.loving_message ||
           (lightLang.level === 'toxic'
-            ? 'Bài viết chứa ngôn từ chưa phù hợp với không gian ánh sáng 🌸 Angel mời bạn viết lại nhẹ nhàng hơn nha 💛✨'
-            : 'Năng lượng bài viết đang hơi nặng 💛 Hãy thử viết lại bằng ngôn từ ánh sáng — chia sẻ điều biết ơn, bài học, hoặc lời chúc lành nhé ✨');
+            ? t('fcpModerationToxic')
+            : t('fcpModerationNegative'));
         toast.info(msg, { duration: 9000 });
       } else if (result.moderation_status === 'pending_review') {
         toast.info(
@@ -1021,9 +1021,9 @@ export const CreatePost = ({ onPostCreated, initialAction }: FacebookCreatePostP
         toast.info(t('duplicatePostMessage') + ' ✨🙏', { duration: 8000 });
       } else {
         if (isInnerWorkMode && content.trim().length < INNER_WORK_MIN) {
-          toast.warning(`Bài Sám Hối cần ≥${INNER_WORK_MIN} ký tự để được tính Light Score. Bài đã đăng nhưng chưa hoàn thành nhiệm vụ.`);
+          toast.warning(t('fcpInnerWorkTooShort', { count: INNER_WORK_MIN }));
         } else if (isInnerWorkMode) {
-          toast.success('Đã đăng bài Sám Hối 🧘 Nhiệm vụ sẽ được cập nhật trong giây lát.');
+          toast.success(t('fcpInnerWorkPosted'));
         } else {
           toast.success(t('postPublished'));
         }
@@ -1049,7 +1049,7 @@ export const CreatePost = ({ onPostCreated, initialAction }: FacebookCreatePostP
 
       // Nếu đến từ nhiệm vụ (có ?back=…), tự đưa cha quay về đúng panel
       if (decodedBack) {
-        toast.success('Đã ghi nhận — đưa bạn về nhiệm vụ.');
+        toast.success(t('fcpBackToQuestToast'));
         setTimeout(() => navigate(decodedBack), 350);
       }
     } catch (error: any) {
@@ -1078,22 +1078,22 @@ export const CreatePost = ({ onPostCreated, initialAction }: FacebookCreatePostP
   const handleInspirationChip = useCallback((chip: typeof CLEAN_INSPIRATION_CHIPS[number]) => {
     haptic('light');
     setSelectedInspirationChip(chip.id);
-    insertComposerText(chip.text);
+    insertComposerText(t(chip.textKey));
     window.setTimeout(() => setSelectedInspirationChip(null), 450);
-  }, [haptic, insertComposerText]);
+  }, [haptic, insertComposerText, t]);
 
   const handleAiAssistAction = useCallback((action: AiAssistAction) => {
     haptic('light');
     if (action === 'continue') {
-      insertComposerText(content.trim() ? '\n\nĐiều mình muốn chia sẻ thêm là ' : 'Hôm nay mình muốn chia sẻ ');
+      insertComposerText(content.trim() ? t('fcpAiInsertContinueSuffix') : t('fcpAiInsertContinueStart'));
       return;
     }
     if (action === 'gratitude') {
-      insertComposerText(content.trim() ? '\n\nMình biết ơn vì ' : 'Hôm nay mình biết ơn ');
+      insertComposerText(content.trim() ? t('fcpAiInsertGratitudeSuffix') : t('fcpChipGratitudeText'));
       return;
     }
     if (action === 'caption') {
-      insertComposerText(content.trim() ? '\n\nMột khoảnh khắc đáng nhớ: ' : 'Một khoảnh khắc FUN & RICH hôm nay: ');
+      insertComposerText(content.trim() ? t('fcpAiInsertCaptionSuffix') : t('fcpAiInsertCaptionStart'));
       return;
     }
     if (action === 'hashtag') {
@@ -1101,11 +1101,11 @@ export const CreatePost = ({ onPostCreated, initialAction }: FacebookCreatePostP
       return;
     }
     if (!content.trim()) {
-      toast.info('Hãy viết vài dòng trước, AI hỗ trợ viết bài sẽ sớm gợi ý hay hơn cho bạn.');
+      toast.info(t('fcpAiWriteFirstHint'));
       return;
     }
-    toast.info(action === 'shorter' ? 'AI rút gọn bài viết sẽ sớm ra mắt.' : 'AI làm câu chữ hay hơn sẽ sớm ra mắt.');
-  }, [content, haptic, insertComposerText]);
+    toast.info(action === 'shorter' ? t('fcpAiShorterSoon') : t('fcpAiPolishSoon'));
+  }, [content, haptic, insertComposerText, t]);
 
   const handleFeelingSelect = (selectedFeeling: FeelingActivity) => {
     setFeeling(selectedFeeling);
@@ -1181,7 +1181,7 @@ export const CreatePost = ({ onPostCreated, initialAction }: FacebookCreatePostP
   const saveCurrentDraft = useCallback(async () => {
     const ok = await savePostDraftNow(currentDraftData, userId);
     if (!ok && attachments.length > 0) {
-      toast.warning('Đã lưu nội dung nháp, nhưng trình duyệt có thể không giữ được media.');
+      toast.warning(t('fcpDraftMediaWarning'));
     }
     return ok;
   }, [attachments.length, currentDraftData, userId]);
@@ -1213,7 +1213,7 @@ export const CreatePost = ({ onPostCreated, initialAction }: FacebookCreatePostP
 
   const saveDraftAndClose = useCallback(async () => {
     await saveCurrentDraft();
-    toast.success('Đã lưu bản nháp bài viết.');
+    toast.success(t('fcpDraftSaved'));
     closeComposerNow(false);
   }, [closeComposerNow, saveCurrentDraft]);
 
@@ -1223,7 +1223,7 @@ export const CreatePost = ({ onPostCreated, initialAction }: FacebookCreatePostP
     attachments.forEach((attachment) => revokeDraftBlobs(attachment));
     const restoredAttachments = restoreDraftAttachments(pendingRestoreDraft);
     if (pendingRestoreDraft.attachments.length > 0 && restoredAttachments.length === 0) {
-      toast.warning('Không thể khôi phục media trong bản nháp này. Nội dung chữ vẫn được giữ lại.');
+      toast.warning(t('fcpDraftMediaRestoreFailed'));
     }
 
     setContent(pendingRestoreDraft.content || '');
@@ -1238,7 +1238,7 @@ export const CreatePost = ({ onPostCreated, initialAction }: FacebookCreatePostP
     setPendingRestoreDraft(null);
     setRestoreDraftOpen(false);
     setDraftRestored(true);
-    toast.success('Đã khôi phục bài viết nháp.');
+    toast.success(t('fcpDraftRestored'));
   }, [attachments, pendingRestoreDraft, setIsDialogOpen]);
 
   const skipPendingDraft = useCallback(async () => {
@@ -1450,7 +1450,7 @@ export const CreatePost = ({ onPostCreated, initialAction }: FacebookCreatePostP
           <DialogHeader className="sticky top-0 z-20 border-b border-border/70 bg-background/95 px-3 py-2 shrink-0 backdrop-blur">
             {decodedBack && (
               <div className="mb-2 flex items-center justify-between gap-2 rounded-lg border border-amber-300/60 bg-amber-50 px-2.5 py-1.5 text-[12px] text-amber-900 dark:border-amber-500/30 dark:bg-amber-950/40 dark:text-amber-200">
-                <span className="truncate">Đang thực hiện nhiệm vụ từ Đôi bạn cùng tiến.</span>
+                <span className="truncate">{t('fcpQuestBannerText')}</span>
                 <Button
                   type="button"
                   size="sm"
@@ -1458,31 +1458,31 @@ export const CreatePost = ({ onPostCreated, initialAction }: FacebookCreatePostP
                   className="h-7 shrink-0 px-2 text-[12px] font-semibold text-amber-900 hover:bg-amber-100 dark:text-amber-200 dark:hover:bg-amber-900/40"
                   onClick={() => { closeComposerNow(false); setTimeout(() => navigate(decodedBack), 50); }}
                 >
-                  ← Quay lại nhiệm vụ
+                  {t('fcpQuestBackButton')}
                 </Button>
               </div>
             )}
             <div className="flex min-h-11 items-center justify-between gap-2 sm:hidden">
-              <Button type="button" variant="ghost" size="icon" className="h-10 w-10 rounded-full" onClick={() => requestCloseComposer({ forcePrompt: true })} aria-label="Đóng">
+              <Button type="button" variant="ghost" size="icon" className="h-10 w-10 rounded-full" onClick={() => requestCloseComposer({ forcePrompt: true })} aria-label={t('close')}>
                 <X className="h-5 w-5" />
               </Button>
               <DialogTitle className="min-w-0 flex-1 text-center text-base font-bold tracking-tight">
-                {composerMode === 'focus' ? 'Thêm văn bản' : 'Bài viết mới'}
+                {composerMode === 'focus' ? t('fcpAddTextTitle') : t('fcpNewPostTitle')}
               </DialogTitle>
               {composerMode === 'focus' ? (
                 <Button type="button" variant="ghost" className="h-10 rounded-full px-4 font-bold text-primary" onClick={finishFocusWriting}>
-                  Xong
+                  {t('fcpDone')}
                 </Button>
               ) : (
                 <Button type="button" size="sm" className="h-10 rounded-full px-4 font-bold" onClick={handleSubmit} disabled={isSubmitDisabled}>
                   {loading ? <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> : null}
-                  Đăng
+                  {t('postButton')}
                 </Button>
               )}
             </div>
             <div className="relative hidden min-h-11 items-center justify-center sm:flex">
               <DialogTitle className="text-center text-xl font-bold tracking-tight">
-                {isInnerWorkMode ? '🧘 Sám Hối / Soi Tâm' : isStoryMediaMode ? 'Tạo Tin' : t('createPost')}
+                {isInnerWorkMode ? t('fcpInnerWorkTitle') : isStoryMediaMode ? t('fcpCreateStoryTitle') : t('createPost')}
               </DialogTitle>
               {composerMode === 'focus' && (
                 <Button
@@ -1491,7 +1491,7 @@ export const CreatePost = ({ onPostCreated, initialAction }: FacebookCreatePostP
                   className="absolute right-11 top-1/2 h-9 -translate-y-1/2 rounded-full px-4 font-bold text-primary transition-all hover:bg-primary/10 focus-visible:ring-2 focus-visible:ring-primary/40"
                   onClick={finishFocusWriting}
                 >
-                  Xong
+                  {t('fcpDone')}
                 </Button>
               )}
               <Button
@@ -1500,19 +1500,19 @@ export const CreatePost = ({ onPostCreated, initialAction }: FacebookCreatePostP
                 size="icon"
                 className="absolute right-0 top-1/2 h-9 w-9 -translate-y-1/2 rounded-full text-muted-foreground transition-all hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-primary/40"
                 onClick={() => requestCloseComposer({ forcePrompt: true })}
-                aria-label="Đóng"
+                aria-label={t('close')}
               >
                 <X className="h-4 w-4" />
               </Button>
             </div>
             {isInnerWorkMode && (
               <p className="text-center text-xs text-muted-foreground mt-1">
-                Bài chiêm nghiệm nội tâm — cần ≥ {INNER_WORK_MIN} ký tự để được tính Light Score (+30 LS) và hoàn thành nhiệm vụ hằng ngày.
+                {t('fcpInnerWorkInfo', { count: INNER_WORK_MIN })}
               </p>
             )}
             {isStoryMediaMode && (
               <p className="text-center text-xs text-muted-foreground mt-1">
-                Chọn ảnh hoặc video để tạo tin nhanh. Nội dung sẽ dùng luồng đăng bài hiện có.
+                {t('fcpStoryMediaHint')}
               </p>
             )}
             {/* Toggle Sám Hối — luôn hiển thị để user có thể đánh dấu bất kỳ bài nào */}
@@ -1524,9 +1524,9 @@ export const CreatePost = ({ onPostCreated, initialAction }: FacebookCreatePostP
                   ? 'bg-purple-500/15 border-purple-500/40 text-purple-700 dark:text-purple-300'
                   : 'bg-muted/40 border-border text-muted-foreground hover:bg-muted'
               }`}
-              title="Bật để bài này được tính cho nhiệm vụ Sám Hối / Soi Tâm hằng ngày"
+              title={t('fcpInnerWorkToggleTitle')}
             >
-              <span>{isInnerWorkMode ? '✓ 🧘 Đang đánh dấu Sám Hối' : '🧘 Đánh dấu là bài Sám Hối / Soi Tâm'}</span>
+              <span>{isInnerWorkMode ? t('fcpInnerWorkToggleOn') : t('fcpInnerWorkToggleOff')}</span>
             </button>
           </DialogHeader>
 
@@ -1541,7 +1541,7 @@ export const CreatePost = ({ onPostCreated, initialAction }: FacebookCreatePostP
               <div className="flex min-h-full flex-col bg-background px-1 py-3 animate-in fade-in-0 slide-in-from-bottom-2 duration-200">
                 <Textarea
                   ref={textareaRef}
-                  placeholder="Bạn đang biết ơn điều gì hôm nay?"
+                  placeholder={t('fcpPhGratitudeClean')}
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
                   className="min-h-[calc(100dvh-190px)] flex-1 resize-none border-0 bg-transparent px-1 text-[22px] leading-relaxed shadow-none placeholder:text-muted-foreground/55 focus-visible:ring-0 focus-visible:ring-offset-0"
@@ -1612,13 +1612,13 @@ export const CreatePost = ({ onPostCreated, initialAction }: FacebookCreatePostP
 
             <div className="mb-3 flex gap-2 overflow-x-auto pb-1 sm:hidden">
               {[
-                { label: 'Ảnh/Video', icon: ImagePlus, color: 'text-emerald-600', onClick: () => mediaInputRef.current?.click(), active: attachments.length > 0 },
-                { label: 'GIF', icon: Sparkles, color: 'text-pink-500', onClick: () => handleUiReadyAction('GIF trong bài viết sẽ sớm ra mắt.'), active: false },
-                { label: 'Trực tiếp', icon: Radio, color: 'text-red-500', onClick: handleLiveVideoClick, active: false },
-                { label: 'Cảm xúc', icon: SmilePlus, color: 'text-amber-500', onClick: () => setShowFeelingDialog(true), active: !!feeling },
-                { label: 'Vị trí', icon: MapPin, color: 'text-rose-500', onClick: () => setShowLocationDialog(true), active: !!location },
-                { label: 'AI hỗ trợ', icon: Bot, color: 'text-primary', onClick: () => setAiSheetOpen(true), active: false },
-                { label: 'Tặng Coin', icon: Gift, color: 'text-yellow-600', onClick: () => handleUiReadyAction('Tặng Coin trong bài viết sẽ sớm ra mắt.'), active: false },
+                { label: t('photoVideo'), icon: ImagePlus, color: 'text-emerald-600', onClick: () => mediaInputRef.current?.click(), active: attachments.length > 0 },
+                { label: 'GIF', icon: Sparkles, color: 'text-pink-500', onClick: () => handleUiReadyAction(t('fcpGifComingSoon')), active: false },
+                { label: t('fcpLive'), icon: Radio, color: 'text-red-500', onClick: handleLiveVideoClick, active: false },
+                { label: t('fcpFeelingLabel'), icon: SmilePlus, color: 'text-amber-500', onClick: () => setShowFeelingDialog(true), active: !!feeling },
+                { label: t('fcpLocationLabel'), icon: MapPin, color: 'text-rose-500', onClick: () => setShowLocationDialog(true), active: !!location },
+                { label: t('fcpAiSupport'), icon: Bot, color: 'text-primary', onClick: () => setAiSheetOpen(true), active: false },
+                { label: t('fcpGiftCoin'), icon: Gift, color: 'text-yellow-600', onClick: () => handleUiReadyAction(t('fcpGiftCoinComingSoon')), active: false },
               ].map((action) => {
                 const Icon = action.icon;
                 return (
@@ -1646,9 +1646,9 @@ export const CreatePost = ({ onPostCreated, initialAction }: FacebookCreatePostP
                   <Textarea
                     ref={textareaRef}
                     placeholder={isInnerWorkMode
-                      ? `Chia sẻ chiêm nghiệm nội tâm của con (sám hối, soi tâm, biết ơn bản thân…)\nCần ≥ ${INNER_WORK_MIN} ký tự, không bắt buộc kèm ảnh.`
+                      ? t('fcpInnerWorkPlaceholder', { count: INNER_WORK_MIN })
                       : isStoryMediaMode
-                      ? 'Viết mô tả ngắn cho tin của bạn...'
+                      ? t('fcpStoryCaptionPlaceholder')
                       : getComposerPlaceholder(profile, t)}
                     value={content}
                     onChange={(e) => setContent(e.target.value)}
@@ -1685,7 +1685,7 @@ export const CreatePost = ({ onPostCreated, initialAction }: FacebookCreatePostP
                     }`}
                   >
                     {selectedInspirationChip === chip.id && <Check className="h-3.5 w-3.5" />}
-                    {chip.label}
+                    {t(chip.labelKey)}
                   </button>
                 ))}
               </div>
@@ -1700,24 +1700,24 @@ export const CreatePost = ({ onPostCreated, initialAction }: FacebookCreatePostP
                       className="h-9 gap-2 rounded-full border-primary/25 bg-gradient-to-r from-primary/10 via-emerald-500/10 to-amber-400/10 text-primary shadow-sm transition-all hover:-translate-y-0.5 hover:bg-primary/10 hover:shadow-md"
                     >
                       <Sparkles className="h-4 w-4" />
-                      AI hỗ trợ viết bài
+                      {t('fcpAiAssistTitle')}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent align="end" className="w-[min(92vw,320px)] rounded-3xl border-primary/15 bg-background/95 p-2 shadow-2xl backdrop-blur">
                     <div className="rounded-2xl bg-gradient-to-r from-primary/10 via-emerald-500/10 to-amber-400/10 px-3 py-3">
                       <p className="flex items-center gap-2 text-sm font-semibold">
                         <Sparkles className="h-4 w-4 text-primary" />
-                        FUN AI gợi ý
+                        {t('fcpAiSuggestions')}
                       </p>
-                      <p className="mt-1 text-xs text-muted-foreground">UI sẵn sàng, chưa gọi API.</p>
+                      <p className="mt-1 text-xs text-muted-foreground">{t('fcpAiUiReadyNote')}</p>
                     </div>
                     {[
-                      { label: 'Viết tiếp nội dung', icon: PenLine, action: 'continue' as const },
-                      { label: 'Làm câu chữ hay hơn', icon: Wand2, action: 'polish' as const },
-                      { label: 'Viết bài biết ơn', icon: CheckCircle2, action: 'gratitude' as const },
-                      { label: 'Tạo caption truyền cảm hứng', icon: Feather, action: 'caption' as const },
-                      { label: 'Tạo hashtag', icon: Hash, action: 'hashtag' as const },
-                      { label: 'Rút gọn bài viết', icon: Sparkles, action: 'shorter' as const },
+                      { label: t('fcpAiContinue'), icon: PenLine, action: 'continue' as const },
+                      { label: t('fcpAiPolish'), icon: Wand2, action: 'polish' as const },
+                      { label: t('fcpAiGratitude'), icon: CheckCircle2, action: 'gratitude' as const },
+                      { label: t('fcpAiCaption'), icon: Feather, action: 'caption' as const },
+                      { label: t('fcpAiHashtag'), icon: Hash, action: 'hashtag' as const },
+                      { label: t('fcpAiShorter'), icon: Sparkles, action: 'shorter' as const },
                     ].map((item) => {
                       const Icon = item.icon;
                       return (
@@ -1748,11 +1748,11 @@ export const CreatePost = ({ onPostCreated, initialAction }: FacebookCreatePostP
                   : (hasMedia || trimmedLen >= MIN_POST_LENGTH_FOR_LS);
                 const message = eligible
                   ? (isInnerWorkMode
-                    ? `Đủ điều kiện Sám Hối (+30 LS) sau khi đăng`
+                    ? t('fcpInnerWorkEligible')
                     : 'Light Score eligible')
                   : (isInnerWorkMode
-                    ? `Cần ≥ ${INNER_WORK_MIN} ký tự (${trimmedLen}/${INNER_WORK_MIN})`
-                    : `Cần ≥ ${minRequired} ký tự hoặc kèm ảnh/video (${trimmedLen}/${minRequired})`);
+                    ? t('fcpCharsNeeded', { min: INNER_WORK_MIN, current: trimmedLen })
+                    : t('fcpCharsOrMediaNeeded', { min: minRequired, current: trimmedLen }));
                 return (
                   <TooltipProvider delayDuration={120}>
                     <Tooltip>
@@ -1768,7 +1768,7 @@ export const CreatePost = ({ onPostCreated, initialAction }: FacebookCreatePostP
                         </div>
                       </TooltipTrigger>
                       <TooltipContent>
-                        Bài viết tích cực có thể nhận Light Score.
+                        {t('fcpLightScoreHint')}
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
@@ -1802,7 +1802,7 @@ export const CreatePost = ({ onPostCreated, initialAction }: FacebookCreatePostP
                   {t('createPostDropHint')}
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Tối đa 30 ảnh/video. Video tối đa 4 giờ.
+                  {t('fcpMediaLimitsNote')}
                 </p>
                 <Button
                   type="button"
@@ -1813,7 +1813,7 @@ export const CreatePost = ({ onPostCreated, initialAction }: FacebookCreatePostP
                   className="mt-4 min-h-10 rounded-full gap-2 px-4"
                 >
                   <ImagePlus className="h-4 w-4" />
-                  + Thêm ảnh/video
+                  {t('fcpAddMedia')}
                 </Button>
               </div>
             )}
@@ -1830,8 +1830,8 @@ export const CreatePost = ({ onPostCreated, initialAction }: FacebookCreatePostP
                 onShowFeeling={() => setShowFeelingDialog(true)}
                 onShowLive={handleLiveVideoClick}
                 onShowAi={() => setAiAssistOpen(true)}
-                onShowVoice={() => handleUiReadyAction('Voice trong bài viết sẽ sớm ra mắt.')}
-                onShowGiftCoin={() => handleUiReadyAction('Tặng Coin trong bài viết sẽ sớm ra mắt.')}
+                onShowVoice={() => handleUiReadyAction(t('fcpVoiceComingSoon'))}
+                onShowGiftCoin={() => handleUiReadyAction(t('fcpGiftCoinComingSoon'))}
                 onEmojiSelect={handleEmojiSelect}
               />
             </div>
@@ -1859,7 +1859,7 @@ export const CreatePost = ({ onPostCreated, initialAction }: FacebookCreatePostP
               className="h-12 w-full rounded-full bg-gradient-to-r from-emerald-600 to-green-500 text-base font-bold text-white shadow-lg shadow-emerald-500/20 transition-all duration-200 hover:-translate-y-0.5 hover:from-emerald-700 hover:to-green-600 hover:shadow-[0_0_26px_rgba(34,197,94,0.34)] active:scale-[0.99] disabled:translate-y-0 disabled:bg-muted disabled:from-muted disabled:to-muted disabled:text-muted-foreground disabled:shadow-none"
             >
               {(loading || hasMediaBusy) && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-              {loading ? 'Đang đăng...' : hasMediaBusy ? `Đang tải lên ${uploadProgress}%` : t('postButton')}
+              {loading ? t('posting') : hasMediaBusy ? t('fcpUploading', { percent: uploadProgress }) : t('postButton')}
             </Button>
           </div>
         </DialogContent>
@@ -1872,12 +1872,12 @@ export const CreatePost = ({ onPostCreated, initialAction }: FacebookCreatePostP
               <span className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
                 <Sparkles className="h-5 w-5" />
               </span>
-              AI hỗ trợ viết bài
+              {t('fcpAiAssistTitle')}
             </DrawerTitle>
           </DrawerHeader>
           <div className="rounded-3xl border border-primary/15 bg-gradient-to-r from-primary/10 via-emerald-500/10 to-amber-400/10 p-3">
-            <p className="text-sm font-semibold">Gợi ý nhẹ nhàng, tích cực và đúng tinh thần FUN.</p>
-            <p className="mt-1 text-xs text-muted-foreground">UI sẵn sàng, chưa gọi API.</p>
+            <p className="text-sm font-semibold">{t('fcpAiSheetSubtitle')}</p>
+            <p className="mt-1 text-xs text-muted-foreground">{t('fcpAiUiReadyNote')}</p>
           </div>
           <div className="mt-3 space-y-1">
             {CLEAN_AI_ACTIONS.map((item) => {
@@ -1893,7 +1893,7 @@ export const CreatePost = ({ onPostCreated, initialAction }: FacebookCreatePostP
                   className="flex min-h-12 w-full items-center gap-3 rounded-2xl px-3 text-left text-sm font-semibold transition hover:bg-muted active:scale-[0.98]"
                 >
                   <Icon className="h-4 w-4 text-primary" />
-                  {item.label}
+                  {t(item.labelKey)}
                 </button>
               );
             })}
@@ -1904,13 +1904,13 @@ export const CreatePost = ({ onPostCreated, initialAction }: FacebookCreatePostP
       <AlertDialog open={confirmDiscardOpen} onOpenChange={setConfirmDiscardOpen}>
         <AlertDialogContent className="z-[260] max-w-[calc(100vw-2rem)] rounded-3xl sm:max-w-md">
           <AlertDialogHeader>
-            <AlertDialogTitle>Lưu bài viết nháp?</AlertDialogTitle>
+            <AlertDialogTitle>{t('fcpSaveDraftTitle')}</AlertDialogTitle>
             <AlertDialogDescription>
-              Bạn vẫn chưa đăng bài viết này. Bạn muốn tiếp tục chỉnh sửa, lưu vào bản nháp hay bỏ bài viết?
+              {t('fcpSaveDraftDesc')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="gap-2 sm:gap-2">
-            <AlertDialogCancel className="rounded-full">Tiếp tục chỉnh sửa</AlertDialogCancel>
+            <AlertDialogCancel className="rounded-full">{t('fcpContinueEditing')}</AlertDialogCancel>
             <AlertDialogAction
               className="rounded-full bg-primary text-primary-foreground hover:bg-primary/90"
               onClick={(event) => {
@@ -1918,13 +1918,13 @@ export const CreatePost = ({ onPostCreated, initialAction }: FacebookCreatePostP
                 void saveDraftAndClose();
               }}
             >
-              Lưu bản nháp
+              {t('fcpSaveDraft')}
             </AlertDialogAction>
             <AlertDialogAction
               className="rounded-full bg-destructive text-destructive-foreground hover:bg-destructive/90"
               onClick={() => closeComposerNow(true)}
             >
-              Bỏ bài viết
+              {t('fcpDiscardPost')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -1933,9 +1933,9 @@ export const CreatePost = ({ onPostCreated, initialAction }: FacebookCreatePostP
       <AlertDialog open={restoreDraftOpen} onOpenChange={setRestoreDraftOpen}>
         <AlertDialogContent className="z-[260] max-w-[calc(100vw-2rem)] rounded-3xl sm:max-w-md">
           <AlertDialogHeader>
-            <AlertDialogTitle>Khôi phục bài viết chưa đăng?</AlertDialogTitle>
+            <AlertDialogTitle>{t('fcpRestoreDraftTitle')}</AlertDialogTitle>
             <AlertDialogDescription>
-              Bạn có muốn khôi phục bài viết chưa đăng không?
+              {t('fcpRestoreDraftDesc')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="gap-2 sm:gap-2">
@@ -1946,10 +1946,10 @@ export const CreatePost = ({ onPostCreated, initialAction }: FacebookCreatePostP
                 void skipPendingDraft();
               }}
             >
-              Bỏ qua
+              {t('fcpSkip')}
             </AlertDialogCancel>
             <AlertDialogAction className="rounded-full" onClick={restorePendingDraft}>
-              Khôi phục
+              {t('fcpRestore')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
