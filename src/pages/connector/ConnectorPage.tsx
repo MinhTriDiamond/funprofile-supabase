@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useLanguage } from '@/i18n/LanguageContext';
 import { useNavigate } from "react-router-dom";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { useMyConnector } from "@/hooks/useConnector";
@@ -20,6 +21,7 @@ function formatCountdown(ms: number) {
 }
 
 export default function ConnectorPage() {
+  const { t } = useLanguage();
   const { userId } = useCurrentUser();
   const navigate = useNavigate();
   const { data, isLoading } = useMyConnector(userId ?? undefined);
@@ -37,7 +39,7 @@ export default function ConnectorPage() {
         <main data-app-scroll className="app-main app-pb-nav">
           <div className="container max-w-2xl py-6 px-4 space-y-4 pb-32">
             <BackToHomeBar />
-            <p className="text-muted-foreground text-center py-10">Vui lòng đăng nhập để xem Connector của bạn.</p>
+            <p className="text-muted-foreground text-center py-10">{t('conPageLogin')}</p>
             <BackToHomeCTA />
           </div>
         </main>
@@ -64,14 +66,14 @@ export default function ConnectorPage() {
               <Sparkles className="w-4 h-4" />
               Connector of Light
             </div>
-            <h1 className="text-2xl font-bold">Người Dẫn Sáng của bạn</h1>
+            <h1 className="text-2xl font-bold">{t('conPageTitle')}</h1>
             <p className="text-sm text-muted-foreground">
-              Connector chính thức là thành viên FUN.Rich đầu tiên gửi token hợp lệ vào ví của bạn trong vòng 48 giờ.
+              {t('conPageDesc')}
             </p>
           </header>
 
       {isLoading && (
-        <Card className="p-6 text-center text-muted-foreground">Đang tải…</Card>
+        <Card className="p-6 text-center text-muted-foreground">{t('cgpLoading')}</Card>
       )}
 
       {!isLoading && link && connector && (
@@ -93,11 +95,11 @@ export default function ConnectorPage() {
           </div>
           <div className="grid grid-cols-2 gap-3 text-sm">
             <div>
-              <div className="text-muted-foreground">Số lượng</div>
+              <div className="text-muted-foreground">{t('conPageAmount')}</div>
               <div className="font-semibold">{Number(link.amount).toLocaleString()} {link.token_symbol}</div>
             </div>
             <div>
-              <div className="text-muted-foreground">Thời điểm</div>
+              <div className="text-muted-foreground">{t('conPageTime')}</div>
               <div className="font-semibold">{new Date(link.matched_at).toLocaleString("vi-VN")}</div>
             </div>
           </div>
@@ -116,22 +118,22 @@ export default function ConnectorPage() {
           <div className="flex items-center gap-3 text-amber-600 dark:text-amber-400">
             <Hourglass className="w-6 h-6" />
             <div>
-              <div className="font-semibold">Cửa sổ 48 giờ đang mở</div>
+              <div className="font-semibold">{t('conPageWindowOpen')}</div>
               <div className="text-xs text-muted-foreground">
-                Hãy nhận giao dịch FUN/USDT/CAMLY/BNB/BTC đầu tiên từ một thành viên FUN.Rich.
+                {t('conPageWindowDesc')}
               </div>
             </div>
           </div>
           <div className="text-center">
             <div className="text-xs text-muted-foreground mb-1 flex items-center justify-center gap-1">
-              <Clock className="w-3 h-3" /> Còn lại
+              <Clock className="w-3 h-3" />{t('conPageRemaining')}
             </div>
             <div className="text-3xl font-mono font-bold tabular-nums text-primary">
               {formatCountdown(remaining)}
             </div>
           </div>
           <p className="text-xs text-muted-foreground text-center">
-            Mức tối thiểu: 9 FUN · 1 USDT · 1.000 CAMLY · 0,001 BNB · 0,00001 BTC
+            {t('conPageMinimums')}
           </p>
         </Card>
       )}
@@ -139,26 +141,26 @@ export default function ConnectorPage() {
       {!isLoading && !link && win?.status === "expired" && (
         <Card className="p-6 text-center space-y-2 border-muted">
           <p className="font-semibold text-muted-foreground">
-            Connector chưa được ghi nhận do quá 48 giờ.
+            {t('conPageTooLate')}
           </p>
           <p className="text-xs text-muted-foreground">
-            Bạn vẫn có thể tham gia và đóng góp cho cộng đồng để nhận Light Score nhé.
+            {t('conPageTooLateDesc')}
           </p>
         </Card>
       )}
 
       {!isLoading && !win && (
         <Card className="p-6 text-center text-muted-foreground">
-          Chưa có cửa sổ Connector. Vui lòng liên kết ví để mở.
+          {t('conPageNoWindow')}
         </Card>
       )}
 
           <div className="flex justify-between items-center pt-4">
             <Button variant="ghost" size="sm" onClick={() => navigate("/connector/given")}>
-              User mà tôi là Connector <ArrowRight className="w-4 h-4 ml-1" />
+              {t('conPageMyUsers')}<ArrowRight className="w-4 h-4 ml-1" />
             </Button>
             <Button variant="ghost" size="sm" onClick={() => navigate("/docs/connector-spec")}>
-              Tài liệu spec
+              {t('conPageSpecDocs')}
             </Button>
           </div>
 

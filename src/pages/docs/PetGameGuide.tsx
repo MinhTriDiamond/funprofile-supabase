@@ -4,33 +4,33 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { Sparkles } from "lucide-react";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 export default function PetGameGuideDocs() {
+  const { t } = useLanguage();
   return (
     <div className="container max-w-4xl py-8 space-y-6">
       <header>
-        <h1 className="text-3xl font-bold mb-2">Hướng Dẫn Chơi Lumi — Pet Game v1</h1>
+        <h1 className="text-3xl font-bold mb-2">{t('petTitle')}</h1>
         <p className="text-muted-foreground">
-          Lumi là pet ánh sáng phản ánh hành trình Light Score của bạn trên FUN.Rich.
-          Không gambling, không pay-to-win — mọi cấp độ, vật phẩm và xếp hạng đều đến từ
-          hành động đóng góp thật cho cộng đồng.
+          {t('petIntro')}
         </p>
       </header>
 
       <Card>
-        <CardHeader><CardTitle>Mục lục</CardTitle></CardHeader>
+        <CardHeader><CardTitle>{t('petTocTitle')}</CardTitle></CardHeader>
         <CardContent>
           <ol className="list-decimal pl-5 space-y-1 text-sm">
-            <li><a className="hover:underline text-primary" href="#lumi-la-gi">Lumi là gì</a></li>
-            <li><a className="hover:underline text-primary" href="#nuoi-lumi">Tạo & nuôi Lumi</a></li>
-            <li><a className="hover:underline text-primary" href="#cheer">Cheer giữa bạn bè</a></li>
+            <li><a className="hover:underline text-primary" href="#lumi-la-gi">{t('petToc1')}</a></li>
+            <li><a className="hover:underline text-primary" href="#nuoi-lumi">{t('petToc2')}</a></li>
+            <li><a className="hover:underline text-primary" href="#cheer">{t('petToc3')}</a></li>
             <li><a className="hover:underline text-primary" href="#mystery-box">Mystery Box</a></li>
             <li><a className="hover:underline text-primary" href="#shop">Shop CAMLY on-chain</a></li>
             <li><a className="hover:underline text-primary" href="#risk">Risk Engine & Anti-farm</a></li>
             <li><a className="hover:underline text-primary" href="#arena">Arena 1v1</a></li>
-            <li><a className="hover:underline text-primary" href="#settings">Cài đặt & cá nhân hoá</a></li>
+            <li><a className="hover:underline text-primary" href="#settings">{t('petToc8')}</a></li>
             <li><a className="hover:underline text-primary" href="#voice">Voice Lumi (Phase 8B)</a></li>
-            <li><a className="hover:underline text-primary" href="#nguyen-tac">Nguyên tắc cốt lõi</a></li>
+            <li><a className="hover:underline text-primary" href="#nguyen-tac">{t('petToc10')}</a></li>
             <li><a className="hover:underline text-primary" href="#faq">FAQ</a></li>
             <li><a className="hover:underline text-primary" href="#changelog">Changelog</a></li>
           </ol>
@@ -38,44 +38,38 @@ export default function PetGameGuideDocs() {
       </Card>
 
       <Card id="lumi-la-gi">
-        <CardHeader><CardTitle>1. Lumi là gì</CardTitle></CardHeader>
+        <CardHeader><CardTitle>{t('petS1Title')}</CardTitle></CardHeader>
         <CardContent className="space-y-2 text-sm">
           <p>
-            Lumi là <b>pet ánh sáng</b> gắn liền với tài khoản FUN.Rich. Mỗi hành động
-            Light Score (sám hối, biết ơn, phụng sự, giúp đỡ, trao tặng) đều khiến Lumi
-            mạnh hơn, đẹp hơn và mở thêm khả năng.
+            {t('petS1Para1A')}<b>{t('petS1Para1B')}</b>{t('petS1Para1C')}
           </p>
           <p>
-            Truy cập tại <Link className="text-primary hover:underline" to="/pet">/pet</Link>.
-            Lumi không thể bán, không thể chuyển nhượng — nó là <b>danh thiếp ánh sáng</b> của bạn.
+            {t('petS1Para2A')}<Link className="text-primary hover:underline" to="/pet">/pet</Link>{t('petS1Para2B')}<b>{t('petS1Para2C')}</b>{t('petS1Para2D')}
           </p>
         </CardContent>
       </Card>
 
       <Card id="nuoi-lumi">
-        <CardHeader><CardTitle>2. Tạo & nuôi Lumi</CardTitle></CardHeader>
+        <CardHeader><CardTitle>{t('petS2Title')}</CardTitle></CardHeader>
         <CardContent className="space-y-2 text-sm">
-          <p>Ba chỉ số chính:</p>
+          <p>{t('petS2Intro')}</p>
           <ul className="list-disc pl-5 space-y-1">
-            <li><Badge variant="secondary">Level</Badge> tăng theo XP tích luỹ, mở khoá Shop (Lv.3+), cosmetic cao cấp. Arena mở cho tất cả từ Lv.1.</li>
-            <li><Badge variant="secondary">XP</Badge> nhận từ Light Score, tham dự Live, hoàn thành Quest, mở Mystery Box.</li>
-            <li><Badge variant="secondary">Mood</Badge> phản ánh nhịp tương tác gần đây; mood cao buff XP nhẹ khi cheer.</li>
+            <li><Badge variant="secondary">Level</Badge>{t('petS2Level')}</li>
+            <li><Badge variant="secondary">XP</Badge>{t('petS2Xp')}</li>
+            <li><Badge variant="secondary">Mood</Badge>{t('petS2Mood')}</li>
           </ul>
-          <p><b>Cap:</b> tối đa <b>500 XP/user/UTC day</b> để tránh farm.</p>
+          <p><b>Cap:</b>{t('petS2CapB')}<b>500 XP/user/UTC day</b>{t('petS2CapC')}</p>
         </CardContent>
       </Card>
 
       <Card id="cheer">
-        <CardHeader><CardTitle>3. Cheer giữa bạn bè</CardTitle></CardHeader>
+        <CardHeader><CardTitle>{t('petS3Title')}</CardTitle></CardHeader>
         <CardContent className="space-y-2 text-sm">
           <p>
-            Tab <b>Friends</b> trong <code>/pet</code> cho phép cheer pet người khác.
-            Mỗi cheer cộng XP cả hai bên, tạo vòng tròn lan toả tích cực.
+            {t('petS3Para1A')}<b>Friends</b>{t('petS3Para1B')}<code>/pet</code>{t('petS3Para1C')}
           </p>
           <p>
-            Hệ thống ghi <code>pet_risk_signals</code> để phát hiện <b>self-loop</b>
-            (A cheer B, B cheer lại A liên tục) và các pattern bất thường.
-            Cheer vượt ngưỡng sẽ bị triệt giảm XP.
+            {t('petS3Para2A')}<code>pet_risk_signals</code>{t('petS3Para2B')}<b>self-loop</b>{t('petS3Para2C')}
           </p>
         </CardContent>
       </Card>
@@ -84,12 +78,10 @@ export default function PetGameGuideDocs() {
         <CardHeader><CardTitle>4. Mystery Box</CardTitle></CardHeader>
         <CardContent className="space-y-2 text-sm">
           <p>
-            Hộp bí ẩn cấp tự động qua hành vi tích cực (daily login, streak, gift, mua CAMLY).
-            5 tier: Phổ Thông → Hiếm → Sử Thi → Huyền Thoại → Vũ Trụ.
-            Mở hộp nhận XP cho Lumi, cosmetic, CAMLY, SBT.
+            {t('petS4Para1')}
           </p>
           <p>
-            Xem chi tiết tại{" "}
+            {t('petS4Para2A')}
             <Link to="/docs/mystery-box" className="text-primary hover:underline">
               /docs/mystery-box
             </Link>.
@@ -101,18 +93,16 @@ export default function PetGameGuideDocs() {
         <CardHeader><CardTitle>5. Shop CAMLY on-chain (Phase 6)</CardTitle></CardHeader>
         <CardContent className="space-y-2 text-sm">
           <p>
-            Truy cập <Link className="text-primary hover:underline" to="/pet/shop">/pet/shop</Link>.
-            Catalog gồm cosmetic (mũ, kính, hào quang, nền) với <code>price_camly</code>,
-            <code>level_required</code> và <code>stock</code>.
+            {t('petS5Para1A')}<Link className="text-primary hover:underline" to="/pet/shop">/pet/shop</Link>{t('petS5Para1B')}<code>price_camly</code>, <code>level_required</code>{t('petS5Para1D')}<code>stock</code>.
           </p>
-          <p><b>Cơ chế thanh toán:</b></p>
+          <p><b>{t('petS5MechTitle')}</b></p>
           <ol className="list-decimal pl-5 space-y-1">
-            <li>Bấm Mua → tạo order <Badge variant="outline">pending</Badge>.</li>
-            <li>Ví bạn gửi CAMLY về ví <code>funtreasury</code> (BSC).</li>
-            <li>Edge <code>pet-shop-confirm</code> verify on-chain Transfer log, finalize order, cấp item vào tủ.</li>
+            <li>{t('petS5Step1A')}<Badge variant="outline">pending</Badge>.</li>
+            <li>{t('petS5Step2A')}<code>funtreasury</code> (BSC).</li>
+            <li>{t('petS5Step3A')}<code>pet-shop-confirm</code>{t('petS5Step3B')}</li>
           </ol>
           <p className="text-muted-foreground">
-            Không cần trung gian, không refund ngoài dây chuyền — tất cả minh bạch on-chain.
+            {t('petS5Note')}
           </p>
         </CardContent>
       </Card>
@@ -120,16 +110,15 @@ export default function PetGameGuideDocs() {
       <Card id="risk">
         <CardHeader><CardTitle>6. Risk Engine & Anti-farm (Phase 7)</CardTitle></CardHeader>
         <CardContent className="space-y-2 text-sm">
-          <p>Hệ thống tính điểm rủi ro EMA 7 ngày, chia 4 tier:</p>
+          <p>{t('petS6Intro')}</p>
           <ul className="list-disc pl-5 space-y-1">
-            <li><Badge>safe</Badge> &lt; 0.25 — full quyền lợi.</li>
-            <li><Badge variant="secondary">watch</Badge> 0.25 – 0.55 — quan sát.</li>
-            <li><Badge variant="outline">restricted</Badge> 0.55 – 0.80 — giảm 50% XP, hạn chế Shop & cheer.</li>
-            <li><Badge variant="destructive">frozen</Badge> ≥ 0.80 — đóng băng Shop, Arena, cheer.</li>
+            <li><Badge>safe</Badge>{t('petS6Safe')}</li>
+            <li><Badge variant="secondary">watch</Badge>{t('petS6Watch')}</li>
+            <li><Badge variant="outline">restricted</Badge>{t('petS6Restricted')}</li>
+            <li><Badge variant="destructive">frozen</Badge>{t('petS6Frozen')}</li>
           </ul>
           <p>
-            Cron chạy 04:30 UTC mỗi ngày, quét các tín hiệu xp_burst, cheer_loop, shop_velocity, tc_low.
-            Bị đánh nhầm? Gửi kháng nghị tại{" "}
+            {t('petS6Para2A')}
             <Link to="/pet/appeal" className="text-primary hover:underline">/pet/appeal</Link>.
           </p>
         </CardContent>
@@ -139,36 +128,35 @@ export default function PetGameGuideDocs() {
         <CardHeader><CardTitle>7. Arena 1v1 (Phase 8A)</CardTitle></CardHeader>
         <CardContent className="space-y-2 text-sm">
           <p>
-            Mở cho mọi cấp độ Lumi. Truy cập <Link to="/pet/arena" className="text-primary hover:underline">/pet/arena</Link>.
+            {t('petS7Para1A')}<Link to="/pet/arena" className="text-primary hover:underline">/pet/arena</Link>.
           </p>
-          <p><b>4 chỉ số chiến đấu:</b></p>
+          <p><b>{t('petS7StatsTitle')}</b></p>
           <ul className="list-disc pl-5 space-y-1">
-            <li><Badge>ATK</Badge> sát thương cơ bản</li>
-            <li><Badge>DEF</Badge> giảm sát thương nhận</li>
-            <li><Badge>SPD</Badge> ưu thế ra đòn trước</li>
-            <li><Badge>LCK</Badge> tăng tỉ lệ crit & né</li>
+            <li><Badge>ATK</Badge>{t('petS7Atk')}</li>
+            <li><Badge>DEF</Badge>{t('petS7Def')}</li>
+            <li><Badge>SPD</Badge>{t('petS7Spd')}</li>
+            <li><Badge>LCK</Badge>{t('petS7Lck')}</li>
           </ul>
           <p>
-            <b>5 round tất định</b> — kết quả tính từ seed lưu trong DB, có thể tái dựng và audit.
-            Snapshot stats được khoá lúc thách đấu, không ai farm giữa chừng được.
+            <b>{t('petS7RoundsBold')}</b>{t('petS7Para2B')}
           </p>
           <p>
-            <b>Giới hạn:</b> 10 trận / 24h / user. Pending challenge tự huỷ sau 24h.
+            <b>{t('petS7LimitsA')}</b>{t('petS7LimitsB')}
             <br />
-            <b>Leaderboard tuần</b> reset Chủ nhật 00:00 UTC, top XP nhận thưởng cosmetic mùa.
+            <b>{t('petS7LbLabel')}</b>{t('petS7LbB')}
           </p>
         </CardContent>
       </Card>
 
       <Card id="settings">
-        <CardHeader><CardTitle>8. Cài đặt & cá nhân hoá</CardTitle></CardHeader>
+        <CardHeader><CardTitle>{t('petS8Title')}</CardTitle></CardHeader>
         <CardContent className="space-y-2 text-sm">
-          <p>Trong <code>/pet</code>, bấm icon ⚙️ để mở <b>PetSettingsDialog</b>:</p>
+          <p>{t('petS8ParaA')}<code>/pet</code>{t('petS8ParaB')}<b>PetSettingsDialog</b>:</p>
           <ul className="list-disc pl-5 space-y-1">
-            <li>Đổi tên Lumi (1 lần / 7 ngày)</li>
-            <li>Trang bị cosmetic đã sở hữu</li>
-            <li>Bật/tắt âm thanh nền & hiệu ứng</li>
-            <li>(Sắp ra) Bật giọng nói Lumi — xem mục 9</li>
+            <li>{t('petS8Item1')}</li>
+            <li>{t('petS8Item2')}</li>
+            <li>{t('petS8Item3')}</li>
+            <li>{t('petS8Item4')}</li>
           </ul>
         </CardContent>
       </Card>
@@ -177,26 +165,25 @@ export default function PetGameGuideDocs() {
         <CardHeader><CardTitle>9. Voice Lumi (Phase 8B)</CardTitle></CardHeader>
         <CardContent className="space-y-2 text-sm">
           <p>
-            Phase 8B sẽ tích hợp ElevenLabs TTS để Lumi "nói" trong các khoảnh khắc:
-            level-up, mở hộp hiếm, thắng Arena, được cheer.
+            {t('petS9Para1')}
+            {t('petS9Para2')}
           </p>
           <p>
-            <Badge variant="outline">Trạng thái</Badge> Đang chờ kích hoạt API key{" "}
-            <code>ELEVENLABS_API_KEY</code>. Khi sẵn sàng sẽ có toggle riêng trong
-            PetSettingsDialog, mặc định tắt để tôn trọng môi trường yên tĩnh.
+            <Badge variant="outline">{t('petS9StatusLabel')}</Badge>{t('petS9StatusA')}
+            <code>ELEVENLABS_API_KEY</code>{t('petS9StatusB')}
           </p>
         </CardContent>
       </Card>
 
       <Card id="nguyen-tac">
-        <CardHeader><CardTitle>10. Nguyên tắc cốt lõi</CardTitle></CardHeader>
+        <CardHeader><CardTitle>{t('petS10Title')}</CardTitle></CardHeader>
         <CardContent className="space-y-2 text-sm">
           <ul className="list-disc pl-5 space-y-1">
-            <li><b>No gambling.</b> Mystery Box dùng pity & cap để minh bạch, không phải casino.</li>
-            <li><b>No pay-to-win.</b> CAMLY chỉ mua cosmetic, không mua sức mạnh chiến đấu.</li>
-            <li><b>Light Score là gốc.</b> Mọi XP, stats Arena, vật phẩm đều quy về hành vi tích cực thật.</li>
-            <li><b>Audit-friendly.</b> Battle seed, shop tx, risk signals — đều lưu lại để truy vết.</li>
-            <li><b>Soulbound.</b> Lumi không bán, không chuyển — gắn vĩnh viễn với tài khoản.</li>
+            <li><b>No gambling.</b>{t('petS10Item1B')}</li>
+            <li><b>No pay-to-win.</b>{t('petS10Item2B')}</li>
+            <li><b>{t('petS10Item3A')}</b>{t('petS10Item3B')}</li>
+            <li><b>Audit-friendly.</b>{t('petS10Item4B')}</li>
+            <li><b>Soulbound.</b>{t('petS10Item5B')}</li>
           </ul>
         </CardContent>
       </Card>
@@ -205,24 +192,24 @@ export default function PetGameGuideDocs() {
         <CardHeader><CardTitle>FAQ</CardTitle></CardHeader>
         <CardContent className="space-y-3 text-sm">
           <div>
-            <p className="font-semibold">Tôi xoá tài khoản, Lumi có mất không?</p>
-            <p className="text-muted-foreground">Có. Lumi gắn 1-1 với user; xoá user là xoá Lumi cùng cosmetic.</p>
+            <p className="font-semibold">{t('petFaq1Q')}</p>
+            <p className="text-muted-foreground">{t('petFaq1A')}</p>
           </div>
           <div>
-            <p className="font-semibold">Chuyển sang ví khác có giữ được Lumi không?</p>
-            <p className="text-muted-foreground">Có — Lumi gắn với user ID, không phải ví. Bạn có thể đổi/đa-ví thoải mái.</p>
+            <p className="font-semibold">{t('petFaq2Q')}</p>
+            <p className="text-muted-foreground">{t('petFaq2A')}</p>
           </div>
           <div>
-            <p className="font-semibold">Tôi bị tier <code>frozen</code> phải làm gì?</p>
-            <p className="text-muted-foreground">Vào <Link className="text-primary hover:underline" to="/pet/appeal">/pet/appeal</Link> mô tả tình huống. Admin sẽ xem xét trong 48h.</p>
+            <p className="font-semibold">{t('petFaq3QA')}<code>frozen</code>{t('petFaq3QB')}</p>
+            <p className="text-muted-foreground">{t('petFaq3AA')}<Link className="text-primary hover:underline" to="/pet/appeal">/pet/appeal</Link>{t('petFaq3AB')}</p>
           </div>
           <div>
-            <p className="font-semibold">Mua nhầm cosmetic, refund được không?</p>
-            <p className="text-muted-foreground">Vì giao dịch on-chain đã finalize, không refund tự động. Có thể tặng/đổi trong các phase sau (đang nghiên cứu).</p>
+            <p className="font-semibold">{t('petFaq4Q')}</p>
+            <p className="text-muted-foreground">{t('petFaq4A')}</p>
           </div>
           <div>
-            <p className="font-semibold">Arena có random ăn may không?</p>
-            <p className="text-muted-foreground">Có thành phần LCK + seed, nhưng kết quả tất định và có thể tái dựng. Người mạnh hơn vẫn thắng đa số.</p>
+            <p className="font-semibold">{t('petFaq5Q')}</p>
+            <p className="text-muted-foreground">{t('petFaq5A')}</p>
           </div>
         </CardContent>
       </Card>
@@ -231,15 +218,15 @@ export default function PetGameGuideDocs() {
         <CardHeader><CardTitle>Changelog</CardTitle></CardHeader>
         <CardContent>
           <ul className="space-y-1 text-sm">
-            <li><Badge variant="outline">Phase 1–5</Badge> Pet core, XP, Mood, cheer, cosmetic miễn phí.</li>
-            <li><Badge variant="outline">Phase 6</Badge> Shop CAMLY on-chain (treasury <code>funtreasury</code>).</li>
-            <li><Badge variant="outline">Phase 7</Badge> Risk Engine 4 tier + Appeal flow.</li>
-            <li><Badge variant="outline">Phase 8A</Badge> Arena 1v1, leaderboard tuần.</li>
-            <li><Badge>Phase 8B</Badge> ElevenLabs Voice — chờ kích hoạt API key.</li>
+            <li><Badge variant="outline">Phase 1–5</Badge>{t('petCl1')}</li>
+            <li><Badge variant="outline">Phase 6</Badge>{t('petCl2A')}<code>funtreasury</code>).</li>
+            <li><Badge variant="outline">Phase 7</Badge>{t('petCl3')}</li>
+            <li><Badge variant="outline">Phase 8A</Badge>{t('petCl4')}</li>
+            <li><Badge>Phase 8B</Badge>{t('petCl5')}</li>
           </ul>
           <Separator className="my-3" />
           <p className="text-xs text-muted-foreground">
-            Tài liệu này cập nhật theo phiên bản hệ thống. Nếu phát hiện sai lệch, vui lòng báo trong group quản trị.
+            {t('petClNote')}
           </p>
         </CardContent>
       </Card>
@@ -253,22 +240,21 @@ export default function PetGameGuideDocs() {
               <span className="text-4xl sm:text-5xl">🎮</span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-bold text-white drop-shadow">
-              Sẵn sàng đồng hành cùng Lumi?
+              {t('petCtaTitle')}
             </h2>
             <p className="text-white/90 max-w-xl text-sm sm:text-base">
-              Mở giao diện chơi game thực tế — đầy đủ Friends, Mystery Box, Shop CAMLY,
-              Arena 1v1, Cài đặt và Risk Tier của bạn.
+              {t('petCtaDesc')}
             </p>
             <Button
               asChild
               size="lg"
               className="w-full sm:w-auto h-auto px-8 py-6 text-lg sm:text-xl font-bold rounded-full bg-white text-purple-700 border-0 shadow-xl hover:bg-white hover:scale-105 hover:shadow-2xl transition-all duration-300"
             >
-              <Link to="/pet">🎮 Chơi Lumi Ngay</Link>
+              <Link to="/pet">{t('petCtaButton')}</Link>
             </Button>
             <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 pt-2 text-sm">
               <Link to="/pet" className="text-white/90 hover:text-white underline-offset-4 hover:underline">
-                ✨ Lumi của tôi
+                {t('petCtaLink1')}
               </Link>
               <Link to="/pet/shop" className="text-white/90 hover:text-white underline-offset-4 hover:underline">
                 🛍️ Shop CAMLY
@@ -277,7 +263,7 @@ export default function PetGameGuideDocs() {
                 ⚔️ Arena 1v1
               </Link>
               <Link to="/pet/appeal" className="text-white/90 hover:text-white underline-offset-4 hover:underline">
-                📩 Kháng nghị
+                {t('petCtaLink4')}
               </Link>
             </div>
           </div>

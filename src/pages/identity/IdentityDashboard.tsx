@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { useLanguage } from '@/i18n/LanguageContext';
 import { Link, Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -73,6 +74,7 @@ const LEGACY_TAB_TO_SLUG: Record<string, string> = {
 const DEFAULT_SLUG = 'trust';
 
 export default function IdentityDashboard() {
+  const { t } = useLanguage();
   const { userId } = useCurrentUser();
   const navigate = useNavigate();
   const params = useParams<{ tab?: string }>();
@@ -137,10 +139,10 @@ export default function IdentityDashboard() {
     try {
       const { error } = await supabase.functions.invoke('identity-trust-engine', { body: { did_id: did.did_id } });
       if (error) throw error;
-      toast.success('Đã tính lại Trust Score');
+      toast.success(t('idaRecalcDone'));
       await Promise.all([r1(), r2(), r3(), r4()]);
     } catch (e: any) {
-      toast.error('Lỗi recalc', { description: e.message });
+      toast.error(t('idaRecalcError'), { description: e.message });
     } finally {
       setRecalc(false);
     }
@@ -151,7 +153,7 @@ export default function IdentityDashboard() {
       <div className="min-h-screen overflow-hidden">
         <FacebookNavbar />
         <main data-app-scroll className="app-main app-pb-nav">
-          <div className="container py-12 text-center text-muted-foreground">Cần đăng nhập để xem Identity</div>
+          <div className="container py-12 text-center text-muted-foreground">{t('idaLogin')}</div>
         </main>
         <MobileBottomNav />
       </div>
@@ -193,11 +195,11 @@ export default function IdentityDashboard() {
                 </div>
                 <div className="flex flex-col gap-2 sm:items-end">
                   <Button onClick={() => setGuideOpen(true)} className="gap-2 bg-gradient-to-r from-emerald-500 to-amber-500 text-white hover:opacity-90 shadow-md">
-                    <Sparkles className="w-4 h-4" /> Cách tăng Trust
+                    <Sparkles className="w-4 h-4" />{t('idaHowTo')}
                   </Button>
                   <Button onClick={handleRecalc} disabled={recalc} variant="outline" size="sm" className="gap-2">
                     {recalc ? <Loader2 className="w-4 h-4 animate-spin" /> : <ShieldCheck className="w-4 h-4" />}
-                    Tính lại Trust
+                    {t('idaRecalc')}
                   </Button>
                 </div>
               </div>
@@ -213,11 +215,11 @@ export default function IdentityDashboard() {
                   <Sparkles className="w-5 h-5 text-primary" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold">Hoàn tất Onboarding Trust</p>
-                  <p className="text-xs text-muted-foreground">Mời guardian & gửi attestation đầu tiên trong 4 bước.</p>
+                  <p className="text-sm font-semibold">{t('idaOnboardingTitle')}</p>
+                  <p className="text-xs text-muted-foreground">{t('idaOnboardingDesc')}</p>
                 </div>
                 <Button asChild size="sm" className="gap-1 shrink-0">
-                  <Link to="/identity/onboarding">Bắt đầu <ArrowRight className="w-3.5 h-3.5" /></Link>
+                  <Link to="/identity/onboarding">{t('idaStart')}<ArrowRight className="w-3.5 h-3.5" /></Link>
                 </Button>
               </CardContent>
             </Card>
@@ -227,7 +229,7 @@ export default function IdentityDashboard() {
             <TabsList className="grid grid-cols-3 sm:grid-cols-9 w-full h-auto">
               <TabsTrigger value="trust" className="text-xs">Trust</TabsTrigger>
               <TabsTrigger value="alerts" className="text-xs relative">
-                Mạo danh
+                {t('idaImpersonation')}
                 <AlertsBadge />
               </TabsTrigger>
               <TabsTrigger value="sbt" className="text-xs">SBTs</TabsTrigger>
@@ -235,7 +237,7 @@ export default function IdentityDashboard() {
               <TabsTrigger value="ecosystem" className="text-xs">Ecosystem</TabsTrigger>
               <TabsTrigger value="entity" className="text-xs">Entities</TabsTrigger>
               <TabsTrigger value="recovery" className="text-xs">Recovery</TabsTrigger>
-              <TabsTrigger value="disputes" className="text-xs">Khiếu nại</TabsTrigger>
+              <TabsTrigger value="disputes" className="text-xs">{t('idaDisputes')}</TabsTrigger>
               <TabsTrigger value="links" className="text-xs">Linked</TabsTrigger>
             </TabsList>
             <TabsContent value="trust" className="mt-4 space-y-4">
@@ -261,7 +263,7 @@ export default function IdentityDashboard() {
             <TabsContent value="dib" className="mt-4">
               <DIBVaultPanel dib={dib} />
               <p className="text-[11px] text-muted-foreground mt-3 text-center">
-                DIB hash được snapshot daily lúc 03:30 UTC
+                {t('idaDibNote')}
               </p>
             </TabsContent>
             <TabsContent value="ecosystem" className="mt-4">

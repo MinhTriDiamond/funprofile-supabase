@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useLanguage } from '@/i18n/LanguageContext';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -18,14 +19,15 @@ import { BackToHomeBar, BackToHomeCTA } from '@/components/layout/BackToHome';
 const STORAGE_KEY = 'identity-onboarding-step';
 
 const STEPS = [
-  { key: 'identity', label: 'Identity', description: 'Xác thực DID' },
-  { key: 'guardian', label: 'Guardian', description: 'Mời người tin cậy' },
-  { key: 'attestation', label: 'Attestation', description: 'Xác nhận chéo' },
-  { key: 'boost', label: 'Tăng Trust', description: 'TC & lộ trình' },
-  { key: 'finish', label: 'Hoàn tất', description: 'Sẵn sàng' },
+  { key: 'identity', labelKey: 'idoStepIdentityLabel', descriptionKey: 'idoStepIdentityDesc' },
+  { key: 'guardian', labelKey: 'idoStepGuardianLabel', descriptionKey: 'idoStepGuardianDesc' },
+  { key: 'attestation', labelKey: 'idoStepAttestationLabel', descriptionKey: 'idoStepAttestationDesc' },
+  { key: 'boost', labelKey: 'idoStepBoostLabel', descriptionKey: 'idoStepBoostDesc' },
+  { key: 'finish', labelKey: 'idoStepFinishLabel', descriptionKey: 'idoStepFinishDesc' },
 ];
 
 export default function IdentityOnboarding() {
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const { userId, isLoading: loading } = useCurrentUser();
   const { isLoading: didLoading } = useDID();
@@ -61,14 +63,14 @@ export default function IdentityOnboarding() {
             <div>
               <h1 className="text-xl font-bold">Onboarding Trust</h1>
               <p className="text-xs text-muted-foreground">
-                Khởi tạo định danh & mạng lưới tin cậy của bạn
+                {t('idoSubtitle')}
               </p>
             </div>
             <Button
               variant="ghost"
               size="icon"
               onClick={() => navigate('/identity')}
-              aria-label="Đóng"
+              aria-label={t("idoClose")}
             >
               <X className="w-4 h-4" />
             </Button>
@@ -76,7 +78,7 @@ export default function IdentityOnboarding() {
 
           <Card className="border-0 shadow-md">
             <CardHeader className="pb-2">
-              <OnboardingProgress steps={STEPS} currentIndex={stepIndex} />
+              <OnboardingProgress steps={STEPS.map(s => ({ key: s.key, label: t(s.labelKey), description: t(s.descriptionKey) }))} currentIndex={stepIndex} />
             </CardHeader>
             <CardContent className="pt-4">
               {stepIndex === 0 && <StepIdentity onNext={next} />}

@@ -4,9 +4,14 @@ import { Badge } from '@/components/ui/badge';
 import { Sparkles, Loader2, ShieldCheck, Vote, Zap, Coins, Activity } from 'lucide-react';
 import { useLightScoreParams } from '@/hooks/useLightScoreParams';
 import { displayLS } from '@/lib/lightScoreGates';
+import { useLanguage } from '@/i18n/LanguageContext';
+
+const LOCALES: Record<string, string> = { vi: 'vi-VN', en: 'en-US', ja: 'ja-JP', zh: 'zh-CN', ko: 'ko-KR', th: 'th-TH', fr: 'fr-FR', id: 'id-ID', es: 'es-ES', pt: 'pt-PT', de: 'de-DE', ru: 'ru-RU', ar: 'ar-EG' };
 
 export default function LightScoreParamsDocs() {
   const { data, isLoading } = useLightScoreParams();
+  const { t, language } = useLanguage();
+  const loc = LOCALES[language] || 'en-US';
 
   useEffect(() => {
     document.title = 'Light Score Parameter Table v1.0 — fun.rich';
@@ -16,8 +21,8 @@ export default function LightScoreParamsDocs() {
       m.name = 'description';
       document.head.appendChild(m);
     }
-    m.content = 'Bảng tham số chính thức của hệ Light Score v2.5: 14 events, 11 multipliers, 4 legacy params, 3 phases, Mint linking và Stability Index.';
-  }, []);
+    m.content = t('lspMetaDesc');
+  }, [t]);
 
   if (isLoading || !data) {
     return (
@@ -38,35 +43,34 @@ export default function LightScoreParamsDocs() {
           Light Score Parameter Table
         </h1>
         <p className="text-muted-foreground max-w-2xl mx-auto text-sm">
-          Bộ tham số chính thức điều khiển toàn bộ hệ Light Score, VVU, TLS và Mint của fun.rich.
-          Mọi thay đổi đều được ghi log và có thể audit công khai.
+          {t('lspIntro')}
         </p>
         {phase && (
           <Badge variant="outline" className="capitalize text-base">
-            <Sparkles className="w-4 h-4 mr-1.5" /> Phase đang chạy: <strong className="ml-1">{phase.phase_name}</strong> · α={phase.alpha} β={phase.beta} γ={phase.gamma}
+            <Sparkles className="w-4 h-4 mr-1.5" />{t('lspPhaseRunning')}<strong className="ml-1">{phase.phase_name}</strong> · α={phase.alpha} β={phase.beta} γ={phase.gamma}
           </Badge>
         )}
       </header>
 
-      <Section title="I. Nguyên tắc thiết kế" icon={<ShieldCheck className="w-5 h-5" />}>
+      <Section title={t('lspS1Title')} icon={<ShieldCheck className="w-5 h-5" />}>
         <ol className="list-decimal pl-5 space-y-1 text-sm">
-          <li>Không biến nào quyết tất cả → tránh exploit</li>
-          <li>Mọi multiplier bounded → tránh bùng nổ</li>
-          <li>Value &gt; Volume → 1 hành động chất &gt; 100 rỗng</li>
-          <li>Tunable theo phase Early/Growth/Mature</li>
+          <li>{t('lspS1Item1')}</li>
+          <li>{t('lspS1Item2')}</li>
+          <li>{t('lspS1Item3')}</li>
+          <li>{t('lspS1Item4')}</li>
         </ol>
       </Section>
 
       <Section title="II. 14 Event Base Values (B_e)" icon={<Zap className="w-5 h-5" />}>
         <DataTable
-          head={['Event', 'Mô tả', 'Min', 'Max', 'Default', 'Category']}
+          head={['Event', t('pdocColDesc'), 'Min', 'Max', 'Default', 'Category']}
           rows={data.events.map((e: any) => [e.event_type, e.description, e.base_min, e.base_max, e.base_default, e.category])}
         />
       </Section>
 
       <Section title="III. 11 Multipliers" icon={<Activity className="w-5 h-5" />}>
         <DataTable
-          head={['Code', 'Group', 'Level', 'Min', 'Max', 'Default', 'Điều kiện']}
+          head={['Code', 'Group', 'Level', 'Min', 'Max', 'Default', t('lspColCondition')]}
           rows={data.multipliers.map((m: any) => [m.multiplier_code, m.multiplier_group, m.level_label, m.range_min, m.range_max, m.default_value, m.condition_description])}
         />
         <p className="text-xs text-muted-foreground mt-2">⚠️ Trigger DB enforce: range_max ≤ 5.0.</p>
@@ -97,7 +101,7 @@ export default function LightScoreParamsDocs() {
       {phase && (
         <Section title="IX. Activation Thresholds" icon={<Vote className="w-5 h-5" />}>
           <DataTable
-            head={['Tính năng', 'Yêu cầu LS', 'Yêu cầu khác']}
+            head={[t('lspColFeature'), t('lspColLsReq'), t('lspColOtherReq')]}
             rows={[
               ['Earn basic LS', phase.threshold_earn_basic, `TC ≥ ${phase.min_tc_for_basic}`],
               ['Earn advanced', phase.threshold_earn_advanced, '—'],
@@ -119,19 +123,18 @@ export default function LightScoreParamsDocs() {
           rows={data.mint_linking.map((m: any) => [m.phase_name, m.mint_base_rate, m.tc_weight, m.stability_weight, m.delta_ls_window_days, m.min_tc_to_mint, m.max_mint_per_epoch_per_user])}
         />
         <p className="text-xs text-muted-foreground mt-2">
-          <strong>Mint KHÔNG tỉ lệ thuần với LS.</strong> LS = đo ánh sáng (vô hạn).
-          Mint = phần thưởng kinh tế <em>có kiểm soát</em> qua TC + StabilityIndex + Phase.
+          <strong>{t('lspS10NoteStrong')}</strong>{t('lspS10Note')}<em>{t('lspS10NoteEm')}</em>{t('lspS10NoteB')}
         </p>
       </Section>
 
-      <Section title="XI. Triết lý" icon={<Sparkles className="w-5 h-5" />}>
+      <Section title={t('lspS11Title')} icon={<Sparkles className="w-5 h-5" />}>
         <blockquote className="border-l-4 border-violet-400 pl-4 italic text-sm text-muted-foreground">
-          Hệ thưởng đúng thứ đáng thưởng → tự nhiên không cần marketing fake, không cần chống bot thủ công, không cần ép user phải tốt.
+          {t('lspQuote')}
         </blockquote>
       </Section>
 
       <footer className="text-center text-xs text-muted-foreground pt-4 border-t">
-        Cập nhật lần cuối: {new Date(data.fetched_at).toLocaleString('vi-VN')}
+        {t('lspUpdatedAt')}{new Date(data.fetched_at).toLocaleString(loc)}
       </footer>
     </div>
   );

@@ -8,6 +8,9 @@ import { Label } from "@/components/ui/label";
 import { RefreshCw, Activity, Coins, Users, Shield, Wallet, X } from "lucide-react";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { useDebounce } from "@/hooks/useDebounce";
+import { useLanguage } from "@/i18n/LanguageContext";
+
+const LOCALES: Record<string, string> = { vi: "vi-VN", en: "en-US", ja: "ja-JP", zh: "zh-CN", ko: "ko-KR", th: "th-TH", fr: "fr-FR", id: "id-ID", es: "es-ES", pt: "pt-PT", de: "de-DE", ru: "ru-RU", ar: "ar-EG" };
 
 interface LimitsResponse {
   generated_at: string;
@@ -50,8 +53,8 @@ interface LimitsResponse {
   };
 }
 
-const fmt = (n: number) =>
-  new Intl.NumberFormat("vi-VN", { maximumFractionDigits: 0 }).format(n);
+const fmt = (n: number, loc = "vi-VN") =>
+  new Intl.NumberFormat(loc, { maximumFractionDigits: 0 }).format(n);
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const POLL_INTERVAL_MS = 30_000;
@@ -75,6 +78,9 @@ function isSignificantChange(prev: LimitsResponse | null, next: LimitsResponse):
 
 export default function TokenLimitsDocs() {
   const { user } = useCurrentUser();
+  const { t, language } = useLanguage();
+  const loc = LOCALES[language] || "en-US";
+  const fmtL = (n: number) => fmt(n, loc);
   const [data, setData] = useState<LimitsResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
@@ -143,12 +149,12 @@ export default function TokenLimitsDocs() {
       setLastSync(new Date());
     } catch (e) {
       if ((e as Error).name === "AbortError") return;
-      setErr(e instanceof Error ? e.message : "Lỗi tải dữ liệu");
+      setErr(e instanceof Error ? e.message : t("tokErrFallback"));
     } finally {
       if (inFlightRef.current === ctrl) inFlightRef.current = null;
       setLoading(false);
     }
-  }, [user?.id, debouncedWallet, isValidWallet]);
+  }, [user?.id, debouncedWallet, isValidWallet, t]);
 
   // Debounce wrapper — gộp các trigger gần nhau trong 30s
   const scheduleFetch = useCallback((delay = 0) => {
@@ -204,18 +210,16 @@ export default function TokenLimitsDocs() {
               Token Limits & Realtime Status
             </h1>
             <p className="text-muted-foreground mt-1">
-              Trạng thái gần real-time của SoftCeiling toàn hệ thống và hạn mức
-              còn lại theo user/action. Cache 30s + debounce + chỉ render khi
-              thay đổi ≥ {SIGNIFICANT_PCT_DELTA}%.
+              {t("tokDescA")}{SIGNIFICANT_PCT_DELTA}%.
             </p>
           </div>
           <Button onClick={() => scheduleFetch(0)} disabled={loading} variant="outline" size="sm">
             <RefreshCw className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`} />
-            Làm mới
+            {t("tokRefresh")}
           </Button>
         </div>
         <div className="flex items-center gap-3 flex-wrap text-xs text-muted-foreground">
-          {lastSync && <span>Đồng bộ lúc: {lastSync.toLocaleTimeString("vi-VN")}</span>}
+          {lastSync && <span>{t("tokSyncAt")}{lastSync.toLocaleTimeString(loc)}</span>}
           {cacheStatus && (
             <Badge variant="outline" className="text-xs">
               cache: {cacheStatus}
@@ -230,7 +234,7 @@ export default function TokenLimitsDocs() {
       {err && (
         <Card className="border-destructive/40">
           <CardContent className="py-4 text-sm text-destructive">
-            Lỗi: {err}
+            {t("tokErrPrefix")}{err}
           </CardContent>
         </Card>
       )}
@@ -240,13 +244,13 @@ export default function TokenLimitsDocs() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
             <Wallet className="h-5 w-5 text-primary" />
-            Tra cứu hạn mức theo địa chỉ ví
+            {t("tokWalletTitle")}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="space-y-1.5">
             <Label htmlFor="wallet-input" className="text-xs">
-              Public address (EVM, 0x…40 ký tự)
+              {t("tokWalletLabel")}
             </Label>
             <div className="flex gap-2">
               <Input
@@ -263,7 +267,7 @@ export default function TokenLimitsDocs() {
                   variant="ghost"
                   size="icon"
                   onClick={() => setWalletInput("")}
-                  aria-label="Xoá"
+                  aria-label={t("tokClear")}
                 >
                   <X className="h-4 w-4" />
                 </Button>
@@ -273,7 +277,7 @@ export default function TokenLimitsDocs() {
 
           {debouncedWallet && !isValidWallet && (
             <p className="text-xs text-destructive">
-              Địa chỉ chưa hợp lệ — cần đúng định dạng EVM (0x + 40 ký tự hex).
+              {t("tokInvalidWallet")}
             </p>
           )}
 
@@ -282,10 +286,10 @@ export default function TokenLimitsDocs() {
               {data.wallet_lookup.resolved ? (
                 <>
                   <div className="text-emerald-600 font-medium">
-                    ✓ Đã khớp ví với người dùng
+                    {t("tokMatched")}
                   </div>
                   <div>
-                    Tên:{" "}
+                    {t("tokNameLabel")}{" "}
                     <strong>
                       {data.wallet_lookup.profile?.display_name ||
                         data.wallet_lookup.profile?.username ||
@@ -296,13 +300,12 @@ export default function TokenLimitsDocs() {
                     user_id: {data.user_status?.user_id}
                   </div>
                   <div className="text-muted-foreground">
-                    Nguồn khớp: {data.wallet_lookup.source}
+                    {t("tokSourceLabel")}{data.wallet_lookup.source}
                   </div>
                 </>
               ) : (
                 <div className="text-muted-foreground">
-                  Không tìm thấy người dùng nào sở hữu ví này — chỉ hiển thị
-                  hạn mức toàn hệ thống và cap on-chain.
+                  {t("tokNotFound")}
                 </div>
               )}
             </div>
@@ -310,7 +313,7 @@ export default function TokenLimitsDocs() {
 
           {!walletInput && user?.id && (
             <p className="text-xs text-muted-foreground">
-              Để trống ô trên để xem hạn mức của tài khoản đang đăng nhập.
+              {t("tokEmptyHint")}
             </p>
           )}
         </CardContent>
@@ -324,7 +327,7 @@ export default function TokenLimitsDocs() {
               <CardTitle className="flex items-center justify-between gap-2">
                 <span className="flex items-center gap-2">
                   <Shield className="h-5 w-5 text-primary" />
-                  SoftCeiling toàn hệ thống (tháng này)
+                  {t("tokSoftTitle")}
                 </span>
                 <Badge variant="secondary">
                   Stage: {data.soft_ceiling.system_stage}
@@ -334,22 +337,21 @@ export default function TokenLimitsDocs() {
             <CardContent className="space-y-3">
               <div className="flex justify-between text-sm">
                 <span>
-                  Đã mint: <strong>{fmt(data.soft_ceiling.used_month)}</strong> FUN
+                  {t("tokMinted")}<strong>{fmtL(data.soft_ceiling.used_month)}</strong> FUN
                 </span>
                 <span>
-                  Trần: <strong>{fmt(data.soft_ceiling.limit)}</strong> FUN
+                  {t("tokCeiling")}<strong>{fmtL(data.soft_ceiling.limit)}</strong> FUN
                 </span>
               </div>
               <Progress value={Math.min(100, data.soft_ceiling.used_pct)} />
               <div className="flex justify-between text-xs text-muted-foreground">
-                <span>{data.soft_ceiling.used_pct.toFixed(2)}% đã dùng</span>
+                <span>{data.soft_ceiling.used_pct.toFixed(2)}{t("tokUsedSuffix")}</span>
                 <span>
-                  Còn lại: <strong>{fmt(data.soft_ceiling.remaining)}</strong> FUN
+                  {t("tokRemaining")}<strong>{fmtL(data.soft_ceiling.remaining)}</strong> FUN
                 </span>
               </div>
               <p className="text-xs text-muted-foreground pt-2 border-t">
-                Base rate: {fmt(data.soft_ceiling.base_rate)} FUN — đây là tầng
-                kiểm soát lạm phát kinh tế off-chain.
+                Base rate: {fmtL(data.soft_ceiling.base_rate)}{t("tokBaseRateB")}
               </p>
             </CardContent>
           </Card>
@@ -360,37 +362,36 @@ export default function TokenLimitsDocs() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Users className="h-5 w-5 text-primary" />
-                  Hạn mức cá nhân của bạn (tháng này)
+                  {t("tokUserTitle")}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="flex justify-between text-sm">
                   <span>
-                    Đã mint: <strong>{fmt(data.user_status.used_this_month)}</strong> FUN
+                    {t("tokMinted")}<strong>{fmtL(data.user_status.used_this_month)}</strong> FUN
                   </span>
                   <span>
-                    Trần: <strong>{fmt(data.user_status.monthly_cap)}</strong> FUN
+                    {t("tokCeiling")}<strong>{fmtL(data.user_status.monthly_cap)}</strong> FUN
                   </span>
                 </div>
                 <Progress value={Math.min(100, data.user_status.used_pct)} />
                 <div className="flex justify-between text-xs text-muted-foreground">
-                  <span>{data.user_status.used_pct.toFixed(2)}% đã dùng</span>
+                  <span>{data.user_status.used_pct.toFixed(2)}{t("tokUsedSuffix")}</span>
                   <span>
-                    Còn lại: <strong>{fmt(data.user_status.remaining)}</strong> FUN
+                    {t("tokRemaining")}<strong>{fmtL(data.user_status.remaining)}</strong> FUN
                   </span>
                 </div>
                 <p className="text-xs text-muted-foreground pt-2 border-t">
-                  Số mint requests trong tháng:{" "}
-                  <strong>{data.user_status.request_count_month}</strong> · Cap
-                  cá nhân chống cá voi (≈3% pool 35M).
+                  {t("tokUserNoteA")}{" "}
+                  <strong>{data.user_status.request_count_month}</strong>{t("tokUserNoteB")}
                 </p>
               </CardContent>
             </Card>
           ) : (
             <Card>
               <CardContent className="py-6 text-sm text-muted-foreground text-center">
-                Đăng nhập để xem hạn mức cá nhân (cap{" "}
-                {fmt(data.per_user_monthly_cap)} FUN/tháng).
+                {t("tokLoginA")}{" "}
+                {fmtL(data.per_user_monthly_cap)}{t("tokLoginB")}
               </CardContent>
             </Card>
           )}
@@ -400,7 +401,7 @@ export default function TokenLimitsDocs() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Coins className="h-5 w-5 text-primary" />
-                Cap on-chain mỗi action (hôm nay, toàn hệ thống)
+                {t("tokActionTitle")}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -409,22 +410,21 @@ export default function TokenLimitsDocs() {
                   <div className="flex justify-between text-sm">
                     <span className="font-medium">{a.action}</span>
                     <span className="text-muted-foreground">
-                      {fmt(a.used_today)} / {fmt(a.daily_cap)} FUN
+                      {fmtL(a.used_today)} / {fmtL(a.daily_cap)} FUN
                     </span>
                   </div>
                   <Progress value={Math.min(100, a.used_pct)} />
                   <div className="text-xs text-muted-foreground text-right">
-                    Còn {fmt(a.remaining)} FUN ({a.used_pct.toFixed(1)}% dùng)
+                    {t("tokRemainA")}{fmtL(a.remaining)} FUN ({a.used_pct.toFixed(1)}{t("tokRemainC")}
                   </div>
                 </div>
               ))}
               <p className="text-xs text-muted-foreground pt-2 border-t">
-                Trần lý thuyết:{" "}
+                {t("tokTheoryA")}{" "}
                 <strong>
-                  {fmt(data.constants.theoretical_monthly_ceiling)}
+                  {fmtL(data.constants.theoretical_monthly_ceiling)}
                 </strong>{" "}
-                FUN/tháng (6 actions × 1M × 30 ngày). SoftCeiling cắt sớm hơn
-                rất nhiều.
+                {t("tokTheoryB")}
               </p>
             </CardContent>
           </Card>
@@ -432,22 +432,20 @@ export default function TokenLimitsDocs() {
           {/* Tóm tắt */}
           <Card className="bg-muted/30">
             <CardHeader>
-              <CardTitle className="text-base">Tóm tắt 3 tầng cap</CardTitle>
+              <CardTitle className="text-base">{t("tokSummaryTitle")}</CardTitle>
             </CardHeader>
             <CardContent className="text-sm space-y-2">
               <div>
                 <strong>1. Per-user:</strong>{" "}
-                {fmt(data.constants.MAX_MINT_PER_USER_PER_MONTH)} FUN/tháng —
-                chống cá voi cá nhân.
+                {fmtL(data.constants.MAX_MINT_PER_USER_PER_MONTH)}{t("tokSum1")}
               </div>
               <div>
                 <strong>2. SoftCeiling:</strong>{" "}
-                {fmt(data.soft_ceiling.limit)} FUN/tháng — kiểm soát lạm phát.
+                {fmtL(data.soft_ceiling.limit)}{t("tokSum2")}
               </div>
               <div>
                 <strong>3. On-chain:</strong>{" "}
-                {fmt(data.constants.ON_CHAIN_DAILY_CAP_PER_ACTION)}{" "}
-                FUN/action/ngày — bảo vệ smart contract.
+                {fmtL(data.constants.ON_CHAIN_DAILY_CAP_PER_ACTION)}{t("tokSum3")}
               </div>
             </CardContent>
           </Card>

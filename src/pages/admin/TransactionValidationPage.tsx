@@ -10,6 +10,7 @@
  */
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useLanguage } from '@/i18n/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -29,6 +30,7 @@ function percentile(arr: number[], p: number) {
 }
 
 function SnapshotTab() {
+  const { t } = useLanguage();
   const [userId, setUserId] = useState('');
   const [save, setSave] = useState(true);
   const [running, setRunning] = useState(false);
@@ -48,7 +50,7 @@ function SnapshotTab() {
   });
 
   async function run() {
-    if (!userId.trim()) { toast.error('Cần nhập user_id'); return; }
+    if (!userId.trim()) { toast.error(t('tvpNeedUserId')); return; }
     setRunning(true);
     try {
       const { data, error } = await supabase.functions.invoke('tx-snapshot-compare', {
@@ -56,23 +58,23 @@ function SnapshotTab() {
       });
       if (error) throw error;
       setResult(data as Record<string, unknown>);
-      toast.success('Đã chạy snapshot compare');
+      toast.success(t('tvpSnapDone'));
       recent.refetch();
     } catch (e) {
-      toast.error((e as Error).message || 'Lỗi snapshot compare');
+      toast.error((e as Error).message || t('tvpSnapError'));
     } finally { setRunning(false); }
   }
 
   return (
     <div className="space-y-4">
       <Card>
-        <CardHeader><CardTitle className="text-base">Chạy snapshot cho 1 user</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-base">{t('tvpRunTitle')}</CardTitle></CardHeader>
         <CardContent className="space-y-3">
           <div className="flex flex-col sm:flex-row gap-2">
             <Input placeholder="user_id (uuid)" value={userId} onChange={(e) => setUserId(e.target.value)} />
             <label className="flex items-center gap-2 text-sm">
               <input type="checkbox" checked={save} onChange={(e) => setSave(e.target.checked)} />
-              Lưu vào tx_validation_snapshots
+              {t('tvpSaveTo')}
             </label>
             <Button onClick={run} disabled={running}>
               {running ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <PlayCircle className="h-4 w-4 mr-2" />}
@@ -87,7 +89,7 @@ function SnapshotTab() {
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-base">20 snapshot gần nhất</CardTitle>
+          <CardTitle className="text-base">{t('tvpRecentTitle')}</CardTitle>
           <Button variant="ghost" size="sm" onClick={() => recent.refetch()}>
             <RefreshCw className="h-4 w-4" />
           </Button>
@@ -97,7 +99,7 @@ function SnapshotTab() {
             <div className="overflow-x-auto">
               <table className="w-full text-xs">
                 <thead className="text-left text-muted-foreground">
-                  <tr><th className="py-1 pr-3">Tạo lúc</th><th className="py-1 pr-3">User</th><th className="py-1 pr-3">Legacy</th><th className="py-1 pr-3">Unified</th><th className="py-1 pr-3">Diff</th><th className="py-1 pr-3">Status</th></tr>
+                  <tr><th className="py-1 pr-3">{t('tvpCreatedAt')}</th><th className="py-1 pr-3">User</th><th className="py-1 pr-3">Legacy</th><th className="py-1 pr-3">Unified</th><th className="py-1 pr-3">Diff</th><th className="py-1 pr-3">Status</th></tr>
                 </thead>
                 <tbody>
                   {(recent.data ?? []).map((r: Record<string, unknown>) => (
@@ -123,6 +125,7 @@ function SnapshotTab() {
 }
 
 function ShadowDiffsTab() {
+  const { t } = useLanguage();
   const q = useQuery({
     queryKey: ['admin', 'tx_shadow_diffs', 'recent'],
     queryFn: async () => {
@@ -139,7 +142,7 @@ function ShadowDiffsTab() {
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="text-base">Shadow Diffs (100 mới nhất)</CardTitle>
+        <CardTitle className="text-base">{t('tvpShadowTitle')}</CardTitle>
         <Button variant="ghost" size="sm" onClick={() => q.refetch()}><RefreshCw className="h-4 w-4" /></Button>
       </CardHeader>
       <CardContent>
@@ -148,7 +151,7 @@ function ShadowDiffsTab() {
             <table className="w-full text-xs">
               <thead className="text-left text-muted-foreground">
                 <tr>
-                  <th className="py-1 pr-3">Lúc</th><th className="py-1 pr-3">Surface</th><th className="py-1 pr-3">Loại</th>
+                  <th className="py-1 pr-3">{t('tvpTime')}</th><th className="py-1 pr-3">Surface</th><th className="py-1 pr-3">{t('tvpType')}</th>
                   <th className="py-1 pr-3">Legacy</th><th className="py-1 pr-3">Unified</th><th className="py-1 pr-3">Δ count</th>
                 </tr>
               </thead>
@@ -164,7 +167,7 @@ function ShadowDiffsTab() {
                   </tr>
                 ))}
                 {(q.data ?? []).length === 0 && (
-                  <tr><td colSpan={6} className="py-3 text-muted-foreground">Chưa có shadow diff nào. ✅</td></tr>
+                  <tr><td colSpan={6} className="py-3 text-muted-foreground">{t('tvpNoDiffs')}</td></tr>
                 )}
               </tbody>
             </table>
@@ -176,6 +179,7 @@ function ShadowDiffsTab() {
 }
 
 function PerformanceTab() {
+  const { t } = useLanguage();
   const q = useQuery({
     queryKey: ['admin', 'tx_perf_samples', '24h'],
     queryFn: async () => {
@@ -241,7 +245,7 @@ function PerformanceTab() {
                   </tr>
                 ))}
                 {rows.length === 0 && (
-                  <tr><td colSpan={6} className="py-3 text-muted-foreground">Chưa có mẫu perf nào trong 24h.</td></tr>
+                  <tr><td colSpan={6} className="py-3 text-muted-foreground">{t('tvpNoPerf')}</td></tr>
                 )}
               </tbody>
             </table>
@@ -253,12 +257,13 @@ function PerformanceTab() {
 }
 
 export default function TransactionValidationPage() {
+  const { t } = useLanguage();
   return (
     <div className="p-4 space-y-4">
       <div>
         <h1 className="text-xl font-semibold">Transaction Validation (M5.5A)</h1>
         <p className="text-sm text-muted-foreground">
-          So sánh Legacy vs Unified, theo dõi shadow diffs &amp; performance. Read-only validation.
+          {t('tvpSubtitle')}
         </p>
       </div>
       <Tabs defaultValue="snapshot" className="w-full">

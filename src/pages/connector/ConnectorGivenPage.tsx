@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { useLanguage } from '@/i18n/LanguageContext';
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { useUsersIConnect } from "@/hooks/useConnector";
 import { Card } from "@/components/ui/card";
@@ -9,14 +10,15 @@ import { FacebookNavbar } from "@/components/layout/FacebookNavbar";
 import { MobileBottomNav } from "@/components/layout/MobileBottomNav";
 import { BackToHomeBar, BackToHomeCTA } from "@/components/layout/BackToHome";
 
-const milestoneVi: Record<string, string> = {
-  profile_complete: "Hoàn thiện hồ sơ",
-  first_contribution: "Đóng góp đầu tiên",
-  level_1: "Đạt Level 1",
-  active_30d: "Active 30 ngày",
+const milestoneKey: Record<string, string> = {
+  profile_complete: "cgpMilestoneProfile",
+  first_contribution: "cgpMilestoneFirst",
+  level_1: "cgpMilestoneLevel1",
+  active_30d: "cgpMilestoneActive30",
 };
 
 export default function ConnectorGivenPage() {
+  const { t } = useLanguage();
   const { userId } = useCurrentUser();
   const { data: items = [], isLoading } = useUsersIConnect(userId ?? undefined);
 
@@ -27,7 +29,7 @@ export default function ConnectorGivenPage() {
         <main data-app-scroll className="app-main app-pb-nav">
           <div className="container max-w-2xl py-6 px-4 space-y-4 pb-32">
             <BackToHomeBar />
-            <p className="text-muted-foreground text-center py-10">Vui lòng đăng nhập.</p>
+            <p className="text-muted-foreground text-center py-10">{t('cgpLogin')}</p>
             <BackToHomeCTA />
           </div>
         </main>
@@ -53,22 +55,21 @@ export default function ConnectorGivenPage() {
               <Sparkles className="w-4 h-4" />
               Connector Hall
             </div>
-            <h1 className="text-2xl font-bold">User mà tôi là Connector</h1>
+            <h1 className="text-2xl font-bold">{t('cgpTitle')}</h1>
             <p className="text-sm text-muted-foreground">
-          Tổng: <span className="font-semibold text-foreground">{items.length}</span> · Light Score đã nhận:{" "}
+          {t('cgpTotalPrefix')}<span className="font-semibold text-foreground">{items.length}</span>{t('cgpLsReceived')}{" "}
           <span className="font-semibold text-primary">+{totalBase + totalGrowth}</span>
         </p>
       </header>
 
-      {isLoading && <Card className="p-6 text-center text-muted-foreground">Đang tải…</Card>}
+      {isLoading && <Card className="p-6 text-center text-muted-foreground">{t('cgpLoading')}</Card>}
 
       {!isLoading && items.length === 0 && (
         <Card className="p-6 text-center space-y-2">
           <p className="text-muted-foreground">
-            Bạn chưa là Connector của ai. Hãy gửi token đầu tiên cho một thành viên mới (trong 48h từ khi họ tạo
-            account) để được ghi nhận.
+            {t('cgpEmpty')}
           </p>
-          <Link to="/donations" className="text-primary text-sm underline">Đi tới Donations</Link>
+          <Link to="/donations" className="text-primary text-sm underline">{t('cgpGoDonations')}</Link>
         </Card>
       )}
 
@@ -99,7 +100,7 @@ export default function ConnectorGivenPage() {
               <div className="flex flex-wrap gap-1">
                 {it.growth_events.map((e: any) => (
                   <Badge key={e.milestone} variant="outline" className="text-xs">
-                    {milestoneVi[e.milestone] ?? e.milestone} +{e.score_delta}
+                    {milestoneKey[e.milestone] ? t(milestoneKey[e.milestone]) : e.milestone} +{e.score_delta}
                   </Badge>
                 ))}
               </div>
