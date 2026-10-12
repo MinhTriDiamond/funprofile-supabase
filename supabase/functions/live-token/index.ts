@@ -23,6 +23,18 @@ function uuidToNumericUid(uuid: string): number {
   return hash || 1
 }
 
+// Fallback host uid khi live_sessions.agora_uid trống.
+// PHẢI giống hệt uuidToAgoraNumericUid trong _shared/agoraService.ts
+// (|= 0 + Math.abs) — công thức lúc live-webcam-start ký token/ghi agora_uid.
+function hostUidFromUserId(userId: string): number {
+  let hash = 0
+  for (let i = 0; i < userId.length; i++) {
+    hash = ((hash << 5) - hash) + userId.charCodeAt(i)
+    hash = hash | 0
+  }
+  return Math.abs(hash) || 10001
+}
+
 function toAgoraUid(value: unknown): number | null {
   if (typeof value === 'number' && Number.isSafeInteger(value) && value > 0) return value
   if (typeof value === 'string' && value.trim()) {
@@ -167,7 +179,7 @@ Deno.serve(async (req) => {
     }
 
     const audienceKey = userId || `guest:${crypto.randomUUID()}`
-    const hostUid = toAgoraUid(session.agora_uid_host) || toAgoraUid(session.agora_uid) || uuidToNumericUid(session.host_user_id)
+    const hostUid = toAgoraUid(session.agora_uid_host) || toAgoraUid(session.agora_uid) || hostUidFromUserId(session.host_user_id)
     let numericUid = role === 'host'
       ? hostUid
       : toAgoraUid(requestedUid) || uuidToNumericUid(`audience:${audienceKey}:${sessionId}`)
