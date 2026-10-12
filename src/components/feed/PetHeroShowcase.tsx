@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useLanguage } from '@/i18n/LanguageContext';
 import { Link } from 'react-router-dom';
 import { Sparkles, Target, X, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -30,6 +31,7 @@ const SPARKLES: Array<{ top: string; left: string; size: number; delay: string }
 ];
 
 export function PetHeroShowcase() {
+  const { t } = useLanguage();
   const { isAuthenticated } = useCurrentUser();
   const { data: pet } = usePetState();
   const { data: cosmetics } = usePetCosmetics();
@@ -53,7 +55,7 @@ export function PetHeroShowcase() {
           className="inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-gradient-to-r from-amber-50 to-pink-50 px-3 py-1.5 text-xs font-semibold text-amber-700 shadow-sm hover:shadow active:scale-95 transition"
         >
           <Sparkles className="h-3.5 w-3.5" />
-          Hiện Lumi
+          {t('phsShowLumi')}
         </button>
       </div>
     );
@@ -72,18 +74,18 @@ export function PetHeroShowcase() {
   const auraPath = resolveAuraSprite(equippedAura?.catalog.slug);
   const accessoryPath = resolveAccessorySprite(equippedAccessory?.catalog.slug);
 
-  const displayName = pet?.name ?? 'Linh thú Lumi';
+  const displayName = pet?.name ?? t('phsDefaultName');
   const stageLabel = STAGE_NAMES[stage] ?? 'Seed';
 
   const subtitle = !isAuthenticated
-    ? 'Đăng nhập để gặp Linh thú Lumi của bạn'
+    ? t('phsSubtitleGuest')
     : pet
-      ? 'Cùng Lumi hoàn thành nhiệm vụ hôm nay nhé!'
-      : 'Hãy đánh thức Lumi bằng những hoạt động mỗi ngày';
+      ? t('phsSubtitleHasPet')
+      : t('phsSubtitleNoPet');
 
   const primaryCta = !isAuthenticated
-    ? { to: '/auth', label: '🚀 Đăng nhập ngay' }
-    : { to: '/quests', label: '🎯 Làm nhiệm vụ hôm nay' };
+    ? { to: '/auth', label: t('phsCtaLogin') }
+    : { to: '/quests', label: t('phsCtaQuests') };
 
   return (
     <div className="mb-3 px-2 sm:px-0">
@@ -113,7 +115,7 @@ export function PetHeroShowcase() {
         {/* Nút thu gọn */}
         <button
           type="button"
-          aria-label="Ẩn Lumi"
+          aria-label={t('phsHideLumi')}
           onClick={() => setHidden(true)}
           className="absolute right-2 top-2 z-30 inline-flex h-7 w-7 items-center justify-center rounded-full bg-white/70 text-amber-700 backdrop-blur hover:bg-white active:scale-90 transition"
         >
@@ -202,7 +204,7 @@ export function PetHeroShowcase() {
                   <span className="text-sm font-semibold text-amber-700">{stageLabel}</span>
                   <span className="text-amber-400">•</span>
                   <span className="text-sm font-semibold text-amber-700">
-                    Cấp {pet.level} · XP {pet.xp}
+                    {t('petLevelLabel')}{pet.level} · XP {pet.xp}
                   </span>
                 </>
               )}
@@ -230,7 +232,7 @@ export function PetHeroShowcase() {
             >
               <Link to="/pet">
                 <Sparkles className="h-5 w-5" />
-                Thăm Lumi
+                {t('phsVisitLumi')}
               </Link>
             </Button>
           </div>

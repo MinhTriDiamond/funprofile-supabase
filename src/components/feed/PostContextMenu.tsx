@@ -1,4 +1,5 @@
 import { useCallback } from 'react';
+import { useLanguage } from '@/i18n/LanguageContext';
 import { Copy, TextSelect, Link2, Share2 } from 'lucide-react';
 import { toast } from 'sonner';
 import {
@@ -31,17 +32,18 @@ export const PostContextMenu = ({
   shareUrl,
   onShare,
   onSelectText,
-  title = 'Tùy chọn bài viết',
+  title,
 }: PostContextMenuProps) => {
+  const { t } = useLanguage();
   const close = useCallback(() => onOpenChange(false), [onOpenChange]);
 
   const handleCopyText = useCallback(async () => {
     const ok = await copyToClipboard(content);
     if (ok) {
       try { navigator.vibrate?.(20); } catch { /* noop */ }
-      toast.success('Đã sao chép văn bản');
+      toast.success(t('pcmTextCopied'));
     } else {
-      toast.error('Không sao chép được');
+      toast.error(t('pcmCopyFailed'));
     }
     close();
   }, [content, close]);
@@ -49,8 +51,8 @@ export const PostContextMenu = ({
   const handleCopyLink = useCallback(async () => {
     if (!shareUrl) return;
     const ok = await copyToClipboard(shareUrl);
-    if (ok) toast.success('Đã sao chép liên kết');
-    else toast.error('Không sao chép được liên kết');
+    if (ok) toast.success(t('pcmLinkCopied'));
+    else toast.error(t('pcmLinkCopyFailed'));
     close();
   }, [shareUrl, close]);
 
@@ -65,19 +67,19 @@ export const PostContextMenu = ({
   }, [onShare, close]);
 
   const items = [
-    { icon: Copy, label: 'Sao chép văn bản', onClick: handleCopyText, show: !!content },
-    { icon: TextSelect, label: 'Chọn văn bản', onClick: handleSelect, show: !!onSelectText },
-    { icon: Link2, label: 'Sao chép liên kết', onClick: handleCopyLink, show: !!shareUrl },
-    { icon: Share2, label: 'Chia sẻ', onClick: handleShare, show: !!onShare },
+    { icon: Copy, label: t('pcmCopyText'), onClick: handleCopyText, show: !!content },
+    { icon: TextSelect, label: t('pcmSelectText'), onClick: handleSelect, show: !!onSelectText },
+    { icon: Link2, label: t('copyLink'), onClick: handleCopyLink, show: !!shareUrl },
+    { icon: Share2, label: t('share'), onClick: handleShare, show: !!onShare },
   ].filter((i) => i.show);
 
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
       <DrawerContent>
         <DrawerHeader className="text-left">
-          <DrawerTitle className="text-base">{title}</DrawerTitle>
+          <DrawerTitle className="text-base">{title ?? t('pcmTitle')}</DrawerTitle>
           <DrawerDescription className="sr-only">
-            Chọn một hành động để sao chép hoặc chia sẻ nội dung
+            {t('pcmDescription')}
           </DrawerDescription>
         </DrawerHeader>
         <div className="px-2 pb-6">

@@ -1,4 +1,5 @@
 import { useMemo, memo } from 'react';
+import { useLanguage } from '@/i18n/LanguageContext';
 import { MediaGrid } from './MediaGrid';
 import { ReplayPostMedia } from './ReplayPostMedia';
 import { LivePostEmbed } from './LivePostEmbed';
@@ -23,6 +24,7 @@ interface PostMediaProps {
 export const PostMedia = memo(function PostMedia({
   post, showHeartAnimation, onHeartComplete, onDoubleTap,
 }: PostMediaProps) {
+  const { t } = useLanguage();
   const liveHydration = useLivePostMediaHydration(post);
   const baseMetadata = liveHydration.metadata ?? post.metadata;
   const postAny = post as unknown as Record<string, unknown>;
@@ -233,8 +235,8 @@ export const PostMedia = memo(function PostMedia({
     || (metadata?.processing_message as string | undefined)
     || liveHydration.processingMessage
     || (isFailedReplay
-      ? 'Phiên live này không có bản ghi'
-      : 'Bản ghi đang được xử lý...\nVui lòng quay lại sau ít phút.');
+      ? t('pmedNoRecording')
+      : t('pmedProcessingRecording'));
 
 
   const isChunkedManifestUrl = (url?: string | null): url is string =>
@@ -368,35 +370,35 @@ export const PostMedia = memo(function PostMedia({
     ? Math.round(metadata.archive_eta_seconds)
     : null;
   const etaText = archiveEtaSeconds
-    ? (archiveEtaSeconds < 60 ? ` • còn ~${archiveEtaSeconds}s` : ` • còn ~${Math.round(archiveEtaSeconds / 60)} phút`)
+    ? (archiveEtaSeconds < 60 ? `${t('pmedEtaPrefix')}${archiveEtaSeconds}${t('pmedEtaSecondsSuffix')}` : `${t('pmedEtaPrefix')}${Math.round(archiveEtaSeconds / 60)}${t('pmedEtaMinutesSuffix')}`)
     : '';
   const archivePhase = typeof metadata?.archive_phase === 'string' ? metadata.archive_phase : '';
   const isFinalizingPhase = ['verifying', 'posting', 'deleting_stream'].includes(archivePhase);
   const optimizingText = colProcessingMsg
     || (metadata?.processing_message as string | undefined)
     || (archiveProgressPercent && archiveProgressPercent >= 99 && isFinalizingPhase
-      ? 'Đang hoàn tất lưu video sang R2…'
+      ? t('pmedFinalizingToR2')
       : (archiveProgressPercent && archiveProgressPercent > 0
-        ? `Đang lưu video sang R2 ${archiveProgressPercent}%${etaText}. Bạn vẫn có thể xem lại ngay.`
+        ? `${t('pmedSavingToR2Prefix')}${archiveProgressPercent}%${etaText}${t('pmedSavingToR2Suffix')}`
         : null))
-    || 'Đang tối ưu video replay…';
+    || t('pmedOptimizingReplay');
 
   return (
     <div className="relative" onClick={onDoubleTap}>
       {isMislinkedRepairPending ? (
         <div className="flex items-center justify-center p-6 bg-muted/50 text-muted-foreground text-sm gap-2">
           <Radio className="w-4 h-4 animate-pulse" />
-          <span>Dang kiem tra lai video replay...</span>
+          <span>{t('pmedCheckingReplay')}</span>
         </div>
       ) : isLive && post.post_type === 'live' && isReconnectingLive ? (
         <div className="flex aspect-video flex-col items-center justify-center gap-2 bg-black text-sm text-white/75">
           <Radio className="w-5 h-5 animate-pulse text-amber-400" />
-          <span>Dang ket noi lai livestream...</span>
+          <span>{t('pmedReconnectingLive')}</span>
         </div>
       ) : isLive && post.post_type === 'live' && !isEndedLive ? (
         <div className="flex aspect-video flex-col items-center justify-center gap-2 bg-black text-sm text-white/75">
           <Radio className="w-5 h-5 animate-pulse text-red-500" />
-          <span>Dang ket noi livestream...</span>
+          <span>{t('pmedConnectingLive')}</span>
         </div>
       ) : isLive && playback.status === 'ready' && playback.url ? (
         <ReplayPostMedia post={{ ...post, metadata }} playback={playback} />
@@ -406,16 +408,16 @@ export const PostMedia = memo(function PostMedia({
         isDefinitelyNoRecording ? (
           <div className="flex items-center justify-center p-6 bg-muted/50 text-muted-foreground text-sm gap-2">
             <Radio className="w-4 h-4" />
-            <span>Phiên live này không có bản ghi</span>
+            <span>{t('pmedNoRecording')}</span>
           </div>
         ) : (() => {
           const archivePhaseStr = typeof metadata?.archive_phase === 'string' ? metadata.archive_phase : '';
           const phaseLabel = archivePhaseStr === 'mp4_export' || archivePhaseStr === 'mp4_wait'
-            ? 'Cloudflare đang encode video gốc'
+            ? t('pmedPhaseEncoding')
             : archivePhaseStr === 'multipart_init' || archivePhaseStr === 'multipart_upload'
-              ? 'Đang lưu sang R2'
+              ? t('pmedPhaseSavingR2')
               : archivePhaseStr === 'verifying' || archivePhaseStr === 'posting' || archivePhaseStr === 'deleting_stream'
-                ? 'Đang hoàn tất'
+                ? t('pmedPhaseFinalizing')
                 : null;
           const errStr = typeof metadata?.archive_error === 'string' ? metadata.archive_error : '';
           const isRateLimited = errStr.startsWith('rate_limited_429');
@@ -440,7 +442,7 @@ export const PostMedia = memo(function PostMedia({
               )}
               {isRateLimited && (
                 <span className="text-[11px] text-amber-600 dark:text-amber-400">
-                  Đang chờ Cloudflare bớt tải, hệ thống sẽ tự thử lại.
+                  {t('pmedRateLimitedNote')}
                 </span>
               )}
             </div>

@@ -51,7 +51,7 @@ const getPostIcon = (type: ContentStatsType, postType: string | null) => {
 };
 
 export const UserPostsDetail = ({ userId, displayName, date, mode, type, username, totalReward, dateFrom, dateTo, onBack }: Props) => {
-  const { language } = useLanguage();
+  const { t } = useLanguage();
   const navigate = useNavigate();
 
   const { data: posts, isLoading } = useQuery({
@@ -71,7 +71,7 @@ export const UserPostsDetail = ({ userId, displayName, date, mode, type, usernam
     staleTime: 5 * 60 * 1000,
   });
 
-  const noContent = language === 'vi' ? '(Không có nội dung)' : '(No content)';
+  const noContent = t('updNoContent');
   return (
     <div className="flex-1 overflow-auto">
       <button
@@ -79,7 +79,7 @@ export const UserPostsDetail = ({ userId, displayName, date, mode, type, usernam
         className="flex items-center gap-1.5 text-sm text-green-700 dark:text-green-300 hover:opacity-70 transition-opacity mb-2 px-1"
       >
         <ArrowLeft className="w-4 h-4" />
-        {language === 'vi' ? 'Quay lại' : 'Back'}
+        {t('phpBack')}
       </button>
 
       <div className="text-center text-[15px] font-semibold mb-3 text-green-800 dark:text-green-300">
@@ -94,7 +94,7 @@ export const UserPostsDetail = ({ userId, displayName, date, mode, type, usernam
           displayName
         )} — {type === 'rewards' && totalReward != null
           ? `${formatNumber(totalReward)} CAMLY`
-          : `${posts?.length || 0} ${type === 'livestreams' ? 'livestream' : language === 'vi' ? 'bài viết' : 'posts'}`
+          : `${posts?.length || 0} ${type === 'livestreams' ? 'livestream' : t('updUnitPosts')}`
         }
       </div>
 
@@ -104,7 +104,7 @@ export const UserPostsDetail = ({ userId, displayName, date, mode, type, usernam
         </div>
       ) : !posts?.length ? (
         <div className="p-8 text-center text-muted-foreground">
-          {language === 'vi' ? 'Không có dữ liệu' : 'No data'}
+          {t('kycNoData')}
         </div>
       ) : (
         <div className="space-y-1">

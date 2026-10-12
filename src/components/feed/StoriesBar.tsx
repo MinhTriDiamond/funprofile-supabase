@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback, memo } from 'react';
+import { useLanguage } from '@/i18n/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { LazyImage } from '@/components/ui/LazyImage';
@@ -28,6 +29,7 @@ interface StoriesBarProps {
 
 export const StoriesBar = memo(({ currentUserId }: StoriesBarProps) => {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
   const [stories, setStories] = useState<Story[]>([]);
 
@@ -156,7 +158,7 @@ export const StoriesBar = memo(({ currentUserId }: StoriesBarProps) => {
       <div className="relative group">
         <button
           type="button"
-          aria-label="Cuộn sang trái"
+          aria-label={t('stbScrollLeft')}
           onClick={() => scrollByAmount(-1)}
           className={`absolute left-1 top-1/2 -translate-y-1/2 z-10 h-8 w-8 rounded-full bg-background/90 backdrop-blur border border-border/60 shadow-md hover:bg-background transition flex items-center justify-center ${
             canLeft ? 'opacity-100' : 'opacity-0 pointer-events-none'
@@ -166,7 +168,7 @@ export const StoriesBar = memo(({ currentUserId }: StoriesBarProps) => {
         </button>
         <button
           type="button"
-          aria-label="Cuộn sang phải"
+          aria-label={t('stbScrollRight')}
           onClick={() => scrollByAmount(1)}
           className={`absolute right-1 top-1/2 -translate-y-1/2 z-10 h-8 w-8 rounded-full bg-background/90 backdrop-blur border border-border/60 shadow-md hover:bg-background transition flex items-center justify-center ${
             canRight ? 'opacity-100' : 'opacity-0 pointer-events-none'
@@ -198,7 +200,7 @@ export const StoriesBar = memo(({ currentUserId }: StoriesBarProps) => {
                   <Plus className="w-5 h-5 text-primary-foreground" />
                 </div>
               </div>
-              <p className="text-xs font-semibold mt-1">Tạo tin</p>
+              <p className="text-xs font-semibold mt-1">{t('stbCreateStory')}</p>
             </div>
           </div>
         )}
@@ -227,7 +229,7 @@ export const StoriesBar = memo(({ currentUserId }: StoriesBarProps) => {
               ) : story.preview_url ? (
                 <LazyImage
                   src={story.preview_url}
-                  alt={`Tin của ${story.username}`}
+                  alt={`${t('stbStoryOfPrefix')}${story.username}`}
                   className="w-full h-full object-cover"
                   transformPreset="thumbnail"
                 />
@@ -248,7 +250,7 @@ export const StoriesBar = memo(({ currentUserId }: StoriesBarProps) => {
               >
                 <div className="p-[2px] rounded-full bg-card">
                   <Avatar className="w-8 h-8">
-                    <AvatarImage src={story.avatar_url || ''} alt={`Ảnh đại diện của ${story.username}`} />
+                    <AvatarImage src={story.avatar_url || ''} alt={`${t('stbAvatarOfPrefix')}${story.username}`} />
                     <AvatarFallback className="bg-primary text-primary-foreground text-xs">
                       {story.username?.[0]?.toUpperCase()}
                     </AvatarFallback>
@@ -278,7 +280,7 @@ export const StoriesBar = memo(({ currentUserId }: StoriesBarProps) => {
 
         {stories.length === 0 && !currentUser && (
           <div className="flex-1 flex items-center justify-center text-muted-foreground text-sm">
-            Đăng nhập để xem tin
+            {t('stbLoginToView')}
           </div>
         )}
         </div>

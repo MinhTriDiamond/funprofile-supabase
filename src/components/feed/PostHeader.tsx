@@ -62,11 +62,11 @@ export const PostHeader = memo(function PostHeader({
   const headerLiveSessionId = profileLive.liveSessionId || metadata?.live_session_id || null;
   const showLiveAvatar = profileLive.isLive || isLiveNow || isLiveReconnecting;
   const liveActionText = isLiveNow
-    ? 'đang phát trực tiếp.'
+    ? t('pohLiveNow')
     : isLiveReconnecting
-      ? 'đang kết nối lại.'
+      ? t('pohLiveReconnecting')
       : isLiveEnded
-        ? 'đã phát trực tiếp.'
+        ? t('pohLiveEnded')
         : null;
   const authorName = post.profiles?.display_name || post.profiles?.username;
   const profilePath = post.profiles?.username && post.profiles.username !== 'unknown'
@@ -92,7 +92,7 @@ export const PostHeader = memo(function PostHeader({
           onFocus={warmProfileRoute}
           onTouchStart={warmProfileRoute}
           onClick={showLiveAvatar && headerLiveSessionId ? () => navigate(`/live/${headerLiveSessionId}`) : goToProfile}
-          ariaLabel={showLiveAvatar ? `${authorName || 'User'} đang phát trực tiếp` : authorName || 'Profile'}
+          ariaLabel={showLiveAvatar ? `${authorName || 'User'} ${t('pohLiveNowShort')}` : authorName || 'Profile'}
         />
         <div>
           <div className="flex flex-wrap items-center gap-x-1 gap-y-0.5 text-sm leading-5">
@@ -155,7 +155,7 @@ export const PostHeader = memo(function PostHeader({
           {onCopyContent && (
             <DropdownMenuItem onClick={onCopyContent} className="cursor-pointer gap-3">
               <Copy className="w-5 h-5" />
-              Sao chép nội dung
+              {t('pohCopyContent')}
             </DropdownMenuItem>
           )}
           {canShowPinOption && (
@@ -186,7 +186,7 @@ export const PostHeader = memo(function PostHeader({
                     className="cursor-pointer gap-3"
                   >
                     <RadioTower className={`w-5 h-5 ${isLiveNow ? 'text-red-500' : ''}`} />
-                    {isLiveNow ? 'Vào Live Producer' : 'Xem Live Producer'}
+                    {isLiveNow ? t('pohEnterLiveProducer') : t('pohViewLiveProducer')}
                   </DropdownMenuItem>
                 );
               })()}

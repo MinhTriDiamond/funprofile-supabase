@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { useLanguage } from '@/i18n/LanguageContext';
 import { Sparkles, Target, Star } from 'lucide-react';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { usePetState } from '@/modules/pet/hooks/usePetState';
@@ -28,6 +29,7 @@ const SPARKLES: Array<{ top: string; left: string; size: number; delay: string }
  * Hiển thị đầy đủ cosmetic đã trang bị (skin/frame/hat/aura/accessory).
  */
 export function PetSidebarCard({ onItemClick }: { onItemClick?: () => void }) {
+  const { t } = useLanguage();
   const { isAuthenticated } = useCurrentUser();
   const { data: pet } = usePetState();
   const { data: cosmetics } = usePetCosmetics();
@@ -44,13 +46,13 @@ export function PetSidebarCard({ onItemClick }: { onItemClick?: () => void }) {
   const hatPath = resolveHatSprite(equippedHat?.catalog.slug);
   const auraPath = resolveAuraSprite(equippedAura?.catalog.slug);
   const accessoryPath = resolveAccessorySprite(equippedAccessory?.catalog.slug);
-  const displayName = pet?.name ?? 'Linh thú Lumi';
+  const displayName = pet?.name ?? t('petTitleLumi');
   const stageLabel = STAGE_NAMES[stage] ?? 'Seed';
 
 
   const cta = !isAuthenticated
-    ? { to: '/auth', label: 'Đăng nhập gặp Linh thú Lumi' }
-    : { to: '/quests', label: 'Làm nhiệm vụ hôm nay' };
+    ? { to: '/auth', label: t('pscCtaSignIn') }
+    : { to: '/quests', label: t('pscCtaQuests') };
 
   return (
     <div className="mt-2">
@@ -136,7 +138,7 @@ export function PetSidebarCard({ onItemClick }: { onItemClick?: () => void }) {
             </div>
             {pet && (
               <div className="text-[11px] font-semibold text-amber-700">
-                {stageLabel} · Cấp {pet.level}
+                {stageLabel} · {t('petLevel')} {pet.level}
               </div>
             )}
           </div>

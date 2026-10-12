@@ -1,4 +1,5 @@
 import { memo, useState } from 'react';
+import { useLanguage } from '@/i18n/LanguageContext';
 import { Progress } from '@/components/ui/progress';
 import { Loader2, CheckCircle2, XCircle, Upload, Clock, Zap, Film } from 'lucide-react';
 import { formatBytes, formatDuration } from '@/utils/streamUpload';
@@ -45,6 +46,7 @@ export const VideoUploadProgress = memo(({
   videoId,
 }: VideoUploadProgressProps) => {
   const [thumbnailError, setThumbnailError] = useState(false);
+  const { t } = useLanguage();
   
   // Cloudflare Stream thumbnail URL
   const thumbnailUrl = videoId 
@@ -83,9 +85,9 @@ export const VideoUploadProgress = memo(({
             </span>
             <span className="text-xs text-muted-foreground ml-2 flex-shrink-0 font-mono">
               {state === 'uploading' && `${progress}%`}
-              {state === 'processing' && 'Đang xử lý...'}
-              {state === 'ready' && 'Hoàn thành!'}
-              {state === 'error' && 'Lỗi'}
+              {state === 'processing' && t('processingLabel')}
+              {state === 'ready' && t('vprCompleted')}
+              {state === 'error' && t('statusError')}
             </span>
           </div>
 
@@ -138,7 +140,7 @@ export const VideoUploadProgress = memo(({
                   <div className="absolute inset-0 bg-black/30 backdrop-blur-[1px] flex items-center justify-center">
                     <div className="flex items-center gap-2 text-white text-sm font-medium">
                       <Loader2 className="w-4 h-4 animate-spin" />
-                      <span>Đang mã hóa video...</span>
+                      <span>{t('vprEncoding')}</span>
                     </div>
                   </div>
                 </div>
@@ -151,7 +153,7 @@ export const VideoUploadProgress = memo(({
                   <div className="absolute inset-0 flex items-center justify-center">
                     <div className="flex items-center gap-2 text-muted-foreground text-sm font-medium">
                       <Loader2 className="w-4 h-4 animate-spin" />
-                      <span>Đang mã hóa video...</span>
+                      <span>{t('vprEncoding')}</span>
                     </div>
                   </div>
                 </div>
@@ -162,9 +164,9 @@ export const VideoUploadProgress = memo(({
                 <Progress value={processingProgress} className="h-1.5" />
               )}
               <p className="text-xs text-muted-foreground">
-                {processingState === 'queued' && '⏳ Đang chờ xử lý...'}
-                {processingState === 'inprogress' && `🔄 Tiến trình: ${processingProgress || 0}%`}
-                {(!processingState || processingState === 'processing') && '🔄 Cloudflare đang xử lý...'}
+                {processingState === 'queued' && t('vprQueued')}
+                {processingState === 'inprogress' && `${t('vprProgressPrefix')}${processingProgress || 0}%`}
+                {(!processingState || processingState === 'processing') && t('vprCloudflareProcessing')}
               </p>
             </div>
           )}
@@ -172,7 +174,7 @@ export const VideoUploadProgress = memo(({
           {/* Success message */}
           {state === 'ready' && (
             <p className="text-xs text-green-600">
-              Video đã sẵn sàng để phát!
+              {t('vprReady')}
             </p>
           )}
 
@@ -186,7 +188,7 @@ export const VideoUploadProgress = memo(({
       {/* Warning for large uploads */}
       {state === 'uploading' && bytesTotal > 100 * 1024 * 1024 && (
         <div className="mt-3 p-2 bg-yellow-500/10 border border-yellow-500/30 rounded text-xs text-yellow-700 dark:text-yellow-400">
-          ⚠️ Video lớn - vui lòng không đóng tab trong khi upload (có thể resume nếu mạng chập chờn)
+          {t('vprLargeWarning')}
         </div>
       )}
     </div>

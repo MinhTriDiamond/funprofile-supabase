@@ -145,7 +145,7 @@ export const TopRanking = memo(() => {
           variant="outline"
           className="w-full mt-1 font-semibold transition-all group"
         >
-          Khám phá cộng đồng ánh sáng
+          {t('trkExploreCommunity')}
           <ChevronRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
         </Button>
       </div>

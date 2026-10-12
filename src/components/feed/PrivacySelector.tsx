@@ -19,27 +19,27 @@ interface PrivacySelectorProps {
 }
 
 export const PrivacySelector = ({ value, onChange, disabled }: PrivacySelectorProps) => {
-  const { language } = useLanguage();
+  const { t } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
 
   const PRIVACY_OPTIONS: PrivacyOption[] = [
     {
       value: 'public',
-      label: language === 'vi' ? 'Công khai' : 'Public',
+      label: t('privacyPublic'),
       icon: Globe,
-      description: language === 'vi' ? 'Bất kỳ ai ở trên hoặc ngoài FUN Profile' : 'Anyone on or off FUN Profile',
+      description: t('privacyPublicDesc'),
     },
     {
       value: 'friends',
-      label: language === 'vi' ? 'Bạn bè' : 'Friends',
+      label: t('privacyFriends'),
       icon: Users,
-      description: language === 'vi' ? 'Bạn bè của bạn trên FUN Profile' : 'Your friends on FUN Profile',
+      description: t('privacyFriendsDesc'),
     },
     {
       value: 'private',
-      label: language === 'vi' ? 'Chỉ mình tôi' : 'Only me',
+      label: t('privacyOnlyMe'),
       icon: Lock,
-      description: language === 'vi' ? 'Chỉ bạn có thể xem bài viết này' : 'Only you can see this post',
+      description: t('privacyOnlyMeDesc'),
     },
   ];
 
@@ -74,7 +74,7 @@ export const PrivacySelector = ({ value, onChange, disabled }: PrivacySelectorPr
             </Button>
           </TooltipTrigger>
           <TooltipContent>
-            {value === 'public' ? 'Mọi người đều có thể xem bài viết này' : selectedOption.description}
+            {value === 'public' ? t('pvsEveryoneCanSee') : selectedOption.description}
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
@@ -87,21 +87,21 @@ export const PrivacySelector = ({ value, onChange, disabled }: PrivacySelectorPr
                 type="button"
                 onClick={() => setIsOpen(false)}
                 className="absolute left-4 flex h-8 w-8 items-center justify-center rounded-full transition-colors hover:bg-secondary"
-                aria-label="Quay lại"
+                aria-label={t('goBack')}
               >
                 <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
               </button>
               <DialogTitle className="flex-1 text-center text-lg font-bold">
-                {language === 'vi' ? 'Đối tượng của bài viết' : 'Post audience'}
+                {t('privacyTitle')}
               </DialogTitle>
             </div>
           </DialogHeader>
 
           <div className="p-4">
             <p className="mb-4 text-sm text-muted-foreground">
-              {language === 'vi' ? 'Ai có thể xem bài viết của bạn?' : 'Who can see your post?'}
+              {t('privacySubtitle')}
             </p>
 
             <div className="space-y-1">
