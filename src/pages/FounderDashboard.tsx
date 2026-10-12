@@ -16,6 +16,7 @@ import FounderMonetaryHealthPanel from '@/components/founder/FounderMonetaryHeal
 import FounderIdentityPanel from '@/components/founder/FounderIdentityPanel';
 import FunCorePilotPanel from '@/components/founder/FunCorePilotPanel';
 import { ExportAllButton } from '@/components/founder/ExportAllButton';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 /**
  * Guard kép:
@@ -25,15 +26,16 @@ import { ExportAllButton } from '@/components/founder/ExportAllButton';
  *    không có data leak dù bypass client.
  */
 const FounderDashboard = () => {
+  const { t } = useLanguage();
   const { isAdmin, isLoading } = useAdminRole();
   const navigate = useNavigate();
 
   useEffect(() => {
     if (!isLoading && !isAdmin) {
-      toast.error('Bạn không có quyền truy cập trang này');
+      toast.error(t('fdNoAccess'));
       navigate('/');
     }
-  }, [isAdmin, isLoading, navigate]);
+  }, [isAdmin, isLoading, navigate, t]);
 
   if (isLoading) {
     return (
@@ -53,7 +55,7 @@ const FounderDashboard = () => {
           <Crown className="h-7 w-7 text-gold" />
           <div className="flex-1">
             <h1 className="text-2xl font-bold">Founder Dashboard</h1>
-            <p className="text-sm text-muted-foreground">Tầm nhìn chiến lược hệ sinh thái FUN</p>
+            <p className="text-sm text-muted-foreground">{t('fdSubtitle')}</p>
           </div>
           <ExportAllButton />
         </div>

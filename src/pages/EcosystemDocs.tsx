@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CodeBlock } from '@/components/docs/CodeBlock';
 import { DocSection, DocSubSection, DocParagraph, DocList, DocTable, DocAlert } from '@/components/docs/DocSection';
 import { TableOfContents } from '@/components/docs/TableOfContents';
+import { useLanguage } from '@/i18n/LanguageContext';
 import { 
   ArchitectureDiagram, 
   OAuthFlowDiagram, 
@@ -21,12 +22,12 @@ import {
 } from '@/components/docs/MermaidDiagram';
 
 const tocItems = [
-  { id: 'vision-5d', title: '1. Tầm Nhìn 5D - FUN-ID' },
+  { id: 'vision-5d', titleKey: 'edocTocVision' },
   { id: 'fun-id-concept', title: 'FUN-ID Concept', level: 2 },
-  { id: 'design-5d', title: 'Nguyên Tắc Thiết Kế 5D', level: 2 },
-  { id: 'user-flow', title: 'User Flow Tổng Thể', level: 2 },
-  { id: 'overview', title: '2. Tổng Quan Kiến Trúc' },
-  { id: 'auth-flows', title: '3. Các Flow Đăng Ký' },
+  { id: 'design-5d', titleKey: 'edocTocDesign', level: 2 },
+  { id: 'user-flow', titleKey: 'edocTocUserFlow', level: 2 },
+  { id: 'overview', titleKey: 'edocTocOverview' },
+  { id: 'auth-flows', titleKey: 'edocTocAuthFlows' },
   { id: 'web2-signup', title: 'Web2 Sign Up (OTP + Auto Wallet)', level: 2 },
   { id: 'web3-signup', title: 'Web3 Sign Up (Connect Wallet)', level: 2 },
   { id: 'oauth-flow', title: 'OAuth Login', level: 2 },
@@ -34,20 +35,21 @@ const tocItems = [
   { id: 'auto-login', title: '4. Auto-Login Cross Platform' },
   { id: 'soul-nft', title: '5. Soul NFT Identity' },
   { id: 'fun-wallet', title: '6. FUN Wallet System' },
-  { id: 'fun-profile-plan', title: '7. Kế Hoạch Fun Profile' },
+  { id: 'fun-profile-plan', titleKey: 'edocTocPlan' },
   { id: 'phase-1', title: 'Phase 1: Database Schema', level: 2 },
   { id: 'phase-2', title: 'Phase 2: SSO Edge Functions', level: 2 },
   { id: 'phase-3', title: 'Phase 3: Web3 Auth System', level: 2 },
   { id: 'phase-4', title: 'Phase 4: Wallet & Soul NFT', level: 2 },
   { id: 'phase-5', title: 'Phase 5: Webhook System', level: 2 },
-  { id: 'fun-farm', title: '8. Hướng Dẫn Fun Farm' },
-  { id: 'fun-play', title: '9. Hướng Dẫn Fun Play' },
-  { id: 'fun-planet', title: '10. Hướng Dẫn Fun Planet' },
+  { id: 'fun-farm', titleKey: 'edocTocFarm' },
+  { id: 'fun-play', titleKey: 'edocTocPlay' },
+  { id: 'fun-planet', titleKey: 'edocTocPlanet' },
   { id: 'api-reference', title: '11. API Reference' },
-  { id: 'timeline', title: '12. Timeline Tổng Hợp' },
+  { id: 'timeline', titleKey: 'edocTocTimeline' },
 ];
 
 const EcosystemDocs: React.FC = () => {
+  const { t, language } = useLanguage();
   const [activeSection, setActiveSection] = useState('vision-5d');
 
   useEffect(() => {
@@ -85,7 +87,7 @@ const EcosystemDocs: React.FC = () => {
             </Link>
             <div>
               <h1 className="text-xl font-bold text-foreground">FUN Ecosystem SSO Documentation</h1>
-              <p className="text-sm text-muted-foreground">Tầm nhìn 5D + Hướng dẫn tích hợp FUN-ID</p>
+              <p className="text-sm text-muted-foreground">{t('edocSubtitle')}</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -96,7 +98,7 @@ const EcosystemDocs: React.FC = () => {
               className="border-primary bg-white text-primary hover:bg-primary/10"
             >
               <Printer className="h-4 w-4 mr-2" />
-              In PDF
+              {t('pdocPrint')}
             </Button>
           </div>
         </div>
@@ -106,44 +108,43 @@ const EcosystemDocs: React.FC = () => {
         <div className="flex gap-8">
           {/* Sidebar - Table of Contents */}
           <aside className="hidden lg:block w-64 flex-shrink-0 print:hidden">
-            <TableOfContents items={tocItems} activeId={activeSection} />
+            <TableOfContents items={tocItems.map((i) => ({ ...i, title: i.titleKey ? t(i.titleKey as any) : (i as any).title }))} activeId={activeSection} />
           </aside>
 
           {/* Main Content */}
           <main className="flex-1 min-w-0">
             {/* Section 1: Tầm Nhìn 5D - FUN-ID */}
-            <DocSection id="vision-5d" title="1. Tầm Nhìn 5D - FUN-ID Hộ Chiếu Linh Hồn">
+            <DocSection id="vision-5d" title={t('edocS1Title')}>
               <DocAlert type="success">
-                <strong>🌟 Tư Tưởng Thiết Kế:</strong> Một tài khoản duy nhất → Dùng được tất cả platform trong hệ sinh thái. 
-                FUN-ID = Web3 Universal Identity. Người dùng chỉ cần đăng ký 1 lần → Mọi platform mở ra như mở cửa thiên đường.
+                <strong>{t('edocS1AlertStrong')}</strong>{t('edocS1Alert')}
               </DocAlert>
 
               <div id="fun-id-concept">
                 <DocSubSection title="FUN-ID Concept">
                   <DocParagraph>
-                    <strong>FUN-ID</strong> là định danh duy nhất kết hợp sức mạnh của Web2 và Web3:
+                    \1{t('edocS1ConceptA')}
                   </DocParagraph>
                   <FunIDConceptDiagram />
                   
                   <DocList items={[
-                    "💰 FUN Wallet - Ví Web3 để lưu trữ tài sản số, nhận thưởng",
-                    "👤 FUN Profile - Hồ sơ người dùng với avatar, bio, thành tích",
-                    "✨ Soul NFT Identity - NFT định danh linh hồn, không thể chuyển nhượng",
-                    "🔐 SSO Passport - Đăng nhập 1 lần, dùng mọi nơi trong ecosystem"
+                    t('edocS1Item1'),
+                    t('edocS1Item2'),
+                    t('edocS1Item3'),
+                    t('edocS1Item4')
                   ]} />
                 </DocSubSection>
               </div>
 
               <div id="design-5d">
-                <DocSubSection title="Nguyên Tắc Thiết Kế 5D">
+                <DocSubSection title={t('edocTocDesign')}>
                   <Design5DDiagram />
                 </DocSubSection>
               </div>
 
               <div id="user-flow">
-                <DocSubSection title="User Flow Tổng Thể">
+                <DocSubSection title={t('edocTocUserFlow')}>
                   <DocParagraph>
-                    Flow được thiết kế theo nguyên tắc <strong>"Mượt như ánh sáng, đơn giản như hơi thở"</strong>:
+                    {t('edocS1FlowA')}<strong>{t('edocS1FlowQuote')}</strong>:
                   </DocParagraph>
                   <UserFlowDiagram />
                 </DocSubSection>
@@ -151,40 +152,35 @@ const EcosystemDocs: React.FC = () => {
             </DocSection>
 
             {/* Section 2: Tổng Quan */}
-            <DocSection id="overview" title="2. Tổng Quan Kiến Trúc FUN Ecosystem">
+            <DocSection id="overview" title={t('edocS2Title')}>
               <DocParagraph>
-                FUN Ecosystem bao gồm nhiều platform hoạt động cùng nhau, với <strong>Fun Profile</strong> đóng vai trò 
-                là <strong>Auth Hub</strong> trung tâm, quản lý <strong>FUN-ID</strong> cho toàn bộ hệ sinh thái.
+                {t('edocS2ParaA')}<strong>Fun Profile</strong>{t('edocS2ParaB')}<strong>Auth Hub</strong>{t('edocS2ParaC')}<strong>FUN-ID</strong>{t('edocS2ParaD')}
               </DocParagraph>
 
               <ArchitectureDiagram />
 
-              <DocSubSection title="Lợi Ích Của FUN-ID & SSO">
+              <DocSubSection title={t('edocS2BenefitsTitle')}>
                 <DocList items={[
-                  "🪪 FUN-ID thống nhất - Một định danh xuyên suốt, không cần tạo nhiều tài khoản",
-                  "💰 FUN Wallet tích hợp - Ví được tạo tự động, lưu trữ mọi tài sản",
-                  "✨ Soul NFT Identity - Định danh linh hồn, thăng cấp qua hoạt động",
-                  "🔄 Auto-Login - Chuyển platform không cần đăng nhập lại",
-                  "🏆 Rewards tổng hợp - Điểm thưởng từ mọi platform được gộp lại",
-                  "🤖 Angel AI dẫn đường - Trợ lý cá nhân thông minh"
+                  t('edocS2Ben1'),
+                  t('edocS2Ben2'),
+                  t('edocS2Ben3'),
+                  t('edocS2Ben4'),
+                  t('edocS2Ben5'),
+                  t('edocS2Ben6')
                 ]} />
               </DocSubSection>
             </DocSection>
 
             {/* Section 3: Các Flow Đăng Ký */}
-            <DocSection id="auth-flows" title="3. Các Flow Đăng Ký FUN-ID">
-              <DocParagraph>
-                FUN Ecosystem hỗ trợ nhiều cách đăng ký để phù hợp với mọi đối tượng người dùng, 
-                từ người mới (Web2) đến người chơi crypto kỳ cựu (Web3).
-              </DocParagraph>
+            <DocSection id="auth-flows" title={t('edocS3Title')}>
+              <DocParagraph>{t('edocS3Para')}</DocParagraph>
 
               <div className="grid md:grid-cols-2 gap-4 mt-4">
                 <Card className="border-emerald-200 dark:border-emerald-800">
                   <CardContent className="p-4">
                     <h4 className="font-semibold text-foreground mb-2">📱 Web2 Sign Up</h4>
                     <p className="text-sm text-muted-foreground">
-                      Email/Phone + OTP → Wallet tự động tạo → Soul NFT mint ẩn → 
-                      Dễ như TikTok, không cần biết Web3
+                      {t('edocS3Web2Card')}
                     </p>
                   </CardContent>
                 </Card>
@@ -192,8 +188,7 @@ const EcosystemDocs: React.FC = () => {
                   <CardContent className="p-4">
                     <h4 className="font-semibold text-foreground mb-2">🔗 Web3 Sign Up</h4>
                     <p className="text-sm text-muted-foreground">
-                      Connect Wallet (1-click) → Sign message → Auto create profile → 
-                      Mint Soul NFT → Dành cho crypto natives
+                      {t('edocS3Web3Card')}
                     </p>
                   </CardContent>
                 </Card>
@@ -202,8 +197,7 @@ const EcosystemDocs: React.FC = () => {
               <div id="web2-signup" className="mt-8">
                 <DocSubSection title="Web2 Sign Up (OTP + Auto Wallet)">
                   <DocAlert type="info">
-                    <strong>🎯 Dành cho:</strong> Người dùng phổ thông, không cần kiến thức Web3. 
-                    Ví và NFT được tạo hoàn toàn tự động trong background.
+                    <strong>{t('edocForStrong')}</strong>{t('edocS3Web2Alert')}
                   </DocAlert>
                   <Web2AutoWalletDiagram />
 
@@ -284,8 +278,7 @@ serve(async (req) => {
               <div id="web3-signup" className="mt-8">
                 <DocSubSection title="Web3 Sign Up (Connect Wallet 1-Click)">
                   <DocAlert type="info">
-                    <strong>🎯 Dành cho:</strong> Người dùng đã có ví crypto (MetaMask, WalletConnect). 
-                    Đăng ký chỉ với 1-click connect + sign.
+                    <strong>{t('edocForStrong')}</strong>{t('edocS3Web3Alert')}
                   </DocAlert>
                   <Web3AuthFlowDiagram />
 
@@ -415,19 +408,15 @@ export const Web3LoginButton: React.FC = () => {
               </div>
 
               <div id="oauth-flow" className="mt-8">
-                <DocSubSection title="OAuth Login (Đăng nhập bằng Fun Profile)">
-                  <DocParagraph>
-                    Dành cho user đã có FUN-ID, muốn đăng nhập vào platform khác mà không cần nhập lại credentials.
-                  </DocParagraph>
+                <DocSubSection title={t('edocS3OauthTitle')}>
+                  <DocParagraph>{t('edocS3OauthPara')}</DocParagraph>
                   <OAuthFlowDiagram />
                 </DocSubSection>
               </div>
 
               <div id="proxy-signup" className="mt-8">
-                <DocSubSection title="Proxy Sign Up (Đăng ký từ Platform khác)">
-                  <DocParagraph>
-                    Cho phép user đăng ký trực tiếp tại Fun Farm/Play/Planet mà FUN-ID vẫn được tạo tại Fun Profile.
-                  </DocParagraph>
+                <DocSubSection title={t('edocS3ProxyTitle')}>
+                  <DocParagraph>{t('edocS3ProxyPara')}</DocParagraph>
                   <ProxySignUpDiagram />
                 </DocSubSection>
               </div>
@@ -435,9 +424,7 @@ export const Web3LoginButton: React.FC = () => {
 
             {/* Section 4: Auto-Login */}
             <DocSection id="auto-login" title="4. Auto-Login Cross Platform">
-              <DocParagraph>
-                Khi user đã đăng nhập ở bất kỳ platform nào, các platform còn lại sẽ tự động nhận diện và đăng nhập mà không cần hỏi thêm.
-              </DocParagraph>
+              <DocParagraph>{t('edocS4Para')}</DocParagraph>
               
               <AutoLoginDiagram />
 
@@ -509,8 +496,7 @@ export const useAutoLogin = () => {
             {/* Section 5: Soul NFT */}
             <DocSection id="soul-nft" title="5. Soul NFT Identity">
               <DocParagraph>
-                Soul NFT là <strong>chứng nhận định danh linh hồn</strong> trên blockchain. Mỗi FUN-ID được gắn với 1 Soul NFT duy nhất, 
-                không thể chuyển nhượng (Soulbound). Đây là chìa khóa để thăng cấp và nhận thưởng trong ecosystem.
+                {t('edocS5ParaA')}<strong>{t('edocS5ParaStrong')}</strong>{t('edocS5ParaB')}
               </DocParagraph>
 
               <SoulNFTDiagram />
@@ -617,8 +603,7 @@ serve(async (req) => {
             {/* Section 6: FUN Wallet */}
             <DocSection id="fun-wallet" title="6. FUN Wallet System">
               <DocParagraph>
-                FUN Wallet hỗ trợ 2 loại: <strong>Custodial Wallet</strong> (tạo tự động cho Web2 users) và 
-                <strong> Non-custodial Wallet</strong> (connect ví sẵn có cho Web3 users).
+                {t('edocS6ParaA')}<strong>Custodial Wallet</strong>{t('edocS6ParaB')}<strong> Non-custodial Wallet</strong>{t('edocS6ParaC')}
               </DocParagraph>
 
               <div className="grid md:grid-cols-2 gap-4 mt-4">
@@ -626,10 +611,10 @@ serve(async (req) => {
                   <CardContent className="p-4">
                     <h4 className="font-semibold text-foreground mb-2">🔐 Custodial Wallet</h4>
                     <DocList items={[
-                      "Tạo tự động khi đăng ký Web2",
-                      "Private key mã hóa lưu trên server",
-                      "User không cần quản lý seed phrase",
-                      "Phù hợp người mới với crypto"
+                      t('edocS6Cust1'),
+                      t('edocS6Cust2'),
+                      t('edocS6Cust3'),
+                      t('edocS6Cust4')
                     ]} />
                   </CardContent>
                 </Card>
@@ -637,10 +622,10 @@ serve(async (req) => {
                   <CardContent className="p-4">
                     <h4 className="font-semibold text-foreground mb-2">🦊 Non-custodial Wallet</h4>
                     <DocList items={[
-                      "Connect ví sẵn có (MetaMask, etc.)",
-                      "User tự quản lý private key",
+                      t('edocS6NonCust1'),
+                      t('edocS6NonCust2'),
                       "Full control over assets",
-                      "Dành cho crypto natives"
+                      t('edocS6NonCust4')
                     ]} />
                   </CardContent>
                 </Card>
@@ -671,31 +656,28 @@ CREATE POLICY "Users can manage own wallet connections"
             </DocSection>
 
             {/* Section 7: Kế Hoạch Fun Profile */}
-            <DocSection id="fun-profile-plan" title="7. Kế Hoạch Triển Khai Fun Profile (Auth Hub)">
+            <DocSection id="fun-profile-plan" title={t('edocS7Title')}>
               <DocAlert type="info">
-                <strong>📌 Lưu ý:</strong> Fun Profile là nơi triển khai tất cả FUN-ID infrastructure. 
-                Các platform khác chỉ cần tích hợp theo hướng dẫn.
+                <strong>{t('edocNoteStrong')}</strong>{t('edocS7Alert')}
               </DocAlert>
 
               {/* Phase 1 */}
               <div id="phase-1">
-                <DocSubSection title="Phase 1: Database Schema (1.5 ngày)">
-                  <DocParagraph>
-                    Tạo các bảng cần thiết để hỗ trợ FUN-ID, OAuth, Wallet và Soul NFT.
-                  </DocParagraph>
+                <DocSubSection title={t('edocPhase1Title')}>
+                  <DocParagraph>{t('edocPhase1Para')}</DocParagraph>
 
                   <DocTable 
-                    headers={['Bảng', 'Mục đích', 'Quan hệ']}
+                    headers={[t('edocColTable'), t('pdocColPurpose'), t('edocColRelation')]}
                     rows={[
-                      ['oauth_clients', 'Thông tin các platform (client_id, secret)', 'Standalone'],
-                      ['oauth_codes', 'Authorization codes tạm thời (5 phút)', 'FK → profiles, oauth_clients'],
+                      ['oauth_clients', t('edocT1R1'), 'Standalone'],
+                      ['oauth_codes', t('edocT1R2'), 'FK → profiles, oauth_clients'],
                       ['cross_platform_tokens', 'Access & refresh tokens', 'FK → profiles, oauth_clients'],
-                      ['otp_codes', 'OTP cho đăng ký Web2', 'Standalone'],
-                      ['wallet_connections', 'Ví external đã kết nối', 'FK → profiles'],
-                      ['wallet_connections', 'Ví external đã kết nối', 'FK → profiles'],
-                      ['soul_nfts', 'NFT định danh linh hồn', 'FK → profiles'],
-                      ['webhook_endpoints', 'URLs nhận webhook', 'FK → oauth_clients'],
-                      ['platform_activities', 'Hoạt động từ các platform', 'FK → profiles'],
+                      ['otp_codes', t('edocT1R4'), 'Standalone'],
+                      ['wallet_connections', t('edocT1R5'), 'FK → profiles'],
+                      ['wallet_connections', t('edocT1R5'), 'FK → profiles'],
+                      ['soul_nfts', t('edocT1R7'), 'FK → profiles'],
+                      ['webhook_endpoints', t('edocT1R8'), 'FK → oauth_clients'],
+                      ['platform_activities', t('edocT1R9'), 'FK → profiles'],
                     ]}
                   />
 
@@ -729,16 +711,16 @@ CREATE POLICY "Admins can manage oauth_clients"
 
               {/* Phase 2 */}
               <div id="phase-2">
-                <DocSubSection title="Phase 2: SSO Edge Functions (3-4 ngày)">
+                <DocSubSection title={t('edocPhase2Title')}>
                   <DocTable 
-                    headers={['Function', 'Endpoint', 'Mô tả']}
+                    headers={['Function', 'Endpoint', t('pdocColDesc')]}
                     rows={[
-                      ['sso-register', 'POST /sso-register', 'Proxy Sign Up - Đăng ký từ platform khác'],
-                      ['sso-authorize', 'GET /sso-authorize', 'Bắt đầu OAuth flow'],
-                      ['sso-token', 'POST /sso-token', 'Đổi code lấy tokens'],
-                      ['sso-verify', 'GET /sso-verify', 'Xác thực token'],
-                      ['sso-refresh', 'POST /sso-refresh', 'Làm mới token'],
-                      ['sso-revoke', 'POST /sso-revoke', 'Thu hồi tokens'],
+                      ['sso-register', 'POST /sso-register', t('edocFnReg')],
+                      ['sso-authorize', 'GET /sso-authorize', t('edocFnAuthorize')],
+                      ['sso-token', 'POST /sso-token', t('edocFnToken')],
+                      ['sso-verify', 'GET /sso-verify', t('edocFnVerify')],
+                      ['sso-refresh', 'POST /sso-refresh', t('edocFnRefresh')],
+                      ['sso-revoke', 'POST /sso-revoke', t('edocFnRevoke')],
                     ]}
                   />
                 </DocSubSection>
@@ -746,13 +728,13 @@ CREATE POLICY "Admins can manage oauth_clients"
 
               {/* Phase 3 */}
               <div id="phase-3">
-                <DocSubSection title="Phase 3: Web3 Auth System (2-3 ngày)">
+                <DocSubSection title={t('edocPhase3Title')}>
                   <DocTable 
-                    headers={['Function', 'Endpoint', 'Mô tả']}
+                    headers={['Function', 'Endpoint', t('pdocColDesc')]}
                     rows={[
-                      ['sso-web3-auth', 'POST /sso-web3-auth', 'Đăng nhập bằng wallet signature'],
-                      ['sso-otp-request', 'POST /sso-otp-request', 'Gửi OTP cho Web2 signup'],
-                      ['sso-otp-verify', 'POST /sso-otp-verify', 'Xác thực OTP + tạo account'],
+                      ['sso-web3-auth', 'POST /sso-web3-auth', t('edocFnWeb3')],
+                      ['sso-otp-request', 'POST /sso-otp-request', t('edocFnOtpReq')],
+                      ['sso-otp-verify', 'POST /sso-otp-verify', t('edocFnOtpVerify')],
                     ]}
                   />
                 </DocSubSection>
@@ -760,14 +742,14 @@ CREATE POLICY "Admins can manage oauth_clients"
 
               {/* Phase 4 */}
               <div id="phase-4">
-                <DocSubSection title="Phase 4: Wallet & Soul NFT (2-3 ngày)">
+                <DocSubSection title={t('edocPhase4Title')}>
                   <DocTable 
-                    headers={['Function', 'Endpoint', 'Mô tả']}
+                    headers={['Function', 'Endpoint', t('pdocColDesc')]}
                     rows={[
-                      ['create-custodial-wallet', 'Internal', 'Tạo ví cho Web2 users'],
+                      ['create-custodial-wallet', 'Internal', t('edocFnCreateWallet')],
                       ['mint-soul-nft', 'Internal', 'Mint Soul NFT Identity'],
-                      ['get-soul-nft', 'GET /get-soul-nft', 'Lấy thông tin Soul NFT'],
-                      ['upgrade-soul-level', 'POST /upgrade-soul-level', 'Thăng cấp Soul NFT'],
+                      ['get-soul-nft', 'GET /get-soul-nft', t('edocFnGetSoul')],
+                      ['upgrade-soul-level', 'POST /upgrade-soul-level', t('edocFnUpgradeSoul')],
                     ]}
                   />
                 </DocSubSection>
@@ -775,15 +757,15 @@ CREATE POLICY "Admins can manage oauth_clients"
 
               {/* Phase 5 */}
               <div id="phase-5">
-                <DocSubSection title="Phase 5: Webhook System (2 ngày)">
+                <DocSubSection title={t('edocPhase5Title')}>
                   <DocTable 
                     headers={['Event', 'Trigger', 'Payload']}
                     rows={[
-                      ['user.created', 'Khi user mới đăng ký', '{ user_id, email, username, auth_type }'],
-                      ['user.updated', 'Khi profile thay đổi', '{ user_id, changes: {...} }'],
-                      ['wallet.updated', 'Khi wallet address thay đổi', '{ user_id, wallet_address }'],
-                      ['soul_nft.minted', 'Khi Soul NFT được mint', '{ user_id, token_id, level }'],
-                      ['reward.claimed', 'Khi user claim rewards', '{ user_id, amount, tx_hash }'],
+                      ['user.created', t('edocWh1'), '{ user_id, email, username, auth_type }'],
+                      ['user.updated', t('edocWh2'), '{ user_id, changes: {...} }'],
+                      ['wallet.updated', t('edocWh3'), '{ user_id, wallet_address }'],
+                      ['soul_nft.minted', t('edocWh4'), '{ user_id, token_id, level }'],
+                      ['reward.claimed', t('edocWh5'), '{ user_id, amount, tx_hash }'],
                     ]}
                   />
                 </DocSubSection>
@@ -791,39 +773,35 @@ CREATE POLICY "Admins can manage oauth_clients"
             </DocSection>
 
             {/* Section 8: Hướng Dẫn Fun Farm */}
-            <DocSection id="fun-farm" title="8. Hướng Dẫn Tích Hợp Cho Fun Farm 🌾">
+            <DocSection id="fun-farm" title={t('edocS8Title')}>
               <DocAlert type="success">
-                <strong>🤖 Dành cho Angel Lovable của Fun Farm:</strong> Copy các code examples bên dưới 
-                và paste vào project Fun Farm. Chỉ cần thay đổi các giá trị config.
+                <strong>{t('edocS8AlertStrong')}</strong>{t('edocS8Alert')}
               </DocAlert>
 
               <Tabs defaultValue="step1" className="mt-6">
                 <TabsList className="grid w-full grid-cols-4">
-                  <TabsTrigger value="step1">Bước 1</TabsTrigger>
-                  <TabsTrigger value="step2">Bước 2</TabsTrigger>
-                  <TabsTrigger value="step3">Bước 3</TabsTrigger>
-                  <TabsTrigger value="step4">Bước 4</TabsTrigger>
+                  <TabsTrigger value="step1">{t('edocStep1')}</TabsTrigger>
+                  <TabsTrigger value="step2">{t('edocStep2')}</TabsTrigger>
+                  <TabsTrigger value="step3">{t('edocStep3')}</TabsTrigger>
+                  <TabsTrigger value="step4">{t('edocStep4')}</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="step1" className="mt-4">
-                  <DocSubSection title="Bước 1: Nhận OAuth Credentials">
-                    <DocParagraph>
-                      Liên hệ Admin Fun Profile để đăng ký platform và nhận:
-                    </DocParagraph>
+                  <DocSubSection title={t('edocFarmStep1Title')}>
+                    <DocParagraph>{t('edocFarmStep1Para')}</DocParagraph>
                     <DocList items={[
                       "client_id: fun_farm_production",
-                      "client_secret: [sẽ được cung cấp riêng]",
+                      t('edocFarmStep1Secret'),
                       "redirect_uri: https://funfarm.app/auth/callback"
                     ]} />
                     <DocAlert type="warning">
-                      <strong>⚠️ Bảo mật:</strong> Lưu client_secret vào Supabase Secrets, 
-                      KHÔNG commit vào code!
+                      <strong>{t('edocSecurityStrong')}</strong>{t('edocFarmStep1Alert')}
                     </DocAlert>
                   </DocSubSection>
                 </TabsContent>
 
                 <TabsContent value="step2" className="mt-4">
-                  <DocSubSection title="Bước 2: Tạo SSO Config">
+                  <DocSubSection title={t('edocFarmStep2Title')}>
                     <CodeBlock 
                       title="src/config/sso.ts"
                       language="typescript"
@@ -867,10 +845,8 @@ export const DOMAINS = {
                 </TabsContent>
 
                 <TabsContent value="step3" className="mt-4">
-                  <DocSubSection title="Bước 3: Tạo Auth Components">
-                    <DocParagraph>
-                      Tạo các components cho cả Web2 (OTP) và Web3 (Connect Wallet) login.
-                    </DocParagraph>
+                  <DocSubSection title={t('edocFarmStep3Title')}>
+                    <DocParagraph>{t('edocFarmStep3Para')}</DocParagraph>
                     <CodeBlock 
                       title="src/components/auth/AuthPage.tsx"
                       language="typescript"
@@ -916,7 +892,7 @@ export const AuthPage: React.FC = () => {
                 </TabsContent>
 
                 <TabsContent value="step4" className="mt-4">
-                  <DocSubSection title="Bước 4: Sử dụng useAutoLogin Hook">
+                  <DocSubSection title={t('edocFarmStep4Title')}>
                     <CodeBlock 
                       title="src/App.tsx"
                       language="typescript"
@@ -945,22 +921,19 @@ function App() {
             </DocSection>
 
             {/* Section 9: Fun Play */}
-            <DocSection id="fun-play" title="9. Hướng Dẫn Tích Hợp Cho Fun Play 🎮">
+            <DocSection id="fun-play" title={t('edocS9Title')}>
               <DocAlert type="success">
-                <strong>🤖 Dành cho Angel Lovable của Fun Play:</strong> Tương tự Fun Farm, 
-                chỉ cần thay đổi client_id và callback URLs.
+                <strong>{t('edocS9AlertStrong')}</strong>{t('edocS9Alert')}
               </DocAlert>
 
-              <DocParagraph>
-                Fun Play sử dụng cùng flow như Fun Farm. Các bước thực hiện:
-              </DocParagraph>
+              <DocParagraph>{t('edocS9Para')}</DocParagraph>
 
               <DocList items={[
-                "1. Nhận client_id: fun_play_production và client_secret từ Admin",
-                "2. Copy các files từ hướng dẫn Fun Farm và thay đổi config",
+                t('edocS9Step1'),
+                t('edocS9Step2'),
                 "3. Set redirect_uri: https://play.fun.rich/auth/callback",
-                "4. Thêm Secrets: FUN_PROFILE_CLIENT_ID, FUN_PROFILE_CLIENT_SECRET",
-                "5. Gửi game scores và achievements về Fun Profile qua activity-receiver API"
+                t('edocS9Step4'),
+                t('edocS9Step5')
               ]} />
 
               <CodeBlock 
@@ -985,19 +958,17 @@ export const SSO_CONFIG = {
             </DocSection>
 
             {/* Section 10: Fun Planet */}
-            <DocSection id="fun-planet" title="10. Hướng Dẫn Tích Hợp Cho Fun Planet 🌍">
+            <DocSection id="fun-planet" title={t('edocS10Title')}>
               <DocAlert type="success">
-                <strong>🤖 Dành cho Angel Lovable của Fun Planet:</strong> Tương tự các platform khác.
+                <strong>{t('edocS10AlertStrong')}</strong>{t('edocS10Alert')}
               </DocAlert>
 
-              <DocParagraph>
-                Fun Planet cũng sử dụng cùng SSO flow. Thay đổi:
-              </DocParagraph>
+              <DocParagraph>{t('edocS10Para')}</DocParagraph>
 
               <DocList items={[
                 "client_id: fun_planet_production",
                 "redirect_uri: https://planet.fun.rich/auth/callback",
-                "Gửi planet activities (build, explore, trade) về Fun Profile"
+                t('edocS10Item3')
               ]}
               />
 
@@ -1026,10 +997,10 @@ export const SSO_CONFIG = {
             <DocSection id="api-reference" title="11. API Reference">
               <DocSubSection title="SSO Endpoints">
                 <DocTable 
-                  headers={['Method', 'Endpoint', 'Mô tả', 'Auth']}
+                  headers={['Method', 'Endpoint', t('pdocColDesc'), 'Auth']}
                   rows={[
                     ['POST', '/sso-register', 'Proxy Sign Up', 'client_id + client_secret'],
-                    ['GET', '/sso-authorize', 'Bắt đầu OAuth flow', 'None'],
+                    ['GET', '/sso-authorize', t('edocFnAuthorize'), 'None'],
                     ['POST', '/sso-token', 'Exchange code → tokens', 'client_id + client_secret'],
                     ['GET', '/sso-verify', 'Verify token, get user info', 'Bearer token'],
                     ['POST', '/sso-refresh', 'Refresh access token', 'client_id + client_secret'],
@@ -1040,79 +1011,79 @@ export const SSO_CONFIG = {
 
               <DocSubSection title="Web3 & OTP Endpoints">
                 <DocTable 
-                  headers={['Method', 'Endpoint', 'Mô tả', 'Auth']}
+                  headers={['Method', 'Endpoint', t('pdocColDesc'), 'Auth']}
                   rows={[
                     ['POST', '/sso-web3-auth', 'Web3 wallet authentication', 'client_id'],
-                    ['POST', '/sso-otp-request', 'Gửi OTP cho Web2 signup', 'None'],
-                    ['POST', '/sso-otp-verify', 'Xác thực OTP + tạo FUN-ID', 'None'],
+                    ['POST', '/sso-otp-request', t('edocFnOtpReq'), 'None'],
+                    ['POST', '/sso-otp-verify', t('edocApiOtpVerify'), 'None'],
                   ]}
                 />
               </DocSubSection>
 
               <DocSubSection title="Webhook Events">
                 <DocTable 
-                  headers={['Event', 'Khi nào', 'Payload']}
+                  headers={['Event', t('edocColWhen'), 'Payload']}
                   rows={[
-                    ['user.created', 'User mới đăng ký', '{ user_id, email, username, auth_type }'],
-                    ['user.updated', 'Profile thay đổi', '{ user_id, changes: { field: new_value } }'],
-                    ['wallet.updated', 'Wallet address thay đổi', '{ user_id, wallet_address }'],
-                    ['soul_nft.minted', 'Soul NFT được mint', '{ user_id, token_id, level }'],
-                    ['reward.claimed', 'User claim rewards', '{ user_id, amount, tx_hash }'],
+                    ['user.created', t('edocWhA1'), '{ user_id, email, username, auth_type }'],
+                    ['user.updated', t('edocWhA2'), '{ user_id, changes: { field: new_value } }'],
+                    ['wallet.updated', t('edocWhA3'), '{ user_id, wallet_address }'],
+                    ['soul_nft.minted', t('edocWhA4'), '{ user_id, token_id, level }'],
+                    ['reward.claimed', t('edocWhA5'), '{ user_id, amount, tx_hash }'],
                   ]}
                 />
               </DocSubSection>
 
               <DocSubSection title="Error Codes">
                 <DocTable 
-                  headers={['Code', 'Ý nghĩa', 'Cách xử lý']}
+                  headers={['Code', t('pdocColMeaning'), t('edocColFix')]}
                   rows={[
-                    ['invalid_client', 'client_id không tồn tại hoặc bị disable', 'Kiểm tra lại credentials'],
-                    ['invalid_secret', 'client_secret không đúng', 'Liên hệ Admin để lấy lại'],
-                    ['invalid_redirect_uri', 'redirect_uri không được whitelist', 'Đăng ký URI với Admin'],
-                    ['expired_code', 'Authorization code hết hạn (5 phút)', 'Thực hiện lại OAuth flow'],
-                    ['invalid_token', 'Token không hợp lệ hoặc đã bị revoke', 'Refresh hoặc login lại'],
-                    ['invalid_otp', 'OTP không đúng hoặc hết hạn', 'Yêu cầu gửi lại OTP'],
-                    ['invalid_signature', 'Wallet signature không hợp lệ', 'Thử ký lại message'],
+                    ['invalid_client', t('edocErr1Meaning'), t('edocErr1Fix')],
+                    ['invalid_secret', t('edocErr2Meaning'), t('edocErr2Fix')],
+                    ['invalid_redirect_uri', t('edocErr3Meaning'), t('edocErr3Fix')],
+                    ['expired_code', t('edocErr4Meaning'), t('edocErr4Fix')],
+                    ['invalid_token', t('edocErr5Meaning'), t('edocErr5Fix')],
+                    ['invalid_otp', t('edocErr6Meaning'), t('edocErr6Fix')],
+                    ['invalid_signature', t('edocErr7Meaning'), t('edocErr7Fix')],
                   ]}
                 />
               </DocSubSection>
             </DocSection>
 
             {/* Section 12: Timeline */}
-            <DocSection id="timeline" title="12. Timeline Tổng Hợp">
+            <DocSection id="timeline" title={t('edocTocTimeline')}>
               <DocTable 
-                headers={['Phase', 'Công việc', 'Platform', 'Thời gian']}
+                headers={['Phase', t('edocColWork'), 'Platform', t('edocColTime')]}
                 rows={[
-                  ['Phase 1', 'Database Schema (bao gồm wallet, soul_nft tables)', 'Fun Profile', '1.5 ngày'],
-                  ['Phase 2', 'SSO Edge Functions (6 functions)', 'Fun Profile', '3-4 ngày'],
-                  ['Phase 3', 'Web3 Auth System (web3-auth, otp)', 'Fun Profile', '2-3 ngày'],
-                  ['Phase 4', 'Wallet & Soul NFT System', 'Fun Profile', '2-3 ngày'],
-                  ['Phase 5', 'Webhook System', 'Fun Profile', '2 ngày'],
-                  ['Phase 6', 'Rewards Aggregation', 'Fun Profile', '1-2 ngày'],
-                  ['Phase 7', 'Tích hợp SSO + Web3', 'Fun Farm', '1.5 ngày'],
-                  ['Phase 8', 'Tích hợp SSO + Web3', 'Fun Play', '1.5 ngày'],
-                  ['Phase 9', 'Tích hợp SSO + Web3', 'Fun Planet', '1.5 ngày'],
-                  ['Phase 10', 'Testing E2E', 'Tất cả', '2-3 ngày'],
+                  ['Phase 1', t('edocTl1'), 'Fun Profile', t('edocDays15')],
+                  ['Phase 2', 'SSO Edge Functions (6 functions)', 'Fun Profile', t('edocDays34')],
+                  ['Phase 3', 'Web3 Auth System (web3-auth, otp)', 'Fun Profile', t('edocDays23')],
+                  ['Phase 4', 'Wallet & Soul NFT System', 'Fun Profile', t('edocDays23')],
+                  ['Phase 5', 'Webhook System', 'Fun Profile', t('edocDays2')],
+                  ['Phase 6', 'Rewards Aggregation', 'Fun Profile', t('edocDays12')],
+                  ['Phase 7', t('edocTlIntegrate'), 'Fun Farm', t('edocDays15')],
+                  ['Phase 8', t('edocTlIntegrate'), 'Fun Play', t('edocDays15')],
+                  ['Phase 9', t('edocTlIntegrate'), 'Fun Planet', t('edocDays15')],
+                  ['Phase 10', 'Testing E2E', t('edocTlAll'), t('edocDays23')],
                 ]}
               />
 
               <DocAlert type="info">
-                <strong>📅 Tổng thời gian ước tính:</strong> 18-24 ngày làm việc cho toàn bộ FUN-ID system.
+                <strong>{t('edocS12AlertStrong')}</strong>{t('edocS12Alert')}
               </DocAlert>
 
-              <DocSubSection title="Checklist Hoàn Thành">
+              <DocSubSection title={t('edocChecklistTitle')}>
                 <DocList items={[
-                  "✅ Fun Profile: Database schema đầy đủ (oauth, wallet, soul_nft)",
-                  "✅ Fun Profile: SSO Edge Functions hoạt động",
-                  "✅ Fun Profile: Web3 Auth (Connect Wallet) hoạt động",
-                  "✅ Fun Profile: OTP Sign Up hoạt động",
+                  t('edocCheck1'),
+                  t('edocCheck2'),
+                  t('edocCheck3'),
+                  t('edocCheck4'),
                   "✅ Fun Profile: Auto-create Custodial Wallet",
                   "✅ Fun Profile: Soul NFT Minting",
-                  "✅ Fun Profile: Webhook dispatcher hoạt động",
-                  "✅ Fun Farm: SSO + Web3 Login hoạt động",
-                  "✅ Fun Play: SSO + Web3 Login hoạt động",
-                  "✅ Fun Planet: SSO + Web3 Login hoạt động",
-                  "✅ Cross-platform auto-login hoạt động",
+                  t('edocCheck7'),
+                  t('edocCheck8'),
+                  t('edocCheck9'),
+                  t('edocCheck10'),
+                  t('edocCheck11'),
                   "✅ Rewards sync realtime"
                 ]} />
               </DocSubSection>
@@ -1121,13 +1092,13 @@ export const SSO_CONFIG = {
             {/* Footer */}
             <div className="mt-12 p-6 bg-gradient-to-r from-violet-50 to-purple-50 dark:from-violet-950/30 dark:to-purple-950/30 rounded-xl text-center border border-violet-200 dark:border-violet-800">
               <p className="text-lg font-semibold text-foreground mb-2">
-                🌟 "FUN-ID không chỉ là tài khoản - đó là Passport để bước vào New Earth"
+                {t('edocFooterQuote')}
               </p>
               <p className="text-muted-foreground mb-4">
-                📧 Có câu hỏi? Liên hệ team Fun Profile hoặc tạo issue trên project repository.
+                {t('edocFooterContact')}
               </p>
               <p className="text-sm text-muted-foreground">
-                Tài liệu cập nhật lần cuối: {new Date().toLocaleDateString('vi-VN')}
+                {t('edocFooterUpdated')} {new Date().toLocaleDateString(language === 'zh' ? 'zh-CN' : language)}
               </p>
             </div>
           </main>

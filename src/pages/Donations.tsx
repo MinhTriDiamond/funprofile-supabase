@@ -6,8 +6,10 @@ import { PullToRefreshContainer } from '@/components/common/PullToRefreshContain
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { TransactionHistoryPage } from '@/components/transactions/TransactionHistoryPage';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 export default function Donations() {
+  const { t } = useLanguage();
   const queryClient = useQueryClient();
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
 
@@ -39,10 +41,10 @@ export default function Donations() {
           <div className="container max-w-5xl mx-auto px-4 py-6">
             <TransactionHistoryPage
               scope="global"
-              userDisplayName="Cộng đồng"
+              userDisplayName={t('donCommunity')}
               presetFilters={{ type: 'gift' }}
-              title="Lịch sử giao dịch quà tặng toàn hệ thống"
-              subtitle="Toàn bộ giao dịch quà tặng công khai trên FUN Profile được hợp nhất từ một nguồn dữ liệu duy nhất."
+              title={t('donTitle')}
+              subtitle={t('donSubtitle')}
             />
           </div>
         </PullToRefreshContainer>

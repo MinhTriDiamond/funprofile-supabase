@@ -3,10 +3,11 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, Home } from 'lucide-react';
 import { DocSection, DocSubSection, DocParagraph, DocList, DocAlert, DocTable } from '@/components/docs/DocSection';
 import { Link } from 'react-router-dom';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 const DocsChangelog = () => {
   const navigate = useNavigate();
-
+  const { t } = useLanguage();
   return (
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -18,10 +19,10 @@ const DocsChangelog = () => {
               </Button>
               <div>
                 <h1 className="text-base sm:text-lg font-bold text-foreground">
-                  📊 Báo Cáo Tổng Hợp
+                  {t('chgTitle')}
                 </h1>
                 <p className="text-xs text-muted-foreground hidden sm:block">
-                  Toàn bộ thay đổi FUN Profile sau 6 tài liệu mới
+                  {t('chgSubtitle')}
                 </p>
               </div>
             </div>
@@ -41,157 +42,157 @@ const DocsChangelog = () => {
 
       <main className="max-w-5xl mx-auto px-3 sm:px-4 py-6 sm:py-10">
         {/* Thống kê tổng */}
-        <DocSection id="stats" title="📈 Thống Kê Tổng Hợp">
+        <DocSection id="stats" title={t('chgStatsTitle')}>
           <DocTable
-            headers={['Chỉ số', 'Số lượng']}
+            headers={[t('chgColMetric'), t('chgColCount')]}
             rows={[
-              ['Tổng file component mới', '4 components'],
-              ['Tổng dòng code docs', '~1,291 dòng'],
-              ['Tổng section TOC', '40 mục'],
-              ['Bảng DB thiết kế', '11 bảng + 1 bảng sequence'],
-              ['API Endpoints', '5 endpoint REST'],
+              [t('chgStat1'), '4 components'],
+              [t('chgStat2'), t('chgStat2Val')],
+              [t('chgStat3'), t('chgStat3Val')],
+              [t('chgStat4'), t('chgStat4Val')],
+              ['API Endpoints', t('chgStat5Val')],
               ['Reason Codes', '18 codes (10 positive + 8 adjustment)'],
-              ['Unit Test Cases', '4 kịch bản'],
-              ['Level / Trend', '5 cấp độ + 4 xu hướng'],
-              ['Config tham số', '7 nhóm, 20+ tham số'],
+              ['Unit Test Cases', t('chgStat7Val')],
+              ['Level / Trend', t('chgStat8Val')],
+              [t('chgStat9'), t('chgStat9Val')],
             ]}
           />
         </DocSection>
 
         {/* Bảng tổng hợp 6 tài liệu */}
-        <DocSection id="documents" title="📚 Tổng Hợp 6 Tài Liệu Kỹ Thuật">
+        <DocSection id="documents" title={t('chgDocsTitle')}>
           <DocTable
-            headers={['#', 'Tài liệu', 'Dòng code', 'Sections', 'Nội dung chính']}
+            headers={['#', t('chgColDoc'), t('chgColLines'), 'Sections', t('chgColMainContent')]}
             rows={[
-              ['1', 'LightScoreActivities', '~248', '9 mục (I–IX)', 'Hoạt động cá nhân, cộng đồng, nội dung, Web3, hệ sinh thái, chuỗi hành động, cấp độ, chống farm, công thức'],
-              ['2', 'PplpMintAndDbDocs', '~384', '6 mục', 'Cơ chế Mint 3 lớp, PPLP Score 5 trụ cột, chống Ego 3 lớp, 8 Thần Chú, 11 bảng DB, Pipeline 6 bước, AI chấm điểm'],
-              ['3', 'ScoringApiAndVersioningDocs', '~455', '7 mục', 'Versioning, 5 API REST, 18 Reason Codes, 5 Level, Mint Engine 7 bước, Dashboard, Bảo vệ dài hạn 3 lớp'],
-              ['4', 'ScoringConfigAndExampleDocs', '~204', '5 mục', 'Config V1 YAML/JSON 7 nhóm, E2E Example 8 bước → 8.67, Mint 86.7 FUN, 4 Unit Tests, 6 đảm bảo'],
+              ['1', 'LightScoreActivities', '~248', t('chgDoc1Sections'), t('chgDoc1Content')],
+              ['2', 'PplpMintAndDbDocs', '~384', t('chgDoc2Sections'), t('chgDoc2Content')],
+              ['3', 'ScoringApiAndVersioningDocs', '~455', t('chgDoc3Sections'), t('chgDoc3Content')],
+              ['4', 'ScoringConfigAndExampleDocs', '~204', t('chgDoc4Sections'), t('chgDoc4Content')],
             ]}
           />
         </DocSection>
 
         {/* Chi tiết từng tài liệu */}
-        <DocSection id="detail-1" title="1️⃣ LightScoreActivities (~248 dòng)">
+        <DocSection id="detail-1" title={t('chgDetail1Title')}>
           <DocParagraph>
-            Định nghĩa toàn bộ hoạt động được ghi nhận trong hệ Light Score, chia thành 9 mục lớn.
+            {t('chgD1Para')}
           </DocParagraph>
           <DocList items={[
-            'I. Hoạt Động Cá Nhân — checkin, profile, learn & earn',
-            'II. Tương Tác Cộng Đồng — like, comment, share, mentor',
-            'III. Tạo Giá Trị Nội Dung — post, video, course, bug report',
-            'IV. Kinh Tế Web3 — donate, stake, governance vote',
-            'V. Đóng Góp Hệ Sinh Thái — referral, proposal, charity',
-            'VI. Chuỗi Hành Động (Sequence) — bonus khi hoàn thành chuỗi',
-            'VII. Cấp Độ Light Score — Seed → Sprout → Bloom → Guardian → Architect',
-            'VIII. Chống Farm Điểm — velocity check, pattern detection, cooldown',
-            'IX. Công Thức Tính Điểm — L = (w_B × B + w_C × C) × M_cons × M_seq × Integrity',
+            t('chgD1Item1'),
+            t('chgD1Item2'),
+            t('chgD1Item3'),
+            t('chgD1Item4'),
+            t('chgD1Item5'),
+            t('chgD1Item6'),
+            t('chgD1Item7'),
+            t('chgD1Item8'),
+            t('chgD1Item9'),
           ]} />
           <DocAlert type="info">
             <Link to="/docs/architecture#activities-personal" className="underline text-inherit">
-              → Xem chi tiết trong Architecture Docs
+              {t('chgSeeDetail')}
             </Link>
           </DocAlert>
         </DocSection>
 
-        <DocSection id="detail-2" title="2️⃣ PplpMintAndDbDocs (~384 dòng)">
+        <DocSection id="detail-2" title={t('chgDetail2Title')}>
           <DocParagraph>
-            Cơ chế tính thưởng, Mint FUN Money, thiết kế DB và kiến trúc AI chấm điểm.
+            {t('chgD2Para')}
           </DocParagraph>
-          <DocSubSection title="Cơ Chế Mint 3 Lớp">
+          <DocSubSection title={t('chgD2MintTitle')}>
             <DocList items={[
-              'Lớp 1: Light Score → tính điểm hành vi',
-              'Lớp 2: PPLP Rating → đánh giá cộng đồng 5 trụ cột',
-              'Lớp 3: Mint Allocation → phân phối FUN Money theo epoch',
+              t('chgD2Mint1'),
+              t('chgD2Mint2'),
+              t('chgD2Mint3'),
             ]} />
           </DocSubSection>
-          <DocSubSection title="PPLP Score (5 Trụ Cột)">
+          <DocSubSection title={t('chgD2PillarsTitle')}>
             <DocTable
-              headers={['Trụ cột', 'Ý nghĩa']}
+              headers={[t('chgColPillar'), t('pdocColMeaning')]}
               rows={[
-                ['Truth (Chân Lý)', 'Nội dung trung thực, không thao túng'],
-                ['Sustain (Bền Vững)', 'Đóng góp dài hạn, không bùng nổ rồi biến mất'],
-                ['Healing (Chữa Lành)', 'Tạo giá trị tích cực, giảm xung đột'],
-                ['Service (Phụng Sự)', 'Hỗ trợ người khác vô điều kiện'],
-                ['Unity (Hợp Nhất)', 'Kết nối cộng đồng, không chia rẽ'],
+                [t('chgPillar1Name'), t('chgPillar1')],
+                [t('chgPillar2Name'), t('chgPillar2')],
+                [t('chgPillar3Name'), t('chgPillar3')],
+                [t('chgPillar4Name'), t('chgPillar4')],
+                [t('chgPillar5Name'), t('chgPillar5')],
               ]}
             />
           </DocSubSection>
-          <DocSubSection title="Thiết Kế DB (11 Bảng)">
+          <DocSubSection title={t('chgD2DbTitle')}>
             <DocList items={[
-              'users, profiles — danh tính người dùng',
-              'content — nội dung đã tạo',
-              'events — sự kiện hành vi',
-              'pplp_ratings — đánh giá PPLP từ cộng đồng',
-              'signals_anti_farm — tín hiệu chống farm',
-              'features_user_day — features tổng hợp theo ngày',
-              'light_score_ledger — sổ cái điểm ánh sáng',
-              'score_explanations — giải thích điểm cho user',
-              'mint_epochs — kỷ nguyên mint',
-              'mint_allocations — phân bổ mint cho từng user',
+              t('chgD2Db1'),
+              t('chgD2Db2'),
+              t('chgD2Db3'),
+              t('chgD2Db4'),
+              t('chgD2Db5'),
+              t('chgD2Db6'),
+              t('chgD2Db7'),
+              t('chgD2Db8'),
+              t('chgD2Db9'),
+              t('chgD2Db10'),
             ]} />
           </DocSubSection>
           <DocAlert type="info">
             <Link to="/docs/architecture#pplp-mint-mechanism" className="underline text-inherit">
-              → Xem chi tiết trong Architecture Docs
+              {t('chgSeeDetail')}
             </Link>
           </DocAlert>
         </DocSection>
 
-        <DocSection id="detail-3" title="3️⃣ ScoringApiAndVersioningDocs (~455 dòng)">
+        <DocSection id="detail-3" title={t('chgDetail3Title')}>
           <DocParagraph>
-            Versioning, API endpoints, Reason Codes, Level System, Mint Engine và bảo vệ dài hạn.
+            {t('chgD3Para')}
           </DocParagraph>
           <DocSubSection title="5 API Endpoints">
             <DocTable
-              headers={['Endpoint', 'Method', 'Chức năng']}
+              headers={['Endpoint', 'Method', t('pdocColFunc')]}
               rows={[
-                ['POST /v1/events', 'POST', 'Ingest sự kiện hành vi'],
+                ['POST /v1/events', 'POST', t('chgD3Api1')],
                 ['POST /v1/pplp/rate', 'POST', 'Submit PPLP rating'],
-                ['GET /v1/light/{uid}/summary', 'GET', 'Lấy Light Score tổng hợp'],
-                ['GET /v1/light/{uid}/private', 'GET', 'Điểm chi tiết (chỉ owner)'],
-                ['GET /v1/mint/epoch/{date}', 'GET', 'Thông tin Mint Epoch'],
+                ['GET /v1/light/{uid}/summary', 'GET', t('chgD3Api3')],
+                ['GET /v1/light/{uid}/private', 'GET', t('chgD3Api4')],
+                ['GET /v1/mint/epoch/{date}', 'GET', t('chgD3Api5')],
               ]}
             />
           </DocSubSection>
           <DocSubSection title="Reason Codes">
             <DocParagraph>
-              10 Positive Codes (RC_STREAK, RC_MENTOR, RC_QUALITY...) + 8 Adjustment Codes (RC_SPAM, RC_RING, RC_VELOCITY...) — giúp user hiểu tại sao điểm tăng/giảm.
+              {t('chgD3ReasonPara')}
             </DocParagraph>
           </DocSubSection>
-          <DocSubSection title="Level System (5 Cấp Độ)">
+          <DocSubSection title={t('chgD3LevelsTitle')}>
             <DocTable
-              headers={['Level', 'Light Score', 'Quyền lợi']}
+              headers={['Level', 'Light Score', t('chgColBenefits')]}
               rows={[
-                ['🌱 Seed', '0–20', 'Cơ bản'],
-                ['🌿 Sprout', '20–50', 'Mint thường'],
-                ['🌸 Bloom', '50–80', 'Mint ưu tiên + Đề xuất'],
-                ['🛡 Guardian', '80–95', 'Vote weight cao + Review'],
+                ['🌱 Seed', '0–20', t('chgLvl1')],
+                ['🌿 Sprout', '20–50', t('chgLvl2')],
+                ['🌸 Bloom', '50–80', t('chgLvl3')],
+                ['🛡 Guardian', '80–95', t('chgLvl4')],
                 ['🏛 Architect', '95–100', 'Governance + Council'],
               ]}
             />
           </DocSubSection>
-          <DocSubSection title="Bảo Vệ Dài Hạn (3 Lớp)">
+          <DocSubSection title={t('chgD3ProtectTitle')}>
             <DocList items={[
-              'Model Drift Detection — phát hiện mô hình lệch',
-              'Council Review — hội đồng đánh giá định kỳ',
-              'Slow Mint Curve — đường cong mint chậm, chống lạm phát',
+              t('chgD3Prot1'),
+              t('chgD3Prot2'),
+              t('chgD3Prot3'),
             ]} />
           </DocSubSection>
           <DocAlert type="info">
             <Link to="/docs/architecture#scoring-versioning" className="underline text-inherit">
-              → Xem chi tiết trong Architecture Docs
+              {t('chgSeeDetail')}
             </Link>
           </DocAlert>
         </DocSection>
 
-        <DocSection id="detail-4" title="4️⃣ ScoringConfigAndExampleDocs (~204 dòng)">
+        <DocSection id="detail-4" title={t('chgDetail4Title')}>
           <DocParagraph>
-            Config chuẩn V1, ví dụ tính điểm end-to-end với số cụ thể, và 4 unit test cases.
+            {t('chgD4Para')}
           </DocParagraph>
-          <DocSubSection title="Config V1 (7 Nhóm Tham Số)">
+          <DocSubSection title={t('chgD4ConfigTitle')}>
             <DocTable
-              headers={['Nhóm', 'Tham số chính', 'Giá trị']}
+              headers={[t('sceColGroup'), t('sceColParam'), t('idocColValue')]}
               rows={[
                 ['weights', 'base_action / content', '0.4 / 0.6'],
                 ['reputation', 'alpha, w_min, w_max', '0.25, 0.5, 2.0'],
@@ -203,11 +204,11 @@ const DocsChangelog = () => {
               ]}
             />
           </DocSubSection>
-          <DocSubSection title="Ví Dụ End-to-End (User u_ly)">
+          <DocSubSection title={t('chgD4ExampleTitle')}>
             <DocTable
-              headers={['Bước', 'Phép tính', 'Kết quả']}
+              headers={[t('sceColStep'), t('sceColCalc'), t('sceColResult')]}
               rows={[
-                ['1. Content Score', 'h(P_c) = (P_c/10)^1.3 cho 3 bài', 'C = 2.33'],
+                ['1. Content Score', t('chgD4Calc1'), 'C = 2.33'],
                 ['2. Base Action', 'Checkin + Mentor + Comment', 'B = 10'],
                 ['3. Raw Score', '0.4×10 + 0.6×2.33', 'L_raw = 5.398'],
                 ['4. Consistency', '1 + 0.6(1 - e^(-30/30))', 'M_cons = 1.379'],
@@ -220,34 +221,34 @@ const DocsChangelog = () => {
           </DocSubSection>
           <DocSubSection title="4 Unit Test Cases">
             <DocTable
-              headers={['Test', 'Điều kiện', 'Kết quả mong đợi']}
+              headers={['Test', t('mbxColCondition'), t('sceLblExpected')]}
               rows={[
-                ['Spam Burst', '50 posts/ngày, rating thấp', 'Điểm rất thấp (content exponent)'],
-                ['Viral Drama', 'Nhiều rating, healing = 0', 'P_c thấp → không tăng mint'],
-                ['Silent Contributor', '60 ngày ổn định, ít bài chất lượng', 'Multiplier cao, vượt người ồn ào'],
-                ['Rating Ring', '5 user chấm lẫn nhau', 'Reputation giảm + penalty kích hoạt'],
+                ['Spam Burst', t('chgD4Test1Cond'), t('chgD4Test1Res')],
+                ['Viral Drama', t('chgD4Test2Cond'), t('chgD4Test2Res')],
+                ['Silent Contributor', t('chgD4Test3Cond'), t('chgD4Test3Res')],
+                ['Rating Ring', t('chgD4Test4Cond'), t('chgD4Test4Res')],
               ]}
             />
           </DocSubSection>
           <DocAlert type="info">
             <Link to="/docs/architecture#scoring-config" className="underline text-inherit">
-              → Xem chi tiết trong Architecture Docs
+              {t('chgSeeDetail')}
             </Link>
           </DocAlert>
         </DocSection>
 
         {/* Đảm bảo hệ thống */}
-        <DocSection id="guarantees" title="🛡 6 Đảm Bảo Hệ Thống">
+        <DocSection id="guarantees" title={t('chgGuaranteesTitle')}>
           <DocList items={[
-            '✔ Không có đột biến mint — slow curve bảo vệ',
-            '✔ Không có "post → tiền ngay" — phải qua epoch',
-            '✔ Không có ranking công khai — chỉ thấy điểm của mình',
-            '✔ Không thể farm vô hạn — velocity + cooldown + cap',
-            '✔ Chất lượng > Số lượng — content exponent gamma = 1.3',
-            '✔ Bền vững > Bùng nổ — consistency multiplier + time decay',
+            t('chgG1'),
+            t('chgG2'),
+            t('chgG3'),
+            t('chgG4'),
+            t('chgG5'),
+            t('chgG6'),
           ]} />
           <DocAlert type="success">
-            Hệ Light Score đã đủ mạnh để gọi đối tác kỹ thuật, trình bày trước investor Web3, hoặc đưa vào Whitepaper chính thức.
+            {t('chgGAlert')}
           </DocAlert>
         </DocSection>
       </main>

@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
+import { useLanguage } from '@/i18n/LanguageContext';
 import { usePersistedTab } from '@/hooks/usePersistedTab';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -23,6 +24,7 @@ interface FriendProfile {
 }
 
 const Friends = () => {
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const { userId: currentUserId, isAuthenticated, isLoading: authLoading } = useCurrentUser();
   const [loading, setLoading] = useState(true);
@@ -148,7 +150,7 @@ const Friends = () => {
         .update({ status: 'accepted' })
         .eq('id', id);
       if (!error) {
-        toast.success('Đã chấp nhận lời mời kết bạn!');
+        toast.success(t('friAccepted'));
         if (currentUserId) fetchFriendRequests(currentUserId);
       }
     } else if (action === 'reject') {
@@ -157,7 +159,7 @@ const Friends = () => {
         .delete()
         .eq('id', id);
       if (!error) {
-        toast.success('Đã từ chối lời mời');
+        toast.success(t('friDeclined'));
         if (currentUserId) fetchFriendRequests(currentUserId);
       }
     }
@@ -170,7 +172,7 @@ const Friends = () => {
         .delete()
         .eq('id', id);
       if (!error) {
-        toast.success('Đã hủy lời mời kết bạn');
+        toast.success(t('friCancelled'));
         if (currentUserId) fetchSentRequests(currentUserId);
       }
     }
@@ -186,7 +188,7 @@ const Friends = () => {
           status: 'pending'
         });
       if (!error) {
-        toast.success('Đã gửi lời mời kết bạn!');
+        toast.success(t('friSent'));
         fetchSuggestions(currentUserId);
         fetchSentRequests(currentUserId);
       }
@@ -198,11 +200,11 @@ const Friends = () => {
   };
 
   const menuItems = [
-    { icon: Users, label: 'Trang chủ', value: 'all' },
-    { icon: UserPlus, label: 'Lời mời kết bạn', value: 'requests', badge: friendRequests.length },
-    { icon: UserCheck, label: 'Gợi ý', value: 'suggestions' },
-    { icon: Users, label: 'Tất cả bạn bè', value: 'friends' },
-    { icon: Gift, label: 'Sinh nhật', value: 'birthdays' },
+    { icon: Users, label: t('friMenuHome'), value: 'all' },
+    { icon: UserPlus, label: t('friMenuRequests'), value: 'requests', badge: friendRequests.length },
+    { icon: UserCheck, label: t('friMenuSuggestions'), value: 'suggestions' },
+    { icon: Users, label: t('friMenuAll'), value: 'friends' },
+    { icon: Gift, label: t('friMenuBirthdays'), value: 'birthdays' },
   ];
 
   const handlePullRefresh = useCallback(async () => {
@@ -255,7 +257,7 @@ const Friends = () => {
 
             <div className="p-4 pt-14 lg:pt-4 h-full overflow-y-auto">
               <div className="flex items-center justify-between mb-4">
-                <h1 className="text-2xl font-bold">Bạn bè</h1>
+                <h1 className="text-2xl font-bold">{t('friTitle')}</h1>
                 <button className="w-9 h-9 bg-muted rounded-full flex items-center justify-center hover:bg-muted/80">
                   <Settings className="w-5 h-5" />
                 </button>
@@ -311,7 +313,7 @@ const Friends = () => {
                     <Users className="w-5 h-5" />
                   </button>
                   <h1 className="text-lg font-bold truncate">
-                    {menuItems.find(m => m.value === activeTab)?.label || 'Bạn bè'}
+                    {menuItems.find(m => m.value === activeTab)?.label || t('friTitle')}
                   </h1>
                 </div>
                 <button className="p-2 rounded-full hover:bg-muted">
@@ -325,8 +327,8 @@ const Friends = () => {
                 <div className="space-y-6">
                   {sentRequests.length > 0 && (
                     <FriendCarousel
-                      title="Lời mời đã gửi"
-                      subtitle={`${sentRequests.length} đang chờ`}
+                      title={t('friSentTitle')}
+                      subtitle={`${sentRequests.length}${t('friSentSuffix')}`}
                       items={sentRequests}
                       type="sent"
                       onAction={handleSentAction}
@@ -335,8 +337,8 @@ const Friends = () => {
 
                   {friendRequests.length > 0 && (
                     <FriendCarousel
-                      title="Lời mời kết bạn"
-                      subtitle={`${friendRequests.length} lời mời`}
+                      title={t('friMenuRequests')}
+                      subtitle={`${friendRequests.length}${t('friRequestsSuffix')}`}
                       items={friendRequests}
                       type="request"
                       onAction={handleRequestAction}
@@ -344,7 +346,7 @@ const Friends = () => {
                   )}
 
                   <FriendCarousel
-                    title="Những người bạn có thể biết"
+                    title={t('friSuggestionsTitle')}
                     items={suggestions}
                     type="suggestion"
                     onAction={handleSuggestionAction}
@@ -356,7 +358,7 @@ const Friends = () => {
 
               {activeTab === 'requests' && (
                 <div className="px-4">
-                  <h2 className="text-xl font-bold mb-4 hidden lg:block">Lời mời kết bạn</h2>
+                  <h2 className="text-xl font-bold mb-4 hidden lg:block">{t('friMenuRequests')}</h2>
                   <FriendCarousel
                     title=""
                     items={friendRequests}
@@ -368,7 +370,7 @@ const Friends = () => {
 
               {activeTab === 'suggestions' && (
                 <div className="px-4">
-                  <h2 className="text-xl font-bold mb-4 hidden lg:block">Những người bạn có thể biết</h2>
+                  <h2 className="text-xl font-bold mb-4 hidden lg:block">{t('friSuggestionsTitle')}</h2>
                   <FriendCarousel
                     title=""
                     items={suggestions}
@@ -382,11 +384,11 @@ const Friends = () => {
               {activeTab === 'friends' && (
                 <div className="px-4 lg:px-6">
                   <div className="flex items-center gap-3 mb-4">
-                    <h2 className="text-xl font-bold hidden lg:block">Tất cả bạn bè</h2>
+                    <h2 className="text-xl font-bold hidden lg:block">{t('friMenuAll')}</h2>
                     <div className="relative flex-1 lg:max-w-xs lg:ml-auto">
                       <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                       <Input 
-                        placeholder="Tìm kiếm bạn bè" 
+                        placeholder={t('friSearchPlaceholder')} 
                         className="pl-10 bg-muted border-0 h-10" 
                       />
                     </div>
@@ -399,10 +401,10 @@ const Friends = () => {
 
               {activeTab === 'birthdays' && (
                 <div className="px-4">
-                  <h2 className="text-xl font-bold mb-4 hidden lg:block">Sinh nhật</h2>
+                  <h2 className="text-xl font-bold mb-4 hidden lg:block">{t('friMenuBirthdays')}</h2>
                   <div className="bg-card/70 rounded-xl shadow-sm p-8 text-center">
                     <Gift className="w-16 h-16 mx-auto text-muted-foreground/30 mb-4" />
-                    <p className="text-muted-foreground">Không có sinh nhật nào hôm nay</p>
+                    <p className="text-muted-foreground">{t('friNoBirthdays')}</p>
                   </div>
                 </div>
               )}

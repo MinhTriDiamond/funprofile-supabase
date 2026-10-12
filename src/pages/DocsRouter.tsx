@@ -1,4 +1,5 @@
 import { useEffect, Suspense } from "react";
+import { useLanguage } from '@/i18n/LanguageContext';
 import { useLocation, Navigate } from "react-router-dom";
 import { FacebookNavbar } from "@/components/layout/FacebookNavbar";
 import { MobileBottomNav } from "@/components/layout/MobileBottomNav";
@@ -49,6 +50,7 @@ const DocsFallback = () => (
 );
 
 export default function DocsRouter() {
+  const { t } = useLanguage();
   const location = useLocation();
 
   const subpath = location.pathname.replace(/^\/docs\/?/, "");
@@ -59,92 +61,92 @@ export default function DocsRouter() {
 
     if (first === "platform") {
       document.title = "FUN Ecosystem Platform Documentation";
-      ensureMetaDescription("FUN Ecosystem platform documentation: kiến trúc, auth, wallet, feed, rewards, media, admin và bảo mật.");
+      ensureMetaDescription(t("drPlatformDesc"));
       setCanonical(`${origin}/docs/platform`);
       return;
     }
     if (first === "ecosystem") {
       document.title = "FUN Ecosystem SSO Documentation";
-      ensureMetaDescription("FUN Ecosystem SSO documentation: Email OTP, Wallet login, Social login và Law of Light.");
+      ensureMetaDescription(t("drSsoDesc"));
       setCanonical(`${origin}/docs/ecosystem`);
       return;
     }
     if (first === "integration") {
       document.title = "FUN Profile Integration Guide";
-      ensureMetaDescription("Hướng dẫn tích hợp FUN Profile SSO cho các platform: Fun Farm, Fun Play, Fun Planet.");
+      ensureMetaDescription(t("drIntegrationDesc"));
       setCanonical(`${origin}/docs/integration`);
       return;
     }
     if (first === "sdk-repository") {
       document.title = "SDK Repository Setup | @fun-ecosystem/sso-sdk";
-      ensureMetaDescription("Hướng dẫn tạo GitHub Repository cho @fun-ecosystem/sso-sdk - npm package chính thức.");
+      ensureMetaDescription(t("drSdkDesc"));
       setCanonical(`${origin}/docs/sdk-repository`);
       return;
     }
     if (first === "master-charter") {
-      document.title = "Hiến Pháp Gốc | Master Charter of FUN Ecosystem";
-      ensureMetaDescription("Hiến Pháp Gốc của FUN Ecosystem - Nền Kinh Tế Ánh Sáng 5D của Trái Đất Mới. 8 chương thiêng liêng.");
+      document.title = t("drCharterTitle");
+      ensureMetaDescription(t("drCharterDesc"));
       setCanonical(`${origin}/docs/master-charter`);
       return;
     }
     if (first === "pplp") {
       document.title = "Proof of Pure Love Protocol (PPLP) | FUN Ecosystem";
-      ensureMetaDescription("Giao Thức Bằng Chứng Tình Yêu Thuần Khiết - Nền tảng đồng thuận ánh sáng cho Trái Đất Mới.");
+      ensureMetaDescription(t("drPplpDesc"));
       setCanonical(`${origin}/docs/pplp`);
       return;
     }
     if (first === "architecture") {
       document.title = "Core Architecture | FUN Ecosystem";
-      ensureMetaDescription("Kiến trúc 7 layers của FUN Ecosystem: Digital Identity Bank, Light Score PPLP, Reward Engine, Governance.");
+      ensureMetaDescription(t("drArchDesc"));
       setCanonical(`${origin}/docs/architecture`);
       return;
     }
     if (first === "changelog") {
-      document.title = "Báo Cáo Tổng Hợp | FUN Ecosystem";
-      ensureMetaDescription("Báo cáo tổng hợp toàn bộ thay đổi FUN Profile sau 6 tài liệu kỹ thuật mới.");
+      document.title = t("drChangelogTitle");
+      ensureMetaDescription(t("drChangelogDesc"));
       setCanonical(`${origin}/docs/changelog`);
       return;
     }
     if (first === "anti-whale-cap") {
       document.title = "Anti-Whale Cap 3% | FUN Ecosystem Mint Policy";
-      ensureMetaDescription("Quy tắc anti-whale cap 3% userRewardPool mỗi user mỗi cycle mint FUN — chống tập trung token, đảm bảo phân phối công bằng.");
+      ensureMetaDescription(t("drAntiWhaleDesc"));
       setCanonical(`${origin}/docs/anti-whale-cap`);
       return;
     }
     if (first === "token-limits") {
       document.title = "Token Limits & Realtime Status | FUN Ecosystem";
-      ensureMetaDescription("Trạng thái real-time SoftCeiling, cap per-user và cap on-chain mỗi action của FUN token.");
+      ensureMetaDescription(t("drTokenLimitsDesc"));
       setCanonical(`${origin}/docs/token-limits`);
       return;
     }
     if (first === "cascade-formula") {
-      document.title = "Công thức Thác Đổ 3 Tầng | FUN Ecosystem";
-      ensureMetaDescription("Cơ chế phân phối FUN end-to-end qua 3 tầng: Soft Ceiling → Pool Split 70/15/10/5 → Anti-Whale Cap 3%, kèm rollover.");
+      document.title = t("casDocTitle");
+      ensureMetaDescription(t("drCascadeDesc"));
       setCanonical(`${origin}/docs/cascade-formula`);
       return;
     }
     if (first === "connector-spec") {
       document.title = "Connector — First On-chain Giver | FUN.Rich";
-      ensureMetaDescription("Quy tắc Connector chính thức của FUN.Rich: 48h window, min amount, base score 10 và growth bonus.");
+      ensureMetaDescription(t("drConnectorDesc"));
       setCanonical(`${origin}/docs/connector-spec`);
       return;
     }
     if (first === "mystery-box") {
-      document.title = "Hộp Bí Ẩn — Spec v1 | FUN.Rich";
-      ensureMetaDescription("Spec Mystery Box v1: 5 tier, 7 trigger, pity 50, TTL 90 ngày, cap 60 LS/ngày, cộng vào mint FUN.");
+      document.title = t("drMysteryTitle");
+      ensureMetaDescription(t("drMysteryDesc"));
       setCanonical(`${origin}/docs/mystery-box`);
       return;
     }
     if (first === "pet-game-guide") {
-      document.title = "Hướng Dẫn Chơi Lumi — Pet Game | FUN.Rich";
-      ensureMetaDescription("Hướng dẫn chính thức pet Lumi trên FUN.Rich: nuôi, cheer, Mystery Box, Shop CAMLY on-chain, Risk Engine, Arena 1v1 và nguyên tắc cốt lõi.");
+      document.title = t("drPetTitle");
+      ensureMetaDescription(t("drPetDesc"));
       setCanonical(`${origin}/docs/pet-game-guide`);
       return;
     }
     document.title = "FUN Ecosystem Documentation";
-    ensureMetaDescription("Tài liệu FUN Ecosystem: SSO, app architecture, wallet, feed, rewards, media và admin.");
+    ensureMetaDescription(t("drDocsDesc"));
     setCanonical(`${origin}/docs`);
-  }, [first]);
+  }, [first, t]);
 
   const page = (() => {
     if (first === "platform") return <PlatformDocs />;
