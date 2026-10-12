@@ -1,29 +1,29 @@
 import { DocSection, DocSubSection, DocParagraph, DocList, DocAlert, DocTable } from './DocSection';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 const PplpMintAndDbDocs = () => {
+  const { t } = useLanguage();
   return (
     <>
       {/* ===== PHẦN A: CƠ CHẾ TÍNH THƯỞNG & MINT FUN MONEY ===== */}
-      <DocSection id="pplp-mint-mechanism" title="💎 Cơ Chế Tính Thưởng & Mint FUN Money">
-        <DocParagraph>
-          PPLP không mint theo cảm xúc đám đông. Mint diễn ra theo giá trị thật, theo chu kỳ, với 3 lớp phân biệt rõ ràng.
-        </DocParagraph>
+      <DocSection id="pplp-mint-mechanism" title={t('pmdMintTitle')}>
+        <DocParagraph>{t('pmdMintIntro')}</DocParagraph>
 
-        <DocSubSection title="Phân biệt 3 lớp trong hệ thống thưởng">
+        <DocSubSection title={t('pmdLayersTitle')}>
           <DocTable
-            headers={['Lớp', 'Vai trò', 'Mô tả']}
+            headers={[t('pmdColLayer'), t('pdocColRole'), t('pdocColDesc')]}
             rows={[
-              ['Light Score', 'Thước đo năng lượng', 'Đo lường hành vi & tần số đóng góp'],
-              ['Mint Eligibility', 'Điều kiện mint', 'Không phải ai có điểm cũng được mint'],
-              ['FUN Money Mint Flow', 'Dòng chảy phát hành', 'Mint theo giá trị thật, không theo cảm xúc'],
+              ['Light Score', t('pmdLayer1Role'), t('pmdLayer1Desc')],
+              ['Mint Eligibility', t('pmdLayer2Role'), t('pmdLayer2Desc')],
+              ['FUN Money Mint Flow', t('pmdLayer3Role'), t('pmdLayer3Desc')],
             ]}
           />
         </DocSubSection>
 
-        <DocSubSection title="Công thức PPLP Score hoàn chỉnh">
+        <DocSubSection title={t('pmdFormulaTitle')}>
           <div className="bg-muted rounded-lg p-4 my-4 border-l-4 border-primary">
             <p className="font-mono text-sm sm:text-base text-foreground font-semibold leading-relaxed">
-              PPLP Score = (5 Cột Trụ × Điểm Cộng Đồng)<br />
+              {t('pmdFormulaScoreL1')}<br />
               &nbsp;&nbsp;× Reputation Weight<br />
               &nbsp;&nbsp;× Consistency Multiplier<br />
               &nbsp;&nbsp;× Sequence Multiplier<br />
@@ -33,179 +33,157 @@ const PplpMintAndDbDocs = () => {
         </DocSubSection>
 
         <DocSubSection title="1️⃣ Reputation Weight">
-          <DocParagraph>
-            Không phải mọi người đánh giá đều có trọng số như nhau. Reputation được tính theo:
-          </DocParagraph>
+          <DocParagraph>{t('pmdRepPara')}</DocParagraph>
           <DocList items={[
-            'Thời gian đóng góp liên tục',
-            'Lịch sử không vi phạm',
-            'Chuỗi hành vi tích cực (Sequence)',
+            t('pmdRep1'),
+            t('pmdRep2'),
+            t('pmdRep3'),
             'Cross-platform contribution',
           ]} />
           <DocAlert type="warning">
-            Điều này chặn "đội nhóm tự chấm điểm cho nhau" — mỗi rater có trọng số riêng dựa trên uy tín thực.
+            {t('pmdRepAlert')}
           </DocAlert>
         </DocSubSection>
 
         <DocSubSection title="2️⃣ Consistency Multiplier">
-          <DocParagraph>
-            Người đóng góp đều đặn được nhân hệ số cao hơn. PPLP thưởng cho nhịp điệu, không thưởng cho bùng nổ ngắn hạn.
-          </DocParagraph>
+          <DocParagraph>{t('pmdConsPara')}</DocParagraph>
           <DocTable
-            headers={['Mức độ', 'Hệ số']}
+            headers={[t('pmdColLevel'), t('pmdColFactor')]}
             rows={[
-              ['1 bài rất tốt (đơn lẻ)', '×1.0'],
-              ['30 ngày đóng góp ổn định', '×1.3'],
-              ['90 ngày đóng góp ổn định', '×1.6'],
+              [t('pmdConsR1'), '×1.0'],
+              [t('pmdConsR2'), '×1.3'],
+              [t('pmdConsR3'), '×1.6'],
             ]}
           />
         </DocSubSection>
 
         <DocSubSection title="3️⃣ Sequence Multiplier">
-          <DocParagraph>
-            Một hành động đơn lẻ ≠ Chuỗi hành động. PPLP thưởng cho hệ sinh thái hình thành, không thưởng cho spotlight.
-          </DocParagraph>
+          <DocParagraph>{t('pmdSeqPara')}</DocParagraph>
           <pre className="bg-muted rounded-lg p-4 text-xs sm:text-sm overflow-x-auto my-4 text-foreground font-mono leading-relaxed">
-{`Đăng bài giá trị
-  → Người khác học
-  → Áp dụng thực tế
-  → Báo cáo kết quả
-  → Tạo cộng đồng nhỏ
-
-★ Chuỗi này được nhân hệ số cao`}
+{t('pmdSeqChain')}
           </pre>
         </DocSubSection>
 
         <DocSubSection title="4️⃣ Integrity Penalty">
-          <DocParagraph>
-            Nếu hệ thống phát hiện spam tinh vi, đánh giá chéo, kéo tương tác giả, hoặc lạm dụng cảm xúc — điểm sẽ bị giảm theo thuật toán chậm – bền – minh bạch.
-          </DocParagraph>
+          <DocParagraph>{t('pmdIntPara')}</DocParagraph>
           <DocAlert type="info">
-            Không có "phạt công khai". Chỉ có điều chỉnh cân bằng năng lượng.
+            {t('pmdIntAlert')}
           </DocAlert>
         </DocSubSection>
 
-        <DocSubSection title="Cơ chế Mint FUN Money (Epoch-based)">
-          <DocParagraph>
-            PPLP không mint ngay theo từng bài. Mint diễn ra theo chu kỳ (hàng tuần / hàng tháng).
-          </DocParagraph>
+        <DocSubSection title={t('pmdMintEpochTitle')}>
+          <DocParagraph>{t('pmdMintEpochPara')}</DocParagraph>
           <DocList ordered items={[
-            'Tổng hợp tổng Light Value toàn hệ',
-            'Xác định "Mint Pool" (giới hạn cung tăng thêm từ từ)',
-            'Phân bổ theo tỷ lệ đóng góp thực',
+            t('pmdMintEpoch1'),
+            t('pmdMintEpoch2'),
+            t('pmdMintEpoch3'),
           ]} />
 
           <div className="bg-muted rounded-lg p-4 my-4 border-l-4 border-primary">
             <p className="font-mono text-sm sm:text-base text-foreground font-semibold">
-              FUN Minted = (Tổng Mint Pool Chu Kỳ) × (Light Contribution của bạn / Tổng Light Contribution hệ thống)
+              {t('pmdFormulaMinted')}
             </p>
           </div>
 
           <DocAlert type="success">
-            Không ai farm vô hạn. Tổng cung tăng từ từ. Mint dựa trên giá trị thật toàn hệ.
+            {t('pmdMintEpochAlert')}
           </DocAlert>
         </DocSubSection>
 
-        <DocSubSection title="Phân biệt Light Score & FUN Money">
+        <DocSubSection title={t('pmdCompareTitle')}>
           <DocTable
             headers={['', 'Light Score', 'FUN Money']}
             rows={[
-              ['Bản chất', 'Thước đo nội tại', 'Dòng chảy kinh tế'],
-              ['Mục đích', 'Governance, mở tính năng, ưu tiên đóng góp', 'Giao dịch, staking, phần thưởng'],
-              ['Hiển thị', 'Level/Trend (không khoe)', 'Số dư cá nhân'],
+              [t('pmdNature'), t('pmdNatureLs'), t('pmdNatureFm')],
+              [t('pdocColPurpose'), t('pmdPurposeLs'), t('pmdPurposeFm')],
+              [t('pmdDisplay'), t('pmdDisplayLs'), t('pmdDisplayFm')],
             ]}
           />
         </DocSubSection>
       </DocSection>
 
       {/* ===== BẢO VỆ CHỐNG EGO ===== */}
-      <DocSection id="pplp-ego-protection" title="🛡 Ba Lớp Bảo Vệ Chống Ego">
-        <DocSubSection title="1. Không hiển thị bảng xếp hạng cạnh tranh">
-          <DocParagraph>
-            Không Top 1 – Top 2. Chỉ hiển thị Light Level cá nhân và xu hướng tăng trưởng.
-          </DocParagraph>
+      <DocSection id="pplp-ego-protection" title={t('pmdEgoTitle')}>
+        <DocSubSection title={t('pmdEgo1Title')}>
+          <DocParagraph>{t('pmdEgo1Para')}</DocParagraph>
         </DocSubSection>
 
-        <DocSubSection title="2. Không hiển thị điểm chi tiết công khai">
-          <DocParagraph>
-            Người khác không thấy bạn được bao nhiêu điểm chính xác. Chỉ thấy:
-          </DocParagraph>
+        <DocSubSection title={t('pmdEgo2Title')}>
+          <DocParagraph>{t('pmdEgo2Para')}</DocParagraph>
           <DocList items={[
-            '"Light Stable" — Ổn định',
-            '"Light Growing" — Đang phát triển',
-            '"Light Builder" — Đang xây dựng',
-            '"Light Guardian" — Đang bảo vệ',
+            t('pmdEgo2Item1'),
+            t('pmdEgo2Item2'),
+            t('pmdEgo2Item3'),
+            t('pmdEgo2Item4'),
           ]} />
         </DocSubSection>
 
-        <DocSubSection title="3. Mint không tức thì">
-          <DocParagraph>
-            Không có cảm giác "đăng bài → nhận tiền ngay". Có độ trễ để loại bỏ hành vi kích thích dopamine và chặn động cơ ngắn hạn.
-          </DocParagraph>
+        <DocSubSection title={t('pmdEgo3Title')}>
+          <DocParagraph>{t('pmdEgo3Para')}</DocParagraph>
         </DocSubSection>
 
-        <DocSubSection title="Kết nối FUN Money & Camly Coin">
+        <DocSubSection title={t('pmdTokenTitle')}>
           <DocTable
-            headers={['Token', 'Ẩn dụ', 'Vai trò']}
+            headers={['Token', t('pmdColMetaphor'), t('pdocColRole')]}
             rows={[
-              ['FUN Money', '☀️ Mặt Trời', 'Tầm nhìn – chuẩn giá trị – mint theo PPLP'],
-              ['Camly Coin', '🌊 Dòng Nước', 'Utility nội bộ – phí nâng cao – boost – staking'],
+              ['FUN Money', t('pmdSun'), t('pmdSunRole')],
+              ['Camly Coin', t('pmdWater'), t('pmdWaterRole')],
             ]}
           />
           <DocAlert type="info">
-            FUN dẫn đến đâu → Camly chạy theo đến đó.
+            {t('pmdTokenAlert')}
           </DocAlert>
         </DocSubSection>
       </DocSection>
 
       {/* ===== 8 CÂU THẦN CHÚ ===== */}
-      <DocSection id="pplp-mantras" title="🙏 8 Câu Thần Chú Thiêng Liêng">
+      <DocSection id="pplp-mantras" title={t('pmdMantrasTitle')}>
         <DocList ordered items={[
-          'Con là Ánh Sáng Yêu Thương Thuần Khiết của Cha Vũ Trụ.',
-          'Con là Ý Chí của Cha Vũ Trụ.',
-          'Con là Trí Tuệ của Cha Vũ Trụ.',
-          'Con là Hạnh Phúc.',
-          'Con là Tình Yêu.',
-          'Con là Tiền của Cha.',
-          'Con xin Sám Hối Sám Hối Sám Hối.',
-          'Con xin Biết Ơn Biết Ơn Biết Ơn, trong Ánh Sáng Yêu Thương Thuần Khiết của Cha Vũ Trụ.',
+          t('lawMantra1'),
+          t('lawMantra2'),
+          t('lawMantra3'),
+          t('lawMantra4'),
+          t('lawMantra5'),
+          t('lawMantra6'),
+          t('lawMantra7'),
+          t('lawMantra8'),
         ]} />
         <DocAlert type="success">
-          "PPLP không tạo ra người nổi tiếng. PPLP tạo ra người có giá trị. FUN Money không chảy về nơi ồn ào. FUN Money chảy về nơi có nhịp sống tử tế và bền vững."
+          {t('pmdMantrasAlert')}
         </DocAlert>
       </DocSection>
 
       {/* ===== PHẦN B: THIẾT KẾ LOGIC DB ===== */}
-      <DocSection id="db-logic-design" title="🗄 Thiết Kế Logic DB (Event-based Scoring Model)">
-        <DocSubSection title="Nguyên tắc thiết kế">
+      <DocSection id="db-logic-design" title={t('pmdDbTitle')}>
+        <DocSubSection title={t('pmdDbPrinTitle')}>
           <DocList items={[
-            'Event-sourcing — Mọi hành vi tạo 1 "event" bất biến (append-only)',
+            t('pmdDbPrin1'),
             'Pipeline — Ingest → Validate → Feature → Score → Mint Eligibility',
-            'Audit-first — Có thể truy lại "vì sao được điểm"',
-            'Privacy / Anti-ego — Public chỉ thấy Level/Trend, không show raw score',
+            t('pmdDbPrin3'),
+            t('pmdDbPrin4'),
           ]} />
         </DocSubSection>
 
-        <DocSubSection title="11 Bảng/Collection Lõi">
+        <DocSubSection title={t('pmdDbTablesTitle')}>
           <DocTable
-            headers={['#', 'Bảng', 'Mô tả', 'Ghi chú']}
+            headers={['#', t('edocColTable'), t('pdocColDesc'), t('pmdColNote')]}
             rows={[
-              ['1', 'users', 'Thông tin tài khoản', 'wallet_address, kyc_status, status'],
-              ['2', 'profiles', 'Hồ sơ Light Identity', 'completion_pct, pplp_accepted_at, reputation_level'],
-              ['3', 'content', 'Nội dung do user tạo', 'type, root_content_id, metadata_json'],
-              ['4', 'events ★', 'Trái tim — append-only', 'event_type, actor, target, payload_json, ingest_hash'],
-              ['5', 'pplp_ratings', 'Đánh giá 5 trụ cột', 'pillar scores 0-2, weight_applied snapshot'],
-              ['6', 'signals_anti_farm', 'Cảnh báo gian lận', 'signal_type, severity, evidence_json'],
-              ['7', 'features_user_day', 'Features tổng hợp theo ngày', 'count_posts, consistency_streak, anti_farm_risk'],
-              ['8', 'light_score_ledger', 'Kết quả tính điểm', 'base_score, multipliers, final_light_score, level'],
-              ['9', 'score_explanations', 'Giải thích điểm (audit)', 'top_contributors_json, penalties_json, version'],
-              ['10', 'mint_epochs', 'Chu kỳ mint', 'mint_pool_amount, rules_version, status'],
-              ['11', 'mint_allocations', 'Phân bổ mint cho user', 'eligible, allocation_amount, onchain_tx_hash'],
+              ['1', 'users', t('pmdDbT1'), 'wallet_address, kyc_status, status'],
+              ['2', 'profiles', t('pmdDbT2'), 'completion_pct, pplp_accepted_at, reputation_level'],
+              ['3', 'content', t('pmdDbT3'), 'type, root_content_id, metadata_json'],
+              ['4', 'events ★', t('pmdDbT4'), 'event_type, actor, target, payload_json, ingest_hash'],
+              ['5', 'pplp_ratings', t('pmdDbT5'), 'pillar scores 0-2, weight_applied snapshot'],
+              ['6', 'signals_anti_farm', t('pmdDbT6'), 'signal_type, severity, evidence_json'],
+              ['7', 'features_user_day', t('pmdDbT7'), 'count_posts, consistency_streak, anti_farm_risk'],
+              ['8', 'light_score_ledger', t('pmdDbT8'), 'base_score, multipliers, final_light_score, level'],
+              ['9', 'score_explanations', t('pmdDbT9'), 'top_contributors_json, penalties_json, version'],
+              ['10', 'mint_epochs', t('pmdDbT10'), 'mint_pool_amount, rules_version, status'],
+              ['11', 'mint_allocations', t('pmdDbT11'), 'eligible, allocation_amount, onchain_tx_hash'],
             ]}
           />
         </DocSubSection>
 
-        <DocSubSection title="Bảng events — Event Types chuẩn PPLP">
+        <DocSubSection title={t('pmdDbEventsTitle')}>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 my-4">
             {[
               'LOGIN', 'LIGHT_CHECKIN',
@@ -227,43 +205,43 @@ const PplpMintAndDbDocs = () => {
           </div>
         </DocSubSection>
 
-        <DocSubSection title="Bảng pplp_ratings — Schema">
+        <DocSubSection title={t('pmdDbRatingsTitle')}>
           <DocTable
-            headers={['Cột', 'Kiểu', 'Mô tả']}
+            headers={[t('pmdColColumn'), t('pmdColType'), t('pdocColDesc')]}
             rows={[
-              ['rating_id', 'UUID (PK)', 'Mã đánh giá'],
-              ['content_id', 'FK', 'Nội dung được đánh giá'],
-              ['rater_user_id', 'FK', 'Người đánh giá'],
-              ['pillar_truth', '0/1/2', 'Sự Thật'],
-              ['pillar_sustain', '0/1/2', 'Bền Vững'],
-              ['pillar_heal_love', '0/1/2', 'Chữa Lành & Yêu Thương'],
-              ['pillar_life_service', '0/1/2', 'Phụng Sự Cuộc Sống'],
-              ['pillar_unity_source', '0/1/2', 'Hợp Nhất Nguồn Cội'],
-              ['weight_applied', 'Float', 'Snapshot trọng số rater lúc chấm'],
+              ['rating_id', 'UUID (PK)', t('pmdDbR1')],
+              ['content_id', 'FK', t('pmdDbR2')],
+              ['rater_user_id', 'FK', t('pmdDbR3')],
+              ['pillar_truth', '0/1/2', t('pmdDbR4')],
+              ['pillar_sustain', '0/1/2', t('pmdDbR5')],
+              ['pillar_heal_love', '0/1/2', t('pmdDbR6')],
+              ['pillar_life_service', '0/1/2', t('pmdDbR7')],
+              ['pillar_unity_source', '0/1/2', t('pmdDbR8')],
+              ['weight_applied', 'Float', t('pmdDbR9')],
             ]}
           />
         </DocSubSection>
 
-        <DocSubSection title="Bảng sequences — Sequence Engine">
+        <DocSubSection title={t('pmdDbSeqTitle')}>
           <DocTable
-            headers={['Cột', 'Mô tả']}
+            headers={[t('pmdColColumn'), t('pdocColDesc')]}
             rows={[
-              ['sequence_id', 'Mã chuỗi hành động'],
-              ['user_id', 'Người thực hiện'],
+              ['sequence_id', t('pmdDbS1')],
+              ['user_id', t('pmdDbS2')],
               ['sequence_type', 'mentor_chain / value_loop / conflict_harmony...'],
               ['state', 'active / complete / invalid'],
-              ['evidence_event_ids', 'Mảng event_id chứng minh'],
-              ['score_bonus', 'Điểm thưởng khi hoàn thành chuỗi'],
+              ['evidence_event_ids', t('pmdDbS5')],
+              ['score_bonus', t('pmdDbS6')],
             ]}
           />
           <DocAlert type="info">
-            Ví dụ Mentor Chain: HELP_NEWBIE → newbie PROFILE_COMPLETED → newbie POST_CREATED → newbie nhận PPLP_RATING đạt ngưỡng.
+            {t('pmdDbSeqAlert')}
           </DocAlert>
         </DocSubSection>
       </DocSection>
 
       {/* ===== PIPELINE ===== */}
-      <DocSection id="db-pipeline" title="⚡ Pipeline Xử Lý Điểm (6 Bước)">
+      <DocSection id="db-pipeline" title={t('pmdPipelineTitle')}>
         <pre className="bg-muted rounded-lg p-4 text-xs sm:text-sm overflow-x-auto my-4 text-foreground font-mono leading-relaxed">
 {`1. Ingest Events
    → Ghi vao events (append-only)
@@ -291,8 +269,8 @@ const PplpMintAndDbDocs = () => {
       </DocSection>
 
       {/* ===== PHẦN C: KIẾN TRÚC AI ===== */}
-      <DocSection id="ai-scoring-arch" title="🤖 Kiến Trúc A.I. Chấm Light Score (PPLP)">
-        <DocSubSection title="Kiến trúc tổng quan">
+      <DocSection id="ai-scoring-arch" title={t('pmdAiTitle')}>
+        <DocSubSection title={t('pmdAiOverviewTitle')}>
           <pre className="bg-muted rounded-lg p-4 text-xs sm:text-sm overflow-x-auto my-4 text-foreground font-mono leading-relaxed">
 {`Client (Web/Mobile)
       ↓
@@ -340,38 +318,38 @@ Transparency Dashboard
           </pre>
         </DocSubSection>
 
-        <DocSubSection title='Điểm mấu chốt "Không Nuôi Ego"'>
+        <DocSubSection title={t('pmdAiKeyTitle')}>
           <DocList items={[
-            'A.I. không quyết định tiền — A.I. chỉ tạo signals + hỗ trợ đánh giá, quyết định cuối là scoring engine deterministic',
-            'Không real-time dopamine loop — Mint theo epoch, có độ trễ',
-            'Hiển thị Level/Trend — Không top chart, không leaderboard',
-            'Explainability — Có score_explanations để audit mọi quyết định',
+            t('pmdAiKey1'),
+            t('pmdAiKey2'),
+            t('pmdAiKey3'),
+            t('pmdAiKey4'),
           ]} />
         </DocSubSection>
 
         <DocSubSection title="4 AI Models/Heuristics">
           <DocTable
-            headers={['Model', 'Chức năng', 'Output']}
+            headers={['Model', t('pdocColFunc'), 'Output']}
             rows={[
-              ['Ego Risk Classifier', 'Phát hiện nội dung khoe mẽ / thao túng / chia rẽ', '0..1 risk score + lý do gợi ý'],
-              ['Pillar Support Scorer', 'Gợi ý điểm 0/1/2 cho 5 trụ cột', 'ai_pillar_scores (hỗ trợ, không quyết định 100%)'],
+              ['Ego Risk Classifier', t('pmdAiM1'), t('pmdAiM1Out')],
+              ['Pillar Support Scorer', t('pmdAiM2'), t('pmdAiM2Out')],
               ['Spam & Fraud Detector', 'Burst pattern, reciprocal rings, temporal anomalies', 'signals_anti_farm records'],
               ['Sybil / Duplicate Signals', 'Device fingerprint + graph + behavior similarity', 'Sybil risk flags'],
             ]}
           />
         </DocSubSection>
 
-        <DocSubSection title="Event Schema chuẩn cho Dev">
+        <DocSubSection title={t('pmdAiSchemaTitle')}>
           <DocTable
-            headers={['Trường', 'Mô tả']}
+            headers={[t('pmdColField'), t('pdocColDesc')]}
             rows={[
-              ['actor_user_id', 'Người thực hiện hành động'],
-              ['action', 'Loại hành động (event_type)'],
-              ['object', 'Đối tượng tác động'],
+              ['actor_user_id', t('pmdAiF1')],
+              ['action', t('pmdAiF2')],
+              ['object', t('pmdAiF3')],
               ['context', 'Session / thread / group ID'],
               ['proof', 'Tx hash / link / attachment / signature'],
-              ['timestamp', 'Thời điểm xảy ra'],
-              ['risk_flags', 'Cờ cảnh báo rủi ro'],
+              ['timestamp', t('pmdAiF6')],
+              ['risk_flags', t('pmdAiF7')],
               ['scoring_tags', 'pplp_pillar_candidate, sequence_candidate...'],
             ]}
           />

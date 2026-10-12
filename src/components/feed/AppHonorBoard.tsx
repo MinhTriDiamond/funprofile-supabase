@@ -198,9 +198,9 @@ export const AppHonorBoard = memo(() => {
                   {item.usdBased && pricesUnavailable ? (
                     <span
                       className="text-[#F5E6C8]/70 text-[10px] font-medium whitespace-nowrap"
-                      title="Chưa có giá thị trường"
+                      title={t('ahbNoPriceTitle')}
                     >
-                      Chưa có giá
+                      {t('ahbNoPrice')}
                     </span>
                   ) : (
                     <CountUp value={item.value} format={item.format} duration={2000} className="tabular-nums" />

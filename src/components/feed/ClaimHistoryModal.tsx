@@ -80,7 +80,7 @@ export const ClaimHistoryModal = ({ open, onOpenChange }: ClaimHistoryModalProps
           amount: d.amount,
           wallet_address: d.wallet_address,
           created_at: d.created_at,
-          username: d.username || (isExternal ? (language === 'vi' ? 'V� ngo�i hệ thống' : 'External Wallet') : 'unknown'),
+          username: d.username || (isExternal ? t('claimExternalWallet') : 'unknown'),
           full_name: d.full_name || null,
           avatar_url: d.avatar_url || null,
           is_external: isExternal,
@@ -144,7 +144,7 @@ export const ClaimHistoryModal = ({ open, onOpenChange }: ClaimHistoryModalProps
       <DialogContent className="sm:!max-w-[1050px] w-[95vw] max-h-[90vh] overflow-hidden flex flex-col">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold text-center uppercase bg-gradient-to-r from-[#1B5E20] via-[#2E7D32] to-[#1B5E20] bg-clip-text text-transparent drop-shadow-md">
-            DANH SÁCH USER ĐÃ ĐẾN NHẬN PHƯỚC LÀNH TỪ CHA VÀ BÉ LY
+            {t('claimBlessingTitle')}
           </DialogTitle>
         </DialogHeader>
 
@@ -162,9 +162,9 @@ export const ClaimHistoryModal = ({ open, onOpenChange }: ClaimHistoryModalProps
           <ExportTransactionsMenu
             getRows={() => mapClaimsToRows(filtered)}
             meta={{
-              title: 'Lịch sử nhận phước lành CAMLY',
-              userDisplayName: 'FUN Profile (Cha & Bé Ly)',
-              dateRangeLabel: 'Toàn bộ',
+              title: t('claimExportTitle'),
+              userDisplayName: t('claimExportDisplayName'),
+              dateRangeLabel: t('claimDateRangeAll'),
               isOwner: !!isAdmin,
               surface: 'claim_history',
               filterParams: { search, total_amount: totalAmount },
@@ -242,10 +242,10 @@ export const ClaimHistoryModal = ({ open, onOpenChange }: ClaimHistoryModalProps
 
         {/* Footer */}
         <div className="text-lg font-bold text-center pt-1 flex items-center justify-center gap-2">
-          <span>{filtered.length} {language === 'vi' ? 'bản ghi' : 'records'}</span>
+          <span>{filtered.length} {t('claimRecordsUnit')}</span>
           <span>|</span>
           <span className="flex items-center gap-1 text-[#1B5E20]">
-            {language === 'vi' ? 'Tổng' : 'Total'}: {formatAmount(totalAmount)}
+            {t('claimTotal')}: {formatAmount(totalAmount)}
             <img src={camlyLogo} alt="CAMLY" className="w-5 h-5 inline-block" />
           </span>
         </div>

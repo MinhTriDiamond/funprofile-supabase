@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useLanguage } from '@/i18n/LanguageContext';
 import { useVersionCheck } from "@/hooks/useVersionCheck";
 import { RefreshCw } from "lucide-react";
 import { toast } from "sonner";
@@ -11,6 +12,7 @@ function isLiveActive() {
 }
 
 export function UpdateNotification() {
+  const { t } = useLanguage();
   const { updateAvailable, applyUpdate } = useVersionCheck();
   const [deferredUpdate, setDeferredUpdate] = useState(false);
   const hasShownRef = useRef(false);
@@ -20,22 +22,22 @@ export function UpdateNotification() {
     hasShownRef.current = true;
     setDeferredUpdate(false);
 
-    toast("Có bản cập nhật mới", {
+    toast(t('chrUpdateAvailable'), {
       id: UPDATE_TOAST_ID,
-      description: "Tải bản mới nhất của FUN Profile.",
+      description: t('chrUpdateDesc'),
       duration: Infinity,
       icon: <RefreshCw className="h-4 w-4 text-primary" />,
       action: {
-        label: "Cập nhật ngay",
+        label: t('chrUpdateNow'),
         onClick: applyUpdate,
       },
       cancel: {
-        label: "Đóng",
+        label: t('close'),
         onClick: () => toast.dismiss(UPDATE_TOAST_ID),
       },
       className: "max-w-sm rounded-2xl border-primary/20 shadow-xl",
     });
-  }, [applyUpdate]);
+  }, [applyUpdate, t]);
 
   // Show toast when update detected, but never cover an active live session.
   useEffect(() => {

@@ -1,14 +1,14 @@
 import React from 'react';
 import { DocSection, DocSubSection, DocParagraph, DocTable, DocList, DocAlert } from '@/components/docs/DocSection';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 const ScoringConfigAndExampleDocs: React.FC = () => {
+  const { t } = useLanguage();
   return (
     <>
       {/* ===== PHẦN A: Scoring Config V1 ===== */}
-      <DocSection id="scoring-config" title="⚙️ Scoring Config V1 (YAML/JSON Chuẩn)">
-        <DocParagraph>
-          Đây là bộ config chuẩn V1 dùng cho toàn bộ hệ thống Light Score. Dev team có thể copy trực tiếp để triển khai hoặc viết unit test.
-        </DocParagraph>
+      <DocSection id="scoring-config" title={t('sceConfigTitle')}>
+        <DocParagraph>{t('sceConfigPara')}</DocParagraph>
 
         <pre className="bg-slate-950 text-slate-50 rounded-lg p-4 text-xs sm:text-sm overflow-x-auto my-4 font-mono leading-relaxed">
 {`rule_version: "LS-Math-v1.0"
@@ -50,50 +50,50 @@ mint:
   min_light_threshold: 10`}
         </pre>
 
-        <DocSubSection title="Giải Thích Tham Số">
+        <DocSubSection title={t('sceParamsTitle')}>
           <DocTable
-            headers={['Nhóm', 'Tham số', 'Giá trị', 'Ý nghĩa']}
+            headers={[t('sceColGroup'), t('sceColParam'), t('idocColValue'), t('pdocColMeaning')]}
             rows={[
-              ['weights', 'base_action_weight', '0.4', 'Trọng số hành động cơ bản (40%)'],
-              ['weights', 'content_weight', '0.6', 'Trọng số nội dung (60%)'],
-              ['reputation', 'alpha', '0.25', 'Hệ số ảnh hưởng reputation'],
-              ['reputation', 'w_min / w_max', '0.5 / 2.0', 'Giới hạn trọng số reputation'],
-              ['content', 'gamma', '1.3', 'Exponent chuẩn hóa nội dung — phạt nhẹ rating thấp'],
-              ['consistency', 'beta', '0.6', 'Biên độ tối đa consistency multiplier'],
-              ['consistency', 'lambda', '30', 'Tốc độ bão hòa (ngày)'],
-              ['sequence', 'eta', '0.5', 'Biên độ tối đa sequence multiplier'],
-              ['sequence', 'kappa', '5', 'Tốc độ bão hòa sequence bonus'],
-              ['penalty', 'theta', '0.8', 'Hệ số phạt integrity'],
-              ['penalty', 'max_penalty', '0.5', 'Phạt tối đa 50%'],
-              ['mint', 'anti_whale_cap', '0.03', 'Tối đa 3% pool/user/epoch'],
-              ['mint', 'min_light_threshold', '10', 'Điểm tối thiểu để đủ điều kiện mint'],
+              ['weights', 'base_action_weight', '0.4', t('sceParam1')],
+              ['weights', 'content_weight', '0.6', t('sceParam2')],
+              ['reputation', 'alpha', '0.25', t('sceParam3')],
+              ['reputation', 'w_min / w_max', '0.5 / 2.0', t('sceParam4')],
+              ['content', 'gamma', '1.3', t('sceParam5')],
+              ['consistency', 'beta', '0.6', t('sceParam6')],
+              ['consistency', 'lambda', '30', t('sceParam7')],
+              ['sequence', 'eta', '0.5', t('sceParam8')],
+              ['sequence', 'kappa', '5', t('sceParam9')],
+              ['penalty', 'theta', '0.8', t('sceParam10')],
+              ['penalty', 'max_penalty', '0.5', t('sceParam11')],
+              ['mint', 'anti_whale_cap', '0.03', t('sceParam12')],
+              ['mint', 'min_light_threshold', '10', t('sceParam13')],
             ]}
           />
         </DocSubSection>
       </DocSection>
 
       {/* ===== PHẦN B: End-to-End Example ===== */}
-      <DocSection id="e2e-example" title="🧮 Ví Dụ Tính Điểm End-to-End">
+      <DocSection id="e2e-example" title={t('sceE2eTitle')}>
         <DocAlert type="info">
-          Mô phỏng thực tế cho user <strong>u_ly</strong> — Epoch tháng 02/2026 — Mint Pool 100,000 FUN — Tổng Light hệ thống: 10,000
+          {t('sceE2eAlertA')}<strong>u_ly</strong>{t('sceE2eAlertB')}
         </DocAlert>
 
-        <DocSubSection title="Hoạt Động Trong Tháng">
+        <DocSubSection title={t('sceActivityTitle')}>
           <DocList items={[
-            '3 bài post được cộng đồng rating',
-            '1 mentor chain hoàn thành',
-            '30 ngày đóng góp liên tục (streak)',
-            '1 signal "interaction unstable" nhẹ (risk = 0.1)',
+            t('sceAct1'),
+            t('sceAct2'),
+            t('sceAct3'),
+            t('sceAct4'),
           ]} />
         </DocSubSection>
 
         {/* Bước 1: Content Score */}
-        <DocSubSection title="Bước 1 — Content Score">
+        <DocSubSection title={t('sceStep1')}>
           <DocParagraph>
-            Công thức: <code className="bg-muted px-2 py-1 rounded text-sm font-mono">h(P_c) = (P_c / 10)^γ</code> với γ = 1.3
+            {t('sceFormulaIntro')}<code className="bg-muted px-2 py-1 rounded text-sm font-mono">h(P_c) = (P_c / 10)^γ</code>{t('sceFormulaWith')}
           </DocParagraph>
           <DocTable
-            headers={['Bài viết', 'Rating tổng (P_c)', 'Chuẩn hóa (P_c/10)', 'h(P_c) = x^1.3', 'Kết quả']}
+            headers={[t('sceColPost'), t('sceColRatingTotal'), t('sceColNormalized'), 'h(P_c) = x^1.3', t('sceColResult')]}
             rows={[
               ['Post 1', '8.5', '0.85', '(0.85)^1.3', '≈ 0.80'],
               ['Post 2', '7.2', '0.72', '(0.72)^1.3', '≈ 0.65'],
@@ -108,13 +108,13 @@ mint:
         </DocSubSection>
 
         {/* Bước 2: Base Action Score */}
-        <DocSubSection title="Bước 2 — Base Action Score">
+        <DocSubSection title={t('sceStep2')}>
           <DocTable
-            headers={['Hành động', 'Điểm']}
+            headers={[t('sceColAction'), t('sceColPoints')]}
             rows={[
-              ['Check-in đều đặn', '3.0'],
-              ['Mentor chain hoàn thành', '5.0'],
-              ['Comment hỗ trợ cộng đồng', '2.0'],
+              [t('sceB1'), '3.0'],
+              [t('sceB2'), '5.0'],
+              [t('sceB3'), '2.0'],
             ]}
           />
           <div className="bg-muted rounded-lg p-4 my-4 border-l-4 border-primary">
@@ -125,7 +125,7 @@ mint:
         </DocSubSection>
 
         {/* Bước 3: Raw Score */}
-        <DocSubSection title="Bước 3 — Raw Score">
+        <DocSubSection title={t('sceStep3')}>
           <div className="bg-muted rounded-lg p-4 my-4 border-l-4 border-primary">
             <p className="font-mono text-sm text-foreground font-semibold">
               L_raw = 0.4 × B + 0.6 × C = 0.4 × 10 + 0.6 × 2.33 = 4 + 1.398 = 5.398
@@ -134,16 +134,16 @@ mint:
         </DocSubSection>
 
         {/* Bước 4: Consistency Multiplier */}
-        <DocSubSection title="Bước 4 — Consistency Multiplier">
+        <DocSubSection title={t('sceStep4')}>
           <DocParagraph>
-            Công thức: <code className="bg-muted px-2 py-1 rounded text-sm font-mono">M_cons = 1 + β(1 − e^(−streak/λ))</code>
+            {t('sceFormulaIntro')}<code className="bg-muted px-2 py-1 rounded text-sm font-mono">M_cons = 1 + β(1 − e^(−streak/λ))</code>
           </DocParagraph>
           <DocTable
-            headers={['Tham số', 'Giá trị', 'Tính toán']}
+            headers={[t('sceColParam'), t('idocColValue'), t('sceColCalcWork')]}
             rows={[
               ['β (beta)', '0.6', ''],
               ['λ (lambda)', '30', ''],
-              ['streak', '30 ngày', ''],
+              ['streak', t('sceStreakVal'), ''],
               ['e^(−30/30)', '', 'e^(−1) ≈ 0.367'],
               ['1 − 0.367', '', '0.633'],
               ['0.6 × 0.633', '', '0.379'],
@@ -157,12 +157,12 @@ mint:
         </DocSubSection>
 
         {/* Bước 5: Sequence Multiplier */}
-        <DocSubSection title="Bước 5 — Sequence Multiplier">
+        <DocSubSection title={t('sceStep5')}>
           <DocParagraph>
-            Công thức: <code className="bg-muted px-2 py-1 rounded text-sm font-mono">M_seq = 1 + η × tanh(bonus/κ)</code>
+            {t('sceFormulaIntro')}<code className="bg-muted px-2 py-1 rounded text-sm font-mono">M_seq = 1 + η × tanh(bonus/κ)</code>
           </DocParagraph>
           <DocTable
-            headers={['Tham số', 'Giá trị', 'Tính toán']}
+            headers={[t('sceColParam'), t('idocColValue'), t('sceColCalcWork')]}
             rows={[
               ['η (eta)', '0.5', ''],
               ['κ (kappa)', '5', ''],
@@ -179,12 +179,12 @@ mint:
         </DocSubSection>
 
         {/* Bước 6: Integrity Penalty */}
-        <DocSubSection title="Bước 6 — Integrity Penalty">
+        <DocSubSection title={t('sceStep6')}>
           <DocParagraph>
-            Công thức: <code className="bg-muted px-2 py-1 rounded text-sm font-mono">Penalty = 1 − min(max_penalty, θ × risk)</code>
+            {t('sceFormulaIntro')}<code className="bg-muted px-2 py-1 rounded text-sm font-mono">Penalty = 1 − min(max_penalty, θ × risk)</code>
           </DocParagraph>
           <DocTable
-            headers={['Tham số', 'Giá trị', 'Tính toán']}
+            headers={[t('sceColParam'), t('idocColValue'), t('sceColCalcWork')]}
             rows={[
               ['θ (theta)', '0.8', ''],
               ['max_penalty', '0.5', ''],
@@ -201,9 +201,9 @@ mint:
         </DocSubSection>
 
         {/* Bước 7: Final Light Score */}
-        <DocSubSection title="Bước 7 — Final Light Score">
+        <DocSubSection title={t('sceStep7')}>
           <DocTable
-            headers={['Bước', 'Phép tính', 'Kết quả']}
+            headers={[t('sceColStep'), t('sceColCalc'), t('sceColResult')]}
             rows={[
               ['L_raw × M_cons', '5.398 × 1.379', '≈ 7.44'],
               ['× M_seq', '7.44 × 1.268', '≈ 9.43'],
@@ -212,7 +212,7 @@ mint:
           />
           <div className="bg-muted rounded-lg p-4 my-4 border-l-4 border-primary">
             <p className="font-mono text-base text-foreground font-bold">
-              ✨ Light Score tháng 02/2026 = 8.67
+              {t('sceFinalResult')}
             </p>
           </div>
         </DocSubSection>
@@ -220,89 +220,87 @@ mint:
         {/* Phần C: Mint Calculation */}
         <DocSubSection title="Mint Calculation">
           <DocTable
-            headers={['Chỉ số', 'Giá trị', 'Ghi chú']}
+            headers={[t('sceColMetric'), t('idocColValue'), t('pmdColNote')]}
             rows={[
               ['User Light Score', '8.67', ''],
-              ['Tổng Light hệ thống', '10,000', ''],
+              [t('sceMintTotal'), '10,000', ''],
               ['Share', '8.67 / 10,000 = 0.000867', ''],
-              ['Mint Pool', '100,000 FUN', 'Epoch tháng 02/2026'],
+              ['Mint Pool', '100,000 FUN', t('sceMintNote1')],
               ['Allocation', '100,000 × 0.000867', '= 86.7 FUN'],
               ['Anti-Whale Cap (3%)', '3,000 FUN', '86.7 < 3,000 → ✅ OK'],
             ]}
           />
           <DocAlert type="success">
-            User u_ly nhận <strong>86.7 FUN</strong> trong epoch tháng 02/2026. Dưới ngưỡng anti-whale cap → phân bổ hợp lệ.
+            {t('sceMintAlertA')}<strong>86.7 FUN</strong>{t('sceMintAlertB')}
           </DocAlert>
         </DocSubSection>
       </DocSection>
 
       {/* ===== PHẦN D: Unit Test Cases ===== */}
-      <DocSection id="unit-test-cases" title="🧪 Unit Test Cases (Cho Dev Team)">
-        <DocParagraph>
-          4 test case quan trọng giúp dev team kiểm tra tính đúng đắn của scoring engine. Mỗi test mô phỏng một kịch bản edge-case thực tế.
-        </DocParagraph>
+      <DocSection id="unit-test-cases" title={t('sceTestsTitle')}>
+        <DocParagraph>{t('sceTestsPara')}</DocParagraph>
 
         <DocSubSection title="Test 1 — Spam Burst">
           <DocTable
-            headers={['Mục', 'Chi tiết']}
+            headers={[t('sceColItem'), t('adocColDetail')]}
             rows={[
-              ['Kịch bản', '50 posts/ngày, rating thấp (P_c ≈ 2.0)'],
-              ['Công thức', 'h(2.0/10) = (0.2)^1.3 ≈ 0.14 mỗi bài'],
-              ['Kết quả mong đợi', 'Content Score rất thấp dù số lượng lớn'],
-              ['Lý do', 'Exponent γ=1.3 phạt mạnh nội dung rating thấp. Số lượng không bù được chất lượng'],
+              [t('sceLblScenario'), t('sceT1Scenario')],
+              [t('sceLblFormula'), t('sceT1Formula')],
+              [t('sceLblExpected'), t('sceT1Expected')],
+              [t('idocColReason'), t('sceT1Reason')],
             ]}
           />
         </DocSubSection>
 
         <DocSubSection title="Test 2 — Viral Drama">
           <DocTable
-            headers={['Mục', 'Chi tiết']}
+            headers={[t('sceColItem'), t('adocColDetail')]}
             rows={[
-              ['Kịch bản', 'Nội dung viral, nhiều rating nhưng pillar healing = 0'],
-              ['Công thức', 'P_c thiếu healing → tổng rating thấp → h(P_c) giảm'],
-              ['Kết quả mong đợi', 'Không tăng mint dù engagement cao'],
-              ['Lý do', 'Hệ thống đánh giá theo 5 trụ cột, thiếu trụ nào = P_c giảm toàn bộ'],
+              [t('sceLblScenario'), t('sceT2Scenario')],
+              [t('sceLblFormula'), t('sceT2Formula')],
+              [t('sceLblExpected'), t('sceT2Expected')],
+              [t('idocColReason'), t('sceT2Reason')],
             ]}
           />
         </DocSubSection>
 
         <DocSubSection title="Test 3 — Silent Consistent Contributor">
           <DocTable
-            headers={['Mục', 'Chi tiết']}
+            headers={[t('sceColItem'), t('adocColDetail')]}
             rows={[
-              ['Kịch bản', '60 ngày ổn định, ít bài nhưng chất lượng cao (P_c ≈ 9.0)'],
+              [t('sceLblScenario'), t('sceT3Scenario')],
               ['Consistency', 'M_cons = 1 + 0.6(1 − e^(−60/30)) = 1 + 0.6(0.865) ≈ 1.519'],
-              ['Kết quả mong đợi', 'Vượt user ồn ào nhờ multiplier cao'],
-              ['Lý do', 'Kiên nhẫn bền vững > bùng nổ ngắn hạn'],
+              [t('sceLblExpected'), t('sceT3Expected')],
+              [t('idocColReason'), t('sceT3Reason')],
             ]}
           />
         </DocSubSection>
 
         <DocSubSection title="Test 4 — Rating Ring">
           <DocTable
-            headers={['Mục', 'Chi tiết']}
+            headers={[t('sceColItem'), t('adocColDetail')]}
             rows={[
-              ['Kịch bản', '5 user chấm lẫn nhau liên tục'],
-              ['Phát hiện', 'Reputation weight giảm (cluster detection) + risk tăng'],
-              ['Kết quả mong đợi', 'Integrity penalty kích hoạt → điểm giảm mạnh'],
-              ['Lý do', 'θ × risk cao → penalty lớn. Hệ thống tự bảo vệ khỏi rating ring'],
+              [t('sceLblScenario'), t('sceT4Scenario')],
+              [t('sceLblDetection'), t('sceT4Detection')],
+              [t('sceLblExpected'), t('sceT4Expected')],
+              [t('idocColReason'), t('sceT4Reason')],
             ]}
           />
         </DocSubSection>
       </DocSection>
 
       {/* ===== PHẦN E: System Guarantees ===== */}
-      <DocSection id="system-guarantees" title="🛡 Đảm Bảo Hệ Thống">
+      <DocSection id="system-guarantees" title={t('sceGuaranteesTitle')}>
         <DocList items={[
-          '✔ Không có đột biến mint — phân bổ luôn proportional',
-          '✔ Không có "post → tiền ngay" — phải chờ epoch kết thúc',
-          '✔ Không có ranking — chỉ level + xu hướng',
-          '✔ Không thể farm vô hạn — exponent + cap + penalty',
-          '✔ Chất lượng > số lượng — γ=1.3 đảm bảo',
-          '✔ Bền vững > bùng nổ — consistency multiplier thưởng kiên nhẫn',
+          t('sceG1'),
+          t('sceG2'),
+          t('sceG3'),
+          t('sceG4'),
+          t('sceG5'),
+          t('sceG6'),
         ]} />
         <DocAlert type="success">
-          Hệ thống được thiết kế để thưởng cho nhịp sống tử tế, không thưởng cho ồn ào. Đủ mạnh để gọi đối tác kỹ thuật, trình bày trước investor Web3, hoặc đưa vào Whitepaper chính thức.
+          {t('sceGAlert')}
         </DocAlert>
       </DocSection>
     </>

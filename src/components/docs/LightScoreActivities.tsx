@@ -1,243 +1,227 @@
 import { DocSection, DocSubSection, DocParagraph, DocList, DocAlert, DocTable } from '@/components/docs/DocSection';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 const LightScoreActivities = () => {
+  const { t } = useLanguage();
   return (
     <>
       {/* I. Hoạt Động Cá Nhân */}
-      <DocSection id="activities-personal" title="👤 I. Hoạt Động Cá Nhân (Self Light Actions)">
+      <DocSection id="activities-personal" title={t('lsaS1Title')}>
         <DocSubSection title="1. Daily Presence">
           <DocList items={[
-            'Đăng nhập mỗi ngày',
-            'Hoàn thành "Light Check-in"',
-            'Xác nhận 1 hành động tích cực trong ngày',
+            t('lsaS1Daily1'),
+            t('lsaS1Daily2'),
+            t('lsaS1Daily3'),
           ]} />
         </DocSubSection>
-        <DocSubSection title="2. Hồ Sơ Chuẩn Light Identity">
+        <DocSubSection title={t('lsaS1Sub2')}>
           <DocList items={[
-            'Hoàn thiện hồ sơ 100%',
-            'KYC minh bạch (nếu bật chế độ Verified)',
-            'Kết nối ví FUN Wallet',
+            t('lsaS1Prof1'),
+            t('lsaS1Prof2'),
+            t('lsaS1Prof3'),
           ]} />
         </DocSubSection>
-        <DocSubSection title="3. Thực Hành PPLP">
+        <DocSubSection title={t('lsaS1Sub3')}>
           <DocList items={[
-            'Đồng ý 5 trụ cột PPLP',
-            'Cam kết 5 lời hứa cộng đồng',
-            'Đọc & xác nhận 8 câu thần chú',
+            t('lsaS1Pplp1'),
+            t('lsaS1Pplp2'),
+            t('lsaS1Pplp3'),
           ]} />
         </DocSubSection>
       </DocSection>
 
       {/* II. Hoạt Động Tương Tác Cộng Đồng */}
-      <DocSection id="activities-community" title="🤝 II. Hoạt Động Tương Tác Cộng Đồng">
+      <DocSection id="activities-community" title={t('lsaS2Title')}>
         <DocSubSection title="1. Light Interaction">
           <DocList items={[
-            'Like tích cực',
-            'Comment mang tính xây dựng',
-            'Share nội dung có giá trị',
-            'Gửi lời biết ơn công khai',
+            t('lsaS2Int1'),
+            t('lsaS2Int2'),
+            t('lsaS2Int3'),
+            t('lsaS2Int4'),
           ]} />
         </DocSubSection>
         <DocSubSection title="2. Mentorship / Support">
           <DocList items={[
-            'Hướng dẫn thành viên mới',
-            'Trả lời câu hỏi chuyên môn',
-            'Giải quyết tranh luận bằng ngôn ngữ tích cực',
+            t('lsaS2Men1'),
+            t('lsaS2Men2'),
+            t('lsaS2Men3'),
           ]} />
         </DocSubSection>
         <DocSubSection title="3. Conflict Transformation">
           <DocList items={[
-            'Báo cáo vi phạm đúng cách',
-            'Tham gia hoà giải',
-            'Đề xuất giải pháp thay vì chỉ trích',
+            t('lsaS2Con1'),
+            t('lsaS2Con2'),
+            t('lsaS2Con3'),
           ]} />
         </DocSubSection>
       </DocSection>
 
       {/* III. Hoạt Động Tạo Giá Trị Nội Dung */}
-      <DocSection id="activities-content" title="📝 III. Hoạt Động Tạo Giá Trị Nội Dung">
+      <DocSection id="activities-content" title={t('lsaS3Title')}>
         <DocSubSection title="1. Content Creation">
           <DocList items={[
-            'Viết bài gốc',
-            'Video chia sẻ kiến thức',
-            'Phân tích chuyên môn',
-            'Case study minh bạch',
+            t('lsaS3Cre1'),
+            t('lsaS3Cre2'),
+            t('lsaS3Cre3'),
+            t('lsaS3Cre4'),
           ]} />
         </DocSubSection>
         <DocSubSection title="2. Content Quality Signals">
           <DocList items={[
-            'Được cộng đồng đánh giá tích cực',
-            'Được lưu lại / bookmark',
-            'Được trích dẫn bởi người khác',
+            t('lsaS3Qual1'),
+            t('lsaS3Qual2'),
+            t('lsaS3Qual3'),
           ]} />
         </DocSubSection>
         <DocSubSection title="3. Knowledge Contribution">
           <DocList items={[
-            'Tạo khóa Learn & Earn',
-            'Viết tài liệu hướng dẫn',
-            'Đề xuất cải tiến hệ thống',
+            t('lsaS3Know1'),
+            t('lsaS3Know2'),
+            t('lsaS3Know3'),
           ]} />
         </DocSubSection>
       </DocSection>
 
       {/* IV. Hoạt Động Kinh Tế – Web3 */}
-      <DocSection id="activities-web3" title="💎 IV. Hoạt Động Kinh Tế – Web3">
+      <DocSection id="activities-web3" title={t('lsaS4Title')}>
         <DocSubSection title="1. On-chain Actions">
           <DocList items={[
-            'Mint NFT có giá trị thật',
-            'Giao dịch minh bạch',
+            t('lsaS4On1'),
+            t('lsaS4On2'),
             'Staking FUN / Camly Coin',
-            'Tham gia Governance vote',
+            t('lsaS4On4'),
           ]} />
         </DocSubSection>
         <DocSubSection title="2. Earn & Give">
           <DocList items={[
-            'Tham gia Learn & Earn',
-            'Give & Gain (quyên góp FUN Charity)',
-            'Thưởng lại người khác',
+            t('lsaS4Earn1'),
+            t('lsaS4Earn2'),
+            t('lsaS4Earn3'),
           ]} />
         </DocSubSection>
         <DocSubSection title="3. Value Flow Integrity">
           <DocAlert type="warning">
-            Không spam — Không thao túng — Không farm tương tác giả. Vi phạm sẽ bị trừ Light Score.
+            {t('lsaS4Alert')}
           </DocAlert>
         </DocSubSection>
       </DocSection>
 
       {/* V. Đóng Góp Hệ Sinh Thái FUN */}
-      <DocSection id="activities-ecosystem" title="🌍 V. Đóng Góp Hệ Sinh Thái FUN">
+      <DocSection id="activities-ecosystem" title={t('lsaS5Title')}>
         <DocSubSection title="1. Cross-Platform Contribution">
           <DocList items={[
-            'Tạo nội dung trên FUN Play',
-            'Tham gia FUN Academy',
-            'Đóng góp FUN Legal',
-            'Tham gia FUN Earth',
+            t('lsaS5Cross1'),
+            t('lsaS5Cross2'),
+            t('lsaS5Cross3'),
+            t('lsaS5Cross4'),
           ]} />
         </DocSubSection>
         <DocSubSection title="2. Builder Actions">
           <DocList items={[
-            'Phát hiện bug',
-            'Đề xuất cải tiến UX',
-            'Đóng góp code',
-            'Đóng góp chiến lược',
+            t('lsaS5Build1'),
+            t('lsaS5Build2'),
+            t('lsaS5Build3'),
+            t('lsaS5Build4'),
           ]} />
         </DocSubSection>
       </DocSection>
 
       {/* VI. Chuỗi Hành Động */}
-      <DocSection id="behavior-sequences" title="🔗 VI. Chuỗi Hành Động (Behavior Sequences)">
+      <DocSection id="behavior-sequences" title={t('lsaS6Title')}>
         <DocAlert type="info">
-          Light Score không chỉ tính hành động rời rạc — chuỗi hành vi logic nhận điểm cao hơn đáng kể.
+          {t('lsaS6Alert')}
         </DocAlert>
 
         <DocSubSection title="1. Light Growth Chain">
           <pre className="bg-muted rounded-lg p-4 text-xs sm:text-sm overflow-x-auto my-4 text-foreground font-mono">
-{`Đăng bài giá trị
-  → Cộng đồng tương tác tích cực
-    → Tác giả phản hồi xây dựng
-      → Tạo thêm nội dung nâng cao
-        → Hình thành mini-community`}
+{t('lsaChain1')}
           </pre>
-          <DocParagraph>Chuỗi này được tính điểm cao hơn hành động đơn lẻ.</DocParagraph>
+          <DocParagraph>{t('lsaChain1Para')}</DocParagraph>
         </DocSubSection>
 
         <DocSubSection title="2. Mentorship Chain">
           <pre className="bg-muted rounded-lg p-4 text-xs sm:text-sm overflow-x-auto my-4 text-foreground font-mono">
-{`Thành viên mới
-  → Được hướng dẫn
-    → Hoàn thành hồ sơ
-      → Tạo nội dung đầu tiên
-        → Được cộng đồng công nhận`}
+{t('lsaChain2')}
           </pre>
-          <DocParagraph>Người mentor nhận Light Score bậc cao.</DocParagraph>
+          <DocParagraph>{t('lsaChain2Para')}</DocParagraph>
         </DocSubSection>
 
         <DocSubSection title="3. Value Creation Loop">
           <pre className="bg-muted rounded-lg p-4 text-xs sm:text-sm overflow-x-auto my-4 text-foreground font-mono">
-{`Tạo khóa học
-  → Người khác học
-    → Áp dụng
-      → Tạo kết quả
-        → Chia sẻ lại kết quả`}
+{t('lsaChain3')}
           </pre>
-          <DocParagraph>Đây là vòng lặp ánh sáng — "Light Loop".</DocParagraph>
+          <DocParagraph>{t('lsaChain3Para')}</DocParagraph>
         </DocSubSection>
 
         <DocSubSection title="4. Conflict → Harmony Sequence">
           <pre className="bg-muted rounded-lg p-4 text-xs sm:text-sm overflow-x-auto my-4 text-foreground font-mono">
-{`Có tranh luận
-  → Phản hồi bình tĩnh
-    → Đưa giải pháp
-      → Cộng đồng xác nhận tích cực`}
+{t('lsaChain4')}
           </pre>
-          <DocParagraph>Điểm Light rất cao — biến xung đột thành hoà hợp.</DocParagraph>
+          <DocParagraph>{t('lsaChain4Para')}</DocParagraph>
         </DocSubSection>
 
         <DocSubSection title="5. Economic Integrity Sequence">
           <pre className="bg-muted rounded-lg p-4 text-xs sm:text-sm overflow-x-auto my-4 text-foreground font-mono">
-{`Tham gia Learn & Earn
-  → Tạo giá trị thật
-    → Nhận thưởng
-      → Phân bổ lại 1 phần cho cộng đồng`}
+{t('lsaChain5')}
           </pre>
-          <DocParagraph>Đây là "Pure Love Flow" — dòng chảy tình yêu thuần khiết.</DocParagraph>
+          <DocParagraph>{t('lsaChain5Para')}</DocParagraph>
         </DocSubSection>
       </DocSection>
 
       {/* VII. Phân Loại Cấp Độ */}
-      <DocSection id="light-tiers" title="⭐ VII. Phân Loại Cấp Độ Light Score">
+      <DocSection id="light-tiers" title={t('lsaS7Title')}>
         <DocTable
-          headers={['Cấp Độ', 'Tên Gọi', 'Mô Tả']}
+          headers={[t('lsaColTier'), t('lsaColTierName'), t('pdocColDesc')]}
           rows={[
-            ['Tier 1', 'Light Presence', 'Hiện diện tích cực — đăng nhập, check-in'],
-            ['Tier 2', 'Light Contributor', 'Người tạo giá trị — nội dung, tương tác'],
-            ['Tier 3', 'Light Builder', 'Người xây dựng hệ sinh thái — code, chiến lược'],
-            ['Tier 4', 'Light Guardian', 'Người bảo vệ văn hóa — hoà giải, mentorship'],
-            ['Tier 5', 'Light Architect', 'Người thiết kế cấu trúc — governance, protocol'],
+            ['Tier 1', 'Light Presence', t('lsaTier1')],
+            ['Tier 2', 'Light Contributor', t('lsaTier2')],
+            ['Tier 3', 'Light Builder', t('lsaTier3')],
+            ['Tier 4', 'Light Guardian', t('lsaTier4')],
+            ['Tier 5', 'Light Architect', t('lsaTier5')],
           ]}
         />
       </DocSection>
 
       {/* VIII. Cơ Chế Chống Farm */}
-      <DocSection id="anti-farm" title="🛡 VIII. Cơ Chế Chống Farm Điểm">
+      <DocSection id="anti-farm" title={t('lsaS8Title')}>
         <DocParagraph>
-          Để bảo vệ tính thuần khiết của PPLP, hệ thống áp dụng các cơ chế chống gian lận:
+          {t('lsaS8Para')}
         </DocParagraph>
         <DocList ordered items={[
-          'Giới hạn điểm tương tác lặp lại — không thể farm bằng hành động giống nhau',
-          'AI phát hiện spam cảm xúc giả — nhận diện pattern không tự nhiên',
-          'Weight dựa trên reputation của người đánh giá — đánh giá từ người uy tín có trọng số cao hơn',
-          'Điểm tăng chậm – giảm chậm – không dao động cực đoan',
-          'Sequence Multiplier chỉ kích hoạt khi đủ chuỗi logic hoàn chỉnh',
+          t('lsaS8Item1'),
+          t('lsaS8Item2'),
+          t('lsaS8Item3'),
+          t('lsaS8Item4'),
+          t('lsaS8Item5'),
         ]} />
       </DocSection>
 
       {/* IX. Công Thức Cơ Bản */}
-      <DocSection id="score-formula" title="📐 IX. Công Thức Tính Light Score">
+      <DocSection id="score-formula" title={t('lsaS9Title')}>
         <div className="bg-muted rounded-lg p-4 my-4 border-l-4 border-primary">
           <p className="font-mono text-sm sm:text-base text-foreground font-semibold leading-relaxed">
             Light Score = (Positive Actions × Quality Weight) × (Sequence Multiplier) × (Community Validation Weight) − (Integrity Penalty)
           </p>
         </div>
 
-        <DocSubSection title="Giải thích">
+        <DocSubSection title={t('lsaExplainTitle')}>
           <DocList items={[
-            'Positive Actions — tổng hành động tích cực đã xác thực',
-            'Quality Weight — trọng số chất lượng (charity > spam)',
-            'Sequence Multiplier — hệ số nhân chuỗi hành vi',
-            'Community Validation Weight — trọng số xác thực cộng đồng',
-            'Integrity Penalty — điểm trừ khi vi phạm nguyên tắc',
+            t('lsaS9Exp1'),
+            t('lsaS9Exp2'),
+            t('lsaS9Exp3'),
+            t('lsaS9Exp4'),
+            t('lsaS9Exp5'),
           ]} />
         </DocSubSection>
 
-        <DocSubSection title="Checklist cho Dev Team">
+        <DocSubSection title={t('lsaChecklistTitle')}>
           <DocList items={[
-            '☐ Phân loại hành động theo 6 nhóm',
-            '☐ Thiết kế trọng số cho từng loại',
-            '☐ Thiết kế Sequence Engine',
-            '☐ Thiết kế Anti-Farm Layer',
-            '☐ Thiết kế Transparency Dashboard',
-            '☐ Tạo API tính điểm real-time',
+            t('lsaS9Check1'),
+            t('lsaS9Check2'),
+            t('lsaS9Check3'),
+            t('lsaS9Check4'),
+            t('lsaS9Check5'),
+            t('lsaS9Check6'),
           ]} />
         </DocSubSection>
       </DocSection>
