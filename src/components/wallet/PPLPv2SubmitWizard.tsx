@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useLanguage } from '@/i18n/LanguageContext';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -11,31 +12,32 @@ import { usePPLPv2, type PPLPv2ValidationResult } from '@/hooks/usePPLPv2';
 import { toast } from 'sonner';
 
 const ACTION_TYPES = [
-  { code: 'INNER_WORK', icon: '🧘', name: 'Thiền / Sám hối', desc: 'Tu tập nội tâm, thiền định, tĩnh lặng' },
-  { code: 'CHANNELING', icon: '📡', name: 'Dẫn kênh / Chia sẻ', desc: 'Chia sẻ kiến thức, truyền cảm hứng' },
-  { code: 'GIVING', icon: '🎁', name: 'Cho đi', desc: 'Tặng quà, quyên góp, chia sẻ tài nguyên' },
-  { code: 'SOCIAL_IMPACT', icon: '🌍', name: 'Tác động xã hội', desc: 'Thiện nguyện, dự án cộng đồng' },
-  { code: 'SERVICE', icon: '🙏', name: 'Phụng sự sự sống', desc: 'Giúp đỡ người khác, chăm sóc môi trường' },
+  { code: 'INNER_WORK', icon: '🧘', nameKey: 'pswActionInnerWork', descKey: 'pswActionInnerWorkDesc' },
+  { code: 'CHANNELING', icon: '📡', nameKey: 'pswActionChanneling', descKey: 'pswActionChannelingDesc' },
+  { code: 'GIVING', icon: '🎁', nameKey: 'pswActionGiving', descKey: 'pswActionGivingDesc' },
+  { code: 'SOCIAL_IMPACT', icon: '🌍', nameKey: 'pswActionSocialImpact', descKey: 'pswActionSocialImpactDesc' },
+  { code: 'SERVICE', icon: '🙏', nameKey: 'walletPillarService', descKey: 'pswActionServiceDesc' },
 ];
 
 const PILLAR_INFO = [
-  { key: 'serving_life', icon: '☀️', name: 'Phụng sự sự sống' },
-  { key: 'transparent_truth', icon: '🔍', name: 'Chân thật minh bạch' },
-  { key: 'healing_love', icon: '💚', name: 'Chữa lành & yêu thương' },
-  { key: 'long_term_value', icon: '🌱', name: 'Giá trị bền vững' },
-  { key: 'unity_over_separation', icon: '🤝', name: 'Hợp Nhất' },
+  { key: 'serving_life', icon: '☀️', nameKey: 'walletPillarService' },
+  { key: 'transparent_truth', icon: '🔍', nameKey: 'walletPillarTruth' },
+  { key: 'healing_love', icon: '💚', nameKey: 'walletPillarHealing' },
+  { key: 'long_term_value', icon: '🌱', nameKey: 'pswPillarLongTermValue' },
+  { key: 'unity_over_separation', icon: '🤝', nameKey: 'walletPillarUnity' },
 ];
 
-const STATUS_MAP: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
-  proof_pending: { label: 'Chờ bằng chứng', color: 'bg-yellow-500/10 text-yellow-600', icon: <Clock className="w-3 h-3" /> },
-  under_review: { label: 'Đang đánh giá', color: 'bg-blue-500/10 text-blue-600', icon: <Loader2 className="w-3 h-3 animate-spin" /> },
-  validated: { label: 'Đã xác thực', color: 'bg-green-500/10 text-green-600', icon: <CheckCircle2 className="w-3 h-3" /> },
-  rejected: { label: 'Từ chối', color: 'bg-red-500/10 text-red-600', icon: <XCircle className="w-3 h-3" /> },
-  minted: { label: 'Đã mint', color: 'bg-amber-500/10 text-amber-600', icon: <Sparkles className="w-3 h-3" /> },
-  flagged: { label: 'Cần xem xét', color: 'bg-orange-500/10 text-orange-600', icon: <Clock className="w-3 h-3" /> },
+const STATUS_MAP: Record<string, { labelKey: string; color: string; icon: React.ReactNode }> = {
+  proof_pending: { labelKey: 'pswStatusProofPending', color: 'bg-yellow-500/10 text-yellow-600', icon: <Clock className="w-3 h-3" /> },
+  under_review: { labelKey: 'pswStatusUnderReview', color: 'bg-blue-500/10 text-blue-600', icon: <Loader2 className="w-3 h-3 animate-spin" /> },
+  validated: { labelKey: 'pswStatusValidated', color: 'bg-green-500/10 text-green-600', icon: <CheckCircle2 className="w-3 h-3" /> },
+  rejected: { labelKey: 'papStatusRejected', color: 'bg-red-500/10 text-red-600', icon: <XCircle className="w-3 h-3" /> },
+  minted: { labelKey: 'pswStatusMinted', color: 'bg-amber-500/10 text-amber-600', icon: <Sparkles className="w-3 h-3" /> },
+  flagged: { labelKey: 'pswStatusFlagged', color: 'bg-orange-500/10 text-orange-600', icon: <Clock className="w-3 h-3" /> },
 };
 
 export default function PPLPv2SubmitWizard() {
+  const { t } = useLanguage();
   const [step, setStep] = useState(1);
   const [showHistory, setShowHistory] = useState(false);
   const [selectedType, setSelectedType] = useState('');
@@ -55,7 +57,7 @@ export default function PPLPv2SubmitWizard() {
 
   const handleSubmitAction = async () => {
     if (!selectedType || !title.trim()) {
-      toast.error('Vui lòng chọn loại hành động và nhập tiêu đề');
+      toast.error(t('pswToastSelectTypeTitle'));
       return;
     }
     try {
@@ -66,7 +68,7 @@ export default function PPLPv2SubmitWizard() {
       });
       setActionId(result.action_id);
       setStep(3);
-      toast.success('Hành động đã được ghi nhận!');
+      toast.success(t('pswToastActionRecorded'));
     } catch {
       // error handled in hook
     }
@@ -74,7 +76,7 @@ export default function PPLPv2SubmitWizard() {
 
   const handleAttachProof = async () => {
     if (!proofUrl.trim() && !proofText.trim()) {
-      toast.error('Vui lòng nhập link hoặc mô tả bằng chứng');
+      toast.error(t('pswToastEnterProof'));
       return;
     }
     try {
@@ -85,7 +87,7 @@ export default function PPLPv2SubmitWizard() {
         extracted_text: proofText.trim() || undefined,
       });
       setStep(4);
-      toast.success('Đánh giá hoàn tất!');
+      toast.success(t('pswToastReviewDone'));
     } catch {
       // error handled in hook
     }
@@ -107,17 +109,17 @@ export default function PPLPv2SubmitWizard() {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold flex items-center gap-2">
-            <History className="w-5 h-5" /> Lịch sử hành động PPLP v2
+            <History className="w-5 h-5" /> {t('pswHistoryTitle')}
           </h3>
           <Button variant="outline" size="sm" onClick={() => setShowHistory(false)}>
-            <ArrowLeft className="w-4 h-4 mr-1" /> Quay lại
+            <ArrowLeft className="w-4 h-4 mr-1" /> {t('goBack')}
           </Button>
         </div>
 
         {loadingActions ? (
           <div className="flex justify-center py-8"><Loader2 className="w-6 h-6 animate-spin text-muted-foreground" /></div>
         ) : !myActions?.length ? (
-          <Card><CardContent className="py-8 text-center text-muted-foreground">Chưa có hành động nào</CardContent></Card>
+          <Card><CardContent className="py-8 text-center text-muted-foreground">{t('pswNoActions')}</CardContent></Card>
         ) : (
           <div className="space-y-3">
             {myActions.map((action: any) => {
@@ -133,13 +135,13 @@ export default function PPLPv2SubmitWizard() {
                           <span className="font-medium text-sm truncate">{action.title}</span>
                         </div>
                         <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                          <span>{typeInfo?.name || action.action_type_code}</span>
+                          <span>{typeInfo ? t(typeInfo.nameKey) : action.action_type_code}</span>
                           <span>•</span>
                           <span>{new Date(action.created_at).toLocaleDateString('vi-VN')}</span>
                         </div>
                       </div>
                       <Badge className={`${statusInfo.color} flex items-center gap-1 text-xs shrink-0`}>
-                        {statusInfo.icon} {statusInfo.label}
+                        {statusInfo.icon} {t(statusInfo.labelKey)}
                       </Badge>
                     </div>
                   </CardContent>
@@ -164,7 +166,7 @@ export default function PPLPv2SubmitWizard() {
           <p className="text-xs text-muted-foreground">Proof of Pure Love Protocol</p>
         </div>
         <Button variant="ghost" size="sm" onClick={() => { setShowHistory(true); refetchActions(); }}>
-          <History className="w-4 h-4 mr-1" /> Lịch sử
+          <History className="w-4 h-4 mr-1" /> {t('mysteryBoxHistory')}
         </Button>
       </div>
 
@@ -180,13 +182,13 @@ export default function PPLPv2SubmitWizard() {
         ))}
       </div>
       <div className="flex justify-between text-[10px] text-muted-foreground px-1">
-        <span>Chọn hành động</span><span>Mô tả</span><span>Bằng chứng</span><span>Kết quả</span>
+        <span>{t('pswStepChoose')}</span><span>{t('pdocColDesc')}</span><span>{t('pswStepProof')}</span><span>{t('sceColResult')}</span>
       </div>
 
       {/* Step 1: Choose Action Type */}
       {step === 1 && (
         <div className="space-y-3">
-          <p className="text-sm font-medium">🌿 Chọn loại hành động:</p>
+          <p className="text-sm font-medium">{t('pswChooseActionType')}</p>
           <div className="grid gap-2">
             {ACTION_TYPES.map(type => (
               <button
@@ -198,8 +200,8 @@ export default function PPLPv2SubmitWizard() {
               >
                 <span className="text-2xl">{type.icon}</span>
                 <div>
-                  <p className="font-medium text-sm">{type.name}</p>
-                  <p className="text-xs text-muted-foreground">{type.desc}</p>
+                  <p className="font-medium text-sm">{t(type.nameKey)}</p>
+                  <p className="text-xs text-muted-foreground">{t(type.descKey)}</p>
                 </div>
               </button>
             ))}
@@ -210,23 +212,23 @@ export default function PPLPv2SubmitWizard() {
       {/* Step 2: Describe */}
       {step === 2 && (
         <div className="space-y-4">
-          <p className="text-sm font-medium">🌿 Mô tả hành động:</p>
+          <p className="text-sm font-medium">{t('pswDescribeAction')}</p>
           <div className="space-y-3">
             <div>
-              <label className="text-xs font-medium text-muted-foreground mb-1 block">Tiêu đề *</label>
+              <label className="text-xs font-medium text-muted-foreground mb-1 block">{t('pswTitleLabel')}</label>
               <Input
                 value={title}
                 onChange={e => setTitle(e.target.value)}
-                placeholder="Ví dụ: Thiền buổi sáng 30 phút"
+                placeholder={t('pswTitlePlaceholder')}
                 maxLength={200}
               />
             </div>
             <div>
-              <label className="text-xs font-medium text-muted-foreground mb-1 block">Mô tả chi tiết</label>
+              <label className="text-xs font-medium text-muted-foreground mb-1 block">{t('pswDescriptionLabel')}</label>
               <Textarea
                 value={description}
                 onChange={e => setDescription(e.target.value)}
-                placeholder="Mô tả chi tiết hành động của bạn..."
+                placeholder={t('pswDescriptionPlaceholder')}
                 rows={3}
                 maxLength={2000}
               />
@@ -234,11 +236,11 @@ export default function PPLPv2SubmitWizard() {
           </div>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => setStep(1)} className="flex-1">
-              <ArrowLeft className="w-4 h-4 mr-1" /> Quay lại
+              <ArrowLeft className="w-4 h-4 mr-1" /> {t('goBack')}
             </Button>
             <Button onClick={handleSubmitAction} disabled={isSubmitting || !title.trim()} className="flex-1 bg-amber-500 hover:bg-amber-600">
               {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : <ArrowRight className="w-4 h-4 mr-1" />}
-              Tiếp tục
+              {t('pswContinue')}
             </Button>
           </div>
         </div>
@@ -247,38 +249,38 @@ export default function PPLPv2SubmitWizard() {
       {/* Step 3: Attach Proof */}
       {step === 3 && (
         <div className="space-y-4">
-          <p className="text-sm font-medium">🌿 Đính kèm bằng chứng:</p>
+          <p className="text-sm font-medium">{t('pswAttachProof')}</p>
           <Card className="border-amber-200 bg-amber-50/50 dark:bg-amber-950/10">
             <CardContent className="py-3 px-4 text-xs text-amber-800 dark:text-amber-200">
-              <strong>Quy tắc bất biến:</strong> No Proof → No Score. Hãy cung cấp bằng chứng xác thực.
+              <strong>{t('pswImmutableRule')}</strong> {t('pswRuleNoProof')}
             </CardContent>
           </Card>
           <div className="space-y-3">
             <div>
               <label className="text-xs font-medium text-muted-foreground mb-1 flex items-center gap-1">
-                <LinkIcon className="w-3 h-3" /> Link bằng chứng
+                <LinkIcon className="w-3 h-3" /> {t('pswProofLinkLabel')}
               </label>
               <Input
                 value={proofUrl}
                 onChange={e => setProofUrl(e.target.value)}
-                placeholder="https://... (link video, bài viết, giao dịch...)"
+                placeholder={t('pswProofLinkPlaceholder')}
               />
             </div>
             <div>
               <label className="text-xs font-medium text-muted-foreground mb-1 flex items-center gap-1">
-                <FileText className="w-3 h-3" /> Hoặc mô tả bằng chứng
+                <FileText className="w-3 h-3" /> {t('pswProofTextLabel')}
               </label>
               <Textarea
                 value={proofText}
                 onChange={e => setProofText(e.target.value)}
-                placeholder="Mô tả bằng chứng nếu không có link..."
+                placeholder={t('pswProofTextPlaceholder')}
                 rows={3}
               />
             </div>
           </div>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => setStep(2)} className="flex-1">
-              <ArrowLeft className="w-4 h-4 mr-1" /> Quay lại
+              <ArrowLeft className="w-4 h-4 mr-1" /> {t('goBack')}
             </Button>
             <Button
               onClick={handleAttachProof}
@@ -286,7 +288,7 @@ export default function PPLPv2SubmitWizard() {
               className="flex-1 bg-amber-500 hover:bg-amber-600"
             >
               {isAttaching ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : <Send className="w-4 h-4 mr-1" />}
-              Gửi & Đánh giá
+              {t('pswSubmitReview')}
             </Button>
           </div>
         </div>
@@ -301,13 +303,13 @@ export default function PPLPv2SubmitWizard() {
             <Card>
               <CardContent className="py-6 text-center">
                 <CheckCircle2 className="w-10 h-10 text-green-500 mx-auto mb-2" />
-                <p className="font-medium">Hành động đã được gửi đánh giá!</p>
-                <p className="text-sm text-muted-foreground">Kết quả sẽ hiển thị trong lịch sử.</p>
+                <p className="font-medium">{t('pswActionSubmittedTitle')}</p>
+                <p className="text-sm text-muted-foreground">{t('pswResultInHistory')}</p>
               </CardContent>
             </Card>
           )}
           <Button onClick={resetWizard} className="w-full bg-amber-500 hover:bg-amber-600">
-            <Sparkles className="w-4 h-4 mr-1" /> Gửi hành động mới
+            <Sparkles className="w-4 h-4 mr-1" /> {t('pswSubmitNewAction')}
           </Button>
         </div>
       )}
@@ -316,6 +318,7 @@ export default function PPLPv2SubmitWizard() {
 }
 
 function ValidationResultCard({ result }: { result: PPLPv2ValidationResult }) {
+  const { t } = useLanguage();
   const isPass = result.validation_status === 'validated' || result.validation_status === 'minted';
 
   return (
@@ -329,7 +332,7 @@ function ValidationResultCard({ result }: { result: PPLPv2ValidationResult }) {
             <XCircle className="w-10 h-10 text-red-500 mx-auto mb-2" />
           )}
           <p className="font-bold text-lg">
-            {isPass ? 'Xác thực thành công! ✨' : 'Chưa đạt yêu cầu'}
+            {isPass ? t('pswValidationPassed') : t('pswValidationFailed')}
           </p>
         </CardContent>
       </Card>
@@ -351,7 +354,7 @@ function ValidationResultCard({ result }: { result: PPLPv2ValidationResult }) {
       {/* 5 Pillars */}
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-sm">5 Trụ cột Ánh sáng</CardTitle>
+          <CardTitle className="text-sm">{t('pswFivePillarsTitle')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-2">
           {PILLAR_INFO.map(p => {
@@ -359,7 +362,7 @@ function ValidationResultCard({ result }: { result: PPLPv2ValidationResult }) {
             return (
               <div key={p.key} className="flex items-center gap-2">
                 <span className="text-sm w-5">{p.icon}</span>
-                <span className="text-xs flex-1 min-w-0 truncate">{p.name}</span>
+                <span className="text-xs flex-1 min-w-0 truncate">{t(p.nameKey)}</span>
                 <Progress value={score * 10} className="w-20 h-2" />
                 <span className="text-xs font-mono w-8 text-right">{score.toFixed(1)}</span>
               </div>
@@ -374,7 +377,7 @@ function ValidationResultCard({ result }: { result: PPLPv2ValidationResult }) {
           <CardContent className="py-3 px-4">
             <p className="text-sm font-medium mb-1">💰 FUN Money earned:</p>
             <div className="flex justify-between text-xs">
-              <span>Bạn nhận (99%):</span>
+              <span>{t('pswYouReceive')}</span>
               <span className="font-bold text-amber-600">{result.mint.mint_amount_user.toFixed(2)} FUN</span>
             </div>
             <div className="flex justify-between text-xs text-muted-foreground">
@@ -389,7 +392,7 @@ function ValidationResultCard({ result }: { result: PPLPv2ValidationResult }) {
       {result.reasoning && (
         <Card>
           <CardContent className="py-3 px-4">
-            <p className="text-xs font-medium mb-1">🤖 AI nhận xét:</p>
+            <p className="text-xs font-medium mb-1">{t('pswAiComment')}</p>
             <p className="text-xs text-muted-foreground">{result.reasoning}</p>
           </CardContent>
         </Card>

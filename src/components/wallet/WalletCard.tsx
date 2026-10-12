@@ -9,8 +9,7 @@ import { useLanguage } from '@/i18n/LanguageContext';
 import metamaskLogo from '@/assets/metamask-logo.png';
 import bitgetLogo from '@/assets/bitget-logo.png';
 import trustWalletLogo from '@/assets/trust-wallet-logo.png';
-import funWalletLogoAsset from '@/assets/fun-wallet-logo.gif.asset.json';
-const funWalletLogo = funWalletLogoAsset.url;
+import funWalletLogo from '@/assets/fun-wallet-logo.gif';
 
 interface WalletCardProps {
   walletAddress: string | null;
@@ -165,8 +164,8 @@ export const WalletCard = ({
         ) : (
           <p className="text-2xl font-bold text-gray-900">
             {pricesUnavailable ? (
-              <span className="text-base font-semibold text-muted-foreground" title="Chưa có giá thị trường">
-                Chưa có giá
+              <span className="text-base font-semibold text-muted-foreground" title={t('ggsNoPriceTitle')}>
+                {t('ggsNoPrice')}
               </span>
             ) : (
               formatUsd(totalUsdValue)
@@ -234,7 +233,7 @@ export const WalletCard = ({
               {t('walletConnectWallet')}
             </Button>
             <div className="sm:hidden rounded-lg border border-orange-200 bg-white/70 px-3 py-2 text-xs text-orange-700">
-              Đang dùng điện thoại? Hãy mở bằng MetaMask, Trust Wallet hoặc Bitget Wallet để kết nối ổn định hơn.
+              {t('wcdMobileHint')}
             </div>
           </div>
         ) : (
@@ -275,7 +274,7 @@ export const WalletCard = ({
                 className="text-xs text-muted-foreground hover:text-primary h-7 px-2"
               >
                 <PlusCircle className="w-3 h-3 mr-1" />
-                Thêm token
+                {t('wcdAddToken')}
               </Button>
             )}
             <Button
@@ -337,7 +336,7 @@ export const WalletCard = ({
                     {token.usdValue > 0 ? (
                       formatUsd(token.usdValue)
                     ) : (
-                      <span className="text-xs font-medium text-muted-foreground" title="Chưa có giá thị trường">—</span>
+                      <span className="text-xs font-medium text-muted-foreground" title={t('ggsNoPriceTitle')}>—</span>
                     )}
                   </p>
                   <p className="text-xs text-muted-foreground">
@@ -361,7 +360,7 @@ export const WalletCard = ({
                     onClick={() => onHideCustomToken(token.customTokenId!)}
                   >
                     <Trash2 className="mr-2 h-4 w-4" />
-                    Xóa token
+                    {t('wcdRemoveToken')}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>

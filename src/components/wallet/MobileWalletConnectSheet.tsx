@@ -11,6 +11,7 @@
  */
 
 import { useCallback } from 'react';
+import { useLanguage } from '@/i18n/LanguageContext';
 import { ExternalLink, RefreshCw, Smartphone, Wallet } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -47,18 +48,19 @@ export const MobileWalletConnectSheet = ({
   onOpenWalletConnect,
   onReset,
 }: MobileWalletConnectSheetProps) => {
+  const { t } = useLanguage();
   const injectedType = getInjectedMobileBrowserType();
   const injectedName =
     injectedType === 'metamask' ? 'MetaMask'
     : injectedType === 'trustwallet' ? 'Trust Wallet'
     : injectedType === 'bitget' ? 'Bitget Wallet'
-    : 'ví đang mở';
+    : t('mwcCurrentWallet');
 
   const openWalletDeepLink = useCallback((url: string) => {
     if (!url) return;
-    toast.info('Đang mở app ví. Nếu app không tự mở, hãy mở ví rồi vào Browser/DApp và nhập fun.rich.');
+    toast.info(t('mwcOpeningWalletApp'));
     window.location.href = url;
-  }, []);
+  }, [t]);
 
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
@@ -66,17 +68,16 @@ export const MobileWalletConnectSheet = ({
         <DrawerHeader className="text-left">
           <DrawerTitle className="flex items-center gap-2">
             <Smartphone className="h-5 w-5 text-primary" />
-            Chọn cách kết nối ví
+            {t('mwcTitle')}
           </DrawerTitle>
           <DrawerDescription>
-            Cách dễ nhất: mở FUN Profile bên trong app ví rồi bấm Kết nối. Nếu ví không bật popup,
-            quay lại app ví và xác nhận yêu cầu kết nối.
+            {t('mwcDescription')}
           </DrawerDescription>
         </DrawerHeader>
 
         <div className="space-y-3 px-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
           <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
-            Mở MetaMask / Trust / Bitget &gt; Browser/DApp &gt; nhập fun.rich &gt; Ví của tôi &gt; Kết nối ví.
+            {t('mwcStepsHint')}
           </div>
 
           {isInjectedMobileBrowser() && onInjectedConnect && (
@@ -85,7 +86,7 @@ export const MobileWalletConnectSheet = ({
               className="h-12 w-full justify-start rounded-xl bg-emerald-600 text-white hover:bg-emerald-700"
             >
               <Wallet className="mr-2 h-5 w-5" />
-              Kết nối {injectedName}
+              {t('mwcConnectWith', { name: injectedName })}
             </Button>
           )}
 
@@ -94,8 +95,8 @@ export const MobileWalletConnectSheet = ({
             className="flex w-full items-center justify-between rounded-xl border border-orange-200 bg-orange-50 px-4 py-3 text-left transition-colors hover:bg-orange-100"
           >
             <span>
-              <span className="block font-semibold text-orange-700">Mở trong MetaMask</span>
-              <span className="text-xs text-orange-700/75">Dùng Browser/DApp trong MetaMask để kết nối ổn định.</span>
+              <span className="block font-semibold text-orange-700">{t('authWalletOpenInMetaMask')}</span>
+              <span className="text-xs text-orange-700/75">{t('mwcMetaMaskDesc')}</span>
             </span>
             <ExternalLink className="h-4 w-4 text-orange-600" />
           </button>
@@ -105,8 +106,8 @@ export const MobileWalletConnectSheet = ({
             className="flex w-full items-center justify-between rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-left transition-colors hover:bg-blue-100"
           >
             <span>
-              <span className="block font-semibold text-blue-700">Mở trong Trust Wallet</span>
-              <span className="text-xs text-blue-700/75">Mở đúng trang FUN Profile trong dApp browser của Trust.</span>
+              <span className="block font-semibold text-blue-700">{t('authWalletOpenInTrust')}</span>
+              <span className="text-xs text-blue-700/75">{t('mwcTrustDesc')}</span>
             </span>
             <ExternalLink className="h-4 w-4 text-blue-600" />
           </button>
@@ -116,8 +117,8 @@ export const MobileWalletConnectSheet = ({
             className="flex w-full items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-left transition-colors hover:bg-slate-100"
           >
             <span>
-              <span className="block font-semibold text-slate-800">Mở trong Bitget Wallet</span>
-              <span className="text-xs text-slate-600">Dùng Bitget Wallet để duyệt FUN Profile và xác nhận ví.</span>
+              <span className="block font-semibold text-slate-800">{t('authWalletOpenInBitget')}</span>
+              <span className="text-xs text-slate-600">{t('mwcBitgetDesc')}</span>
             </span>
             <ExternalLink className="h-4 w-4 text-slate-600" />
           </button>
@@ -126,12 +127,12 @@ export const MobileWalletConnectSheet = ({
             <div className="grid grid-cols-1 gap-2 pt-1">
               <Button onClick={onOpenWalletConnect} variant="outline" className="h-11 rounded-xl">
                 <Wallet className="mr-2 h-4 w-4" />
-                Kết nối bằng WalletConnect
+                {t('mwcConnectWalletConnect')}
               </Button>
               {onReset && (
                 <Button onClick={onReset} variant="ghost" className="h-11 rounded-xl text-muted-foreground">
                   <RefreshCw className="mr-2 h-4 w-4" />
-                  Thử lại / Làm mới kết nối
+                  {t('mwcRetryRefresh')}
                 </Button>
               )}
             </div>

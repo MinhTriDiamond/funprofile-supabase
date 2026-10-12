@@ -1,4 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useLanguage } from '@/i18n/LanguageContext';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Sparkles, Lock, Unlock, TrendingUp } from 'lucide-react';
@@ -28,6 +29,7 @@ interface VestingSchedule {
 }
 
 export function VestingProgress({ userId }: VestingProgressProps) {
+  const { t } = useLanguage();
   const { data: schedules, isLoading } = useQuery({
     queryKey: ['reward-vesting', userId],
     queryFn: async () => {
@@ -49,7 +51,7 @@ export function VestingProgress({ userId }: VestingProgressProps) {
   if (isLoading) {
     return (
       <Card>
-        <CardHeader><CardTitle className="text-base">Phần thưởng Ánh Sáng</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-base">{t('vspTitle')}</CardTitle></CardHeader>
         <CardContent><Skeleton className="h-32 w-full" /></CardContent>
       </Card>
     );
@@ -76,28 +78,28 @@ export function VestingProgress({ userId }: VestingProgressProps) {
       <CardHeader className="pb-3">
         <CardTitle className="text-base flex items-center gap-2">
           <Sparkles className="w-4 h-4 text-primary" />
-          Phần thưởng Ánh Sáng
+          {t('vspTitle')}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Tổng quan */}
         <div className="grid grid-cols-3 gap-3 text-center">
           <div className="p-3 rounded-lg bg-muted/40">
-            <div className="text-xs text-muted-foreground mb-1">Sẵn sàng dùng</div>
+            <div className="text-xs text-muted-foreground mb-1">{t('vspReadyToUse')}</div>
             <div className="text-lg font-semibold text-primary">
               {Math.floor(totals.released).toLocaleString('vi-VN')}
             </div>
             <Unlock className="w-3 h-3 mx-auto mt-1 text-primary/60" />
           </div>
           <div className="p-3 rounded-lg bg-muted/40">
-            <div className="text-xs text-muted-foreground mb-1">Đang mở dần</div>
+            <div className="text-xs text-muted-foreground mb-1">{t('vspUnlocking')}</div>
             <div className="text-lg font-semibold">
               {Math.floor(totals.locked).toLocaleString('vi-VN')}
             </div>
             <Lock className="w-3 h-3 mx-auto mt-1 text-muted-foreground" />
           </div>
           <div className="p-3 rounded-lg bg-muted/40">
-            <div className="text-xs text-muted-foreground mb-1">Tổng FUN</div>
+            <div className="text-xs text-muted-foreground mb-1">{t('vspTotalFun')}</div>
             <div className="text-lg font-semibold">
               {Math.floor(totals.total).toLocaleString('vi-VN')}
             </div>
@@ -107,7 +109,7 @@ export function VestingProgress({ userId }: VestingProgressProps) {
 
         <div className="space-y-1.5">
           <div className="flex justify-between text-xs text-muted-foreground">
-            <span>Tiến độ mở</span>
+            <span>{t('vspUnlockProgress')}</span>
             <span>{progressPct.toFixed(1)}%</span>
           </div>
           <Progress value={progressPct} className="h-2" />
@@ -115,7 +117,7 @@ export function VestingProgress({ userId }: VestingProgressProps) {
 
         {/* Lịch mở */}
         <div className="space-y-2">
-          <div className="text-xs font-medium text-muted-foreground">Các đợt phần thưởng</div>
+          <div className="text-xs font-medium text-muted-foreground">{t('vspRewardBatches')}</div>
           {schedules.slice(0, 3).map((s) => {
             const sProgress = Number(s.total_amount) > 0
               ? (Number(s.released_amount) / Number(s.total_amount)) * 100 : 0;
@@ -126,15 +128,15 @@ export function VestingProgress({ userId }: VestingProgressProps) {
                     {Math.floor(Number(s.total_amount)).toLocaleString('vi-VN')} FUN
                   </div>
                   <Badge variant={s.status === 'completed' ? 'default' : 'secondary'} className="text-[10px]">
-                    {s.status === 'completed' ? 'Hoàn tất' : 'Đang mở dần'}
+                    {s.status === 'completed' ? t('completedProgress') : t('vspUnlocking')}
                   </Badge>
                 </div>
                 <Progress value={sProgress} className="h-1" />
                 <div className="flex items-center justify-between text-[11px] text-muted-foreground">
-                  <span>{Math.floor(Number(s.released_amount)).toLocaleString('vi-VN')} đã mở</span>
+                  <span>{Math.floor(Number(s.released_amount)).toLocaleString('vi-VN')}{t('vspReleasedSuffix')}</span>
                   {s.next_unlock_check_at && s.status === 'active' && (
                     <span>
-                      Mở thêm{' '}
+                      {t('vspUnlockMorePrefix')}
                       {formatDistanceToNow(new Date(s.next_unlock_check_at), { addSuffix: true, locale: vi })}
                     </span>
                   )}
@@ -144,13 +146,13 @@ export function VestingProgress({ userId }: VestingProgressProps) {
           })}
           {schedules.length > 3 && (
             <div className="text-xs text-center text-muted-foreground">
-              +{schedules.length - 3} đợt khác
+              {t('vspMoreBatches', { count: schedules.length - 3 })}
             </div>
           )}
         </div>
 
         <p className="text-[11px] text-muted-foreground italic text-center">
-          Phần thưởng tự động mở dần theo thời gian và mức đóng góp của bạn.
+          {t('vspFooterNote')}
         </p>
       </CardContent>
     </Card>

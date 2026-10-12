@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useLanguage } from '@/i18n/LanguageContext';
 import { Wallet as WalletIcon, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useLinkedWallet } from '@/hooks/useLinkedWallet';
@@ -14,6 +15,7 @@ export const StickyLinkWalletBar = () => {
   const { isAuthenticated } = useCurrentUser();
   const { linkedWalletAddress, isLoading } = useLinkedWallet();
   const [dismissed, setDismissed] = useState(false);
+  const { t } = useLanguage();
 
   // Reset trạng thái dismiss mỗi session
   useEffect(() => {
@@ -38,10 +40,10 @@ export const StickyLinkWalletBar = () => {
           </div>
           <div className="flex-1 min-w-0">
             <div className="text-xs font-semibold text-amber-900 dark:text-amber-200 leading-tight">
-              Chưa liên kết ví
+              {t('slbNotLinked')}
             </div>
             <div className="text-[11px] text-amber-700 dark:text-amber-300/80 leading-tight truncate">
-              Liên kết để claim FUN đang chờ
+              {t('slbLinkToClaim')}
             </div>
           </div>
           <Link to="/wallet/asset" className="flex-shrink-0">
@@ -49,12 +51,12 @@ export const StickyLinkWalletBar = () => {
               size="sm"
               className="bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold h-9 px-3"
             >
-              Liên kết ví
+              {t('slbLinkWallet')}
             </Button>
           </Link>
           <button
             onClick={() => setDismissed(true)}
-            aria-label="Đóng"
+            aria-label={t('close')}
             className="flex-shrink-0 w-7 h-7 rounded-md flex items-center justify-center text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/40"
           >
             <X className="w-3.5 h-3.5" />

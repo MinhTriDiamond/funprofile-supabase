@@ -227,7 +227,7 @@ export function SwapTab({ walletAddress, onSuccess }: SwapTabProps) {
             },
           });
         } catch { /* log là best-effort, không chặn luồng */ }
-        toast.warning('Giao dịch swap đã thành công on-chain, hệ thống sẽ đồng bộ lịch sử trong vài phút.');
+        toast.warning(t('swtSyncPending'));
       }
 
 

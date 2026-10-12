@@ -23,7 +23,7 @@ export const ReceiveTab = ({ walletAddress, btcAddress, selectedNetwork = 'evm' 
     if (address) {
       copyToClipboard(address).then((ok) => {
         if (ok) toast.success(t('walletAddressCopied'));
-        else toast.error('Không thể sao chép');
+        else toast.error(t('cannotCopy'));
       });
     }
   };

@@ -1,22 +1,23 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useLanguage } from '@/i18n/LanguageContext';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { CheckCircle2, XCircle, AlertTriangle, Sparkles, Shield, Activity, Users } from 'lucide-react';
 
 // PPLP v2.0 — 5 Trụ cột Ánh Sáng mới
 const PILLAR_INFO = [
-  { key: 'repentance', icon: '🙏', name: 'Sám Hối', desc: 'Dấu hiệu tự nhìn lại, nhận lỗi, chuyển hoá bản thân' },
-  { key: 'gratitude', icon: '💛', name: 'Biết Ơn', desc: 'Năng lượng biết ơn, trân trọng cuộc sống và người khác' },
-  { key: 'service_pillar', icon: '☀️', name: 'Phụng Sự', desc: 'Phụng sự sự sống, giúp ích cộng đồng' },
-  { key: 'help_pillar', icon: '🤝', name: 'Giúp Đỡ', desc: 'Giúp đỡ người khác cụ thể, có phản hồi xác nhận' },
-  { key: 'giving_pillar', icon: '🎁', name: 'Trao Tặng', desc: 'Trao tặng thời gian, tiền, kiến thức, tình yêu' },
+  { key: 'repentance', icon: '🙏', nameKey: 'pplpS9Key1Title', descKey: 'vdtPillarRepentanceDesc' },
+  { key: 'gratitude', icon: '💛', nameKey: 'pplpS9Key2Title', descKey: 'vdtPillarGratitudeDesc' },
+  { key: 'service_pillar', icon: '☀️', nameKey: 'peuPillarService', descKey: 'vdtPillarServiceDesc' },
+  { key: 'help_pillar', icon: '🤝', nameKey: 'peuPillarHelp', descKey: 'vdtPillarHelpDesc' },
+  { key: 'giving_pillar', icon: '🎁', nameKey: 'peuPillarGiving', descKey: 'vdtPillarGivingDesc' },
 ];
 
-const STATUS_STYLES: Record<string, { bg: string; icon: React.ReactNode; label: string }> = {
-  validated: { bg: 'bg-green-50 dark:bg-green-950/20', icon: <CheckCircle2 className="w-8 h-8 text-green-500" />, label: 'Xác thực thành công' },
-  minted: { bg: 'bg-amber-50 dark:bg-amber-950/20', icon: <Sparkles className="w-8 h-8 text-amber-500" />, label: 'Đã mint FUN Money' },
-  rejected: { bg: 'bg-red-50 dark:bg-red-950/20', icon: <XCircle className="w-8 h-8 text-red-500" />, label: 'Từ chối' },
-  manual_review: { bg: 'bg-yellow-50 dark:bg-yellow-950/20', icon: <AlertTriangle className="w-8 h-8 text-yellow-500" />, label: 'Đang xem xét thủ công' },
+const STATUS_STYLES: Record<string, { bg: string; icon: React.ReactNode; labelKey: string }> = {
+  validated: { bg: 'bg-green-50 dark:bg-green-950/20', icon: <CheckCircle2 className="w-8 h-8 text-green-500" />, labelKey: 'vdtStatusValidated' },
+  minted: { bg: 'bg-amber-50 dark:bg-amber-950/20', icon: <Sparkles className="w-8 h-8 text-amber-500" />, labelKey: 'vdtStatusMinted' },
+  rejected: { bg: 'bg-red-50 dark:bg-red-950/20', icon: <XCircle className="w-8 h-8 text-red-500" />, labelKey: 'papStatusRejected' },
+  manual_review: { bg: 'bg-yellow-50 dark:bg-yellow-950/20', icon: <AlertTriangle className="w-8 h-8 text-yellow-500" />, labelKey: 'vdtStatusManualReview' },
 };
 
 interface ValidationDetailProps {
@@ -47,6 +48,7 @@ interface ValidationDetailProps {
 }
 
 export default function ValidationDetail({ validation }: ValidationDetailProps) {
+  const { t } = useLanguage();
   const status = STATUS_STYLES[validation.validation_status] || STATUS_STYLES.manual_review;
   const pillars = validation.pplp_scores || {};
 
@@ -56,7 +58,7 @@ export default function ValidationDetail({ validation }: ValidationDetailProps) 
       <Card className={`border-0 ${status.bg}`}>
         <CardContent className="py-4 text-center">
           <div className="flex justify-center mb-2">{status.icon}</div>
-          <p className="font-bold text-lg">{status.label}</p>
+          <p className="font-bold text-lg">{t(status.labelKey)}</p>
           <p className="text-3xl font-bold mt-1 bg-gradient-to-r from-amber-500 to-orange-500 bg-clip-text text-transparent">
             {validation.final_light_score.toFixed(4)}
           </p>
@@ -68,10 +70,10 @@ export default function ValidationDetail({ validation }: ValidationDetailProps) 
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-sm flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-amber-500" /> 5 Trụ cột PPLP
+            <Sparkles className="w-4 h-4 text-amber-500" /> {t('vdtFivePillarsTitle')}
           </CardTitle>
           <p className="text-[10px] text-muted-foreground">
-            Công thức: (S × T × H × V × U) / 10⁴ = {validation.raw_light_score.toFixed(4)}
+            {t('vdtFormula', { score: validation.raw_light_score.toFixed(4) })}
           </p>
         </CardHeader>
         <CardContent className="space-y-3">
@@ -82,11 +84,11 @@ export default function ValidationDetail({ validation }: ValidationDetailProps) 
               <div key={p.key}>
                 <div className="flex items-center gap-2 mb-1">
                   <span className="text-base">{p.icon}</span>
-                  <span className="text-xs font-medium flex-1">{p.name}</span>
+                  <span className="text-xs font-medium flex-1">{t(p.nameKey)}</span>
                   <span className="text-sm font-bold font-mono">{score.toFixed(1)}</span>
                 </div>
                 <Progress value={percent} className="h-2" />
-                <p className="text-[10px] text-muted-foreground mt-0.5">{p.desc}</p>
+                <p className="text-[10px] text-muted-foreground mt-0.5">{t(p.descKey)}</p>
               </div>
             );
           })}
@@ -97,7 +99,7 @@ export default function ValidationDetail({ validation }: ValidationDetailProps) 
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-sm flex items-center gap-2">
-            <Activity className="w-4 h-4" /> Phân tích điểm
+            <Activity className="w-4 h-4" /> {t('vdtScoreBreakdown')}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -155,7 +157,7 @@ export default function ValidationDetail({ validation }: ValidationDetailProps) 
           <CardContent className="py-3 px-4">
             <p className="text-sm font-medium mb-2">💰 FUN Money earned</p>
             <div className="flex justify-between text-xs">
-              <span>Bạn nhận (99%):</span>
+              <span>{t('pswYouReceive')}</span>
               <span className="font-bold text-amber-600">{validation.mint.mint_amount_user.toFixed(2)} FUN</span>
             </div>
             <div className="flex justify-between text-xs text-muted-foreground">
@@ -184,7 +186,7 @@ export default function ValidationDetail({ validation }: ValidationDetailProps) 
       {validation.explanation?.reasoning && (
         <Card>
           <CardContent className="py-3 px-4">
-            <p className="text-xs font-medium mb-1">🤖 AI nhận xét ({validation.explanation.validator || 'ai'}):</p>
+            <p className="text-xs font-medium mb-1">{t('vdtAiComment', { validator: validation.explanation.validator || 'ai' })}</p>
             <p className="text-xs text-muted-foreground">{validation.explanation.reasoning}</p>
           </CardContent>
         </Card>

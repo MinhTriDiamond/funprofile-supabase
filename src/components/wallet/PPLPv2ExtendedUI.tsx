@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useLanguage } from '@/i18n/LanguageContext';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -24,39 +25,40 @@ const EVENT_TYPE_ICONS: Record<string, string> = {
   zoom: '💻', livestream: '📺', love_house: '🏠', in_person: '🤝',
 };
 
-const TRUST_LEVEL_INFO: Record<string, { label: string; color: string }> = {
-  newcomer: { label: 'Người mới', color: 'bg-muted text-muted-foreground' },
-  active: { label: 'Hoạt động', color: 'bg-primary/10 text-primary' },
-  established: { label: 'Ổn định', color: 'bg-green-500/10 text-green-600' },
-  trusted: { label: 'Đáng tin cậy', color: 'bg-amber-500/10 text-amber-600' },
+const TRUST_LEVEL_INFO: Record<string, { labelKey: string; color: string }> = {
+  newcomer: { labelKey: 'peuTrustNewcomer', color: 'bg-muted text-muted-foreground' },
+  active: { labelKey: 'usrBadgeActive', color: 'bg-primary/10 text-primary' },
+  established: { labelKey: 'peuTrustEstablished', color: 'bg-green-500/10 text-green-600' },
+  trusted: { labelKey: 'peuTrustTrusted', color: 'bg-amber-500/10 text-amber-600' },
 };
 
 // PPLP v2.0 — 5 Trụ cột mới
 const PILLAR_INFO = [
-  { key: 'repentance', icon: '🙏', name: 'Sám Hối' },
-  { key: 'gratitude', icon: '💛', name: 'Biết Ơn' },
-  { key: 'service_pillar', icon: '☀️', name: 'Phụng Sự' },
-  { key: 'help_pillar', icon: '🤝', name: 'Giúp Đỡ' },
-  { key: 'giving_pillar', icon: '🎁', name: 'Trao Tặng' },
+  { key: 'repentance', icon: '🙏', nameKey: 'pplpS9Key1Title' },
+  { key: 'gratitude', icon: '💛', nameKey: 'pplpS9Key2Title' },
+  { key: 'service_pillar', icon: '☀️', nameKey: 'peuPillarService' },
+  { key: 'help_pillar', icon: '🤝', nameKey: 'peuPillarHelp' },
+  { key: 'giving_pillar', icon: '🎁', nameKey: 'peuPillarGiving' },
 ];
 
-const STATUS_MAP: Record<string, { label: string; color: string }> = {
-  proof_pending: { label: 'Chờ bằng chứng', color: 'bg-yellow-500/10 text-yellow-600' },
-  under_review: { label: 'Đang đánh giá', color: 'bg-blue-500/10 text-blue-600' },
-  validated: { label: 'Đã xác thực', color: 'bg-green-500/10 text-green-600' },
-  rejected: { label: 'Từ chối', color: 'bg-red-500/10 text-red-600' },
-  minted: { label: 'Đã mint', color: 'bg-amber-500/10 text-amber-600' },
+const STATUS_MAP: Record<string, { labelKey: string; color: string }> = {
+  proof_pending: { labelKey: 'pswStatusProofPending', color: 'bg-yellow-500/10 text-yellow-600' },
+  under_review: { labelKey: 'pswStatusUnderReview', color: 'bg-blue-500/10 text-blue-600' },
+  validated: { labelKey: 'pswStatusValidated', color: 'bg-green-500/10 text-green-600' },
+  rejected: { labelKey: 'papStatusRejected', color: 'bg-red-500/10 text-red-600' },
+  minted: { labelKey: 'pswStatusMinted', color: 'bg-amber-500/10 text-amber-600' },
 };
 
 export default function PPLPv2ExtendedUI() {
+  const { t } = useLanguage();
   return (
     <Tabs defaultValue="events" className="w-full">
       <TabsList className="grid w-full grid-cols-4">
         <TabsTrigger value="events" className="text-xs">
-          <Calendar className="w-3.5 h-3.5 mr-1" /> Sự kiện
+          <Calendar className="w-3.5 h-3.5 mr-1" /> {t('events')}
         </TabsTrigger>
         <TabsTrigger value="attendance" className="text-xs">
-          <Users className="w-3.5 h-3.5 mr-1" /> Điểm danh
+          <Users className="w-3.5 h-3.5 mr-1" /> {t('peuTabAttendance')}
         </TabsTrigger>
         <TabsTrigger value="review" className="text-xs">
           <MessageSquare className="w-3.5 h-3.5 mr-1" /> Review
@@ -75,6 +77,7 @@ export default function PPLPv2ExtendedUI() {
 }
 
 function EventsTab() {
+  const { t } = useLanguage();
   const { listEvents, createEvent, validateEvent, isLoading } = usePPLPv2Events();
   const [showCreate, setShowCreate] = useState(false);
   const [title, setTitle] = useState('');
@@ -106,24 +109,24 @@ function EventsTab() {
   return (
     <div className="space-y-3 mt-3">
       <div className="flex justify-between items-center">
-        <h4 className="text-sm font-semibold">Sự kiện PPLP</h4>
+        <h4 className="text-sm font-semibold">{t('peuEventsTitle')}</h4>
         <Button size="sm" variant="outline" onClick={() => setShowCreate(!showCreate)}>
-          {showCreate ? 'Đóng' : '+ Tạo sự kiện'}
+          {showCreate ? t('close') : t('peuCreateEvent')}
         </Button>
       </div>
 
       {showCreate && (
         <Card>
           <CardContent className="pt-4 space-y-3">
-            <Input value={title} onChange={e => setTitle(e.target.value)} placeholder="Tên sự kiện" />
+            <Input value={title} onChange={e => setTitle(e.target.value)} placeholder={t('peuEventNamePlaceholder')} />
             <div className="flex gap-2">
-              {(['zoom', 'livestream', 'love_house', 'in_person'] as const).map(t => (
+              {(['zoom', 'livestream', 'love_house', 'in_person'] as const).map(et => (
                 <button
-                  key={t}
-                  onClick={() => setEventType(t)}
-                  className={`px-3 py-1.5 rounded-lg text-xs border ${eventType === t ? 'border-amber-500 bg-amber-50 dark:bg-amber-950/20' : 'border-border'}`}
+                  key={et}
+                  onClick={() => setEventType(et)}
+                  className={`px-3 py-1.5 rounded-lg text-xs border ${eventType === et ? 'border-amber-500 bg-amber-50 dark:bg-amber-950/20' : 'border-border'}`}
                 >
-                  {EVENT_TYPE_ICONS[t]} {t === 'love_house' ? 'Love House' : t === 'in_person' ? 'Gặp mặt' : t.charAt(0).toUpperCase() + t.slice(1)}
+                  {EVENT_TYPE_ICONS[et]} {et === 'love_house' ? 'Love House' : et === 'in_person' ? t('peuEventTypeInPerson') : et.charAt(0).toUpperCase() + et.slice(1)}
                 </button>
               ))}
             </div>
@@ -132,19 +135,19 @@ function EventsTab() {
               <Input
                 type="number" value={expectedDuration}
                 onChange={e => setExpectedDuration(e.target.value)}
-                placeholder="Phút" className="w-20"
+                placeholder={t('peuMinutesPlaceholder')} className="w-20"
                 min={10} max={480}
               />
             </div>
             <Button onClick={handleCreate} disabled={isLoading || !title.trim() || !startAt} className="w-full bg-amber-500 hover:bg-amber-600" size="sm">
-              {isLoading ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : null} Tạo sự kiện
+              {isLoading ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : null} {t('peuCreateEventSubmit')}
             </Button>
           </CardContent>
         </Card>
       )}
 
       {events?.length === 0 && (
-        <Card><CardContent className="py-6 text-center text-sm text-muted-foreground">Chưa có sự kiện nào</CardContent></Card>
+        <Card><CardContent className="py-6 text-center text-sm text-muted-foreground">{t('peuNoEvents')}</CardContent></Card>
       )}
 
       {events?.map((event: any) => (
@@ -155,6 +158,7 @@ function EventsTab() {
 }
 
 function EventCard({ event, onValidate }: { event: any; onValidate: (id: string) => Promise<any> }) {
+  const { t } = useLanguage();
   const { checkIn, isLoading } = usePPLPv2Attendance();
   const [validating, setValidating] = useState(false);
   const groups = event.pplp_v2_groups || [];
@@ -178,7 +182,7 @@ function EventCard({ event, onValidate }: { event: any; onValidate: (id: string)
               <Calendar className="w-3 h-3" />
               <span>{new Date(event.start_at).toLocaleString('vi-VN')}</span>
               {event.expected_duration_minutes && (
-                <span>• {event.expected_duration_minutes} phút</span>
+                <span>• {t('peuMinutesSuffix', { minutes: event.expected_duration_minutes })}</span>
               )}
             </div>
           </div>
@@ -194,7 +198,7 @@ function EventCard({ event, onValidate }: { event: any; onValidate: (id: string)
 
         {groups.length > 0 && (
           <div className="mt-3 space-y-2">
-            <p className="text-xs font-medium text-muted-foreground">Nhóm:</p>
+            <p className="text-xs font-medium text-muted-foreground">{t('peuGroupsLabel')}</p>
             {groups.map((g: any) => (
               <div key={g.id} className="flex items-center justify-between bg-muted/50 rounded-lg px-3 py-2">
                 <div className="flex items-center gap-2">
@@ -213,7 +217,7 @@ function EventCard({ event, onValidate }: { event: any; onValidate: (id: string)
         {event.status === 'completed' && !event.event_score && (
           <Button size="sm" variant="outline" className="w-full mt-2 text-xs" disabled={validating} onClick={handleValidate}>
             {validating ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <Shield className="w-3 h-3 mr-1" />}
-            Đánh giá sự kiện
+            {t('peuValidateEvent')}
           </Button>
         )}
       </CardContent>
@@ -222,6 +226,7 @@ function EventCard({ event, onValidate }: { event: any; onValidate: (id: string)
 }
 
 function AttendanceTab() {
+  const { t } = useLanguage();
   const { myAttendance, checkOut, isLoading: checkingOut } = usePPLPv2Attendance();
   const [reflection, setReflection] = useState('');
   const [checkoutGroupId, setCheckoutGroupId] = useState<string | null>(null);
@@ -242,13 +247,13 @@ function AttendanceTab() {
   return (
     <div className="space-y-3 mt-3">
       <h4 className="text-sm font-semibold flex items-center gap-2">
-        <Users className="w-4 h-4" /> Lịch sử điểm danh
+        <Users className="w-4 h-4" /> {t('peuAttendanceHistory')}
       </h4>
 
       {isLoading ? (
         <div className="flex justify-center py-6"><Loader2 className="w-5 h-5 animate-spin text-muted-foreground" /></div>
       ) : !attendance?.length ? (
-        <Card><CardContent className="py-6 text-center text-sm text-muted-foreground">Chưa có lịch sử điểm danh</CardContent></Card>
+        <Card><CardContent className="py-6 text-center text-sm text-muted-foreground">{t('peuNoAttendance')}</CardContent></Card>
       ) : (
         attendance.map((att: any) => {
           const group = att.pplp_v2_groups;
@@ -260,12 +265,12 @@ function AttendanceTab() {
               <CardContent className="py-3 px-4">
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium text-sm">{event?.title || 'Sự kiện'}</p>
-                    <p className="text-xs text-muted-foreground">Nhóm: {group?.name}</p>
+                    <p className="font-medium text-sm">{event?.title || t('events')}</p>
+                    <p className="text-xs text-muted-foreground">{t('peuGroupPrefix', { name: group?.name })}</p>
                     <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
                       {att.check_in_at && <span className="flex items-center gap-1"><LogIn className="w-3 h-3" /> {new Date(att.check_in_at).toLocaleTimeString('vi-VN')}</span>}
                       {att.check_out_at && <span className="flex items-center gap-1"><LogOut className="w-3 h-3" /> {new Date(att.check_out_at).toLocaleTimeString('vi-VN')}</span>}
-                      {att.duration_minutes && <span><Clock className="w-3 h-3 inline" /> {att.duration_minutes} phút</span>}
+                      {att.duration_minutes && <span><Clock className="w-3 h-3 inline" /> {t('peuMinutesSuffix', { minutes: att.duration_minutes })}</span>}
                     </div>
 
                     {/* 6 Signals Display */}
@@ -282,7 +287,7 @@ function AttendanceTab() {
                     <Badge variant="outline" className="text-xs mb-1">
                       PF: {Number(att.participation_factor).toFixed(2)}
                     </Badge>
-                    {att.confirmed_by_leader && <p className="text-[10px] text-green-600">✓ Leader xác nhận</p>}
+                    {att.confirmed_by_leader && <p className="text-[10px] text-green-600">{t('peuLeaderConfirmed')}</p>}
                   </div>
                 </div>
 
@@ -292,11 +297,11 @@ function AttendanceTab() {
                       <>
                         <Textarea
                           value={reflection} onChange={e => setReflection(e.target.value)}
-                          placeholder="Chia sẻ cảm nhận sau buổi tham gia..."
+                          placeholder={t('peuReflectionPlaceholder')}
                           rows={2} className="text-xs"
                         />
                         <div className="flex gap-2">
-                          <Button size="sm" variant="outline" onClick={() => setCheckoutGroupId(null)} className="flex-1 h-7 text-xs">Hủy</Button>
+                          <Button size="sm" variant="outline" onClick={() => setCheckoutGroupId(null)} className="flex-1 h-7 text-xs">{t('cancel')}</Button>
                           <Button size="sm" onClick={() => handleCheckOut(att.group_id)} disabled={checkingOut} className="flex-1 h-7 text-xs bg-amber-500 hover:bg-amber-600">
                             {checkingOut ? <Loader2 className="w-3 h-3 animate-spin" /> : <LogOut className="w-3 h-3 mr-1" />} Check-out
                           </Button>
@@ -319,6 +324,7 @@ function AttendanceTab() {
 }
 
 function CommunityReviewTab() {
+  const { t } = useLanguage();
   const { fetchMyActions } = usePPLPv2();
   const [selectedAction, setSelectedAction] = useState<any>(null);
 
@@ -336,7 +342,7 @@ function CommunityReviewTab() {
     return (
       <div className="space-y-3 mt-3">
         <Button size="sm" variant="outline" onClick={() => setSelectedAction(null)} className="text-xs">
-          ← Quay lại
+          ← {t('goBack')}
         </Button>
         <CommunityReviewPanel
           actionId={selectedAction.id}
@@ -352,14 +358,14 @@ function CommunityReviewTab() {
         <MessageSquare className="w-4 h-4" /> Community Review
       </h4>
       <p className="text-xs text-muted-foreground">
-        Xem xét và xác nhận hành động của cộng đồng. Review giúp tăng độ chính xác của hệ thống PPLP.
+        {t('peuReviewDesc')}
       </p>
 
       {isLoading ? (
         <div className="flex justify-center py-6"><Loader2 className="w-5 h-5 animate-spin" /></div>
       ) : reviewableActions.length === 0 ? (
         <Card><CardContent className="py-6 text-center text-sm text-muted-foreground">
-          Chưa có hành động nào để review
+          {t('peuNoActionsToReview')}
         </CardContent></Card>
       ) : (
         reviewableActions.map((action: any) => {
@@ -372,7 +378,7 @@ function CommunityReviewTab() {
                     <p className="font-medium text-sm truncate">{action.title}</p>
                     <p className="text-xs text-muted-foreground">{action.action_type_code}</p>
                   </div>
-                  <Badge className={`${statusInfo.color} text-xs shrink-0`}>{statusInfo.label}</Badge>
+                  <Badge className={`${statusInfo.color} text-xs shrink-0`}>{t(statusInfo.labelKey)}</Badge>
                 </div>
               </CardContent>
             </Card>
@@ -384,6 +390,7 @@ function CommunityReviewTab() {
 }
 
 function LightProfileTab() {
+  const { t } = useLanguage();
   const { fetchProfile, profile, isLoading } = usePPLPv2LightProfile();
 
   const { isLoading: fetching } = useQuery({
@@ -396,7 +403,7 @@ function LightProfileTab() {
   }
 
   if (!profile) {
-    return <Card><CardContent className="py-6 text-center text-sm text-muted-foreground">Chưa có dữ liệu</CardContent></Card>;
+    return <Card><CardContent className="py-6 text-center text-sm text-muted-foreground">{t('csmNoData')}</CardContent></Card>;
   }
 
   const trustInfo = TRUST_LEVEL_INFO[profile.trust_level] || TRUST_LEVEL_INFO.newcomer;
@@ -426,14 +433,14 @@ function LightProfileTab() {
             </div>
           </div>
           <div className="flex justify-center mt-3">
-            <Badge className={`${trustInfo.color} text-xs`}>{trustInfo.label}</Badge>
+            <Badge className={`${trustInfo.color} text-xs`}>{t(trustInfo.labelKey)}</Badge>
           </div>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-sm">5 Trụ cột trung bình</CardTitle>
+          <CardTitle className="text-sm">{t('peuAvgPillarsTitle')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-2">
           {PILLAR_INFO.map(p => {
@@ -441,7 +448,7 @@ function LightProfileTab() {
             return (
               <div key={p.key} className="flex items-center gap-2">
                 <span className="text-sm w-5">{p.icon}</span>
-                <span className="text-xs flex-1">{p.name}</span>
+                <span className="text-xs flex-1">{t(p.nameKey)}</span>
                 <Progress value={score * 10} className="w-20 h-2" />
                 <span className="text-xs font-mono w-8 text-right">{score.toFixed(1)}</span>
               </div>
@@ -455,19 +462,19 @@ function LightProfileTab() {
           <div className="grid grid-cols-2 gap-3 text-xs">
             <div className="flex items-center gap-2">
               <Calendar className="w-3.5 h-3.5 text-muted-foreground" />
-              <span>Tuổi tài khoản: {profile.account_age_days} ngày</span>
+              <span>{t('peuAccountAge', { days: profile.account_age_days })}</span>
             </div>
             <div className="flex items-center gap-2">
               <CheckCircle2 className="w-3.5 h-3.5 text-muted-foreground" />
-              <span>Streak: {profile.streak_days} ngày</span>
+              <span>{t('peuStreak', { days: profile.streak_days })}</span>
             </div>
             <div className="flex items-center gap-2">
               <MessageSquare className="w-3.5 h-3.5 text-muted-foreground" />
-              <span>Tổng actions: {profile.total_actions}</span>
+              <span>{t('peuTotalActions', { count: profile.total_actions })}</span>
             </div>
             <div className="flex items-center gap-2">
               <Star className="w-3.5 h-3.5 text-muted-foreground" />
-              <span>Events: {profile.attendance_count}</span>
+              <span>{t('peuEventsCount', { count: profile.attendance_count })}</span>
             </div>
           </div>
         </CardContent>
@@ -476,7 +483,7 @@ function LightProfileTab() {
       {profile.recent_actions?.length > 0 && (
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm">Hoạt động gần đây</CardTitle>
+            <CardTitle className="text-sm">{t('recentActivity')}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-1.5">
             {profile.recent_actions.map((a: any) => (
