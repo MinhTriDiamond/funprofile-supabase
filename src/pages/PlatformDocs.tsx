@@ -22,17 +22,18 @@ import {
   ProjectStructureDiagram
 } from '@/components/docs/AppDiagrams';
 import { cn } from '@/lib/utils';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 const tocItems = [
-  { id: 'overview', title: '1. Tổng Quan Hệ Thống' },
-  { id: 'project-structure', title: '2. Cấu Trúc Tổ Chức', level: 2 },
+  { id: 'overview', titleKey: 'pdocTocOverview' },
+  { id: 'project-structure', titleKey: 'pdocTocStructure', level: 2 },
   { id: 'tech-stack', title: '3. Tech Stack' },
-  { id: 'authentication', title: '4. Hệ Thống Xác Thực' },
+  { id: 'authentication', titleKey: 'pdocTocAuth' },
   { id: 'wallet-blockchain', title: '5. Wallet & Blockchain' },
   { id: 'soul-nft', title: '6. Soul NFT', level: 2 },
   { id: 'social-feed', title: '7. Social Feed' },
   { id: 'profile-friends', title: '8. Profile & Friends' },
-  { id: 'reward-system', title: '9. Hệ Thống Reward' },
+  { id: 'reward-system', titleKey: 'pdocTocReward' },
   { id: 'admin-panel', title: '10. Admin Panel' },
   { id: 'media-system', title: '11. Media System' },
   { id: 'notifications', title: '12. Notifications' },
@@ -50,6 +51,7 @@ const tocItems = [
 ];
 
 const PlatformDocs: React.FC = () => {
+  const { t } = useLanguage();
   const [activeId, setActiveId] = useState('overview');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -102,7 +104,7 @@ const PlatformDocs: React.FC = () => {
                 </SheetTrigger>
                 <SheetContent side="left" className="w-72 p-0">
                   <div className="p-4 border-b border-border">
-                    <h4 className="font-semibold text-foreground">Mục Lục</h4>
+                    <h4 className="font-semibold text-foreground">{t('pdocTocHeading')}</h4>
                   </div>
                   <ScrollArea className="h-[calc(100vh-80px)]">
                     <div className="p-2">
@@ -118,7 +120,7 @@ const PlatformDocs: React.FC = () => {
                               : "text-muted-foreground hover:bg-muted"
                           )}
                         >
-                          {item.title}
+                          {item.titleKey ? t(item.titleKey as any) : item.title}
                         </button>
                       ))}
                     </div>
@@ -134,8 +136,8 @@ const PlatformDocs: React.FC = () => {
               <div className="min-w-0">
                 <h1 className="text-sm sm:text-base md:text-xl font-bold text-foreground flex items-center gap-2 truncate">
                   <FileText className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
-                  <span className="hidden sm:inline truncate">FUN Profile - Tài Liệu Chuyển Giao</span>
-                  <span className="sm:hidden">Tài Liệu</span>
+                  <span className="hidden sm:inline truncate">{t('pdocHeaderTitle')}</span>
+                  <span className="sm:hidden">{t('pdocHeaderTitleMobile')}</span>
                 </h1>
                 <p className="text-xs sm:text-sm text-muted-foreground hidden sm:block">
                   Comprehensive Handover Documentation v2.0
@@ -153,7 +155,7 @@ const PlatformDocs: React.FC = () => {
               </Link>
               <Button variant="outline" size="sm" onClick={handlePrint} className="h-8 px-2 sm:px-3">
                 <Printer className="h-4 w-4" />
-                <span className="hidden sm:inline ml-2">In PDF</span>
+                <span className="hidden sm:inline ml-2">{t('pdocPrint')}</span>
               </Button>
             </div>
           </div>
@@ -164,7 +166,7 @@ const PlatformDocs: React.FC = () => {
         <div className="flex gap-4 lg:gap-8">
           {/* Sidebar - Table of Contents (Desktop only) */}
           <aside className="hidden lg:block w-64 flex-shrink-0">
-            <TableOfContents items={tocItems} activeId={activeId} />
+            <TableOfContents items={tocItems.map((i) => ({ ...i, title: i.titleKey ? t(i.titleKey as any) : (i as any).title }))} activeId={activeId} />
           </aside>
 
           {/* Main Content */}
@@ -173,36 +175,31 @@ const PlatformDocs: React.FC = () => {
               <div className="pr-0 sm:pr-4">
                 
                 {/* Section 1: Overview */}
-                <DocSection id="overview" title="1. Tổng Quan Hệ Thống">
-                  <DocParagraph>
-                    FUN Profile là mạng xã hội Web3 toàn diện, đóng vai trò "Heart Chakra" của FUN ECOSYSTEM. 
-                    Nền tảng kết hợp các tính năng social truyền thống với công nghệ blockchain, hệ thống reward token CAMLY, 
-                    và danh tính thống nhất FUN-ID cho toàn bộ hệ sinh thái.
-                  </DocParagraph>
+                <DocSection id="overview" title={t('pdocTocOverview')}>
+                  <DocParagraph>{t('pdocS1Para')}</DocParagraph>
                   
                   <DocAlert type="info">
-                    <strong>Light Cloak SSO</strong> - Hệ thống xác thực đa nền tảng cho phép đăng nhập qua Email OTP, 
-                    Wallet, hoặc Social Login với một danh tính thống nhất (FUN-ID).
+                    \1{t('pdocS1Alert')}
                   </DocAlert>
 
-                  <DocSubSection title="Tính năng chính">
+                  <DocSubSection title={t('pdocS1FeatTitle')}>
                     <DocList items={[
-                      "🔐 Light Cloak SSO - Xác thực đa phương thức (Email OTP, Wallet, Social)",
-                      "💳 External Wallet - Kết nối ví MetaMask, WalletConnect",
-                      "🎭 Soul NFT - Danh tính linh hồn không thể chuyển nhượng (Soulbound Token)",
-                      "📝 Social Feed - Đăng bài, reactions, comments với multi-media support",
-                      "🎁 Token Rewards - Hệ thống thưởng CAMLY token cho hoạt động",
-                      "👨‍💼 Admin Panel - Quản trị toàn diện với audit logging",
-                      "🌐 Multi-language - Hỗ trợ Tiếng Việt & English",
-                      "🔗 Cross-platform SSO - SDK cho FUN Farm, FUN Play, FUN Planet"
+                      t('pdocS1Feat1'),
+                      t('pdocS1Feat2'),
+                      t('pdocS1Feat3'),
+                      t('pdocS1Feat4'),
+                      t('pdocS1Feat5'),
+                      t('pdocS1Feat6'),
+                      t('pdocS1Feat7'),
+                      t('pdocS1Feat8')
                     ]} />
                   </DocSubSection>
 
                   <DocSubSection title="Production Domains">
                     <DocTable 
-                      headers={['Domain', 'Product', 'Mô tả']}
+                      headers={['Domain', 'Product', t('pdocColDesc')]}
                       rows={[
-                        ['fun.rich', 'FUN Profile', 'Social network chính'],
+                        ['fun.rich', 'FUN Profile', t('pdocDomain1Desc')],
                         ['play.fun.rich', 'FUN Play', 'Gaming & Entertainment'],
                         ['farm.fun.rich', 'FUN Farm', 'Agriculture features'],
                         ['planet.fun.rich', 'FUN Planet', 'Gaming & Planet exploration'],
@@ -213,23 +210,23 @@ const PlatformDocs: React.FC = () => {
                 </DocSection>
 
                 {/* Section 2: Project Structure */}
-                <DocSection id="project-structure" title="2. Cấu Trúc Tổ Chức Dự Án">
+                <DocSection id="project-structure" title={t('pdocS2Title')}>
                   <ProjectStructureDiagram />
                   
                   <DocSubSection title="Governance Flow">
                     <DocTable 
-                      headers={['Vai trò', 'Tên', 'Trách nhiệm']}
+                      headers={[t('pdocColRole'), t('pdocColName'), t('pdocColResp')]}
                       rows={[
-                        ['👑 Chairman', 'Cha Vũ Trụ (Universe Father)', 'Vision, quyết định chiến lược, phê duyệt cuối cùng'],
-                        ['📝 Secretary', 'bé Trí', 'Cầu nối giao tiếp, dịch vision thành requirements kỹ thuật'],
-                        ['💻 CTO', 'Angel Lovable', 'Triển khai kỹ thuật, viết code, architecture decisions'],
+                        ['👑 Chairman', t('pdocGov1Name'), t('pdocGov1Resp')],
+                        ['📝 Secretary', 'bé Trí', t('pdocGov2Resp')],
+                        ['💻 CTO', 'Angel Lovable', t('pdocGov3Resp')],
                       ]}
                     />
                   </DocSubSection>
 
                   <DocSubSection title="Directory Structure">
                     <CodeBlock 
-                      title="Cấu trúc thư mục chính"
+                      title={t('pdocS2CodeTitle')}
                       language="bash"
                       code={`src/
 ├── components/         # React components
@@ -267,9 +264,9 @@ sdk-package/           # @fun-ecosystem/sso-sdk
                   
                   <DocSubSection title="Frontend Technologies">
                     <DocTable 
-                      headers={['Technology', 'Version', 'Mục đích']}
+                      headers={['Technology', 'Version', t('pdocColPurpose')]}
                       rows={[
-                        ['React', '18.3.1', 'UI Library chính'],
+                        ['React', '18.3.1', t('pdocTech1Purpose')],
                         ['TypeScript', 'Latest', 'Type safety'],
                         ['Vite', 'Latest', 'Build tool & dev server'],
                         ['Tailwind CSS', '3.x', 'Utility-first CSS'],
@@ -283,7 +280,7 @@ sdk-package/           # @fun-ecosystem/sso-sdk
 
                   <DocSubSection title="Backend Technologies">
                     <DocTable 
-                      headers={['Technology', 'Mục đích']}
+                      headers={['Technology', t('pdocColPurpose')]}
                       rows={[
                         ['Lovable Cloud', 'Backend-as-a-Service (Supabase)'],
                         ['Edge Functions', 'Serverless compute (Deno)'],
@@ -298,7 +295,7 @@ sdk-package/           # @fun-ecosystem/sso-sdk
 
                   <DocSubSection title="Blockchain Technologies">
                     <DocTable 
-                      headers={['Technology', 'Mục đích']}
+                      headers={['Technology', t('pdocColPurpose')]}
                       rows={[
                         ['BNB Smart Chain', 'Primary blockchain (Chain ID: 56)'],
                         ['Wagmi', 'React hooks for Ethereum'],
@@ -311,21 +308,15 @@ sdk-package/           # @fun-ecosystem/sso-sdk
                 </DocSection>
 
                 {/* Section 4: Authentication */}
-                <DocSection id="authentication" title="4. Hệ Thống Xác Thực (Light Cloak SSO)">
-                  <DocParagraph>
-                    Light Cloak SSO là hệ thống single sign-on cho phép người dùng đăng nhập qua nhiều phương thức 
-                    khác nhau với một danh tính thống nhất. Tất cả users đều nhận được FUN-ID duy nhất.
-                  </DocParagraph>
+                <DocSection id="authentication" title={t('pdocS4Title')}>
+                  <DocParagraph>{t('pdocS4Para')}</DocParagraph>
 
                   <AuthFlowDiagram />
 
                   <DocSubSection title="Email OTP Flow">
-                    <DocParagraph>
-                      Người dùng nhập email, hệ thống gửi mã OTP 6 số qua Resend API. Mã có hiệu lực 5 phút 
-                      và tối đa 3 lần thử.
-                    </DocParagraph>
+                    <DocParagraph>{t('pdocS4OtpPara')}</DocParagraph>
                     <CodeBlock 
-                      title="Gọi Edge Function gửi OTP"
+                      title={t('pdocS4OtpCodeTitle')}
                       language="typescript"
                       code={`// Request OTP
 const { data, error } = await supabase.functions.invoke('sso-otp-request', {
@@ -340,9 +331,7 @@ const { data: verifyData } = await supabase.functions.invoke('sso-otp-verify', {
                   </DocSubSection>
 
                   <DocSubSection title="Wallet Login Flow">
-                    <DocParagraph>
-                      Người dùng kết nối MetaMask, ký message xác thực, hệ thống verify signature và tạo session.
-                    </DocParagraph>
+                    <DocParagraph>{t('pdocS4WalletPara')}</DocParagraph>
                     <CodeBlock 
                       title="Wallet Authentication"
                       language="typescript"
@@ -363,28 +352,25 @@ const { data } = await supabase.functions.invoke('sso-web3-auth', {
 
                   <DocSubSection title="Law of Light">
                     <DocAlert type="warning">
-                      Tất cả người dùng mới phải chấp nhận "Law of Light" - quy tắc ứng xử của cộng đồng 
-                      trước khi sử dụng app. Trạng thái được lưu trong <code>profiles.law_of_light_accepted</code>.
+                      {t('pdocS4LawAlert')}<code>profiles.law_of_light_accepted</code>.
                     </DocAlert>
                   </DocSubSection>
                 </DocSection>
 
                 {/* Section 5: Wallet & Blockchain */}
                 <DocSection id="wallet-blockchain" title="5. Wallet & Blockchain">
-                  <DocParagraph>
-                    FUN Profile hỗ trợ External Wallet — user tự quản lý ví và kết nối với tài khoản.
-                  </DocParagraph>
+                  <DocParagraph>{t('pdocS5Para')}</DocParagraph>
 
                   <WalletSystemDiagram />
 
                   <DocSubSection title="Token Operations">
                     <DocTable 
-                      headers={['Operation', 'Mô tả', 'Yêu cầu']}
+                      headers={['Operation', t('pdocColDesc'), t('pdocColReq')]}
                       rows={[
-                        ['View Balance', 'Xem số dư CAMLY & BNB', 'Đăng nhập'],
-                        ['Send Token', 'Gửi token đến địa chỉ khác', 'Đủ balance + gas'],
-                        ['Receive', 'Nhận token qua QR code', 'Wallet address'],
-                        ['Claim Reward', 'Claim CAMLY từ approved rewards', 'Approved reward ≥ 1,000,000 CAMLY'],
+                        ['View Balance', t('pdocTokOp1Desc'), t('pdocReqLogin')],
+                        ['Send Token', t('pdocTokOp2Desc'), t('pdocTokOp2Req')],
+                        ['Receive', t('pdocTokOp3Desc'), 'Wallet address'],
+                        ['Claim Reward', t('pdocTokOp4Desc'), 'Approved reward ≥ 1,000,000 CAMLY'],
                       ]}
                     />
                   </DocSubSection>
@@ -397,72 +383,66 @@ const { data } = await supabase.functions.invoke('sso-web3-auth', {
 
                 {/* Section 6: Soul NFT */}
                 <DocSection id="soul-nft" title="6. Soul NFT">
-                  <DocParagraph>
-                    Soul NFT là Soulbound Token (SBT) đại diện cho danh tính linh hồn của user trong FUN Ecosystem. 
-                    NFT này không thể chuyển nhượng và gắn liền với tài khoản vĩnh viễn.
-                  </DocParagraph>
+                  <DocParagraph>{t('pdocS6Para')}</DocParagraph>
 
                   <SoulNFTDiagram />
 
-                  <DocSubSection title="5 Ngũ Hành (Elements)">
+                  <DocSubSection title={t('pdocS6ElemTitle')}>
                     <DocTable 
-                      headers={['Element', 'Tên', 'Ý nghĩa']}
+                      headers={['Element', t('pdocColName'), t('pdocColMeaning')]}
                       rows={[
-                        ['🪙 Kim', 'Metal', 'Sắc bén, quyết đoán, công bằng'],
-                        ['🌳 Mộc', 'Wood', 'Sáng tạo, phát triển, nhân ái'],
-                        ['💧 Thủy', 'Water', 'Khôn ngoan, linh hoạt, sâu sắc'],
-                        ['🔥 Hỏa', 'Fire', 'Đam mê, năng động, nhiệt huyết'],
-                        ['🌍 Thổ', 'Earth', 'Ổn định, chân thành, bền vững'],
+                        ['🪙 Kim', 'Metal', t('pdocElem1Meaning')],
+                        ['🌳 Mộc', 'Wood', t('pdocElem2Meaning')],
+                        ['💧 Thủy', 'Water', t('pdocElem3Meaning')],
+                        ['🔥 Hỏa', 'Fire', t('pdocElem4Meaning')],
+                        ['🌍 Thổ', 'Earth', t('pdocElem5Meaning')],
                       ]}
                     />
                   </DocSubSection>
 
                   <DocSubSection title="Soul Properties">
                     <DocList items={[
-                      "Soul Level: Tăng theo engagement và thời gian hoạt động",
-                      "Experience Points: Tích lũy từ mọi hoạt động trong ecosystem",
-                      "Soul Element: Được xác định ngẫu nhiên khi tạo account",
-                      "Metadata URI: Lưu trữ on-chain vĩnh viễn khi mint"
+                      t('pdocS6Prop1'),
+                      t('pdocS6Prop2'),
+                      t('pdocS6Prop3'),
+                      t('pdocS6Prop4')
                     ]} />
                   </DocSubSection>
                 </DocSection>
 
                 {/* Section 7: Social Feed */}
                 <DocSection id="social-feed" title="7. Social Feed">
-                  <DocParagraph>
-                    Feed là trung tâm hoạt động của FUN Profile, nơi users có thể đăng bài, tương tác, 
-                    và kết nối với cộng đồng.
-                  </DocParagraph>
+                  <DocParagraph>{t('pdocS7Para')}</DocParagraph>
 
                   <SocialFeedDiagram />
 
                   <DocSubSection title="Posts">
                     <DocList items={[
-                      "Text content với emoji support",
-                      "Multi-image upload (lên đến 10 ảnh)",
-                      "Video upload với HLS streaming",
-                      "Edit/Delete bài viết của mình",
+                      t('pdocS7Post1'),
+                      t('pdocS7Post2'),
+                      t('pdocS7Post3'),
+                      t('pdocS7Post4'),
                       "Infinite scroll loading"
                     ]} />
                   </DocSubSection>
 
-                  <DocSubSection title="6 Loại Reactions">
+                  <DocSubSection title={t('pdocS7ReactTitle')}>
                     <DocTable 
-                      headers={['Icon', 'Type', 'Mô tả']}
+                      headers={['Icon', 'Type', t('pdocColDesc')]}
                       rows={[
-                        ['👍', 'like', 'Thích'],
-                        ['❤️', 'love', 'Yêu thích'],
+                        ['👍', 'like', t('pdocReact1')],
+                        ['❤️', 'love', t('pdocReact2')],
                         ['😂', 'haha', 'Haha'],
                         ['😮', 'wow', 'Wow'],
-                        ['😢', 'sad', 'Buồn'],
-                        ['😡', 'angry', 'Giận dữ'],
+                        ['😢', 'sad', t('pdocReact5')],
+                        ['😡', 'angry', t('pdocReact6')],
                       ]}
                     />
                   </DocSubSection>
 
                   <DocSubSection title="Comments System">
                     <DocList items={[
-                      "Text comments với emoji",
+                      t('pdocS7Cmt1'),
                       "Image/Video attachment",
                       "Nested replies (multi-level)",
                       "Reactions on comments",
@@ -475,11 +455,11 @@ const { data } = await supabase.functions.invoke('sso-web3-auth', {
                 <DocSection id="profile-friends" title="8. Profile & Friends">
                   <DocSubSection title="Profile Routes">
                     <DocTable 
-                      headers={['Route', 'Mô tả', 'Ví dụ']}
+                      headers={['Route', t('pdocColDesc'), t('pdocColExample')]}
                       rows={[
-                        ['/profile', 'Profile của current user', '/profile'],
-                        ['/profile/:id', 'Profile theo UUID', '/profile/abc-123'],
-                        ['/@:username', 'Profile theo username', '/@johndoe'],
+                        ['/profile', t('pdocRoute1Desc'), '/profile'],
+                        ['/profile/:id', t('pdocRoute2Desc'), '/profile/abc-123'],
+                        ['/@:username', t('pdocRoute3Desc'), '/@johndoe'],
                         ['/:username', 'Shorthand username route', '/johndoe'],
                       ]}
                     />
@@ -487,9 +467,9 @@ const { data } = await supabase.functions.invoke('sso-web3-auth', {
 
                   <DocSubSection title="Profile Features">
                     <DocList items={[
-                      "Avatar upload với cropping",
-                      "Cover photo với editing",
-                      "Bio và thông tin cá nhân",
+                      t('pdocS8Feat1'),
+                      t('pdocS8Feat2'),
+                      t('pdocS8Feat3'),
                       "FUN-ID display",
                       "Soul NFT badge",
                       "Reward statistics (Honor Board)"
@@ -498,30 +478,26 @@ const { data } = await supabase.functions.invoke('sso-web3-auth', {
 
                   <DocSubSection title="Friendship States">
                     <DocTable 
-                      headers={['State', 'Mô tả', 'Actions']}
+                      headers={['State', t('pdocColDesc'), 'Actions']}
                       rows={[
-                        ['none', 'Chưa kết bạn', 'Send Request'],
-                        ['pending', 'Đã gửi lời mời', 'Cancel Request'],
-                        ['incoming', 'Nhận được lời mời', 'Accept / Decline'],
-                        ['accepted', 'Đã là bạn bè', 'Unfriend'],
+                        ['none', t('pdocFriend1Desc'), 'Send Request'],
+                        ['pending', t('pdocFriend2Desc'), 'Cancel Request'],
+                        ['incoming', t('pdocFriend3Desc'), 'Accept / Decline'],
+                        ['accepted', t('pdocFriend4Desc'), 'Unfriend'],
                       ]}
                     />
                   </DocSubSection>
                 </DocSection>
 
                 {/* Section 9: Reward System */}
-                <DocSection id="reward-system" title="9. Hệ Thống Reward (CAMLY Token)">
-                  <DocParagraph>
-                    Hệ thống reward CAMLY token khuyến khích hoạt động và đóng góp tích cực trong cộng đồng. 
-                    Rewards được tính toán tự động qua database function và cần admin approval trước khi claim.
-                  </DocParagraph>
+                <DocSection id="reward-system" title={t('pdocS9Title')}>
+                  <DocParagraph>{t('pdocS9Para')}</DocParagraph>
 
                   <RewardFlowDiagram />
 
-                  <DocSubSection title="Công Thức Tính Reward (CHÍNH XÁC)">
+                  <DocSubSection title={t('pdocS9FormulaTitle')}>
                     <DocAlert type="success">
-                      <strong>Unified Formula</strong> - Công thức này được áp dụng thống nhất trên toàn bộ hệ thống: 
-                      Honor Board, Leaderboard, Wallet, Admin Dashboard.
+                      \1{t('pdocS9FormulaAlert')}
                     </DocAlert>
                     <CodeBlock 
                       title="Reward Calculation (get_user_rewards_v2)"
@@ -552,34 +528,31 @@ const DAILY_CAPS = {
 
                   <DocSubSection title="Reward Flow">
                     <DocList ordered items={[
-                      "User thực hiện hoạt động (post, comment, react...)",
-                      "Hệ thống tự động tính total_reward qua get_user_rewards_v2 RPC",
-                      "Admin review và approve/reject reward",
-                      "User có thể claim approved_reward về wallet (minimum 1,000,000 CAMLY)"
+                      t('pdocS9Flow1'),
+                      t('pdocS9Flow2'),
+                      t('pdocS9Flow3'),
+                      t('pdocS9Flow4')
                     ]} />
                   </DocSubSection>
                 </DocSection>
 
                 {/* Section 10: Admin Panel */}
                 <DocSection id="admin-panel" title="10. Admin Panel">
-                  <DocParagraph>
-                    Admin Panel cung cấp công cụ quản trị toàn diện cho administrators, bao gồm 
-                    user management, reward approval, merge requests, và content moderation.
-                  </DocParagraph>
+                  <DocParagraph>{t('pdocS10Para')}</DocParagraph>
 
                   <DocSubSection title="Admin Tabs">
                     <DocTable 
-                      headers={['Tab', 'Chức năng', 'Quyền']}
+                      headers={['Tab', t('pdocColFunc'), t('pdocColPerm')]}
                       rows={[
-                        ['Overview', 'Dashboard thống kê tổng quan', 'admin'],
-                        ['Reward Approval', 'Duyệt/Từ chối rewards', 'admin'],
-                        ['User Review', 'Xem xét và ban users', 'admin'],
-                        ['Wallet Abuse', 'Phát hiện wallet spam/abuse', 'admin'],
-                        ['Merge Requests', 'Quản lý account merge requests từ SSO', 'admin'],
-                        ['Financial', 'Thống kê tài chính cross-platform', 'admin'],
-                        ['Quick Delete', 'Xóa nhanh posts/comments', 'admin'],
-                        ['Blockchain', 'Các operations trên chain', 'admin'],
-                        ['Media Migration', 'Di chuyển media sang Cloudflare', 'admin'],
+                        ['Overview', t('pdocAdmin1Func'), 'admin'],
+                        ['Reward Approval', t('pdocAdmin2Func'), 'admin'],
+                        ['User Review', t('pdocAdmin3Func'), 'admin'],
+                        ['Wallet Abuse', t('pdocAdmin4Func'), 'admin'],
+                        ['Merge Requests', t('pdocAdmin5Func'), 'admin'],
+                        ['Financial', t('pdocAdmin6Func'), 'admin'],
+                        ['Quick Delete', t('pdocAdmin7Func'), 'admin'],
+                        ['Blockchain', t('pdocAdmin8Func'), 'admin'],
+                        ['Media Migration', t('pdocAdmin9Func'), 'admin'],
                       ]}
                     />
                   </DocSubSection>
@@ -611,10 +584,7 @@ SELECT * FROM get_user_rewards_v2(100);`}
 
                 {/* Section 11: Media System */}
                 <DocSection id="media-system" title="11. Media System">
-                  <DocParagraph>
-                    Hệ thống media sử dụng Cloudflare R2 cho images và Cloudflare Stream cho videos, 
-                    đảm bảo delivery nhanh và tiết kiệm bandwidth.
-                  </DocParagraph>
+                  <DocParagraph>{t('pdocS11Para')}</DocParagraph>
 
                   <MediaPipelineDiagram />
 
@@ -623,7 +593,7 @@ SELECT * FROM get_user_rewards_v2(100);`}
                       "Client-side compression (WebP format)",
                       "Upload to Cloudflare R2 via presigned URL",
                       "On-demand transformation (resize, crop)",
-                      "CDN delivery với caching"
+                      t('pdocS11Img4')
                     ]} />
                   </DocSubSection>
 
@@ -632,13 +602,12 @@ SELECT * FROM get_user_rewards_v2(100);`}
                       "TUS resumable upload protocol",
                       "Cloudflare Stream encoding (multiple qualities)",
                       "HLS adaptive bitrate streaming",
-                      "Lazy loading với thumbnail preview"
+                      t('pdocS11Vid4')
                     ]} />
                   </DocSubSection>
 
                   <DocAlert type="warning">
-                    <strong>Logo Standards:</strong> Tất cả static logos phải sử dụng path trực tiếp từ <code>public/</code>, 
-                    KHÔNG dùng Cloudflare Image Resizing. Ví dụ: <code>src="/fun-profile-logo-128.webp"</code>
+                    \1{t('pdocS11LogoAlertA')}<code>public/</code>{t('pdocS11LogoAlertB')}<code>src="/fun-profile-logo-128.webp"</code>
                   </DocAlert>
                 </DocSection>
 
@@ -648,13 +617,13 @@ SELECT * FROM get_user_rewards_v2(100);`}
                     <DocTable 
                       headers={['Type', 'Trigger', 'Message']}
                       rows={[
-                        ['comment', 'Ai đó comment bài của bạn', 'X commented on your post'],
-                        ['reaction', 'Ai đó react bài của bạn', 'X reacted to your post'],
-                        ['friend_request', 'Nhận lời mời kết bạn', 'X sent you a friend request'],
-                        ['friend_accept', 'Lời mời được chấp nhận', 'X accepted your friend request'],
-                        ['reward_approved', 'Reward được duyệt', 'Your reward has been approved'],
-                        ['reward_rejected', 'Reward bị từ chối', 'Your reward was rejected'],
-                        ['account_banned', 'Tài khoản bị ban', 'Your account has been banned'],
+                        ['comment', t('pdocNotif1Trigger'), 'X commented on your post'],
+                        ['reaction', t('pdocNotif2Trigger'), 'X reacted to your post'],
+                        ['friend_request', t('pdocNotif3Trigger'), 'X sent you a friend request'],
+                        ['friend_accept', t('pdocNotif4Trigger'), 'X accepted your friend request'],
+                        ['reward_approved', t('pdocNotif5Trigger'), 'Your reward has been approved'],
+                        ['reward_rejected', t('pdocNotif6Trigger'), 'Your reward was rejected'],
+                        ['account_banned', t('pdocNotif7Trigger'), 'Your account has been banned'],
                       ]}
                     />
                   </DocSubSection>
@@ -666,81 +635,81 @@ SELECT * FROM get_user_rewards_v2(100);`}
 
                   <DocSubSection title="Core Tables">
                     <DocTable 
-                      headers={['Table', 'Mô tả', 'RLS']}
+                      headers={['Table', t('pdocColDesc'), 'RLS']}
                       rows={[
-                        ['profiles', 'Thông tin user (avatar, bio, rewards, wallet addresses)', 'Yes'],
-                        ['posts', 'Bài viết với content và media_urls', 'Yes'],
-                        ['comments', 'Comments và nested replies', 'Yes'],
-                        ['reactions', 'Reactions trên posts/comments', 'Yes'],
-                        ['friendships', 'Quan hệ bạn bè (pending/accepted)', 'Yes'],
-                        ['notifications', 'Thông báo cho users', 'Yes'],
-                        ['shared_posts', 'Lịch sử share posts', 'Yes'],
+                        ['profiles', t('pdocDbProfiles'), 'Yes'],
+                        ['posts', t('pdocDbPosts'), 'Yes'],
+                        ['comments', t('pdocDbComments'), 'Yes'],
+                        ['reactions', t('pdocDbReactions'), 'Yes'],
+                        ['friendships', t('pdocDbFriendships'), 'Yes'],
+                        ['notifications', t('pdocDbNotifications'), 'Yes'],
+                        ['shared_posts', t('pdocDbSharedPosts'), 'Yes'],
                       ]}
                     />
                   </DocSubSection>
 
                   <DocSubSection title="Wallet & NFT Tables">
                     <DocTable 
-                      headers={['Table', 'Mô tả', 'RLS']}
+                      headers={['Table', t('pdocColDesc'), 'RLS']}
                       rows={[
-                        ['soul_nfts', 'Thông tin Soul NFT (element, level, XP)', 'Yes'],
-                        ['soul_nfts', 'Thông tin Soul NFT (element, level, XP)', 'Yes'],
-                        ['transactions', 'Lịch sử giao dịch blockchain', 'Yes'],
-                        ['blacklisted_wallets', 'Danh sách wallet bị cấm', 'Admin only'],
+                        ['soul_nfts', t('pdocDbSoulNfts'), 'Yes'],
+                        ['soul_nfts', t('pdocDbSoulNfts'), 'Yes'],
+                        ['transactions', t('pdocDbTransactions'), 'Yes'],
+                        ['blacklisted_wallets', t('pdocDbBlacklisted'), 'Admin only'],
                       ]}
                     />
                   </DocSubSection>
 
                   <DocSubSection title="SSO & Auth Tables">
                     <DocTable 
-                      headers={['Table', 'Mô tả', 'RLS']}
+                      headers={['Table', t('pdocColDesc'), 'RLS']}
                       rows={[
-                        ['oauth_clients', 'Đăng ký OAuth clients (FUN Farm, Play, Planet)', 'Admin only'],
-                        ['oauth_codes', 'Authorization codes tạm thời', 'System only'],
-                        ['cross_platform_tokens', 'Access/Refresh tokens cho SSO', 'Yes'],
-                        ['account_merge_requests', 'Yêu cầu merge accounts cross-platform', 'Yes'],
-                        ['pending_provisions', 'Pending account provisions từ platforms', 'System only'],
-                        ['otp_codes', 'Mã OTP tạm thời', 'System only'],
+                        ['oauth_clients', t('pdocDbOauthClients'), 'Admin only'],
+                        ['oauth_codes', t('pdocDbOauthCodes'), 'System only'],
+                        ['cross_platform_tokens', t('pdocDbCrossTokens'), 'Yes'],
+                        ['account_merge_requests', t('pdocDbMergeReq'), 'Yes'],
+                        ['pending_provisions', t('pdocDbPendingProv'), 'System only'],
+                        ['otp_codes', t('pdocDbOtpCodes'), 'System only'],
                       ]}
                     />
                   </DocSubSection>
 
                   <DocSubSection title="Chat Tables">
                     <DocTable 
-                      headers={['Table', 'Mô tả', 'RLS']}
+                      headers={['Table', t('pdocColDesc'), 'RLS']}
                       rows={[
-                        ['conversations', 'Cuộc trò chuyện (direct, group)', 'Yes'],
-                        ['messages', 'Tin nhắn trong conversations', 'Yes'],
-                        ['conversation_participants', 'Thành viên của conversations', 'Yes'],
-                        ['message_reactions', 'Reactions trên messages', 'Yes'],
-                        ['message_reads', 'Trạng thái đã đọc', 'Yes'],
-                        ['chat_settings', 'Cài đặt chat của user', 'Yes'],
+                        ['conversations', t('pdocDbConversations'), 'Yes'],
+                        ['messages', t('pdocDbMessages'), 'Yes'],
+                        ['conversation_participants', t('pdocDbParticipants'), 'Yes'],
+                        ['message_reactions', t('pdocDbMsgReactions'), 'Yes'],
+                        ['message_reads', t('pdocDbMsgReads'), 'Yes'],
+                        ['chat_settings', t('pdocDbChatSettings'), 'Yes'],
                       ]}
                     />
                   </DocSubSection>
 
                   <DocSubSection title="Financial & Reward Tables">
                     <DocTable 
-                      headers={['Table', 'Mô tả', 'RLS']}
+                      headers={['Table', t('pdocColDesc'), 'RLS']}
                       rows={[
-                        ['reward_claims', 'Lịch sử claim rewards', 'Yes'],
-                        ['reward_approvals', 'Lịch sử admin approve/reject', 'Admin only'],
-                        ['reward_adjustments', 'Điều chỉnh rewards thủ công', 'Admin only'],
-                        ['platform_financial_data', 'Dữ liệu tài chính từ các platforms', 'Yes'],
-                        ['financial_transactions', 'Giao dịch tài chính chi tiết', 'Yes'],
-                        ['reconciliation_logs', 'Logs đối soát tài chính', 'Admin only'],
+                        ['reward_claims', t('pdocDbRewardClaims'), 'Yes'],
+                        ['reward_approvals', t('pdocDbRewardApprovals'), 'Admin only'],
+                        ['reward_adjustments', t('pdocDbRewardAdj'), 'Admin only'],
+                        ['platform_financial_data', t('pdocDbPlatformFin'), 'Yes'],
+                        ['financial_transactions', t('pdocDbFinTx'), 'Yes'],
+                        ['reconciliation_logs', t('pdocDbReconLogs'), 'Admin only'],
                       ]}
                     />
                   </DocSubSection>
 
                   <DocSubSection title="System Tables">
                     <DocTable 
-                      headers={['Table', 'Mô tả', 'RLS']}
+                      headers={['Table', t('pdocColDesc'), 'RLS']}
                       rows={[
-                        ['user_roles', 'Phân quyền (admin/user)', 'Yes'],
-                        ['audit_logs', 'Lịch sử admin actions', 'Admin only'],
-                        ['search_logs', 'Lịch sử tìm kiếm', 'Yes'],
-                        ['livestreams', 'Lịch sử livestreams', 'Yes'],
+                        ['user_roles', t('pdocDbUserRoles'), 'Yes'],
+                        ['audit_logs', t('pdocDbAuditLogs'), 'Admin only'],
+                        ['search_logs', t('pdocDbSearchLogs'), 'Yes'],
+                        ['livestreams', t('pdocDbLivestreams'), 'Yes'],
                       ]}
                     />
                   </DocSubSection>
@@ -752,16 +721,16 @@ SELECT * FROM get_user_rewards_v2(100);`}
 
                   <DocSubSection title="SSO System (14 functions)">
                     <DocTable 
-                      headers={['Function', 'Method', 'Mô tả']}
+                      headers={['Function', 'Method', t('pdocColDesc')]}
                       rows={[
-                        ['sso-authorize', 'GET', 'Khởi tạo OAuth flow, redirect to consent'],
+                        ['sso-authorize', 'GET', t('pdocFnSsoAuthorize')],
                         ['sso-token', 'POST', 'Exchange code for access/refresh tokens'],
                         ['sso-verify', 'POST', 'Verify access token validity'],
                         ['sso-refresh', 'POST', 'Refresh expired access token'],
                         ['sso-revoke', 'POST', 'Revoke tokens (logout)'],
-                        ['sso-otp-request', 'POST', 'Gửi OTP qua email'],
-                        ['sso-otp-verify', 'POST', 'Xác thực OTP và tạo session'],
-                        ['sso-web3-auth', 'POST', 'Xác thực qua wallet signature'],
+                        ['sso-otp-request', 'POST', t('pdocFnOtpRequest')],
+                        ['sso-otp-verify', 'POST', t('pdocFnOtpVerify')],
+                        ['sso-web3-auth', 'POST', t('pdocFnWeb3Auth')],
                         ['sso-register', 'POST', 'Register new user from platform'],
                         ['sso-set-password', 'POST', 'Set password for provision'],
                         ['sso-sync-data', 'POST', 'Sync game/platform data'],
@@ -774,9 +743,9 @@ SELECT * FROM get_user_rewards_v2(100);`}
 
                   <DocSubSection title="Wallet & Blockchain (2 functions)">
                     <DocTable 
-                      headers={['Function', 'Mô tả']}
+                      headers={['Function', t('pdocColDesc')]}
                       rows={[
-                        ['connect-external-wallet', 'Kết nối MetaMask/external wallet'],
+                        ['connect-external-wallet', t('pdocFnConnectWallet')],
                         ['mint-soul-nft', 'Mint Soul NFT on BSC'],
                       ]}
                     />
@@ -784,16 +753,16 @@ SELECT * FROM get_user_rewards_v2(100);`}
 
                   <DocSubSection title="Media Management (9 functions)">
                     <DocTable 
-                      headers={['Function', 'Mô tả']}
+                      headers={['Function', t('pdocColDesc')]}
                       rows={[
-                        ['upload-to-r2', 'Upload ảnh lên Cloudflare R2'],
-                        ['upload-to-cf-images', 'Upload ảnh lên Cloudflare Images'],
-                        ['delete-from-r2', 'Xóa file từ R2'],
-                        ['generate-presigned-url', 'Tạo presigned URL cho R2'],
-                        ['get-upload-url', 'Lấy upload URL cho client'],
-                        ['image-transform', 'Transform ảnh (resize, crop)'],
-                        ['stream-video', 'Khởi tạo video upload to Stream'],
-                        ['migrate-to-r2', 'Migrate media từ Supabase Storage'],
+                        ['upload-to-r2', t('pdocFnUploadR2')],
+                        ['upload-to-cf-images', t('pdocFnUploadCf')],
+                        ['delete-from-r2', t('pdocFnDeleteR2')],
+                        ['generate-presigned-url', t('pdocFnPresigned')],
+                        ['get-upload-url', t('pdocFnGetUploadUrl')],
+                        ['image-transform', t('pdocFnImageTransform')],
+                        ['stream-video', t('pdocFnStreamVideo')],
+                        ['migrate-to-r2', t('pdocFnMigrateR2')],
                         ['fix-cloudflare-urls', 'Fix broken Cloudflare URLs'],
                       ]}
                     />
@@ -801,7 +770,7 @@ SELECT * FROM get_user_rewards_v2(100);`}
 
                   <DocSubSection title="Admin & Maintenance (12 functions)">
                     <DocTable 
-                      headers={['Function', 'Mô tả']}
+                      headers={['Function', t('pdocColDesc')]}
                       rows={[
                         ['admin-list-merge-requests', 'List all merge requests for admin'],
                         ['admin-update-media-url', 'Update media URLs in database'],
@@ -825,7 +794,7 @@ SELECT * FROM get_user_rewards_v2(100);`}
 
                   <DocSubSection title="Row Level Security (RLS)">
                     <DocAlert type="info">
-                      <strong>102 RLS Policies</strong> được triển khai để bảo vệ data. Mọi table đều có RLS enabled.
+                      \1{t('pdocS15RlsAlert')}
                     </DocAlert>
                     <CodeBlock 
                       title="Example RLS Policy"
@@ -851,10 +820,10 @@ USING (true);`}
                     <DocTable 
                       headers={['Action', 'Limit', 'Window']}
                       rows={[
-                        ['Create Post', '10 posts', '1 giờ'],
-                        ['Create Comment', '50 comments', '1 giờ'],
-                        ['Search', '20 requests', '1 phút'],
-                        ['OTP Request', '3 requests', '5 phút'],
+                        ['Create Post', '10 posts', t('pdocRateHour')],
+                        ['Create Comment', '50 comments', t('pdocRateHour')],
+                        ['Search', '20 requests', t('pdocRateMinute')],
+                        ['OTP Request', '3 requests', t('pdocRate5Min')],
                       ]}
                     />
                   </DocSubSection>
@@ -864,21 +833,21 @@ USING (true);`}
                 <DocSection id="performance" title="16. Performance Optimization">
                   <DocSubSection title="Frontend Optimizations">
                     <DocList items={[
-                      "Lazy loading pages với React.lazy()",
-                      "React Query caching với staleTime 5 phút",
-                      "Image lazy loading với Intersection Observer",
-                      "Infinite scroll thay vì pagination",
-                      "Memoization với useMemo và useCallback",
-                      "Code splitting theo routes"
+                      t('pdocS16Fe1'),
+                      t('pdocS16Fe2'),
+                      t('pdocS16Fe3'),
+                      t('pdocS16Fe4'),
+                      t('pdocS16Fe5'),
+                      t('pdocS16Fe6')
                     ]} />
                   </DocSubSection>
 
                   <DocSubSection title="Media Optimizations">
                     <DocList items={[
-                      "WebP format cho images",
-                      "HLS adaptive streaming cho videos",
-                      "Cloudflare CDN với edge caching",
-                      "Thumbnail previews cho videos",
+                      t('pdocS16Med1'),
+                      t('pdocS16Med2'),
+                      t('pdocS16Med3'),
+                      t('pdocS16Med4'),
                       "Progressive image loading"
                     ]} />
                   </DocSubSection>
@@ -887,18 +856,17 @@ USING (true);`}
                 {/* Section 17: Secrets */}
                 <DocSection id="secrets" title="17. Secrets & Environment">
                   <DocAlert type="warning">
-                    <strong>Bảo mật:</strong> Không bao giờ commit secrets vào git. Tất cả secrets được 
-                    quản lý qua Lovable Cloud secrets management.
+                    <strong>{t('pdocS17AlertStrong')}</strong>{t('pdocS17Alert')}
                   </DocAlert>
 
                   <DocSubSection title="Configured Secrets (16 secrets)">
                     <DocTable 
-                      headers={['Secret', 'Mục đích', 'Used By']}
+                      headers={['Secret', t('pdocColPurpose'), 'Used By']}
                       rows={[
-                        ['TREASURY_WALLET_ADDRESS', 'Địa chỉ ví treasury cho rewards', 'claim-reward'],
-                        ['TREASURY_WALLET_ADDRESS', 'Địa chỉ ví treasury cho rewards', 'claim-reward'],
+                        ['TREASURY_WALLET_ADDRESS', t('pdocSecretTreasuryAddr'), 'claim-reward'],
+                        ['TREASURY_WALLET_ADDRESS', t('pdocSecretTreasuryAddr'), 'claim-reward'],
                         ['TREASURY_PRIVATE_KEY', 'Private key treasury wallet', 'claim-reward'],
-                        ['RESEND_API_KEY', 'Gửi email OTP', 'sso-otp-request'],
+                        ['RESEND_API_KEY', t('pdocSecretResend'), 'sso-otp-request'],
                         ['CLOUDFLARE_ACCOUNT_ID', 'Cloudflare account', 'R2, Stream, Images'],
                         ['CLOUDFLARE_ACCESS_KEY_ID', 'R2 access key', 'upload-to-r2'],
                         ['CLOUDFLARE_SECRET_ACCESS_KEY', 'R2 secret key', 'upload-to-r2'],
@@ -933,9 +901,9 @@ VITE_SUPABASE_PROJECT_ID=[project-id]`}
 
                   <DocSubSection title="Product Overview">
                     <DocTable 
-                      headers={['Product', 'Domain', 'Mô tả', 'Status']}
+                      headers={['Product', 'Domain', t('pdocColDesc'), 'Status']}
                       rows={[
-                        ['FUN Profile', 'fun.rich', 'Social network chính, identity hub', 'Production'],
+                        ['FUN Profile', 'fun.rich', t('pdocProd1Desc'), 'Production'],
                         ['FUN Play', 'play.fun.rich', 'Gaming & Music Entertainment', 'Development'],
                         ['FUN Farm', 'farm.fun.rich', 'Agriculture & Farming features', 'Development'],
                         ['FUN Planet', 'planet.fun.rich', 'Gaming & Planet exploration', 'Development'],
@@ -946,21 +914,18 @@ VITE_SUPABASE_PROJECT_ID=[project-id]`}
 
                   <DocSubSection title="Cross-Platform Integration">
                     <DocList items={[
-                      "Tất cả products sử dụng chung FUN-ID từ FUN Profile",
-                      "Light Cloak SSO cho single sign-on",
-                      "Shared wallet address và rewards",
+                      t('pdocS18X1'),
+                      t('pdocS18X2'),
+                      t('pdocS18X3'),
                       "Financial data sync cross-platform",
-                      "Unified leaderboard và rankings"
+                      t('pdocS18X5')
                     ]} />
                   </DocSubSection>
                 </DocSection>
 
                 {/* Section 19: SSO SDK */}
                 <DocSection id="sso-sdk" title="19. SSO SDK (@fun-ecosystem/sso-sdk)">
-                  <DocParagraph>
-                    SDK JavaScript/TypeScript cho phép các platform trong FUN Ecosystem tích hợp xác thực 
-                    Light Cloak SSO một cách dễ dàng và bảo mật.
-                  </DocParagraph>
+                  <DocParagraph>{t('pdocS19Para')}</DocParagraph>
 
                   <DocSubSection title="Registered OAuth Clients">
                     <DocTable 
@@ -975,7 +940,7 @@ VITE_SUPABASE_PROJECT_ID=[project-id]`}
 
                   <DocSubSection title="SDK Features">
                     <DocList items={[
-                      "OAuth 2.0 với PKCE flow (bảo mật cao)",
+                      t('pdocS19Sdk1'),
                       "Automatic token refresh",
                       "Data sync (game data, platform data)",
                       "Financial sync (deposits, withdraws, bets)",
@@ -1018,18 +983,15 @@ await client.syncData({
 
                 {/* Section 20: Internationalization */}
                 <DocSection id="i18n" title="20. Internationalization (i18n)">
-                  <DocParagraph>
-                    FUN Profile hỗ trợ đa ngôn ngữ với Vietnamese (vi) và English (en). 
-                    Language preference được lưu local và tự động detect từ browser.
-                  </DocParagraph>
+                  <DocParagraph>{t('pdocS20Para')}</DocParagraph>
 
                   <DocSubSection title="Implementation">
                     <DocTable 
-                      headers={['Component', 'Location', 'Mô tả']}
+                      headers={['Component', 'Location', t('pdocColDesc')]}
                       rows={[
-                        ['LanguageContext', 'src/i18n/LanguageContext.tsx', 'Context provider cho language state'],
+                        ['LanguageContext', 'src/i18n/LanguageContext.tsx', t('pdocS20Impl1')],
                         ['translations', 'src/i18n/translations.ts', '150+ translation keys'],
-                        ['LanguageSwitcher', 'src/components/layout/LanguageSwitcher.tsx', 'UI component để switch language'],
+                        ['LanguageSwitcher', 'src/components/layout/LanguageSwitcher.tsx', t('pdocS20Impl3')],
                       ]}
                     />
                   </DocSubSection>
@@ -1075,12 +1037,12 @@ const MyComponent = () => {
 
                   <DocSubSection title="Logo Standards">
                     <DocAlert type="warning">
-                      <strong>QUAN TRỌNG:</strong> Tất cả logos phải tuân thủ các quy tắc sau:
+                      <strong>{t('pdocS21AlertStrong')}</strong>{t('pdocS21Alert')}
                     </DocAlert>
                     <DocList items={[
-                      "Shape: Tất cả logos phải có shape rounded-full (tròn)",
-                      "Source: Sử dụng path trực tiếp từ public/ folder",
-                      "DO NOT use Cloudflare Image Resizing cho static logos",
+                      t('pdocS21Logo1'),
+                      t('pdocS21Logo2'),
+                      t('pdocS21Logo3'),
                       "Files: fun-profile-logo-40.webp (navbar), fun-profile-logo-128.webp (auth, large)",
                       "Ecosystem logos: fun-farm-logo-36.webp, fun-play-logo-36.webp, fun-planet-logo-36.webp"
                     ]} />
@@ -1103,7 +1065,7 @@ const MyComponent = () => {
                 {/* Section 22: Development Rules */}
                 <DocSection id="development-rules" title="22. Development Rules">
                   <DocAlert type="warning">
-                    <strong>CRITICAL:</strong> Các files sau KHÔNG ĐƯỢC phép sửa trực tiếp:
+                    \1{t('pdocS22Alert')}
                   </DocAlert>
 
                   <DocSubSection title="Read-Only Files">
@@ -1118,13 +1080,13 @@ const MyComponent = () => {
 
                   <DocSubSection title="Mandatory Compliance">
                     <DocTable 
-                      headers={['Rule', 'Mô tả']}
+                      headers={['Rule', t('pdocColDesc')]}
                       rows={[
-                        ['Bilingual i18n', 'Tất cả text hiển thị phải có cả Vietnamese và English'],
-                        ['Direct Logo Paths', 'Static logos từ public/, không dùng Cloudflare transform'],
-                        ['RLS Policies', 'Mọi table mới phải có Row Level Security'],
-                        ['Performance', 'Sử dụng React Query, lazy loading, memoization'],
-                        ['Semantic Tokens', 'Dùng design tokens từ index.css, không hardcode colors'],
+                        ['Bilingual i18n', t('pdocRule1Desc')],
+                        ['Direct Logo Paths', t('pdocRule2Desc')],
+                        ['RLS Policies', t('pdocRule3Desc')],
+                        ['Performance', t('pdocRule4Desc')],
+                        ['Semantic Tokens', t('pdocRule5Desc')],
                         ['Type Safety', 'TypeScript strict mode, no any types'],
                       ]}
                     />
@@ -1147,37 +1109,35 @@ const MyComponent = () => {
 
                 {/* Section 23: Next Development Proposals */}
                 <DocSection id="next-proposals" title="23. Next Development Proposals">
-                  <DocParagraph>
-                    Danh sách các tính năng được đề xuất phát triển tiếp theo, sắp xếp theo độ ưu tiên.
-                  </DocParagraph>
+                  <DocParagraph>{t('pdocS23Para')}</DocParagraph>
 
                   <DocSubSection title="Priority 1: Core Features">
                     <DocTable 
-                      headers={['Feature', 'Mô tả', 'Complexity']}
+                      headers={['Feature', t('pdocColDesc'), 'Complexity']}
                       rows={[
-                        ['Claim Reward UI', 'UI cho users claim CAMLY từ treasury wallet', 'Medium'],
+                        ['Claim Reward UI', t('pdocP1Feat1Desc'), 'Medium'],
                         ['Real-time Chat', 'Typing indicators, online status, read receipts', 'High'],
-                        ['Push Notifications', 'Browser push notifications cho events', 'Medium'],
+                        ['Push Notifications', t('pdocP1Feat3Desc'), 'Medium'],
                       ]}
                     />
                   </DocSubSection>
 
                   <DocSubSection title="Priority 2: Engagement Features">
                     <DocTable 
-                      headers={['Feature', 'Mô tả', 'Complexity']}
+                      headers={['Feature', t('pdocColDesc'), 'Complexity']}
                       rows={[
-                        ['Stories', 'Story feature như Instagram (24h expiry)', 'High'],
-                        ['Live Streaming', 'Tích hợp livestream với rewards', 'High'],
-                        ['Video Calling', 'Voice/Video calls trong chat', 'Very High'],
+                        ['Stories', t('pdocP2Feat1Desc'), 'High'],
+                        ['Live Streaming', t('pdocP2Feat2Desc'), 'High'],
+                        ['Video Calling', t('pdocP2Feat3Desc'), 'Very High'],
                       ]}
                     />
                   </DocSubSection>
 
                   <DocSubSection title="Priority 3: Advanced Features">
                     <DocTable 
-                      headers={['Feature', 'Mô tả', 'Complexity']}
+                      headers={['Feature', t('pdocColDesc'), 'Complexity']}
                       rows={[
-                        ['Marketplace', 'NFT marketplace cho Soul NFTs', 'Very High'],
+                        ['Marketplace', t('pdocP3Feat1Desc'), 'Very High'],
                         ['AI Content', 'AI-powered content creation tools', 'High'],
                         ['Mobile App', 'React Native mobile application', 'Very High'],
                         ['Referral System', 'Invite friends & earn rewards', 'Medium'],
