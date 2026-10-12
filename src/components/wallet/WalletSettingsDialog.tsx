@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useLanguage } from '@/i18n/LanguageContext';
 import {
   Dialog,
   DialogContent,
@@ -19,6 +20,7 @@ interface WalletSettingsDialogProps {
 }
 
 export const WalletSettingsDialog = ({ open, onOpenChange }: WalletSettingsDialogProps) => {
+  const { t } = useLanguage();
   const [showBalance, setShowBalance] = useState(true);
   const [currency, setCurrency] = useState('USD');
   const [autoLock, setAutoLock] = useState(false);
@@ -44,7 +46,7 @@ export const WalletSettingsDialog = ({ open, onOpenChange }: WalletSettingsDialo
       autoLock,
       notifications,
     }));
-    toast.success('Đã lưu cài đặt');
+    toast.success(t('wsdSavedToast'));
     onOpenChange(false);
   };
 
@@ -54,29 +56,29 @@ export const WalletSettingsDialog = ({ open, onOpenChange }: WalletSettingsDialo
     setAutoLock(false);
     setNotifications(true);
     localStorage.removeItem('wallet_settings');
-    toast.success('Đã khôi phục cài đặt mặc định');
+    toast.success(t('wsdResetToast'));
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[600px] max-h-[85vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Cài đặt ví</DialogTitle>
+          <DialogTitle>{t('wsdTitle')}</DialogTitle>
           <DialogDescription>
-            Tùy chỉnh cách ví của bạn hoạt động
+            {t('wsdDescription')}
           </DialogDescription>
         </DialogHeader>
         
         <div className="space-y-6 mt-4">
           {/* Display Settings */}
           <div className="space-y-4">
-            <h3 className="text-sm font-semibold">Hiển thị</h3>
+            <h3 className="text-sm font-semibold">{t('setTabDisplay')}</h3>
             
             <div className="flex items-center justify-between">
               <Label htmlFor="show-balance" className="flex flex-col gap-1">
-                <span>Hiển thị số dư</span>
+                <span>{t('wsdShowBalance')}</span>
                 <span className="text-xs text-muted-foreground font-normal">
-                  Ẩn/hiện số dư trên màn hình chính
+                  {t('wsdShowBalanceDesc')}
                 </span>
               </Label>
               <Switch
@@ -87,16 +89,16 @@ export const WalletSettingsDialog = ({ open, onOpenChange }: WalletSettingsDialo
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="currency">Đơn vị tiền tệ</Label>
+              <Label htmlFor="currency">{t('wsdCurrency')}</Label>
               <Select value={currency} onValueChange={setCurrency}>
                 <SelectTrigger id="currency">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="USD">USD - Dollar Mỹ</SelectItem>
-                  <SelectItem value="VND">VND - Việt Nam Đồng</SelectItem>
-                  <SelectItem value="EUR">EUR - Euro</SelectItem>
-                  <SelectItem value="GBP">GBP - Bảng Anh</SelectItem>
+                  <SelectItem value="USD">{t('wsdCurrencyUsd')}</SelectItem>
+                  <SelectItem value="VND">{t('wsdCurrencyVnd')}</SelectItem>
+                  <SelectItem value="EUR">{t('wsdCurrencyEur')}</SelectItem>
+                  <SelectItem value="GBP">{t('wsdCurrencyGbp')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -106,13 +108,13 @@ export const WalletSettingsDialog = ({ open, onOpenChange }: WalletSettingsDialo
 
           {/* Security Settings */}
           <div className="space-y-4">
-            <h3 className="text-sm font-semibold">Bảo mật</h3>
+            <h3 className="text-sm font-semibold">{t('setTabSecurity')}</h3>
             
             <div className="flex items-center justify-between">
               <Label htmlFor="auto-lock" className="flex flex-col gap-1">
-                <span>Tự động khóa</span>
+                <span>{t('wsdAutoLock')}</span>
                 <span className="text-xs text-muted-foreground font-normal">
-                  Yêu cầu mở khóa sau 5 phút không hoạt động
+                  {t('wsdAutoLockDesc')}
                 </span>
               </Label>
               <Switch
@@ -127,13 +129,13 @@ export const WalletSettingsDialog = ({ open, onOpenChange }: WalletSettingsDialo
 
           {/* Notification Settings */}
           <div className="space-y-4">
-            <h3 className="text-sm font-semibold">Thông báo</h3>
+            <h3 className="text-sm font-semibold">{t('setTabNotifications')}</h3>
             
             <div className="flex items-center justify-between">
               <Label htmlFor="notifications" className="flex flex-col gap-1">
-                <span>Thông báo giao dịch</span>
+                <span>{t('wsdTxNotifications')}</span>
                 <span className="text-xs text-muted-foreground font-normal">
-                  Nhận thông báo khi có giao dịch mới
+                  {t('wsdTxNotificationsDesc')}
                 </span>
               </Label>
               <Switch
@@ -148,22 +150,22 @@ export const WalletSettingsDialog = ({ open, onOpenChange }: WalletSettingsDialo
 
           {/* Advanced Settings */}
           <div className="space-y-4">
-            <h3 className="text-sm font-semibold">Nâng cao</h3>
+            <h3 className="text-sm font-semibold">{t('wsdAdvanced')}</h3>
             
             <Button
               variant="outline"
               className="w-full justify-start"
-              onClick={() => toast.info('Tính năng đang phát triển')}
+              onClick={() => toast.info(t('wsdFeatureInDevelopment'))}
             >
-              Quản lý mạng tùy chỉnh
+              {t('wsdManageCustomNetworks')}
             </Button>
 
             <Button
               variant="outline"
               className="w-full justify-start"
-              onClick={() => toast.info('Tính năng đang phát triển')}
+              onClick={() => toast.info(t('wsdFeatureInDevelopment'))}
             >
-              Xóa dữ liệu ứng dụng
+              {t('wsdClearAppData')}
             </Button>
 
             <Button
@@ -171,16 +173,16 @@ export const WalletSettingsDialog = ({ open, onOpenChange }: WalletSettingsDialo
               className="w-full justify-start text-destructive"
               onClick={handleResetSettings}
             >
-              Khôi phục cài đặt mặc định
+              {t('wsdResetDefaults')}
             </Button>
           </div>
 
           <div className="flex gap-2 pt-4">
             <Button variant="outline" onClick={() => onOpenChange(false)} className="flex-1">
-              Hủy
+              {t('cancel')}
             </Button>
             <Button onClick={handleSaveSettings} className="flex-1">
-              Lưu thay đổi
+              {t('editPostBtnSave')}
             </Button>
           </div>
         </div>

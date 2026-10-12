@@ -125,10 +125,10 @@ export function AssetTab({
         {btcAddress && btcBalance === 0 && btcTotalReceived > 0 && !isBtcBalanceLoading && (
           <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-amber-800 space-y-1">
             <p className="font-semibold flex items-center gap-1">
-              <AlertTriangle className="w-3.5 h-3.5" /> Số dư BTC hiện tại: 0
+              <AlertTriangle className="w-3.5 h-3.5" /> {t('atbBtcBalanceZero')}
             </p>
-            <p>Địa chỉ này đã nhận tổng cộng {btcTotalReceived.toFixed(8)} BTC nhưng toàn bộ UTXO đã được chi.</p>
-            <p className="text-muted-foreground">Hệ thống theo dõi đúng 1 địa chỉ BTC đã lưu. Ví di động (HD wallet) có thể hiển thị khác do cộng dồn nhiều địa chỉ.</p>
+            <p>{t('atbBtcReceivedNote', { amount: btcTotalReceived.toFixed(8) })}</p>
+            <p className="text-muted-foreground">{t('atbBtcTrackingNote')}</p>
           </div>
         )}
 
@@ -144,7 +144,7 @@ export function AssetTab({
             {btcAddress ? (
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2 min-w-0">
-                  <span className="text-xs text-muted-foreground">Địa chỉ:</span>
+                  <span className="text-xs text-muted-foreground">{t('atbAddressLabel')}</span>
                   <span className="text-sm font-mono truncate">{shortenBtc(btcAddress)}</span>
                 </div>
                 <div className="flex items-center gap-1 shrink-0">
@@ -164,7 +164,7 @@ export function AssetTab({
                     target="_blank"
                     rel="noopener noreferrer"
                     className="p-1.5 rounded-lg hover:bg-orange-50 transition-colors"
-                    title="Xem trên Mempool"
+                    title={t('atbViewOnMempool')}
                   >
                     <ExternalLink className="w-4 h-4 text-muted-foreground" />
                   </a>
@@ -172,12 +172,12 @@ export function AssetTab({
               </div>
             ) : (
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Chưa liên kết địa chỉ BTC</span>
+                <span className="text-sm text-muted-foreground">{t('atbNoBtcLinked')}</span>
                 <button
                   onClick={() => navigate('/edit-profile')}
                   className="text-sm font-medium text-orange-600 hover:text-orange-700 transition-colors"
                 >
-                  + Thêm địa chỉ
+                  {t('atbAddAddress')}
                 </button>
               </div>
             )}
@@ -213,7 +213,7 @@ export function AssetTab({
                       </p>
                       {btcError && (
                         <button onClick={refetchBtc} className="text-xs text-orange-500 hover:text-orange-600 mt-0.5">
-                          ⚠️ Thử lại
+                          ⚠️ {t('walletRetry')}
                         </button>
                       )}
                     </>
@@ -224,15 +224,15 @@ export function AssetTab({
               {!isBtcBalanceLoading && (
               <div className="mt-2 pt-2 border-t border-orange-50 grid grid-cols-3 gap-2 text-center">
                   <div>
-                    <p className="text-[10px] text-muted-foreground">📥 Tổng nhận <span className="text-orange-400">(on-chain)</span></p>
+                    <p className="text-[10px] text-muted-foreground">{t('atbTotalReceived')}<span className="text-orange-400">(on-chain)</span></p>
                     <p className="text-xs font-medium">{btcTotalReceived.toFixed(8)}</p>
                   </div>
                   <div>
-                    <p className="text-[10px] text-muted-foreground">📤 Tổng gửi <span className="text-orange-400">(on-chain)</span></p>
+                    <p className="text-[10px] text-muted-foreground">{t('atbTotalSent')}<span className="text-orange-400">(on-chain)</span></p>
                     <p className="text-xs font-medium">{btcTotalSent.toFixed(8)}</p>
                   </div>
                   <div>
-                    <p className="text-[10px] text-muted-foreground">🔄 Giao dịch <span className="text-orange-400">(on-chain)</span></p>
+                    <p className="text-[10px] text-muted-foreground">{t('atbTxCount')}<span className="text-orange-400">(on-chain)</span></p>
                     <p className="text-xs font-medium">{btcTxCount}</p>
                   </div>
                 </div>
@@ -290,7 +290,7 @@ export function AssetTab({
           {btcAddress ? (
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2 min-w-0">
-                <span className="text-xs text-muted-foreground">Địa chỉ:</span>
+                <span className="text-xs text-muted-foreground">{t('atbAddressLabel')}</span>
                 <span className="text-sm font-mono truncate">{shortenBtc(btcAddress)}</span>
               </div>
               <div className="flex items-center gap-1 shrink-0">
@@ -310,7 +310,7 @@ export function AssetTab({
                   target="_blank"
                   rel="noopener noreferrer"
                   className="p-1.5 rounded-lg hover:bg-orange-50 transition-colors"
-                  title="Xem trên Mempool"
+                  title={t('atbViewOnMempool')}
                 >
                   <ExternalLink className="w-4 h-4 text-muted-foreground" />
                 </a>
@@ -318,12 +318,12 @@ export function AssetTab({
             </div>
           ) : (
             <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Chưa liên kết địa chỉ BTC</span>
+              <span className="text-sm text-muted-foreground">{t('atbNoBtcLinked')}</span>
               <button
                 onClick={() => navigate('/edit-profile')}
                 className="text-sm font-medium text-orange-600 hover:text-orange-700 transition-colors"
               >
-                + Thêm địa chỉ
+                {t('atbAddAddress')}
               </button>
             </div>
           )}
@@ -358,7 +358,7 @@ export function AssetTab({
                     </p>
                     {btcError && (
                       <button onClick={refetchBtc} className="text-xs text-orange-500 hover:text-orange-600 mt-0.5">
-                        ⚠️ Thử lại
+                        ⚠️ {t('walletRetry')}
                       </button>
                     )}
                   </>
@@ -369,15 +369,15 @@ export function AssetTab({
             {!isBtcBalanceLoading && (
               <div className="mt-2 pt-2 border-t border-orange-50 grid grid-cols-3 gap-2 text-center">
                 <div>
-                  <p className="text-[10px] text-muted-foreground">📥 Tổng nhận <span className="text-orange-400">(on-chain)</span></p>
+                  <p className="text-[10px] text-muted-foreground">{t('atbTotalReceived')}<span className="text-orange-400">(on-chain)</span></p>
                   <p className="text-xs font-medium">{btcTotalReceived.toFixed(8)}</p>
                 </div>
                 <div>
-                  <p className="text-[10px] text-muted-foreground">📤 Tổng gửi <span className="text-orange-400">(on-chain)</span></p>
+                  <p className="text-[10px] text-muted-foreground">{t('atbTotalSent')}<span className="text-orange-400">(on-chain)</span></p>
                   <p className="text-xs font-medium">{btcTotalSent.toFixed(8)}</p>
                 </div>
                 <div>
-                  <p className="text-[10px] text-muted-foreground">🔄 Giao dịch <span className="text-orange-400">(on-chain)</span></p>
+                  <p className="text-[10px] text-muted-foreground">{t('atbTxCount')}<span className="text-orange-400">(on-chain)</span></p>
                   <p className="text-xs font-medium">{btcTxCount}</p>
                 </div>
               </div>

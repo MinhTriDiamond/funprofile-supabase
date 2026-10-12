@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useLanguage } from '@/i18n/LanguageContext';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -18,6 +19,7 @@ interface Props {
 }
 
 export function WatchedWalletsManager({ open, onOpenChange }: Props) {
+  const { t } = useLanguage();
   const { userId } = useCurrentUser();
   const { data: wallets, isLoading } = useWatchedWallets();
   const qc = useQueryClient();
@@ -27,33 +29,33 @@ export function WatchedWalletsManager({ open, onOpenChange }: Props) {
 
   const addMutation = useMutation({
     mutationFn: async () => {
-      if (!userId) throw new Error('Chưa đăng nhập');
+      if (!userId) throw new Error(t('vupNotLoggedIn'));
       const trimmed = address.trim();
-      if (!trimmed) throw new Error('Nhập địa chỉ ví');
+      if (!trimmed) throw new Error(t('wwmEnterAddress'));
       const normalized = chain === 'bsc' ? trimmed.toLowerCase() : trimmed;
       if (chain === 'bsc' && !/^0x[0-9a-f]{40}$/.test(normalized)) {
-        throw new Error('Địa chỉ EVM không hợp lệ (0x + 40 ký tự hex)');
+        throw new Error(t('wwmInvalidEvm'));
       }
       if (chain === 'btc' && (normalized.length < 26 || normalized.length > 90)) {
-        throw new Error('Địa chỉ BTC không hợp lệ');
+        throw new Error(t('wwmInvalidBtc'));
       }
       const { error } = await supabase.from('user_watched_wallets').insert({
         user_id: userId,
         address: normalized,
         chain,
-        label: label.trim() || 'Ví theo dõi',
+        label: label.trim() || t('wwmDefaultLabel'),
         enabled: true,
       });
       if (error) throw new Error(error.message);
     },
     onSuccess: () => {
-      toast.success('Đã thêm ví vào danh sách theo dõi');
+      toast.success(t('wwmAdded'));
       setAddress('');
       setLabel('');
       qc.invalidateQueries({ queryKey: ['watched-wallets'] });
       qc.invalidateQueries({ queryKey: ['external-wallet-activity'] });
     },
-    onError: (e: any) => toast.error(e?.message || 'Không thêm được ví'),
+    onError: (e: any) => toast.error(e?.message || t('wwmAddFailed')),
   });
 
   const removeMutation = useMutation({
@@ -62,11 +64,11 @@ export function WatchedWalletsManager({ open, onOpenChange }: Props) {
       if (error) throw new Error(error.message);
     },
     onSuccess: () => {
-      toast.success('Đã xóa ví khỏi danh sách');
+      toast.success(t('wwmRemoved'));
       qc.invalidateQueries({ queryKey: ['watched-wallets'] });
       qc.invalidateQueries({ queryKey: ['external-wallet-activity'] });
     },
-    onError: (e: any) => toast.error(e?.message || 'Không xóa được'),
+    onError: (e: any) => toast.error(e?.message || t('wwmRemoveFailed')),
   });
 
   const userAdded = (wallets || []).filter((w) => w.source === 'user_added');
@@ -76,16 +78,15 @@ export function WatchedWalletsManager({ open, onOpenChange }: Props) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>Quản lý ví ngoài đang theo dõi</DialogTitle>
+          <DialogTitle>{t('wwmTitle')}</DialogTitle>
           <DialogDescription>
-            Thêm địa chỉ ví ngoài (BSC/BTC) để fun.rich tự động hiển thị lịch sử giao dịch.
-            Dữ liệu chỉ để theo dõi, không tính Light Score.
+            {t('wwmDesc')}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-3">
           <div className="rounded-lg border bg-muted/30 p-3 space-y-2">
-            <Label className="text-xs font-semibold">Thêm ví mới</Label>
+            <Label className="text-xs font-semibold">{t('wwmAddNew')}</Label>
             <div className="flex gap-2">
               <Select value={chain} onValueChange={(v) => setChain(v as 'bsc' | 'btc')}>
                 <SelectTrigger className="w-[100px] h-9">
@@ -106,7 +107,7 @@ export function WatchedWalletsManager({ open, onOpenChange }: Props) {
             <Input
               value={label}
               onChange={(e) => setLabel(e.target.value)}
-              placeholder="Nhãn gợi nhớ (ví dụ: Ví Binance, Ví lạnh…)"
+              placeholder={t('wwmLabelPlaceholder')}
               className="h-9 text-sm"
               maxLength={50}
             />
@@ -121,14 +122,14 @@ export function WatchedWalletsManager({ open, onOpenChange }: Props) {
               ) : (
                 <Plus className="w-4 h-4" />
               )}
-              Thêm vào danh sách
+              {t('wwmAddToList')}
             </Button>
           </div>
 
           <div className="space-y-2">
-            <Label className="text-xs font-semibold">Đang theo dõi</Label>
+            <Label className="text-xs font-semibold">{t('reelFollowing')}</Label>
             {isLoading ? (
-              <p className="text-xs text-muted-foreground">Đang tải…</p>
+              <p className="text-xs text-muted-foreground">{t('fcdLoading')}</p>
             ) : (
               <div className="space-y-1.5 max-h-[40vh] overflow-y-auto pr-1">
                 {systemLinked.map((w) => (
@@ -143,7 +144,7 @@ export function WatchedWalletsManager({ open, onOpenChange }: Props) {
                         </Badge>
                         <span className="text-xs font-medium truncate">{w.label}</span>
                         <Badge variant="secondary" className="text-[9px]">
-                          Hệ thống
+                          {t('notTabSystem')}
                         </Badge>
                       </div>
                       <div className="text-[10px] font-mono text-muted-foreground truncate">
@@ -155,7 +156,7 @@ export function WatchedWalletsManager({ open, onOpenChange }: Props) {
 
                 {userAdded.length === 0 && systemLinked.length === 0 && (
                   <p className="text-xs text-muted-foreground text-center py-2">
-                    Chưa có ví nào.
+                    {t('wwmEmpty')}
                   </p>
                 )}
 

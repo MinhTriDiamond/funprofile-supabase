@@ -394,20 +394,20 @@ const WalletCenterContainer = () => {
   };
 
   const handleInjectedMobileConnect = useCallback(() => {
-    toast.info('Đang mở yêu cầu kết nối trong ví. Nếu chưa thấy popup, hãy quay lại app ví để xác nhận.');
+    toast.info(t('wccConnectingToast'));
     connect(
       { connector: injected() },
       {
         onSuccess: () => {
           setShowMobileConnectGuide(false);
-          toast.success('Đã kết nối ví.');
+          toast.success(t('authWalletToastConnectedGeneric'));
         },
         onError: () => {
-          toast.error('Không thể kết nối ví. Vui lòng mở lại app ví và thử lại.');
+          toast.error(t('wccConnectErrorToast'));
         },
       }
     );
-  }, [connect]);
+  }, [connect, t]);
 
   const handleOpenWalletConnect = useCallback(() => {
     setShowMobileConnectGuide(false);
@@ -425,14 +425,14 @@ const WalletCenterContainer = () => {
     localStorage.removeItem(WALLET_DISCONNECTED_KEY);
     setShowDisconnectedUI(false);
     setShowMobileConnectGuide(true);
-    toast.success('Đã làm mới kết nối ví. Hãy chọn ví để thử lại.');
-  }, [disconnect]);
+    toast.success(t('wccResetDoneToast'));
+  }, [disconnect, t]);
 
   const openWalletDeepLink = useCallback((url: string) => {
     if (!url) return;
-    toast.info('Đang mở app ví. Nếu app không tự mở, hãy mở ví rồi vào Browser/DApp và nhập fun.rich.');
+    toast.info(t('mwcOpeningWalletApp'));
     window.location.href = url;
-  }, []);
+  }, [t]);
 
   const handleConnect = useCallback(() => {
     intentionalDisconnectRef.current = false;
@@ -443,7 +443,7 @@ const WalletCenterContainer = () => {
         handleInjectedMobileConnect();
         return;
       }
-      toast.info('Bạn đang mở bằng trình duyệt thường. Hãy chọn Mở trong MetaMask, Trust Wallet hoặc Bitget.');
+      toast.info(t('wccMobileBrowserToast'));
       setShowMobileConnectGuide(true);
       return;
     }
@@ -455,20 +455,20 @@ const WalletCenterContainer = () => {
   const handleOpenActivateDialog = useCallback(() => {
     if (hasWalletMismatch) {
       setShowMismatchModal(true);
-      toast.error('Ví MetaMask hiện tại chưa khớp với tài khoản FUN đang xem. Vui lòng chuyển đúng tài khoản rồi thử lại.');
+      toast.error(t('wccMismatchToast'));
       return;
     }
     setShowActivateDialog(true);
-  }, [hasWalletMismatch]);
+  }, [hasWalletMismatch, t]);
 
   const handleOpenClaimFunDialog = useCallback(() => {
     if (hasWalletMismatch) {
       setShowMismatchModal(true);
-      toast.error('Ví MetaMask hiện tại chưa khớp với tài khoản FUN đang xem. Vui lòng chuyển đúng tài khoản rồi thử lại.');
+      toast.error(t('wccMismatchToast'));
       return;
     }
     setShowClaimFunDialog(true);
-  }, [hasWalletMismatch]);
+  }, [hasWalletMismatch, t]);
 
   useEffect(() => {
     if (hasWalletMismatch) {
@@ -544,7 +544,7 @@ const WalletCenterContainer = () => {
             {t('walletConnectWallet')}
           </Button>
           <div className="sm:hidden mt-5 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
-            Đang dùng điện thoại? Hãy mở bằng MetaMask, Trust Wallet hoặc Bitget Wallet để kết nối ổn định hơn.
+            {t('wccMobileHint')}
           </div>
         </div>
         {renderMobileConnectGuide()}

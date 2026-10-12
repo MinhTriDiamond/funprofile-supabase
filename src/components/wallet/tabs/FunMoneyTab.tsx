@@ -1,4 +1,5 @@
 import { Component, type ReactNode } from 'react';
+import { useLanguage } from '@/i18n/LanguageContext';
 import { MemoizedLightScoreDashboard } from '../LightScoreDashboard';
 import { AttesterSigningPanel } from '../AttesterSigningPanel';
 import { FunMoneyGuide } from '../FunMoneyGuide';
@@ -30,18 +31,23 @@ class Web3ErrorBoundary extends Component<
 
   render() {
     if (this.state.hasError) {
-      return (
-        <div className="flex flex-col items-center justify-center py-12 text-center gap-4">
-          <p className="text-muted-foreground text-sm">Kết nối Web3 bị gián đoạn. Vui lòng tải lại trang.</p>
-          <Button variant="outline" size="sm" onClick={() => window.location.reload()}>
-            <RefreshCw className="w-4 h-4 mr-2" />
-            Tải lại trang
-          </Button>
-        </div>
-      );
+      return <Web3ErrorFallback />;
     }
     return this.props.children;
   }
+}
+
+function Web3ErrorFallback() {
+  const { t } = useLanguage();
+  return (
+    <div className="flex flex-col items-center justify-center py-12 text-center gap-4">
+      <p className="text-muted-foreground text-sm">{t('web3Disconnected')}</p>
+      <Button variant="outline" size="sm" onClick={() => window.location.reload()}>
+        <RefreshCw className="w-4 h-4 mr-2" />
+        {t('reloadPage')}
+      </Button>
+    </div>
+  );
 }
 
 interface FunMoneyTabProps {
@@ -57,6 +63,7 @@ function FunMoneyTabInner({
   onClaim,
   onClaimSuccess,
 }: FunMoneyTabProps) {
+  const { t } = useLanguage();
   const {
     isAttester,
     attesterGroup,
@@ -76,7 +83,7 @@ function FunMoneyTabInner({
         </div>
         <div>
           <h1 className="text-xl font-bold text-foreground">FUN Money</h1>
-          <p className="text-xs text-muted-foreground">Quản lý phần thưởng & đúc token FUN của bạn</p>
+          <p className="text-xs text-muted-foreground">{t('fmtSubtitle')}</p>
         </div>
       </div>
       {/* Cross-Platform Banner */}
