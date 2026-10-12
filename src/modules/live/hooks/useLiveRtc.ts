@@ -325,6 +325,17 @@ function createAudienceUidSeed(): string {
   return `${Date.now()}:${Math.random().toString(36).slice(2)}`;
 }
 
+// Agora Web SDK: uid dạng chuỗi chỉ-gồm-chữ-số bị hiểu là "string user account",
+// không khớp token ký cho UID số nguyên ⇒ gateway từ chối bắt tay.
+// Chuẩn hoá sang number trước MỌI lệnh client.join(...).
+function normalizeJoinUid(uid: string | number): string | number {
+  if (typeof uid === 'string' && /^\d+$/.test(uid)) {
+    const num = Number(uid);
+    if (Number.isSafeInteger(num) && num > 0) return num;
+  }
+  return uid;
+}
+
 export function useLiveRtc({
   sessionId,
   role,
@@ -768,7 +779,7 @@ export function useLiveRtc({
         tokenExpiresAtRef.current = tokenData.expiresAt;
         await clientRef.current?.leave();
         await withRtcTimeout(
-          clientRef.current?.join(tokenData.appId, tokenData.channel, tokenData.token, tokenData.uid) ?? Promise.resolve(''),
+          clientRef.current?.join(tokenData.appId, tokenData.channel, tokenData.token, normalizeJoinUid(tokenData.uid)) ?? Promise.resolve(''),
           JOIN_TIMEOUT_MS,
           'LIVE_JOIN_TIMEOUT',
         );
@@ -1030,7 +1041,7 @@ export function useLiveRtc({
       await client.setClientRole(role);
       setStatusText('Đang tham gia phòng LIVE...');
       await withRtcTimeout(
-        client.join(tokenData.appId, tokenData.channel, tokenData.token, tokenData.uid),
+        client.join(tokenData.appId, tokenData.channel, tokenData.token, normalizeJoinUid(tokenData.uid)),
         JOIN_TIMEOUT_MS,
         'LIVE_JOIN_TIMEOUT',
       );

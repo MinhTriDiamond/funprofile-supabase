@@ -125,7 +125,7 @@ const Admin = () => {
               </TabsTrigger>
               <TabsTrigger value="banned" className="gap-2 py-3">
                 <Ban className="w-4 h-4" />
-                <span className="hidden sm:inline">Bị chặn</span>
+                <span className="hidden sm:inline">{t('admBlocked')}</span>
               </TabsTrigger>
               <TabsTrigger value="fraud" className="gap-2 py-3">
                 <ShieldAlert className="w-4 h-4" />
@@ -153,7 +153,7 @@ const Admin = () => {
               </TabsTrigger>
               <TabsTrigger value="mystery-box" className="gap-2 py-3">
                 <PackageOpen className="w-4 h-4" />
-                <span className="hidden sm:inline">Hộp bí ẩn</span>
+                <span className="hidden sm:inline">{t('admMysteryBox')}</span>
               </TabsTrigger>
               <TabsTrigger value="treasury" className="gap-2 py-3">
                 <Vault className="w-4 h-4" />
@@ -161,15 +161,15 @@ const Admin = () => {
               </TabsTrigger>
               <TabsTrigger value="wallet-security" className="gap-2 py-3">
                 <Lock className="w-4 h-4" />
-                <span className="hidden sm:inline">Bảo vệ ví</span>
+                <span className="hidden sm:inline">{t('admWalletGuard')}</span>
               </TabsTrigger>
               <TabsTrigger value="external-filter" className="gap-2 py-3">
                 <ShieldAlert className="w-4 h-4" />
-                <span className="hidden sm:inline">Lọc ví ngoài</span>
+                <span className="hidden sm:inline">{t('admExternalWalletFilter')}</span>
               </TabsTrigger>
               <TabsTrigger value="reconciliation" className="gap-2 py-3">
                 <Scale className="w-4 h-4" />
-                <span className="hidden sm:inline">Đối soát ví</span>
+                <span className="hidden sm:inline">{t('admWalletReconcile')}</span>
               </TabsTrigger>
               <TabsTrigger value="backfill" className="gap-2 py-3">
                 <DatabaseZap className="w-4 h-4" />
