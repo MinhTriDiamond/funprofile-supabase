@@ -43,9 +43,9 @@ const ResetPassword = () => {
     if (combinedError) {
       const raw = decodeURIComponent(combinedError);
       const friendly = /expired|otp_expired/i.test(raw)
-        ? 'Liên kết đặt lại đã hết hạn. Vui lòng yêu cầu gửi lại email mới.'
+        ? t('rpwExpired')
         : /access_denied/i.test(raw)
-          ? 'Liên kết không hợp lệ hoặc đã được sử dụng trước đó.'
+          ? t('rpwInvalidUsed')
           : raw;
       setError(friendly);
       setPageState('invalid');
@@ -81,11 +81,11 @@ const ResetPassword = () => {
     setError('');
 
     if (newPassword.length < 8) {
-      setError('Mật khẩu phải có ít nhất 8 ký tự');
+      setError(t('rpwTooShort'));
       return;
     }
     if (newPassword !== confirmPassword) {
-      setError('Mật khẩu xác nhận không khớp');
+      setError(t('rpwMismatch'));
       return;
     }
 
@@ -97,7 +97,7 @@ const ResetPassword = () => {
           body: { token: planBToken, new_password: newPassword },
         });
         if (invErr || (data as any)?.error) {
-          throw new Error((data as any)?.error || invErr?.message || 'Đặt lại mật khẩu thất bại');
+          throw new Error((data as any)?.error || invErr?.message || t('rpwFailed'));
         }
       } else {
         const { error: updateError } = await supabase.auth.updateUser({ password: newPassword });
@@ -110,10 +110,10 @@ const ResetPassword = () => {
       }
 
       setPageState('success');
-      toast.success('Đặt lại mật khẩu thành công!');
+      toast.success(t('rpwSuccess'));
       setTimeout(() => navigate('/auth', { replace: true }), 2000);
     } catch (err: any) {
-      const msg = err.message || 'Có lỗi xảy ra, vui lòng thử lại';
+      const msg = err.message || t('rpwErrorRetry');
       setError(msg);
       toast.error(msg);
     } finally {
@@ -127,7 +127,7 @@ const ResetPassword = () => {
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-4">
           <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-          <p className="text-muted-foreground">Đang xác minh...</p>
+          <p className="text-muted-foreground">{t('rpwVerifying')}</p>
         </div>
       </div>
     );
@@ -142,13 +142,13 @@ const ResetPassword = () => {
             <AlertTriangle size={32} className="text-destructive" />
           </div>
           <h1 className="text-2xl font-bold text-foreground">
-            Liên kết không hợp lệ hoặc đã hết hạn
+            {t('rpwInvalidTitle')}
           </h1>
           <p className="text-muted-foreground">
-            {error || 'Liên kết đặt lại mật khẩu này đã hết hạn hoặc đã được sử dụng.'}
+            {error || t('rpwInvalidDesc')}
           </p>
           <p className="text-sm text-muted-foreground">
-            Bạn có thể đặt mật khẩu mới ngay qua <strong>mã OTP</strong> mà không cần đợi email link.
+            {t('rpwOtpHintA')}<strong>{t('rpwOtpHintStrong')}</strong>{t('rpwOtpHintB')}
           </p>
           <div className="flex flex-col gap-3">
             <Button
@@ -160,14 +160,14 @@ const ResetPassword = () => {
               }}
             >
               <Sparkles className="w-4 h-4 mr-2" />
-              Đặt mật khẩu qua OTP
+              {t('rpwOtpBtn')}
             </Button>
             <Button
               variant="outline"
               onClick={() => navigate('/auth', { replace: true })}
               className="w-full h-12 rounded-full font-bold"
             >
-              Quay lại đăng nhập
+              {t('cemBackToLogin')}
             </Button>
           </div>
         </div>
@@ -192,10 +192,10 @@ const ResetPassword = () => {
             <ShieldCheck size={32} className="text-emerald-600" />
           </div>
           <h1 className="text-2xl font-bold text-foreground">
-            Đặt lại mật khẩu thành công!
+            {t('rpwSuccess')}
           </h1>
           <p className="text-muted-foreground">
-            Mật khẩu của bạn đã được cập nhật. Đang chuyển hướng về trang đăng nhập...
+            {t('rpwSuccessDesc')}
           </p>
           <div className="w-8 h-8 mx-auto border-3 border-primary border-t-transparent rounded-full animate-spin" />
         </div>
@@ -219,8 +219,8 @@ const ResetPassword = () => {
               <KeyRound size={32} className="text-emerald-600" />
             </div>
           </div>
-          <h1 className="text-2xl font-bold text-foreground">Đặt mật khẩu mới</h1>
-          <p className="text-muted-foreground">Nhập mật khẩu mới cho tài khoản của bạn</p>
+          <h1 className="text-2xl font-bold text-foreground">{t('rpwTitle')}</h1>
+          <p className="text-muted-foreground">{t('rpwSubtitle')}</p>
         </div>
 
         {/* Form */}
@@ -237,7 +237,7 @@ const ResetPassword = () => {
             {/* New Password */}
             <div className="space-y-2">
               <Label htmlFor="new-password" className="text-foreground font-semibold text-sm uppercase tracking-wide">
-                Mật khẩu mới
+                {t('spwNewLabel')}
               </Label>
               <div className="relative">
                 <Input
@@ -246,7 +246,7 @@ const ResetPassword = () => {
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   required
-                  placeholder="Tối thiểu 6 ký tự"
+                  placeholder={t('rpwNewPlaceholder')}
                   className="h-12 rounded-full pr-10 border-2 border-border bg-background focus:border-emerald-400 focus:ring-4 focus:ring-emerald-400/30 transition-all"
                 />
                 <button
@@ -262,7 +262,7 @@ const ResetPassword = () => {
             {/* Confirm Password */}
             <div className="space-y-2">
               <Label htmlFor="confirm-password" className="text-foreground font-semibold text-sm uppercase tracking-wide">
-                Xác nhận mật khẩu
+                {t('spwConfirmLabel')}
               </Label>
               <div className="relative">
                 <Input
@@ -271,7 +271,7 @@ const ResetPassword = () => {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required
-                  placeholder="Nhập lại mật khẩu mới"
+                  placeholder={t('rpwConfirmPlaceholder')}
                   className="h-12 rounded-full pr-10 border-2 border-border bg-background focus:border-emerald-400 focus:ring-4 focus:ring-emerald-400/30 transition-all"
                 />
                 <button
@@ -302,10 +302,10 @@ const ResetPassword = () => {
               {loading ? (
                 <span className="flex items-center gap-2">
                   <Loader2 className="animate-spin" size={20} />
-                  Đang cập nhật...
+                  {t('rpwUpdating')}
                 </span>
               ) : (
-                'Cập nhật mật khẩu'
+                t('rpwUpdateBtn')
               )}
             </Button>
           </form>
@@ -318,7 +318,7 @@ const ResetPassword = () => {
             onClick={() => navigate('/auth', { replace: true })}
             className="text-sm text-emerald-600 hover:text-emerald-700 font-semibold hover:underline transition-colors"
           >
-            ← Quay lại đăng nhập
+            {t('rpwBackLoginFull')}
           </button>
         </div>
       </div>

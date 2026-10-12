@@ -6,6 +6,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { Shield, User, Bell, Monitor, Volume2, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { lazyWithChunkRecovery } from '@/lib/appUpdateRecovery';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 
 const SecuritySettingsContent = lazyWithChunkRecovery(
@@ -22,24 +23,28 @@ const PetSettingsContent = lazyWithChunkRecovery(
 );
 
 const TABS = [
-  { key: 'security', label: 'Bảo mật', icon: Shield },
-  { key: 'sound', label: 'Âm thanh', icon: Volume2, i18n: 'settingsTabSound' as const },
-  { key: 'pet', label: 'Linh thú', icon: Sparkles, i18n: 'settingsTabPet' as const },
-  { key: 'account', label: 'Tài khoản', icon: User },
-  { key: 'notifications', label: 'Thông báo', icon: Bell },
-  { key: 'display', label: 'Hiển thị', icon: Monitor },
+  { key: 'security', labelKey: 'setTabSecurity', icon: Shield },
+  { key: 'sound', labelKey: 'settingsTabSound', icon: Volume2 },
+  { key: 'pet', labelKey: 'settingsTabPet', icon: Sparkles },
+  { key: 'account', labelKey: 'setTabAccount', icon: User },
+  { key: 'notifications', labelKey: 'setTabNotifications', icon: Bell },
+  { key: 'display', labelKey: 'setTabDisplay', icon: Monitor },
 ] as const;
 
 type TabKey = (typeof TABS)[number]['key'];
 
-const PlaceholderTab = ({ label }: { label: string }) => (
-  <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
-    <p className="text-lg font-medium">{label}</p>
-    <p className="text-sm mt-1">Sắp ra mắt</p>
-  </div>
-);
+const PlaceholderTab = ({ label }: { label: string }) => {
+  const { t } = useLanguage();
+  return (
+    <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
+      <p className="text-lg font-medium">{label}</p>
+      <p className="text-sm mt-1">{t('setComingSoon')}</p>
+    </div>
+  );
+};
 
 const Settings = () => {
+  const { t } = useLanguage();
   const { tab } = useParams<{ tab?: string }>();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
@@ -65,11 +70,11 @@ const Settings = () => {
       case 'pet':
         return <Suspense fallback={fallback}><PetSettingsContent /></Suspense>;
       case 'account':
-        return <PlaceholderTab label="Tài khoản" />;
+        return <PlaceholderTab label={t('setTabAccount')} />;
       case 'notifications':
-        return <PlaceholderTab label="Thông báo" />;
+        return <PlaceholderTab label={t('setTabNotifications')} />;
       case 'display':
-        return <PlaceholderTab label="Hiển thị" />;
+        return <PlaceholderTab label={t('setTabDisplay')} />;
       default:
         return null;
     }
@@ -80,24 +85,24 @@ const Settings = () => {
       <FacebookNavbar />
       <main data-app-scroll className="app-main app-pb-nav">
         <div className="max-w-4xl mx-auto px-4 py-6">
-          <h1 className="text-2xl font-bold text-foreground mb-4">Cài đặt</h1>
+          <h1 className="text-2xl font-bold text-foreground mb-4">{t('setTitle')}</h1>
 
           {/* Mobile: horizontal scrollable tabs */}
           {isMobile ? (
             <div className="flex gap-1 overflow-x-auto pb-3 mb-4 -mx-4 px-4 scrollbar-none">
-              {TABS.map(t => (
+              {TABS.map(tab => (
                 <button
-                  key={t.key}
-                  onClick={() => setTab(t.key)}
+                  key={tab.key}
+                  onClick={() => setTab(tab.key)}
                   className={cn(
                     'flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors',
-                    activeTab === t.key
+                    activeTab === tab.key
                       ? 'bg-primary text-primary-foreground'
                       : 'bg-muted text-muted-foreground hover:bg-muted/80'
                   )}
                 >
-                  <t.icon className="w-4 h-4" />
-                  {t.label}
+                  <tab.icon className="w-4 h-4" />
+                  {t(tab.labelKey)}
                 </button>
               ))}
             </div>
@@ -108,19 +113,19 @@ const Settings = () => {
             {!isMobile && (
               <nav className="w-56 flex-shrink-0">
                 <div className="sticky top-0 space-y-1">
-                  {TABS.map(t => (
+                  {TABS.map(tab => (
                     <button
-                      key={t.key}
-                      onClick={() => setTab(t.key)}
+                      key={tab.key}
+                      onClick={() => setTab(tab.key)}
                       className={cn(
                         'w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors text-left',
-                        activeTab === t.key
+                        activeTab === tab.key
                           ? 'bg-primary/10 text-primary'
                           : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                       )}
                     >
-                      <t.icon className="w-4 h-4" />
-                      {t.label}
+                      <tab.icon className="w-4 h-4" />
+                      {t(tab.labelKey)}
                     </button>
                   ))}
                 </div>

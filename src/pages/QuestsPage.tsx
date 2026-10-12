@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { useLanguage } from '@/i18n/LanguageContext';
 import { useQuests, useQuestStreak, useQuestEvaluator } from '@/hooks/useQuests';
 import { useTrustProfile } from '@/hooks/useTrustProfile';
 import { QuestCard } from '@/components/quests/QuestCard';
@@ -14,7 +15,8 @@ import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 export default function QuestsPage() {
-  useEffect(() => { document.title = 'Quest hằng ngày — FUN.RICH'; }, []);
+  const { t } = useLanguage();
+  useEffect(() => { document.title = t('queDocTitle'); }, [t]);
   const { data: quests, isLoading } = useQuests();
   const { data: streak } = useQuestStreak();
   const { data: trust } = useTrustProfile();
@@ -25,7 +27,7 @@ export default function QuestsPage() {
     setRefreshing(true);
     await evaluate(true);
     setRefreshing(false);
-    toast.success('Đã cập nhật tiến độ');
+    toast.success(t('queProgressUpdated'));
   };
 
   const tier = trust?.trust_tier ?? null;
@@ -43,7 +45,7 @@ export default function QuestsPage() {
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <Sparkles className="w-6 h-6 text-primary" />
-              <h1 className="text-2xl font-bold">Quest hằng ngày</h1>
+              <h1 className="text-2xl font-bold">{t('queTitle')}</h1>
             </div>
             <Button
               variant="outline"
@@ -53,7 +55,7 @@ export default function QuestsPage() {
               className="gap-1"
             >
               <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
-              <span className="hidden sm:inline">Cập nhật tiến độ</span>
+              <span className="hidden sm:inline">{t('queRefresh')}</span>
             </Button>
           </div>
 
@@ -67,16 +69,16 @@ export default function QuestsPage() {
           {/* Khu vực chơi game */}
           <section className="space-y-2">
             <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-1.5">
-              <Gamepad2 className="w-4 h-4" /> Khu vực chơi game
+              <Gamepad2 className="w-4 h-4" />{t('queGameZone')}
             </h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
               {[
-                { to: '/pet/arena', icon: BicepsFlexed, label: 'So tài Lumi', desc: 'So tài Lumi của thành viên khác', color: 'from-orange-500 to-pink-500' },
-                { to: '/mystery-box', icon: Gift, label: 'Hộp Bí Ẩn', desc: 'Mở hộp nhận thưởng', color: 'from-purple-500 to-fuchsia-500' },
-                { to: '/pet', icon: PetIcon, label: 'Linh thú Lumi', desc: 'Nuôi & tiến hoá', color: 'from-amber-400 to-pink-400' },
-                { to: '/pet/shop', icon: ShoppingBag, label: 'Cửa hàng Lumi', desc: 'Mua bằng CAMLY', color: 'from-emerald-500 to-amber-400' },
-                { to: '/pet/appeal', icon: ShieldAlert, label: 'Kháng nghị Lumi', desc: 'Gửi khi bị đánh dấu rủi ro', color: 'from-slate-500 to-zinc-600' },
-                { to: '/docs/pet-game-guide', icon: BookOpen, label: '​', desc: 'Cách chơi Lumi đầy đủ', color: 'from-sky-500 to-indigo-500' },
+                { to: '/pet/arena', icon: BicepsFlexed, label: t('queNavArena'), desc: t('queNavArenaDesc'), color: 'from-orange-500 to-pink-500' },
+                { to: '/mystery-box', icon: Gift, label: t('queNavBox'), desc: t('queNavBoxDesc'), color: 'from-purple-500 to-fuchsia-500' },
+                { to: '/pet', icon: PetIcon, label: t('petTitleLumi'), desc: t('queNavPetDesc'), color: 'from-amber-400 to-pink-400' },
+                { to: '/pet/shop', icon: ShoppingBag, label: t('queNavShop'), desc: t('queNavShopDesc'), color: 'from-emerald-500 to-amber-400' },
+                { to: '/pet/appeal', icon: ShieldAlert, label: t('queNavAppeal'), desc: t('queNavAppealDesc'), color: 'from-slate-500 to-zinc-600' },
+                { to: '/docs/pet-game-guide', icon: BookOpen, label: '​', desc: t('queNavGuideDesc'), color: 'from-sky-500 to-indigo-500' },
               ].map(g => {
                 const Icon = g.icon;
                 return (
@@ -102,15 +104,15 @@ export default function QuestsPage() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold">
-                    Trust Tier <span className="text-amber-600">{tier ?? 'T0'}</span> — chưa nhận Light Score
+                    Trust Tier <span className="text-amber-600">{tier ?? 'T0'}</span>{t('queTrustB')}
                   </p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Bạn vẫn xem và hoàn thành quest, nhưng cần đạt T1 để nhận LS. Mở guide để xem các bước cụ thể.
+                    {t('queTrustDesc')}
                   </p>
                   <div className="mt-3 flex gap-2 flex-wrap">
                     <Button asChild size="sm" className="gap-1 bg-gradient-to-r from-emerald-500 to-amber-500 text-white">
                       <Link to="/identity?guide=1">
-                        <Rocket className="w-3.5 h-3.5" /> Mở Trust Guide
+                        <Rocket className="w-3.5 h-3.5" />{t('queOpenGuide')}
                       </Link>
                     </Button>
                     <Button asChild size="sm" variant="outline">
@@ -130,7 +132,7 @@ export default function QuestsPage() {
 
           {!isLoading && dailyQuests.length > 0 && (
             <section className="space-y-2">
-              <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Nhiệm vụ hằng ngày</h2>
+              <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">{t('queDaily')}</h2>
               <div className="space-y-2">
                 {dailyQuests.map((q) => (
                   <QuestCard key={q.id} quest={q} currentStreak={streak?.current_streak ?? 0} trustTier={tier} />
@@ -141,7 +143,7 @@ export default function QuestsPage() {
 
           {!isLoading && weeklyQuests.length > 0 && (
             <section className="space-y-2">
-              <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Nhiệm vụ hằng tuần</h2>
+              <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">{t('queWeekly')}</h2>
               <div className="space-y-2">
                 {weeklyQuests.map((q) => (
                   <QuestCard key={q.id} quest={q} currentStreak={streak?.current_streak ?? 0} trustTier={tier} />
@@ -152,7 +154,7 @@ export default function QuestsPage() {
 
           {!isLoading && otherQuests.length > 0 && (
             <section className="space-y-2">
-              <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Nhiệm vụ khác</h2>
+              <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">{t('queOther')}</h2>
               <div className="space-y-2">
                 {otherQuests.map((q) => (
                   <QuestCard key={q.id} quest={q} currentStreak={streak?.current_streak ?? 0} trustTier={tier} />
@@ -162,7 +164,7 @@ export default function QuestsPage() {
           )}
 
           <p className="text-[11px] text-muted-foreground text-center pt-2">
-            LS quest tối đa 25%/200 LS mỗi ngày · Cap chống farm tự động · Phase 1 MVP
+            {t('queFooter')}
           </p>
 
           <BackToHomeCTA />

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useLanguage } from '@/i18n/LanguageContext';
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Loader2, CheckCircle, XCircle, Eye, EyeOff } from "lucide-react";
 
 export default function SetPassword() {
+  const { t } = useLanguage();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const token = searchParams.get("token");
@@ -40,17 +42,17 @@ export default function SetPassword() {
     setError(null);
 
     if (!token) {
-      setError("Link không hợp lệ. Vui lòng kiểm tra lại email.");
+      setError(t("spwInvalidLink"));
       return;
     }
 
     if (!isPasswordValid) {
-      setError("Mật khẩu chưa đủ mạnh.");
+      setError(t("spwWeak"));
       return;
     }
 
     if (!doPasswordsMatch) {
-      setError("Mật khẩu xác nhận không khớp.");
+      setError(t("spwMismatch"));
       return;
     }
 
@@ -81,7 +83,7 @@ export default function SetPassword() {
       }, 3000);
     } catch (err) {
       console.error("Set password error:", err);
-      setError(err instanceof Error ? err.message : "Có lỗi xảy ra. Vui lòng thử lại.");
+      setError(err instanceof Error ? err.message : t("spwErrorRetry"));
     } finally {
       setLoading(false);
     }
@@ -93,15 +95,14 @@ export default function SetPassword() {
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
             <XCircle className="w-16 h-16 mx-auto text-destructive mb-4" />
-            <CardTitle>Link Không Hợp Lệ</CardTitle>
+            <CardTitle>{t("spwInvalidTitle")}</CardTitle>
             <CardDescription>
-              Link đặt mật khẩu không hợp lệ hoặc đã hết hạn.
-              Vui lòng kiểm tra lại email của bạn.
+              {t('spwInvalidDesc')}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Button onClick={() => navigate("/auth")} className="w-full">
-              Về trang đăng nhập
+              {t('spwToLogin')}
             </Button>
           </CardContent>
         </Card>
@@ -115,16 +116,16 @@ export default function SetPassword() {
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
             <CheckCircle className="w-16 h-16 mx-auto text-primary mb-4" />
-            <CardTitle>Tạo Mật Khẩu Thành Công!</CardTitle>
+            <CardTitle>{t("spwSuccessTitle")}</CardTitle>
             <CardDescription>
-              {email && `Tài khoản ${email} đã sẵn sàng.`}
+              {email && `${t("spwReadyA")}${email}${t("spwReadyB")}`}
               <br />
-              Đang chuyển hướng đến trang đăng nhập...
+              {t('spwRedirecting')}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Button onClick={() => navigate("/auth")} className="w-full">
-              Đăng nhập ngay
+              {t('spwLoginNow')}
             </Button>
           </CardContent>
         </Card>
@@ -139,9 +140,9 @@ export default function SetPassword() {
           <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-primary to-primary/60 rounded-full flex items-center justify-center">
             <span className="text-2xl">🔐</span>
           </div>
-          <CardTitle>Tạo Mật Khẩu</CardTitle>
+          <CardTitle>{t("spwTitle")}</CardTitle>
           <CardDescription>
-            Tạo mật khẩu để hoàn tất đăng ký Fun-ID của bạn
+            {t('spwSubtitle')}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -153,14 +154,14 @@ export default function SetPassword() {
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="password">Mật khẩu mới</Label>
+              <Label htmlFor="password">{t("spwNewLabel")}</Label>
               <div className="relative">
                 <Input
                   id="password"
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Nhập mật khẩu mới"
+                  placeholder={t("spwNewPlaceholder")}
                   className="pr-10"
                 />
                 <button
@@ -176,34 +177,34 @@ export default function SetPassword() {
               <div className="space-y-1 text-sm">
                 <div className={`flex items-center gap-2 ${checks.length ? "text-primary" : "text-muted-foreground"}`}>
                   {checks.length ? <CheckCircle className="w-4 h-4" /> : <XCircle className="w-4 h-4" />}
-                  Ít nhất 8 ký tự
+                  {t('spwRuleLen')}
                 </div>
                 <div className={`flex items-center gap-2 ${checks.uppercase ? "text-primary" : "text-muted-foreground"}`}>
                   {checks.uppercase ? <CheckCircle className="w-4 h-4" /> : <XCircle className="w-4 h-4" />}
-                  Ít nhất 1 chữ hoa (A-Z)
+                  {t('spwRuleUpper')}
                 </div>
                 <div className={`flex items-center gap-2 ${checks.number ? "text-primary" : "text-muted-foreground"}`}>
                   {checks.number ? <CheckCircle className="w-4 h-4" /> : <XCircle className="w-4 h-4" />}
-                  Ít nhất 1 số (0-9)
+                  {t('spwRuleDigit')}
                 </div>
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Xác nhận mật khẩu</Label>
+              <Label htmlFor="confirmPassword">{t("spwConfirmLabel")}</Label>
               <Input
                 id="confirmPassword"
                 type={showPassword ? "text" : "password"}
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="Nhập lại mật khẩu"
+                placeholder={t("spwConfirmPlaceholder")}
               />
               {confirmPassword && !doPasswordsMatch && (
-                <p className="text-sm text-destructive">Mật khẩu không khớp</p>
+                <p className="text-sm text-destructive">{t("spwNoMatch")}</p>
               )}
               {doPasswordsMatch && (
                 <p className="text-sm text-primary flex items-center gap-1">
-                  <CheckCircle className="w-4 h-4" /> Mật khẩu khớp
+                  <CheckCircle className="w-4 h-4" />{t("spwMatch")}
                 </p>
               )}
             </div>
@@ -216,10 +217,10 @@ export default function SetPassword() {
               {loading ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Đang xử lý...
+                  {t('capRevoking')}
                 </>
               ) : (
-                "Tạo mật khẩu"
+                t("spwCreate")
               )}
             </Button>
           </form>

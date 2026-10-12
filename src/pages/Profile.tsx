@@ -25,6 +25,11 @@ import { useProfile } from '@/hooks/useProfile';
 import { AccountUpgradeBanner } from '@/components/security/AccountUpgradeBanner';
 import { OnboardingTrustCTA } from '@/components/identity/OnboardingTrustCTA';
 
+const LOCALES: Record<string, string> = {
+  vi: 'vi-VN', en: 'en-US', ja: 'ja-JP', zh: 'zh-CN', ko: 'ko-KR', th: 'th-TH',
+  fr: 'fr-FR', id: 'id-ID', ar: 'ar-EG', ru: 'ru-RU', de: 'de-DE', es: 'es-ES', pt: 'pt-PT',
+};
+
 const Profile = () => {
   const navigate = useNavigate();
   const { t, language } = useLanguage();
@@ -291,7 +296,7 @@ const Profile = () => {
                             ) : (
                               <div className="flex items-center gap-3">
                                 <PenSquare className="w-6 h-6 text-muted-foreground" />
-                                <span className="text-muted-foreground text-sm italic">{showPrivateElements ? 'Thêm tiểu sử' : t('notUpdated')}</span>
+                                <span className="text-muted-foreground text-sm italic">{showPrivateElements ? t('profAddBio') : t('notUpdated')}</span>
                               </div>
                             )}
                             <div className="flex items-center gap-3 text-foreground">
@@ -318,39 +323,39 @@ const Profile = () => {
                               {profile?.btc_address ? (
                                 <div className="flex items-center gap-2 flex-wrap">
                                   <span className="font-mono text-sm">{profile.btc_address.slice(0, 8)}...{profile.btc_address.slice(-6)}</span>
-                                  <button onClick={() => { navigator.clipboard.writeText(profile.btc_address!); toast.success('Đã sao chép địa chỉ BTC'); }} className="p-1 rounded hover:bg-muted transition-colors">
+                                  <button onClick={() => { navigator.clipboard.writeText(profile.btc_address!); toast.success(t('profBtcCopied')); }} className="p-1 rounded hover:bg-muted transition-colors">
                                     <Copy className="w-4 h-4 text-muted-foreground" />
                                   </button>
                                 </div>
                               ) : showPrivateElements ? (
-                                <button onClick={() => navigateToTab('edit')} className="text-primary hover:underline text-sm">Thêm địa chỉ BTC</button>
+                                <button onClick={() => navigateToTab('edit')} className="text-primary hover:underline text-sm">{t('profAddBtc')}</button>
                               ) : (
                                 <span className="text-muted-foreground text-sm italic">{t('notUpdated')}</span>
                               )}
                             </div>
                             <div className="flex items-center gap-3 text-foreground">
                               <Briefcase className="w-6 h-6 text-muted-foreground" />
-                              {profile?.workplace ? <span>{t('worksAt')} <strong>{profile.workplace}</strong></span> : <span className="text-muted-foreground text-sm italic">{showPrivateElements ? 'Thêm nơi làm việc' : t('notUpdated')}</span>}
+                              {profile?.workplace ? <span>{t('worksAt')} <strong>{profile.workplace}</strong></span> : <span className="text-muted-foreground text-sm italic">{showPrivateElements ? t('profAddWorkplace') : t('notUpdated')}</span>}
                             </div>
                             <div className="flex items-center gap-3 text-foreground">
                               <GraduationCap className="w-6 h-6 text-muted-foreground" />
-                              {profile?.education ? <span>{t('studiesAt')} <strong>{profile.education}</strong></span> : <span className="text-muted-foreground text-sm italic">{showPrivateElements ? 'Thêm trường học' : t('notUpdated')}</span>}
+                              {profile?.education ? <span>{t('studiesAt')} <strong>{profile.education}</strong></span> : <span className="text-muted-foreground text-sm italic">{showPrivateElements ? t('profAddEducation') : t('notUpdated')}</span>}
                             </div>
                             <div className="flex items-center gap-3 text-foreground">
                               <MapPin className="w-6 h-6 text-muted-foreground" />
-                              {profile?.location ? <span>{t('livesIn')} <strong>{profile.location}</strong></span> : <span className="text-muted-foreground text-sm italic">{showPrivateElements ? 'Thêm nơi sống' : t('notUpdated')}</span>}
+                              {profile?.location ? <span>{t('livesIn')} <strong>{profile.location}</strong></span> : <span className="text-muted-foreground text-sm italic">{showPrivateElements ? t('profAddLocation') : t('notUpdated')}</span>}
                             </div>
                             <div className="flex items-center gap-3 text-foreground">
                               <Heart className="w-6 h-6 text-muted-foreground" />
-                              {profile?.relationship_status ? <span>{profile.relationship_status}</span> : <span className="text-muted-foreground text-sm italic">{showPrivateElements ? 'Thêm tình trạng' : t('notUpdated')}</span>}
+                              {profile?.relationship_status ? <span>{profile.relationship_status}</span> : <span className="text-muted-foreground text-sm italic">{showPrivateElements ? t('profAddRelationship') : t('notUpdated')}</span>}
                             </div>
                             <div className="flex items-center gap-3 text-foreground">
                               <Clock className="w-6 h-6 text-muted-foreground" />
-                              <span className="text-sm">Tham gia từ {profile?.created_at ? new Date(profile.created_at).toLocaleDateString('vi-VN', { month: 'long', year: 'numeric' }) : '...'}</span>
+                              <span className="text-sm">{t('profJoinedPrefix')}{profile?.created_at ? new Date(profile.created_at).toLocaleDateString(LOCALES[language] || 'en-US', { month: 'long', year: 'numeric' }) : '...'}</span>
                             </div>
                             {profile?.social_links && Array.isArray(profile.social_links) && profile.social_links.length > 0 && (
                               <div className="pt-3 border-t border-border">
-                                <p className="text-sm font-semibold text-muted-foreground mb-2">Liên kết mạng xã hội</p>
+                                <p className="text-sm font-semibold text-muted-foreground mb-2">{t('profSocialLinks')}</p>
                                 <div className="flex flex-wrap gap-2">
                                   {(profile.social_links as Array<{ url?: string; favicon?: string; label?: string; platform?: string }>).map((link, idx) => (
                                     <a key={idx} href={link.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-secondary hover:bg-primary/10 text-sm transition-colors">

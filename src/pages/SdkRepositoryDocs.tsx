@@ -5,10 +5,11 @@ import { Button } from '@/components/ui/button';
 import { DocSection, DocSubSection, DocParagraph, DocList, DocTable, DocAlert } from '@/components/docs/DocSection';
 import { CodeBlock } from '@/components/docs/CodeBlock';
 import { TableOfContents } from '@/components/docs/TableOfContents';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 const tocItems = [
-  { id: 'overview', title: 'Tổng quan', level: 1 },
-  { id: 'repository-structure', title: 'Cấu trúc Repository', level: 1 },
+  { id: 'overview', titleKey: 'sdkToc1', level: 1 },
+  { id: 'repository-structure', titleKey: 'sdkToc2', level: 1 },
   { id: 'package-json', title: 'package.json', level: 1 },
   { id: 'tsconfig', title: 'tsconfig.json', level: 1 },
   { id: 'rollup-config', title: 'rollup.config.js', level: 1 },
@@ -19,22 +20,24 @@ const tocItems = [
   { id: 'examples-nextjs', title: 'Next.js Integration', level: 2 },
   { id: 'github-actions', title: 'GitHub Actions', level: 1 },
   { id: 'publishing', title: 'Publishing to npm', level: 1 },
-  { id: 'installation', title: 'Hướng dẫn cài đặt', level: 1 },
+  { id: 'installation', titleKey: 'sdkToc12', level: 1 },
 ];
 
 const SdkRepositoryDocs = () => {
   const navigate = useNavigate();
+  const { t } = useLanguage();
+  const tocItemsLocalized = tocItems.map(i => ({ ...i, title: i.titleKey ? t(i.titleKey) : (i as any).title }));
   const [activeSection, setActiveSection] = useState('overview');
 
   useEffect(() => {
     const handleScroll = () => {
-      const sections = tocItems.map(item => document.getElementById(item.id));
+      const sections = tocItemsLocalized.map(item => document.getElementById(item.id));
       const scrollPosition = window.scrollY + 100;
 
       for (let i = sections.length - 1; i >= 0; i--) {
         const section = sections[i];
         if (section && section.offsetTop <= scrollPosition) {
-          setActiveSection(tocItems[i].id);
+          setActiveSection(tocItemsLocalized[i].id);
           break;
         }
       }
@@ -61,7 +64,7 @@ const SdkRepositoryDocs = () => {
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" onClick={() => window.print()}>
               <Printer className="h-4 w-4 mr-2" />
-              Print
+              {t('pdocPrint')}
             </Button>
             <Button variant="outline" size="sm" asChild>
               <a href="https://github.com/fun-ecosystem/sso-sdk" target="_blank" rel="noopener noreferrer">
@@ -78,34 +81,33 @@ const SdkRepositoryDocs = () => {
           {/* Sidebar */}
           <aside className="hidden lg:block w-64 shrink-0">
             <div className="sticky top-20">
-              <TableOfContents items={tocItems} activeId={activeSection} />
+              <TableOfContents items={tocItemsLocalized} activeId={activeSection} />
             </div>
           </aside>
 
           {/* Main Content */}
           <main className="flex-1 min-w-0 max-w-4xl">
             {/* Overview */}
-            <DocSection id="overview" title="Tổng quan">
+            <DocSection id="overview" title={t('sdkOverviewTitle')}>
               <DocParagraph>
-                Hướng dẫn tạo GitHub Repository cho <code>@fun-ecosystem/sso-sdk</code> - SDK chính thức 
-                để tích hợp Fun Farm, Fun Play, Fun Planet với Fun Profile SSO.
+                {t('sdkOverviewA')}<code>@fun-ecosystem/sso-sdk</code>{t('sdkOverviewB')}
               </DocParagraph>
               
               <DocAlert type="info">
-                <p className="font-semibold mb-2">Lợi ích của SDK Repository riêng</p>
+                <p className="font-semibold mb-2">{t('sdkBenefitsTitle')}</p>
                 <DocList items={[
-                  'Versioning - Lock version SDK, không bị ảnh hưởng khi Fun Profile update',
-                  'npm install - Cài đặt 1 lệnh thay vì copy nhiều files',
-                  'Auto-updates - Dependabot có thể suggest security updates',
-                  'TypeScript support - Types tự động available khi import',
+                  t('sdkBenefit1'),
+                  t('sdkBenefit2'),
+                  t('sdkBenefit3'),
+                  t('sdkBenefit4'),
                 ]} />
               </DocAlert>
             </DocSection>
 
             {/* Repository Structure */}
-            <DocSection id="repository-structure" title="Cấu trúc Repository">
+            <DocSection id="repository-structure" title={t('sdkStructureTitle')}>
               <DocParagraph>
-                Cấu trúc thư mục chuẩn cho npm package với TypeScript:
+                {t('sdkStructurePara')}
               </DocParagraph>
               
               <CodeBlock
@@ -151,7 +153,7 @@ const SdkRepositoryDocs = () => {
             {/* package.json */}
             <DocSection id="package-json" title="package.json">
               <DocParagraph>
-                Cấu hình package với dual exports (ESM + CJS):
+                {t('sdkPkgPara')}
               </DocParagraph>
               
               <CodeBlock
@@ -249,7 +251,7 @@ const SdkRepositoryDocs = () => {
             {/* rollup.config.js */}
             <DocSection id="rollup-config" title="rollup.config.js">
               <DocParagraph>
-                Rollup config để build cả ESM và CJS formats:
+                {t('sdkRollupPara')}
               </DocParagraph>
               
               <CodeBlock
@@ -310,8 +312,7 @@ export default [
             {/* Source Code */}
             <DocSection id="source-code" title="Source Code">
               <DocParagraph>
-                Copy các files từ <code>src/lib/sso-sdk/</code> của Fun Profile vào <code>src/</code> của repository mới.
-                Cần điều chỉnh imports để không dùng <code>@/</code> alias:
+                {t('sdkSourceA')}<code>src/lib/sso-sdk/</code>{t('sdkSourceB')}<code>src/</code>{t('sdkSourceC')}<code>@/</code>{t('sdkSourceD')}
               </DocParagraph>
 
               <DocSubSection title="src/index.ts">
@@ -396,8 +397,8 @@ export {
               </DocSubSection>
 
               <DocAlert type="warning">
-                <p className="font-semibold mb-1">Lưu ý khi copy source code</p>
-                <p>Đổi tất cả imports từ <code>./types</code> thay vì <code>@/lib/sso-sdk/types</code></p>
+                <p className="font-semibold mb-1">{t('sdkCopyNoteTitle')}</p>
+                <p>{t('sdkCopyNoteA')}<code>./types</code>{t('sdkCopyNoteB')}<code>@/lib/sso-sdk/types</code></p>
               </DocAlert>
             </DocSection>
 
@@ -469,7 +470,7 @@ MIT © Fun Ecosystem Team`}
             {/* Examples */}
             <DocSection id="examples" title="Examples">
               <DocParagraph>
-                Các ví dụ hoàn chỉnh để tích hợp SDK vào các framework khác nhau.
+                {t('sdkExamplesPara')}
               </DocParagraph>
             </DocSection>
 
@@ -569,7 +570,7 @@ export { funProfile };`}
                 />
               </DocSubSection>
 
-              <DocSubSection title="AuthCallback.tsx với Camly Messages">
+              <DocSubSection title={t('sdkAuthCallbackTitle')}>
                 <CodeBlock
                   language="typescript"
                   title="examples/react/AuthCallback.tsx"
@@ -804,7 +805,7 @@ export default function AuthCallbackPage() {
             {/* GitHub Actions */}
             <DocSection id="github-actions" title="GitHub Actions">
               <DocParagraph>
-                Auto-publish to npm khi tạo release tag:
+                {t('sdkActionsPara')}
               </DocParagraph>
               
               <CodeBlock
@@ -844,18 +845,18 @@ jobs:
               />
 
               <DocAlert type="info">
-                <p className="font-semibold mb-2">Cần thiết lập</p>
+                <p className="font-semibold mb-2">{t('sdkSetupTitle')}</p>
                 <DocList items={[
-                  'Tạo npm account và organization @fun-ecosystem',
-                  'Tạo npm access token',
-                  'Thêm NPM_TOKEN vào GitHub repository secrets',
+                  t('sdkSetup1'),
+                  t('sdkSetup2'),
+                  t('sdkSetup3'),
                 ]} />
               </DocAlert>
             </DocSection>
 
             {/* Publishing */}
             <DocSection id="publishing" title="Publishing to npm">
-              <DocSubSection title="Bước 1: Tạo npm Organization">
+              <DocSubSection title={t('sdkPubStep1')}>
                 <CodeBlock
                   language="bash"
                   code={`# Đăng nhập npm
@@ -865,7 +866,7 @@ npm login
                 />
               </DocSubSection>
 
-              <DocSubSection title="Bước 2: Publish lần đầu">
+              <DocSubSection title={t('sdkPubStep2')}>
                 <CodeBlock
                   language="bash"
                   code={`# Build package
@@ -876,7 +877,7 @@ npm publish --access public`}
                 />
               </DocSubSection>
 
-              <DocSubSection title="Bước 3: Tạo release">
+              <DocSubSection title={t('sdkPubStep3')}>
                 <CodeBlock
                   language="bash"
                   code={`# Tag version mới
@@ -889,9 +890,9 @@ git push origin v1.0.0
             </DocSection>
 
             {/* Installation Guide */}
-            <DocSection id="installation" title="Hướng dẫn cài đặt (cho platforms)">
+            <DocSection id="installation" title={t('sdkInstallTitle')}>
               <DocParagraph>
-                Sau khi SDK được publish, các platforms chỉ cần chạy:
+                {t('sdkInstallPara')}
               </DocParagraph>
 
               <CodeBlock
@@ -907,7 +908,7 @@ yarn add @fun-ecosystem/sso-sdk
 pnpm add @fun-ecosystem/sso-sdk`}
               />
 
-              <DocSubSection title="Sử dụng trong code">
+              <DocSubSection title={t('sdkUsageTitle')}>
                 <CodeBlock
                   language="typescript"
                   title="src/lib/funProfileClient.ts"

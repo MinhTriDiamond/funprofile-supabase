@@ -9,8 +9,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { TransactionHistoryPage } from '@/components/transactions/TransactionHistoryPage';
 import { Loader2, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 export default function ProfileHistoryPage() {
+  const { t } = useLanguage();
   const { username } = useParams<{ username: string }>();
   const navigate = useNavigate();
 
@@ -41,8 +43,8 @@ export default function ProfileHistoryPage() {
       <div className="min-h-screen bg-background">
         <FacebookNavbar />
         <div className="container mx-auto max-w-2xl px-4 py-12 text-center">
-          <p className="text-muted-foreground">Không tìm thấy người dùng @{username}.</p>
-          <Button variant="outline" className="mt-4" onClick={() => navigate(-1)}>Quay lại</Button>
+          <p className="text-muted-foreground">{t('phpNotFoundA')}{username}.</p>
+          <Button variant="outline" className="mt-4" onClick={() => navigate(-1)}>{t('phpBack')}</Button>
         </div>
         <MobileBottomNav />
       </div>
@@ -55,15 +57,15 @@ export default function ProfileHistoryPage() {
       <main data-app-scroll className="app-main app-pb-nav">
         <div className="container mx-auto max-w-5xl px-4 py-6">
           <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="mb-3">
-            <ArrowLeft className="mr-1 h-4 w-4" /> Quay lại profile
+            <ArrowLeft className="mr-1 h-4 w-4" />{t('phpBackProfile')}
           </Button>
           <TransactionHistoryPage
             scope="profile"
             targetUserId={profile.id}
             userDisplayName={profile.display_name || profile.username || username || ''}
             userWalletAddress={profile.public_wallet_address ?? null}
-            title={`Lịch sử của @${profile.username}`}
-            subtitle="Lịch sử giao dịch công khai — mọi người đều xem được đầy đủ."
+            title={`${t('phpTitlePrefix')}${profile.username}`}
+            subtitle={t('phpSubtitle')}
           />
         </div>
       </main>
