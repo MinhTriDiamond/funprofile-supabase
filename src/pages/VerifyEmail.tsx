@@ -2,8 +2,10 @@ import { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Loader2, CheckCircle2, XCircle, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 export default function VerifyEmail() {
+  const { t } = useLanguage();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const token = searchParams.get('token');
@@ -14,7 +16,7 @@ export default function VerifyEmail() {
   useEffect(() => {
     if (!token) {
       setStatus('error');
-      setErrorMsg('Thiếu token xác thực.');
+      setErrorMsg(t('vemMissingToken'));
       return;
     }
 
@@ -39,19 +41,19 @@ export default function VerifyEmail() {
           setEmail(data.email || '');
         } else if (res.status === 410) {
           setStatus('expired');
-          setErrorMsg(data.error || 'Token đã hết hạn.');
+          setErrorMsg(data.error || t('vemExpiredToken'));
         } else {
           setStatus('error');
-          setErrorMsg(data.error || 'Có lỗi xảy ra.');
+          setErrorMsg(data.error || t('vemGenericError'));
         }
       } catch {
         setStatus('error');
-        setErrorMsg('Không thể kết nối đến máy chủ.');
+        setErrorMsg(t('vemNoConnect'));
       }
     };
 
     verify();
-  }, [token]);
+  }, [token, t]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
@@ -59,8 +61,8 @@ export default function VerifyEmail() {
         {status === 'loading' && (
           <>
             <Loader2 className="w-16 h-16 text-primary animate-spin mx-auto" />
-            <h1 className="text-xl font-bold text-foreground">Đang xác thực...</h1>
-            <p className="text-muted-foreground">Vui lòng chờ trong giây lát.</p>
+            <h1 className="text-xl font-bold text-foreground">{t('vemLoadingTitle')}</h1>
+            <p className="text-muted-foreground">{t('vemLoadingDesc')}</p>
           </>
         )}
 
@@ -69,12 +71,12 @@ export default function VerifyEmail() {
             <div className="w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-950/30 flex items-center justify-center mx-auto">
               <CheckCircle2 className="w-8 h-8 text-emerald-600" />
             </div>
-            <h1 className="text-xl font-bold text-foreground">Xác thực thành công! 🎉</h1>
+            <h1 className="text-xl font-bold text-foreground">{t('vemSuccessTitle')}</h1>
             <p className="text-muted-foreground">
-              Email <strong className="text-foreground">{email}</strong> đã được liên kết với tài khoản của bạn.
+              {t('vemSuccessA')}<strong className="text-foreground">{email}</strong>{t('vemSuccessB')}
             </p>
             <Button onClick={() => navigate('/settings/security')} className="w-full">
-              Về trang Bảo mật
+              {t('vemToSecurity')}
             </Button>
           </>
         )}
@@ -84,10 +86,10 @@ export default function VerifyEmail() {
             <div className="w-16 h-16 rounded-full bg-amber-100 dark:bg-amber-950/30 flex items-center justify-center mx-auto">
               <Clock className="w-8 h-8 text-amber-600" />
             </div>
-            <h1 className="text-xl font-bold text-foreground">Liên kết đã hết hạn</h1>
+            <h1 className="text-xl font-bold text-foreground">{t('vemExpiredTitle')}</h1>
             <p className="text-muted-foreground">{errorMsg}</p>
             <Button onClick={() => navigate('/settings/security')} variant="outline" className="w-full">
-              Quay lại để thử lại
+              {t('vemRetry')}
             </Button>
           </>
         )}
@@ -97,10 +99,10 @@ export default function VerifyEmail() {
             <div className="w-16 h-16 rounded-full bg-red-100 dark:bg-red-950/30 flex items-center justify-center mx-auto">
               <XCircle className="w-8 h-8 text-red-600" />
             </div>
-            <h1 className="text-xl font-bold text-foreground">Xác thực thất bại</h1>
+            <h1 className="text-xl font-bold text-foreground">{t('vemFailedTitle')}</h1>
             <p className="text-muted-foreground">{errorMsg}</p>
             <Button onClick={() => navigate('/settings/security')} variant="outline" className="w-full">
-              Quay lại trang Bảo mật
+              {t('vemBackSecurity')}
             </Button>
           </>
         )}

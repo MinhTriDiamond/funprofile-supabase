@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useLanguage } from '@/i18n/LanguageContext';
 import { Navigate } from "react-router-dom";
 import { useAdminRole } from "@/hooks/useAdminRole";
 import { supabase } from "@/integrations/supabase/client";
@@ -27,6 +28,7 @@ interface LogRow {
 }
 
 export default function FederationBackfillPage() {
+  const { t } = useLanguage();
   const { isAdmin, isLoading: loading } = useAdminRole();
   const [filters, setFilters] = useState({ include_banned: false, include_test: false, include_unverified: false });
   const [batchSize, setBatchSize] = useState(1);
@@ -64,17 +66,17 @@ export default function FederationBackfillPage() {
       if (data?.job_id) setSelectedJobId(data.job_id);
       return data;
     } catch (e: any) {
-      toast.error(e?.message ?? "Lỗi");
+      toast.error(e?.message ?? t("fbpError"));
       return null;
     } finally { setBusy(false); }
   }
 
   async function onDryRun() {
     const d = await callFn("dry_run", { batch_size: 50 });
-    if (d) { setDryRunResult(d); toast.success(`Dry run: ${d.total_eligible} user đủ điều kiện`); }
+    if (d) { setDryRunResult(d); toast.success(`${t("fbpDryRunPrefix")}${d.total_eligible}${t("fbpDryRunSuffix")}`); }
   }
   async function onRunOne() {
-    if (!oneUserId.trim()) return toast.error("Nhập user_id");
+    if (!oneUserId.trim()) return toast.error(t("fbpNeedUserId"));
     const d = await callFn("run_one", { target_user_id: oneUserId.trim() });
     if (d) toast[d.result?.ok ? "success" : "error"](`Run 1 user: ${d.result?.ok ? "OK" : "FAILED"} (HTTP ${d.result?.status})`);
   }
@@ -83,26 +85,26 @@ export default function FederationBackfillPage() {
     const d = await callFn("run_batch", { batch_size: n });
     if (d) toast.success(`Batch ${n}: OK ${d.succeeded}/${d.processed}, fail ${d.failed}`);
   }
-  async function onPause() { if (selectedJobId) { await callFn("pause", { job_id: selectedJobId }); toast.message("Đã pause"); } }
-  async function onStop() { if (selectedJobId) { await callFn("stop", { job_id: selectedJobId }); toast.message("Đã stop"); } }
+  async function onPause() { if (selectedJobId) { await callFn("pause", { job_id: selectedJobId }); toast.message(t("fbpPaused")); } }
+  async function onStop() { if (selectedJobId) { await callFn("stop", { job_id: selectedJobId }); toast.message(t("fbpStopped")); } }
   async function onRetry() { if (selectedJobId) { const d = await callFn("retry_failed", { job_id: selectedJobId }); if (d) toast.success(`Retry: OK ${d.succeeded}, fail ${d.failed}`); } }
 
   async function onSmoke() {
-    if (!smokeUserId.trim()) return toast.error("Nhập platform_user_id");
+    if (!smokeUserId.trim()) return toast.error(t("fbpNeedPlatformId"));
     setBusy(true);
     try {
       const { data, error } = await supabase.functions.invoke("federation-backfill-smoke", { body: { platform_user_id: smokeUserId.trim() } });
       if (error) throw error;
       setSmokeResult(data);
       toast[data?.pass ? "success" : "error"](`Smoke: ${data?.pass ? "PASS ✅" : "FAIL ❌"}`);
-    } catch (e: any) { toast.error(e?.message ?? "Lỗi"); } finally { setBusy(false); }
+    } catch (e: any) { toast.error(e?.message ?? t("fbpError")); } finally { setBusy(false); }
   }
 
   return (
     <div className="container mx-auto p-4 md:p-8 max-w-6xl space-y-6">
       <div>
         <h1 className="text-2xl font-bold">Federation Backfill — FP-2A</h1>
-        <p className="text-sm text-muted-foreground">Đẩy FUN Profile user sang FUN Core Identity Backbone (production)</p>
+        <p className="text-sm text-muted-foreground">{t('fbpSubtitle')}</p>
       </div>
 
       <OutboxProducerPanel />
@@ -110,12 +112,12 @@ export default function FederationBackfillPage() {
 
 
       <Card>
-        <CardHeader><CardTitle className="text-base">Bộ lọc backfill</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-base">{t('fbpFiltersTitle')}</CardTitle></CardHeader>
         <CardContent className="space-y-3">
           <div className="flex flex-wrap gap-4">
-            <label className="flex items-center gap-2"><Checkbox checked={!filters.include_banned} onCheckedChange={(v) => setFilters((f) => ({ ...f, include_banned: !v }))} /> Loại trừ banned</label>
-            <label className="flex items-center gap-2"><Checkbox checked={!filters.include_test} onCheckedChange={(v) => setFilters((f) => ({ ...f, include_test: !v }))} /> Loại trừ test users</label>
-            <label className="flex items-center gap-2"><Checkbox checked={!filters.include_unverified} onCheckedChange={(v) => setFilters((f) => ({ ...f, include_unverified: !v }))} /> Loại trừ email chưa verified</label>
+            <label className="flex items-center gap-2"><Checkbox checked={!filters.include_banned} onCheckedChange={(v) => setFilters((f) => ({ ...f, include_banned: !v }))} /> {t('fbpExcludeBanned')}</label>
+            <label className="flex items-center gap-2"><Checkbox checked={!filters.include_test} onCheckedChange={(v) => setFilters((f) => ({ ...f, include_test: !v }))} /> {t('fbpExcludeTest')}</label>
+            <label className="flex items-center gap-2"><Checkbox checked={!filters.include_unverified} onCheckedChange={(v) => setFilters((f) => ({ ...f, include_unverified: !v }))} /> {t('fbpExcludeUnverified')}</label>
           </div>
           <div className="flex flex-wrap gap-2 pt-2">
             <Button onClick={onDryRun} disabled={busy} variant="secondary"><FlaskConical className="h-4 w-4 mr-1" /> Dry run</Button>
@@ -127,7 +129,7 @@ export default function FederationBackfillPage() {
       </Card>
 
       <Card>
-        <CardHeader><CardTitle className="text-base">Run 1 user cụ thể</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-base">{t('fbpRunOneTitle')}</CardTitle></CardHeader>
         <CardContent className="flex gap-2">
           <Input placeholder="profile user_id (UUID)" value={oneUserId} onChange={(e) => setOneUserId(e.target.value)} />
           <Button onClick={onRunOne} disabled={busy}><Play className="h-4 w-4 mr-1" /> Push 1 user</Button>
@@ -136,7 +138,7 @@ export default function FederationBackfillPage() {
 
       {dryRunResult && (
         <Card>
-          <CardHeader><CardTitle className="text-base">Dry run — kết quả</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="text-base">{t('fbpDryRunTitle')}</CardTitle></CardHeader>
           <CardContent>
             <pre className="text-xs bg-muted p-3 rounded overflow-auto max-h-96">{JSON.stringify(dryRunResult, null, 2)}</pre>
           </CardContent>
@@ -145,7 +147,7 @@ export default function FederationBackfillPage() {
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-base">Jobs gần đây</CardTitle>
+          <CardTitle className="text-base">{t('fbpJobsTitle')}</CardTitle>
           <div className="flex gap-2">
             <Button size="sm" variant="ghost" onClick={loadJobs}><RefreshCw className="h-4 w-4" /></Button>
             {selectedJobId && <>
@@ -170,17 +172,17 @@ export default function FederationBackfillPage() {
                 {j.last_error && <div className="text-xs text-destructive mt-1 truncate">{j.last_error}</div>}
               </button>
             ))}
-            {!jobs.length && <div className="text-muted-foreground text-sm">Chưa có job</div>}
+            {!jobs.length && <div className="text-muted-foreground text-sm">{t('fbpNoJobs')}</div>}
           </div>
         </CardContent>
       </Card>
 
       {selectedJobId && (
         <Card>
-          <CardHeader><CardTitle className="text-base">Log chi tiết — job {selectedJobId.slice(0, 8)}…</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="text-base">{t('fbpLogTitlePrefix')}{selectedJobId.slice(0, 8)}…</CardTitle></CardHeader>
           <CardContent>
             <Tabs defaultValue="list">
-              <TabsList><TabsTrigger value="list">Danh sách</TabsTrigger><TabsTrigger value="raw">Raw JSON</TabsTrigger></TabsList>
+              <TabsList><TabsTrigger value="list">{t('fbpTabList')}</TabsTrigger><TabsTrigger value="raw">Raw JSON</TabsTrigger></TabsList>
               <TabsContent value="list" className="space-y-2">
                 {logs.map((l) => (
                   <div key={l.id} className="border rounded p-2 text-xs space-y-1">
@@ -195,7 +197,7 @@ export default function FederationBackfillPage() {
                     {l.last_error && <div className="text-destructive">{l.last_error}</div>}
                   </div>
                 ))}
-                {!logs.length && <div className="text-muted-foreground">Chưa có log</div>}
+                {!logs.length && <div className="text-muted-foreground">{t('fbpNoLogs')}</div>}
               </TabsContent>
               <TabsContent value="raw">
                 <pre className="text-xs bg-muted p-3 rounded overflow-auto max-h-96">{JSON.stringify(logs, null, 2)}</pre>
@@ -209,7 +211,7 @@ export default function FederationBackfillPage() {
         <CardHeader><CardTitle className="text-base">Smoke test — GET /identity/by-platform</CardTitle></CardHeader>
         <CardContent className="space-y-2">
           <div className="flex gap-2">
-            <Input placeholder="platform_user_id (UUID đã push)" value={smokeUserId} onChange={(e) => setSmokeUserId(e.target.value)} />
+            <Input placeholder={t('fbpSmokePlaceholder')} value={smokeUserId} onChange={(e) => setSmokeUserId(e.target.value)} />
             <Button onClick={onSmoke} disabled={busy}><FlaskConical className="h-4 w-4 mr-1" />Smoke test</Button>
           </div>
           {smokeResult && (

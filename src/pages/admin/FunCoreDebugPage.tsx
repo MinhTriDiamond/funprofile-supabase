@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useLanguage } from '@/i18n/LanguageContext';
 import { Navigate } from "react-router-dom";
 import { useAdminRole } from "@/hooks/useAdminRole";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
@@ -36,18 +37,19 @@ interface AuditRow {
 }
 
 function hintForError(code: string, status?: number | null): string | null {
-  if (code === "CONFIG_ERROR") return "Kiểm tra biến môi trường FUN_PROFILE_SERVICE_SECRET trên Lovable Cloud.";
-  if (code === "FORBIDDEN_NOT_ADMIN") return "Tài khoản hiện tại không có quyền admin.";
-  if (code === "FORBIDDEN_PILOT_SCOPE") return "userId không nằm trong allowlist pilot. Cập nhật app_settings.fun_core_pilot_allowed_user_ids để mở rộng.";
-  if (code === "TIMEOUT") return "FUN Core không phản hồi trong 10 giây.";
+  if (code === "CONFIG_ERROR") return "fcdHintConfig";
+  if (code === "FORBIDDEN_NOT_ADMIN") return "fcdHintNotAdmin";
+  if (code === "FORBIDDEN_PILOT_SCOPE") return "fcdHintPilot";
+  if (code === "TIMEOUT") return "fcdHintTimeout";
   if (status === 401 || status === 403) {
-    return "FUN Core từ chối service identity 'fun-profile'. Kiểm tra whitelist phía FUN Core.";
+    return "fcdHintDenied";
   }
-  if (status && status >= 500) return "FUN Core lỗi nội bộ. Thử lại hoặc kiểm tra log FUN Core.";
+  if (status && status >= 500) return "fcdHintInternal";
   return null;
 }
 
 function ResponseCard({ label, resp }: { label: string; resp: FunCoreResponse | null | "loading" }) {
+  const { t } = useLanguage();
   if (resp === "loading") {
     return (
       <Card>
@@ -58,7 +60,8 @@ function ResponseCard({ label, resp }: { label: string; resp: FunCoreResponse | 
   if (!resp) return null;
   const status = resp._http?.status ?? 0;
   const dur = resp._http?.durationMs ?? 0;
-  const hint = !resp.success ? hintForError(resp.error?.code ?? "", resp.error?.upstreamStatus) : null;
+  const hintKey = !resp.success ? hintForError(resp.error?.code ?? "", resp.error?.upstreamStatus) : null;
+  const hint = hintKey ? t(hintKey) : null;
   return (
     <Card>
       <CardHeader className="pb-3">
@@ -79,7 +82,7 @@ function ResponseCard({ label, resp }: { label: string; resp: FunCoreResponse | 
               <Badge
                 variant="secondary"
                 className="cursor-pointer"
-                onClick={() => { navigator.clipboard.writeText(resp.meta!.traceId!); toast.success("Đã copy traceId"); }}
+                onClick={() => { navigator.clipboard.writeText(resp.meta!.traceId!); toast.success(t("fcdCopiedTrace")); }}
               >
                 trace: {resp.meta.traceId.slice(0, 12)}… <Copy className="ml-1 h-3 w-3" />
               </Badge>
@@ -100,6 +103,7 @@ function ResponseCard({ label, resp }: { label: string; resp: FunCoreResponse | 
 }
 
 function Stats24h() {
+  const { t } = useLanguage();
   const [stats, setStats] = useState<{
     total: number; success: number; error: number; p50: number; p95: number;
     topErrors: { code: string; count: number }[];
@@ -139,23 +143,23 @@ function Stats24h() {
     <Card>
       <CardHeader>
         <CardTitle className="text-base flex items-center justify-between">
-          <span>Thống kê 24h</span>
+          <span>{t('fcdStats24h')}</span>
           <Button size="sm" variant="ghost" onClick={refresh} disabled={loading}>
-            {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Làm mới"}
+            {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : t("fcdRefresh")}
           </Button>
         </CardTitle>
       </CardHeader>
       <CardContent>
-        {!stats ? <p className="text-sm text-muted-foreground">Đang tải…</p> : (
+        {!stats ? <p className="text-sm text-muted-foreground">{t('fcdLoading')}</p> : (
           <div className="grid grid-cols-2 md:grid-cols-5 gap-3 text-center">
-            <div className="rounded-lg border p-2"><p className="text-lg font-bold">{stats.total}</p><p className="text-[10px] uppercase text-muted-foreground">Tổng</p></div>
+            <div className="rounded-lg border p-2"><p className="text-lg font-bold">{stats.total}</p><p className="text-[10px] uppercase text-muted-foreground">{t('fcdTotal')}</p></div>
             <div className="rounded-lg border p-2"><p className="text-lg font-bold text-emerald-600">{stats.success}</p><p className="text-[10px] uppercase text-muted-foreground">OK</p></div>
-            <div className="rounded-lg border p-2"><p className="text-lg font-bold text-destructive">{stats.error}</p><p className="text-[10px] uppercase text-muted-foreground">Lỗi</p></div>
+            <div className="rounded-lg border p-2"><p className="text-lg font-bold text-destructive">{stats.error}</p><p className="text-[10px] uppercase text-muted-foreground">{t('fcdErrors')}</p></div>
             <div className="rounded-lg border p-2"><p className="text-lg font-bold">{stats.p50} ms</p><p className="text-[10px] uppercase text-muted-foreground">p50</p></div>
             <div className="rounded-lg border p-2"><p className="text-lg font-bold">{stats.p95} ms</p><p className="text-[10px] uppercase text-muted-foreground">p95</p></div>
             {stats.topErrors.length > 0 && (
               <div className="col-span-2 md:col-span-5 mt-2 text-left text-xs">
-                <p className="text-muted-foreground mb-1">Top lỗi:</p>
+                <p className="text-muted-foreground mb-1">{t('fcdTopErrors')}</p>
                 <div className="flex flex-wrap gap-2">
                   {stats.topErrors.map((e) => (
                     <Badge key={e.code} variant="destructive">{e.code} · {e.count}</Badge>
@@ -171,6 +175,7 @@ function Stats24h() {
 }
 
 export default function FunCoreDebugPage() {
+  const { t } = useLanguage();
   const { user, isLoading: authLoading } = useCurrentUser();
   const { isAdmin, isLoading: roleLoading } = useAdminRole();
   const { call, loading } = useFunCoreProxy();
@@ -213,7 +218,7 @@ export default function FunCoreDebugPage() {
 
   const anyLoading = useMemo(() => Object.values(loading).some(Boolean), [loading]);
 
-  if (authLoading || roleLoading) return <div className="p-6 text-sm text-muted-foreground">Đang kiểm tra quyền…</div>;
+  if (authLoading || roleLoading) return <div className="p-6 text-sm text-muted-foreground">{t('fcdCheckingPerms')}</div>;
   if (!user) return <Navigate to="/auth" replace />;
   if (!isAdmin) return <Navigate to="/" replace />;
 
@@ -222,7 +227,7 @@ export default function FunCoreDebugPage() {
       <div>
         <h1 className="text-2xl font-bold">FUN Core Debug · Pilot</h1>
         <p className="text-sm text-muted-foreground mt-1">
-          Read-only proxy đến FUN Core API qua service identity <code>fun-profile</code>. Chỉ admin.
+          {t('fcdSubtitleA')}<code>fun-profile</code>{t('fcdSubtitleB')}
           {" "}
           <Badge variant={flag?.enabled ? "default" : "outline"} className="ml-2 text-[10px]">
             Pilot flag: {flag?.enabled ? "ON" : "OFF"}
@@ -236,13 +241,13 @@ export default function FunCoreDebugPage() {
       <Tabs defaultValue="raw" className="space-y-4">
         <TabsList>
           <TabsTrigger value="raw">Raw debug</TabsTrigger>
-          <TabsTrigger value="compare">So sánh nội bộ ↔ FUN Core</TabsTrigger>
-          <TabsTrigger value="stats">Audit & Thống kê</TabsTrigger>
+          <TabsTrigger value="compare">{t('fcdTabCompare')}</TabsTrigger>
+          <TabsTrigger value="stats">{t('fcdTabStats')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="raw" className="space-y-4">
           <Card>
-            <CardHeader><CardTitle className="text-base">Tham số test</CardTitle></CardHeader>
+            <CardHeader><CardTitle className="text-base">{t('fcdTestParams')}</CardTitle></CardHeader>
             <CardContent className="space-y-3">
               <div className="flex flex-col md:flex-row gap-2">
                 <Input
@@ -261,7 +266,7 @@ export default function FunCoreDebugPage() {
                 ))}
                 <Button onClick={runAll} disabled={anyLoading}>
                   {anyLoading ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Play className="h-4 w-4 mr-1" />}
-                  Chạy cả 3
+                  {t('fcdRunAll3')}
                 </Button>
               </div>
             </CardContent>
@@ -276,7 +281,7 @@ export default function FunCoreDebugPage() {
 
         <TabsContent value="compare" className="space-y-4">
           <Card>
-            <CardHeader><CardTitle className="text-base">userId đối soát</CardTitle></CardHeader>
+            <CardHeader><CardTitle className="text-base">{t('fcdCompareUserId')}</CardTitle></CardHeader>
             <CardContent className="flex flex-col md:flex-row gap-2">
               <Input
                 value={userId}
@@ -295,23 +300,23 @@ export default function FunCoreDebugPage() {
           <Card>
             <CardHeader>
               <CardTitle className="text-base flex items-center justify-between">
-                <span>Audit gần đây (20 dòng)</span>
-                <Button size="sm" variant="ghost" onClick={refreshAudit}>Làm mới</Button>
+                <span>{t('fcdAuditRecent')}</span>
+                <Button size="sm" variant="ghost" onClick={refreshAudit}>{t('fcdRefresh')}</Button>
               </CardTitle>
             </CardHeader>
             <CardContent>
               {audit.length === 0 ? (
-                <p className="text-sm text-muted-foreground">Chưa có log.</p>
+                <p className="text-sm text-muted-foreground">{t('fcdNoLogs')}</p>
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full text-xs">
                     <thead className="text-muted-foreground">
                       <tr className="text-left border-b">
-                        <th className="py-2 pr-3">Thời gian</th>
+                        <th className="py-2 pr-3">{t('fcdTime')}</th>
                         <th className="py-2 pr-3">Endpoint</th>
                         <th className="py-2 pr-3">Target</th>
                         <th className="py-2 pr-3">HTTP</th>
-                        <th className="py-2 pr-3">Kết quả</th>
+                        <th className="py-2 pr-3">{t('fcdResult')}</th>
                         <th className="py-2 pr-3">ms</th>
                         <th className="py-2 pr-3">Error</th>
                         <th className="py-2 pr-3">Denied</th>

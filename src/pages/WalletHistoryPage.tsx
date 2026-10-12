@@ -11,8 +11,10 @@ import { Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
 import { BackToHomeBar } from '@/components/layout/BackToHome';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 export default function WalletHistoryPage() {
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const { userId, isLoading, isAuthenticated } = useCurrentUser();
 
@@ -51,10 +53,10 @@ export default function WalletHistoryPage() {
           <TransactionHistoryPage
             scope="self"
             targetUserId={userId}
-            userDisplayName={profile?.display_name || profile?.username || 'Tôi'}
+            userDisplayName={profile?.display_name || profile?.username || t('whpMe')}
             userWalletAddress={profile?.public_wallet_address ?? null}
-            title="Lịch sử giao dịch ví"
-            subtitle="Tất cả giao dịch của bạn (gift, transfer, on-chain) tại một nơi duy nhất."
+            title={t('whpTitle')}
+            subtitle={t('whpSubtitle')}
           />
         </div>
       </main>

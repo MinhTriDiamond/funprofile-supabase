@@ -8,13 +8,19 @@ import { BackToHomeBar } from '@/components/layout/BackToHome';
 import TreasuryPublicHistory from '@/components/treasury/TreasuryPublicHistory';
 import { useTreasuryPublicInflows } from '@/hooks/useTreasuryPublicInflows';
 import { toast } from 'sonner';
+import { useLanguage } from '@/i18n/LanguageContext';
+
+const LOCALES: Record<string, string> = { vi: 'vi-VN', en: 'en-US', ja: 'ja-JP', zh: 'zh-CN', ko: 'ko-KR', th: 'th-TH', fr: 'fr-FR', id: 'id-ID', es: 'es-ES', pt: 'pt-PT', de: 'de-DE', ru: 'ru-RU', ar: 'ar-EG' };
 
 const TREASURY_ADDRESS = '0x032269c811a2E58683Df9514D3bF6Ce70d1D09bB';
 const TREASURY_BTC_ADDRESS = 'bc1q05nm7esjp4d96jyaypgc4499lfnclf2g4f787n';
 
-const fmt = (n: number) => Math.round(n).toLocaleString('vi-VN');
+const fmt = (n: number, loc = 'vi-VN') => Math.round(n).toLocaleString(loc);
 
 export default function TreasuryPublicPage() {
+  const { t, language } = useLanguage();
+  const loc = LOCALES[language] || 'en-US';
+  const fmtL = (n: number) => fmt(n, loc);
   const [copied, setCopied] = useState(false);
   const { data } = useTreasuryPublicInflows(500);
 
@@ -37,10 +43,10 @@ export default function TreasuryPublicPage() {
     try {
       await navigator.clipboard.writeText(TREASURY_ADDRESS);
       setCopied(true);
-      toast.success('Đã chép địa chỉ ví Treasury');
+      toast.success(t('treCopiedToast'));
       setTimeout(() => setCopied(false), 1500);
     } catch {
-      toast.error('Không chép được');
+      toast.error(t('treCopyFailToast'));
     }
   };
 
@@ -54,11 +60,10 @@ export default function TreasuryPublicPage() {
           <header className="space-y-2">
             <h1 className="text-2xl md:text-3xl font-bold flex items-center gap-2">
               <Vault className="w-7 h-7 text-primary" />
-              Ví Treasury công khai
+              {t('treTitle')}
             </h1>
             <p className="text-sm text-muted-foreground">
-              CAMLY thu được từ Cửa hàng Lumi và Hộp bí ẩn đều chảy về một ví Treasury chung.
-              Trang này hiển thị toàn bộ giao dịch để cộng đồng cùng kiểm chứng.
+              {t('treDesc')}
             </p>
           </header>
 
@@ -75,7 +80,7 @@ export default function TreasuryPublicPage() {
                     className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
                   >
                     {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
-                    {copied ? 'Đã chép' : 'Chép'}
+                    {copied ? t('treCopied') : t('treCopy')}
                   </button>
                   <a
                     href={`https://bscscan.com/address/${TREASURY_ADDRESS}`}
@@ -109,22 +114,22 @@ export default function TreasuryPublicPage() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <Card>
               <CardContent className="py-4">
-                <div className="text-xs text-muted-foreground">CAMLY thu trong 7 ngày</div>
-                <div className="text-2xl font-bold mt-1">{fmt(stats.s7)}</div>
+                <div className="text-xs text-muted-foreground">{t('treStat7')}</div>
+                <div className="text-2xl font-bold mt-1">{fmtL(stats.s7)}</div>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="py-4">
-                <div className="text-xs text-muted-foreground">CAMLY thu trong 30 ngày</div>
-                <div className="text-2xl font-bold mt-1">{fmt(stats.s30)}</div>
+                <div className="text-xs text-muted-foreground">{t('treStat30')}</div>
+                <div className="text-2xl font-bold mt-1">{fmtL(stats.s30)}</div>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="py-4">
                 <div className="text-xs text-muted-foreground">
-                  Tổng (hiển thị {stats.count.toLocaleString('vi-VN')} đơn gần nhất)
+                  {t('treStatTotalA')}{stats.count.toLocaleString(loc)}{t('treStatTotalB')}
                 </div>
-                <div className="text-2xl font-bold mt-1">{fmt(stats.sAll)}</div>
+                <div className="text-2xl font-bold mt-1">{fmtL(stats.sAll)}</div>
               </CardContent>
             </Card>
           </div>

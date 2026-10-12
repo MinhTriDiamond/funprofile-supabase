@@ -1,4 +1,7 @@
 import { useState, useMemo } from 'react';
+import { useLanguage } from '@/i18n/LanguageContext';
+
+const LOCALES: Record<string, string> = { vi: 'vi-VN', en: 'en-US', ja: 'ja-JP', zh: 'zh-CN', ko: 'ko-KR', th: 'th-TH', fr: 'fr-FR', id: 'id-ID', es: 'es-ES', pt: 'pt-PT', de: 'de-DE', ru: 'ru-RU', ar: 'ar-EG' };
 import { FacebookNavbar } from '@/components/layout/FacebookNavbar';
 import { MobileBottomNav } from '@/components/layout/MobileBottomNav';
 import { useUserDirectory, getTierName } from '@/hooks/useUserDirectory';
@@ -33,6 +36,8 @@ import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useAdminUserServerSearch } from '@/hooks/useAdminUserServerSearch';
 
 const Users = () => {
+  const { t, language } = useLanguage();
+  const loc = LOCALES[language] || 'en-US';
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -67,9 +72,9 @@ const Users = () => {
   const [actionTarget, setActionTarget] = useState<{ id: string; username: string; type: 'ban' | 'suspend' | 'unlock' | 'unban' } | null>(null);
   const [isActioning, setIsActioning] = useState(false);
 
-  const fmt = (n: number) => n.toLocaleString('vi-VN');
+  const fmt = (n: number) => n.toLocaleString(loc);
   const shortenAddr = (addr: string | null) => addr ? `${addr.slice(0, 6)}...${addr.slice(-4)}` : '—';
-  const fmtDate = (d: string | null) => d ? new Date(d).toLocaleDateString('vi-VN') : '—';
+  const fmtDate = (d: string | null) => d ? new Date(d).toLocaleDateString(loc) : '—';
 
   const handleDelete = async () => {
     if (!deleteTarget) return;
@@ -80,12 +85,12 @@ const Users = () => {
         body: { user_id: deleteTarget.id },
       });
       if (res.error) throw res.error;
-      toast({ title: 'Đã xoá tài khoản', description: `@${deleteTarget.username} đã bị xoá thành công.` });
+      toast({ title: t('usrDeletedTitle'), description: `@${deleteTarget.username}${t('usrDeletedDescSuffix')}` });
       queryClient.invalidateQueries({ queryKey: ['user-directory'] });
       queryClient.invalidateQueries({ queryKey: ['user-directory-admin-check'] });
     } catch (err: unknown) {
       console.error('[Users] admin-delete-user failed', { userId: deleteTarget?.id, err });
-      toast({ title: 'Lỗi', description: describeBackendError(err, 'Không thể xoá tài khoản'), variant: 'destructive' });
+      toast({ title: t('usrErrorTitle'), description: describeBackendError(err, t('usrDeleteFail')), variant: 'destructive' });
 
     } finally {
       setIsDeleting(false);
@@ -98,33 +103,33 @@ const Users = () => {
     setIsActioning(true);
     try {
       if (actionTarget.type === 'ban') {
-        if (!authUserId) throw new Error('Không xác thực được admin');
+        if (!authUserId) throw new Error(t('usrAdminAuthFail'));
         const { error } = await supabase.rpc('ban_user_permanently', {
           p_admin_id: authUserId,
           p_user_id: actionTarget.id,
           p_reason: 'Banned from user directory by admin',
         });
         if (error) throw error;
-        toast({ title: 'Đã cấm', description: `@${actionTarget.username} đã bị cấm vĩnh viễn.` });
+        toast({ title: t('usrBannedTitle'), description: `@${actionTarget.username}${t('usrBannedDescSuffix')}` });
       } else if (actionTarget.type === 'suspend') {
         const { data, error } = await supabase.from('profiles').update({ reward_status: 'on_hold' }).eq('id', actionTarget.id).select('id');
         if (error) throw error;
-        if (!data || data.length === 0) throw new Error('Không có quyền cập nhật trạng thái user này. Vui lòng kiểm tra quyền admin.');
-        toast({ title: 'Đã đình chỉ', description: `@${actionTarget.username} đã bị đình chỉ.` });
+        if (!data || data.length === 0) throw new Error(t('usrNoPermission'));
+        toast({ title: t('usrSuspendedTitle'), description: `@${actionTarget.username}${t('usrSuspendedDescSuffix')}` });
       } else if (actionTarget.type === 'unlock') {
         const { data, error } = await supabase.from('profiles').update({ reward_status: 'approved' }).eq('id', actionTarget.id).select('id');
         if (error) throw error;
-        if (!data || data.length === 0) throw new Error('Không có quyền cập nhật trạng thái user này. Vui lòng kiểm tra quyền admin.');
-        toast({ title: 'Đã mở khóa', description: `@${actionTarget.username} đã được mở khóa.` });
+        if (!data || data.length === 0) throw new Error(t('usrNoPermission'));
+        toast({ title: t('usrUnlockedTitle'), description: `@${actionTarget.username}${t('usrUnlockedDescSuffix')}` });
       } else if (actionTarget.type === 'unban') {
-        if (!authUserId) throw new Error('Không xác thực được admin');
+        if (!authUserId) throw new Error(t('usrAdminAuthFail'));
         const { error } = await supabase.rpc('unban_user', {
           p_admin_id: authUserId,
           p_user_id: actionTarget.id,
           p_reason: 'Unbanned from user directory by admin',
         });
         if (error) throw error;
-        toast({ title: 'Đã mở khóa', description: `@${actionTarget.username} đã được bỏ cấm thành công.` });
+        toast({ title: t('usrUnlockedTitle'), description: `@${actionTarget.username}${t('usrUnbannedDescSuffix')}` });
       }
       // Optimistic update cache ngay lập tức
       queryClient.setQueryData(['user-directory'], (old: any[]) => {
@@ -145,7 +150,7 @@ const Users = () => {
       console.error('[Users] status action failed', {
         type: actionTarget?.type, userId: actionTarget?.id, username: actionTarget?.username, err,
       });
-      toast({ title: 'Lỗi', description: describeBackendError(err), variant: 'destructive' });
+      toast({ title: t('usrErrorTitle'), description: describeBackendError(err), variant: 'destructive' });
 
     } finally {
       setIsActioning(false);
@@ -160,37 +165,37 @@ const Users = () => {
         {/* Header */}
         <div className="flex items-center justify-between py-4">
           <div>
-            <h1 className="text-xl md:text-2xl font-bold text-foreground">Danh sách thành viên</h1>
-            <p className="text-sm text-muted-foreground">{fmt(stats.totalUsers)} thành viên</p>
+            <h1 className="text-xl md:text-2xl font-bold text-foreground">{t('usrTitle')}</h1>
+            <p className="text-sm text-muted-foreground">{fmt(stats.totalUsers)}{t('usrMembersSuffix')}</p>
           </div>
           <Button variant="outline" size="sm" onClick={exportCSV}>
-            <Download className="w-4 h-4 mr-1" /> Xuất CSV
+            <Download className="w-4 h-4 mr-1" />{t('usrExport')}
           </Button>
         </div>
 
         {/* Stats Row 1 */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-2 mb-2">
-          <StatCard icon={UsersIcon} label="Tổng Users" value={fmt(stats.totalUsers)} color="text-blue-500" />
-          <StatCard icon={Coins} label="CAMLY Còn lại" value={fmt(stats.totalPending)} color="text-amber-500" />
-          <StatCard icon={Gift} label="CAMLY Đã phát" value={fmt(stats.totalCamlyClaimed)} color="text-emerald-500" />
-          <StatCard icon={TrendingUp} label="CAMLY Tính toán" value={fmt(stats.totalCamlyCalculated)} color="text-purple-500" />
-          <StatCard icon={ArrowDownToLine} label="Tổng đã rút" value={fmt(stats.totalWithdrawn)} color="text-red-500" />
+          <StatCard icon={UsersIcon} label={t("usrStatTotal")} value={fmt(stats.totalUsers)} color="text-blue-500" />
+          <StatCard icon={Coins} label={t("usrStatPending")} value={fmt(stats.totalPending)} color="text-amber-500" />
+          <StatCard icon={Gift} label={t("usrStatClaimed")} value={fmt(stats.totalCamlyClaimed)} color="text-emerald-500" />
+          <StatCard icon={TrendingUp} label={t("usrStatCalculated")} value={fmt(stats.totalCamlyCalculated)} color="text-purple-500" />
+          <StatCard icon={ArrowDownToLine} label={t("usrStatWithdrawn")} value={fmt(stats.totalWithdrawn)} color="text-red-500" />
         </div>
 
         {/* Stats Row 2 */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-2 mb-2">
           <StatCard icon={Star} label="FUN Money" value={fmt(stats.totalMinted)} color="text-yellow-500" />
-          <StatCard icon={Send} label="Tặng NB (gửi)" value={fmt(Math.round(stats.totalInternalSent))} color="text-sky-500" />
-          <StatCard icon={Gift} label="Tặng NB (nhận)" value={fmt(Math.round(stats.totalInternalReceived))} color="text-teal-500" />
-          <StatCard icon={Globe} label="Tặng Web3 (gửi)" value={fmt(Math.round(stats.totalWeb3Sent))} color="text-indigo-500" />
-          <StatCard icon={Wallet} label="Tặng Web3 (nhận)" value={fmt(Math.round(stats.totalWeb3Received))} color="text-pink-500" />
+          <StatCard icon={Send} label={t("usrStatInternalSent")} value={fmt(Math.round(stats.totalInternalSent))} color="text-sky-500" />
+          <StatCard icon={Gift} label={t("usrStatInternalReceived")} value={fmt(Math.round(stats.totalInternalReceived))} color="text-teal-500" />
+          <StatCard icon={Globe} label={t("usrStatWeb3Sent")} value={fmt(Math.round(stats.totalWeb3Sent))} color="text-indigo-500" />
+          <StatCard icon={Wallet} label={t("usrStatWeb3Received")} value={fmt(Math.round(stats.totalWeb3Received))} color="text-pink-500" />
         </div>
 
         {/* Stats Row 3 */}
         <div className="grid grid-cols-3 gap-2 mb-4">
-          <StatCard icon={FileText} label="Tổng bài đăng" value={fmt(stats.totalPosts)} color="text-orange-500" />
-          <StatCard icon={MessageSquare} label="Tổng bình luận" value={fmt(stats.totalComments)} color="text-cyan-500" />
-          <StatCard icon={Star} label="Tổng Light Score" value={fmt(stats.totalLightScore)} color="text-violet-500" />
+          <StatCard icon={FileText} label={t("usrStatPosts")} value={fmt(stats.totalPosts)} color="text-orange-500" />
+          <StatCard icon={MessageSquare} label={t("usrStatComments")} value={fmt(stats.totalComments)} color="text-cyan-500" />
+          <StatCard icon={Star} label={t("usrStatLightScore")} value={fmt(stats.totalLightScore)} color="text-violet-500" />
         </div>
 
         {/* Search & Filters */}
@@ -198,7 +203,7 @@ const Users = () => {
           <div className="relative flex-1 min-w-[200px]">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
-              placeholder="Tìm theo tên, handle hoặc ID..."
+              placeholder={t("usrSearchPlaceholder")}
               value={search}
               onChange={(e) => { setSearch(e.target.value); setPage(0); }}
               className="pl-10"
@@ -209,11 +214,11 @@ const Users = () => {
 
         {/* Count */}
         <p className="text-xs text-muted-foreground mb-2">
-          Trang này: <span className="font-semibold text-foreground">{users.length}</span>
-          {' · '}Sau lọc: <span className="font-semibold text-foreground">{allUsers.length}</span>
-          {' · '}Toàn hệ thống: <span className="font-semibold text-foreground">{fmt(stats.totalUsers)}</span>
+          {t('usrThisPage')}<span className="font-semibold text-foreground">{users.length}</span>
+          {' · '}{t('usrAfterFilter')}<span className="font-semibold text-foreground">{allUsers.length}</span>
+          {' · '}{t('usrWholeSystem')}<span className="font-semibold text-foreground">{fmt(stats.totalUsers)}</span>
           {allUsers.length < stats.totalUsers && (
-            <span className="ml-1 text-amber-600">(đang ẩn {fmt(stats.totalUsers - allUsers.length)} bởi bộ lọc/tìm kiếm)</span>
+            <span className="ml-1 text-amber-600">{t('usrHiddenA')}{fmt(stats.totalUsers - allUsers.length)}{t('usrHiddenB')}</span>
           )}
         </p>
 
@@ -230,7 +235,7 @@ const Users = () => {
                   <TableHead className="w-10 text-center">#</TableHead>
                   <TableHead className="min-w-[160px]">
                     <div className="flex items-center gap-1">
-                      Người dùng
+                      {t('usrUser')}
                       <Button
                         variant="ghost"
                         size="icon"
@@ -261,14 +266,14 @@ const Users = () => {
                           </PopoverTrigger>
                           <PopoverContent className="w-72 p-2" align="start">
                             <Input
-                              placeholder="Tìm email..."
+                              placeholder={t("usrSearchEmail")}
                               value={emailFilter}
                               onChange={(e) => setEmailFilter(e.target.value)}
                               className="h-8 text-xs mb-2"
                             />
                             <ScrollArea className="h-64">
                               {sortedEmails.length === 0 ? (
-                                <p className="text-xs text-muted-foreground text-center py-4">Không tìm thấy</p>
+                                <p className="text-xs text-muted-foreground text-center py-4">{t('usrNotFound')}</p>
                               ) : (
                                 sortedEmails.map((email) => (
                                   <button
@@ -291,17 +296,17 @@ const Users = () => {
                       </div>
                     </TableHead>
                   )}
-                  <TableHead className="w-20">Trạng thái</TableHead>
+                  <TableHead className="w-20">{t('usrColStatus')}</TableHead>
                   <TableHead className="hidden md:table-cell w-24">Tham gia</TableHead>
-                  <TableHead className="hidden md:table-cell w-20">Bài/BL</TableHead>
-                  <TableHead className="hidden lg:table-cell w-24">Ánh sáng</TableHead>
-                  <TableHead className="w-24">Số dư</TableHead>
-                  <TableHead className="hidden md:table-cell w-24">Tổng thưởng</TableHead>
+                  <TableHead className="hidden md:table-cell w-20">{t('usrColPostsComments')}</TableHead>
+                  <TableHead className="hidden lg:table-cell w-24">{t('usrColLight')}</TableHead>
+                  <TableHead className="w-24">{t('usrColBalance')}</TableHead>
+                  <TableHead className="hidden md:table-cell w-24">{t('usrColTotalRewards')}</TableHead>
                   <TableHead className="hidden lg:table-cell w-20">FUN</TableHead>
-                  <TableHead className="hidden lg:table-cell w-24">Tặng NB</TableHead>
-                  <TableHead className="hidden xl:table-cell w-24">Tặng Web3</TableHead>
-                  <TableHead className="hidden md:table-cell w-20">Đã rút</TableHead>
-                  <TableHead className="hidden lg:table-cell w-28">Ví BSC</TableHead>
+                  <TableHead className="hidden lg:table-cell w-24">{t('usrColInternalGift')}</TableHead>
+                  <TableHead className="hidden xl:table-cell w-24">{t('usrColWeb3Gift')}</TableHead>
+                  <TableHead className="hidden md:table-cell w-20">{t('usrColWithdrawn')}</TableHead>
+                  <TableHead className="hidden lg:table-cell w-28">{t('usrColBscWallet')}</TableHead>
                   {isAdmin && <TableHead className="w-12"></TableHead>}
                 </TableRow>
               </TableHeader>
@@ -312,7 +317,7 @@ const Users = () => {
                       <UsersIcon className="w-10 h-10 mx-auto mb-3 opacity-40" />
                       {serverResults.length > 0 ? (
                         <div className="space-y-2">
-                          <p>Không có trong danh sách đã tải — kết quả tìm trên hệ thống:</p>
+                          <p>{t('usrNotInList')}</p>
                           <div className="flex flex-col items-center gap-1">
                             {serverResults.map((u) => (
                               <button
@@ -326,7 +331,7 @@ const Users = () => {
                           </div>
                         </div>
                       ) : (
-                        <p>{isSearchingServer ? 'Đang tìm trên hệ thống…' : 'Không tìm thấy thành viên nào'}</p>
+                        <p>{isSearchingServer ? t('usrSearching') : t('usrNoMembers')}</p>
                       )}
                     </TableCell>
                   </TableRow>
@@ -374,7 +379,7 @@ const Users = () => {
                                   variant="ghost"
                                   size="icon"
                                   className="h-6 w-6 text-emerald-600 hover:bg-emerald-500/10 hover:text-emerald-700"
-                                  title="Mở khóa (bỏ cấm)"
+                                  title={t("usrUnlockTitle")}
                                   onClick={() => setActionTarget({ id: user.id, username: user.username, type: 'unban' })}
                                 >
                                   <Unlock className="w-3.5 h-3.5" />
@@ -385,7 +390,7 @@ const Users = () => {
                                     variant="ghost"
                                     size="icon"
                                     className="h-6 w-6 text-red-600 hover:bg-red-500/10 hover:text-red-700"
-                                    title="Cấm vĩnh viễn"
+                                    title={t("usrBanTitle")}
                                     onClick={() => setActionTarget({ id: user.id, username: user.username, type: 'ban' })}
                                   >
                                     <ShieldBan className="w-3.5 h-3.5" />
@@ -395,7 +400,7 @@ const Users = () => {
                                       variant="ghost"
                                       size="icon"
                                       className="h-6 w-6 text-emerald-600 hover:bg-emerald-500/10 hover:text-emerald-700"
-                                      title="Mở khóa"
+                                      title={t("usrUnlock")}
                                       onClick={() => setActionTarget({ id: user.id, username: user.username, type: 'unlock' })}
                                     >
                                       <Unlock className="w-3.5 h-3.5" />
@@ -405,7 +410,7 @@ const Users = () => {
                                       variant="ghost"
                                       size="icon"
                                       className="h-6 w-6 text-orange-600 hover:bg-orange-500/10 hover:text-orange-700"
-                                      title="Đình chỉ"
+                                      title={t("usrSuspend")}
                                       onClick={() => setActionTarget({ id: user.id, username: user.username, type: 'suspend' })}
                                     >
                                       <Pause className="w-3.5 h-3.5" />
@@ -416,11 +421,11 @@ const Users = () => {
                             </div>
                           ) : (
                             user.is_banned ? (
-                              <Badge variant="destructive" className="text-[10px] px-1.5">Cấm</Badge>
+                              <Badge variant="destructive" className="text-[10px] px-1.5">{t('usrBadgeBanned')}</Badge>
                             ) : user.reward_status === 'on_hold' ? (
-                              <Badge className="text-[10px] px-1.5 bg-orange-500/10 text-orange-600 border-orange-500/20">Đình chỉ</Badge>
+                              <Badge className="text-[10px] px-1.5 bg-orange-500/10 text-orange-600 border-orange-500/20">{t('usrBadgeSuspended')}</Badge>
                             ) : (
-                              <Badge className="text-[10px] px-1.5 bg-emerald-500/10 text-emerald-600 border-emerald-500/20">Hoạt động</Badge>
+                              <Badge className="text-[10px] px-1.5 bg-emerald-500/10 text-emerald-600 border-emerald-500/20">{t('usrBadgeActive')}</Badge>
                             )
                           )}
                         </div>
@@ -429,9 +434,9 @@ const Users = () => {
                         {fmtDate(user.created_at)}
                       </TableCell>
                       <TableCell className="hidden md:table-cell text-xs">
-                        <span title="Bài đăng">📝{user.posts_count}</span>
+                        <span title={t("usrPostsTitle")}>📝{user.posts_count}</span>
                         <span className="text-muted-foreground mx-0.5">/</span>
-                        <span title="Bình luận">💬{user.comments_count}</span>
+                        <span title={t("usrCommentsTitle")}>💬{user.comments_count}</span>
                       </TableCell>
                       <TableCell className="hidden lg:table-cell">
                         <div className="text-xs">
@@ -522,19 +527,19 @@ const Users = () => {
       <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Xoá tài khoản @{deleteTarget?.username}?</AlertDialogTitle>
+            <AlertDialogTitle>{t('usrDeleteDialogA')}{deleteTarget?.username}?</AlertDialogTitle>
             <AlertDialogDescription>
-              Hành động này sẽ xoá vĩnh viễn tài khoản và tất cả dữ liệu liên quan. Không thể hoàn tác.
+              {t('usrDeleteDialogDesc')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>Huỷ</AlertDialogCancel>
+            <AlertDialogCancel disabled={isDeleting}>{t('usrCancel')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
               disabled={isDeleting}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {isDeleting ? 'Đang xoá...' : 'Xoá vĩnh viễn'}
+              {isDeleting ? t('usrDeleting') : t('usrDeleteForever')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -545,20 +550,20 @@ const Users = () => {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              {actionTarget?.type === 'ban' ? `Cấm vĩnh viễn @${actionTarget?.username}?` :
-               actionTarget?.type === 'suspend' ? `Đình chỉ @${actionTarget?.username}?` :
-               actionTarget?.type === 'unban' ? `Bỏ cấm @${actionTarget?.username}?` :
-               `Mở khóa @${actionTarget?.username}?`}
+              {actionTarget?.type === 'ban' ? `${t('usrBanQ')}${actionTarget?.username}?` :
+               actionTarget?.type === 'suspend' ? `${t('usrSuspendQ')}${actionTarget?.username}?` :
+               actionTarget?.type === 'unban' ? `${t('usrUnbanQ')}${actionTarget?.username}?` :
+               `${t('usrUnlockQ')}${actionTarget?.username}?`}
             </AlertDialogTitle>
             <AlertDialogDescription>
-              {actionTarget?.type === 'ban' ? 'Tài khoản sẽ bị cấm vĩnh viễn, ví sẽ bị blacklist. Không thể hoàn tác.' :
-               actionTarget?.type === 'suspend' ? 'Tài khoản sẽ bị đình chỉ, tạm dừng nhận thưởng.' :
-               actionTarget?.type === 'unban' ? 'Tài khoản sẽ được bỏ cấm, ví sẽ được gỡ khỏi blacklist và có thể hoạt động trở lại.' :
-               'Tài khoản sẽ được mở khóa và có thể nhận thưởng trở lại.'}
+              {actionTarget?.type === 'ban' ? t('usrBanDesc') :
+               actionTarget?.type === 'suspend' ? t('usrSuspendDesc') :
+               actionTarget?.type === 'unban' ? t('usrUnbanDesc') :
+               t('usrUnlockDesc')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isActioning}>Huỷ</AlertDialogCancel>
+            <AlertDialogCancel disabled={isActioning}>{t('usrCancel')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleStatusAction}
               disabled={isActioning}
@@ -566,10 +571,10 @@ const Users = () => {
                          actionTarget?.type === 'suspend' ? 'bg-orange-600 text-white hover:bg-orange-700' :
                          'bg-emerald-600 text-white hover:bg-emerald-700'}
             >
-              {isActioning ? 'Đang xử lý...' :
-               actionTarget?.type === 'ban' ? 'Cấm vĩnh viễn' :
-               actionTarget?.type === 'suspend' ? 'Đình chỉ' :
-               actionTarget?.type === 'unban' ? 'Bỏ cấm' : 'Mở khóa'}
+              {isActioning ? t('capRevoking') :
+               actionTarget?.type === 'ban' ? t('usrBanBtn') :
+               actionTarget?.type === 'suspend' ? t('usrSuspend') :
+               actionTarget?.type === 'unban' ? t('usrUnbanBtn') : t('usrUnlock')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

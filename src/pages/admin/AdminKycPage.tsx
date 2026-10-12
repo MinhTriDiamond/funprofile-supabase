@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useLanguage } from '@/i18n/LanguageContext';
 import { useNavigate } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -55,6 +56,7 @@ function SummaryCard({ label, value, accent }: { label: string; value: number; a
 }
 
 export default function AdminKycPage() {
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const { isAdmin, isLoading: roleLoading } = useAdminRole();
 
@@ -72,7 +74,7 @@ export default function AdminKycPage() {
     return (
       <div className="p-6 max-w-md mx-auto">
         <Card className="p-6 text-center">
-          <p className="text-muted-foreground">Bạn không có quyền truy cập trang này.</p>
+          <p className="text-muted-foreground">{t('kycNoAccess')}</p>
         </Card>
       </div>
     );
@@ -92,12 +94,12 @@ export default function AdminKycPage() {
         </Button>
         <div>
           <h1 className="text-xl md:text-2xl font-semibold">KYC Dashboard</h1>
-          <p className="text-xs text-muted-foreground">Phase B — read-only. Không nâng Trust/Tier/SBT từ đây.</p>
+          <p className="text-xs text-muted-foreground">{t('kycPhaseNote')}</p>
         </div>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <SummaryCard label="Tổng applicants" value={Number(summary.total_applicants ?? 0)} />
+        <SummaryCard label={t('kycTotalApplicants')} value={Number(summary.total_applicants ?? 0)} />
         <SummaryCard label="Approved" value={Number(summary.approved ?? 0)} accent="text-emerald-600 dark:text-emerald-400" />
         <SummaryCard label="In review" value={Number(summary.in_review ?? 0)} accent="text-blue-600 dark:text-blue-400" />
         <SummaryCard label="Rejected" value={Number(summary.rejected ?? 0)} accent="text-rose-600 dark:text-rose-400" />
@@ -107,7 +109,7 @@ export default function AdminKycPage() {
         <div className="flex flex-wrap gap-2 items-center">
           <div className="flex-1 min-w-[200px] flex gap-2">
             <Input
-              placeholder="Tìm theo Applicant ID..."
+              placeholder={t('kycSearchPlaceholder')}
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && applySearch()}
@@ -122,7 +124,7 @@ export default function AdminKycPage() {
           >
             <SelectTrigger className="w-[140px]"><SelectValue placeholder="Status" /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Tất cả status</SelectItem>
+              <SelectItem value="all">{t('kycAllStatus')}</SelectItem>
               <SelectItem value="approved">Approved</SelectItem>
               <SelectItem value="in_review">In review</SelectItem>
               <SelectItem value="pending">Pending</SelectItem>
@@ -136,7 +138,7 @@ export default function AdminKycPage() {
           >
             <SelectTrigger className="w-[140px]"><SelectValue placeholder="Env" /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Tất cả env</SelectItem>
+              <SelectItem value="all">{t('kycAllEnv')}</SelectItem>
               <SelectItem value="sandbox">Sandbox</SelectItem>
               <SelectItem value="production">Production</SelectItem>
             </SelectContent>
@@ -150,8 +152,8 @@ export default function AdminKycPage() {
             <SelectTrigger className="w-[140px]"><SelectValue placeholder="Test?" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Test + Real</SelectItem>
-              <SelectItem value="true">Chỉ test users</SelectItem>
-              <SelectItem value="false">Chỉ real users</SelectItem>
+              <SelectItem value="true">{t('kycOnlyTest')}</SelectItem>
+              <SelectItem value="false">{t('kycOnlyReal')}</SelectItem>
             </SelectContent>
           </Select>
           <label className="flex items-center gap-2 text-xs cursor-pointer">
@@ -159,7 +161,7 @@ export default function AdminKycPage() {
               checked={!!filters.mismatch_only}
               onCheckedChange={(v) => setFilters((f) => ({ ...f, mismatch_only: !!v, page: 1 }))}
             />
-            Chỉ doc mismatch
+            {t('kycOnlyMismatch')}
           </label>
           <Button variant="outline" size="sm" onClick={() => refetch()}>Refresh</Button>
         </div>
@@ -185,7 +187,7 @@ export default function AdminKycPage() {
               <TableRow><TableCell colSpan={9}><Skeleton className="h-8 w-full" /></TableCell></TableRow>
             )}
             {!isLoading && items.length === 0 && (
-              <TableRow><TableCell colSpan={9} className="text-center text-muted-foreground py-8">Không có dữ liệu</TableCell></TableRow>
+              <TableRow><TableCell colSpan={9} className="text-center text-muted-foreground py-8">{t('kycNoData')}</TableCell></TableRow>
             )}
             {items.map((row) => (
               <TableRow key={row.id} className="cursor-pointer" onClick={() => setSelected(row)}>
@@ -199,7 +201,7 @@ export default function AdminKycPage() {
                     className="flex items-center gap-1 text-xs font-mono hover:text-primary"
                     onClick={(e) => {
                       e.stopPropagation();
-                      copyToClipboard(row.provider_applicant_id ?? '').then(() => toast.success('Đã copy'));
+                      copyToClipboard(row.provider_applicant_id ?? '').then(() => toast.success(t('kycCopied')));
                     }}
                   >
                     {row.provider_applicant_id?.slice(0, 10)}…
@@ -243,7 +245,7 @@ export default function AdminKycPage() {
       </Card>
 
       <div className="flex items-center justify-between text-xs text-muted-foreground">
-        <span>Tổng {total.toLocaleString()} • Trang {filters.page ?? 1}</span>
+        <span>{t('kycTotalPrefix')}{total.toLocaleString()}{t('kycPageMid')}{filters.page ?? 1}</span>
         <div className="flex gap-2">
           <Button
             variant="outline" size="sm"
@@ -261,7 +263,7 @@ export default function AdminKycPage() {
       <Sheet open={!!selected} onOpenChange={(o) => !o && setSelected(null)}>
         <SheetContent className="w-full sm:max-w-2xl overflow-y-auto">
           <SheetHeader>
-            <SheetTitle>Chi tiết xác minh</SheetTitle>
+            <SheetTitle>{t('kycSheetTitle')}</SheetTitle>
           </SheetHeader>
           {selected && (
             <div className="mt-4 space-y-4">
@@ -318,7 +320,7 @@ export default function AdminKycPage() {
                 </div>
                 {selected.is_test_verification && (
                   <p className="mt-2 text-[11px] text-muted-foreground">
-                    ⚠ Sandbox: kết quả chỉ kiểm thử kỹ thuật, không có giá trị xác minh thật và không nâng Trust/Tier/SBT.
+                    {t('kycSandboxWarn')}
                   </p>
                 )}
               </Card>
@@ -344,7 +346,7 @@ export default function AdminKycPage() {
                         </Card>
                       ))}
                       {!detail.isLoading && (detail.data?.events ?? []).length === 0 && (
-                        <p className="text-xs text-muted-foreground text-center py-4">Chưa có event</p>
+                        <p className="text-xs text-muted-foreground text-center py-4">{t('kycNoEvents')}</p>
                       )}
                     </div>
                   </ScrollArea>
@@ -365,7 +367,7 @@ export default function AdminKycPage() {
                         </Card>
                       ))}
                       {!detail.isLoading && (detail.data?.audits ?? []).length === 0 && (
-                        <p className="text-xs text-muted-foreground text-center py-4">Chưa có audit log</p>
+                        <p className="text-xs text-muted-foreground text-center py-4">{t('kycNoAudit')}</p>
                       )}
                     </div>
                   </ScrollArea>
