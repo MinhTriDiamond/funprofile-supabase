@@ -15,8 +15,8 @@
 
 set -euo pipefail
 
-SUPABASE_URL="https://bhtsnervqiwchluwuxki.supabase.co"
-ANON_KEY="sb_publishable_2O67-byTv7js8tDjj7HGxg_hiFQ3WkI"
+SUPABASE_URL="${FUN_SOURCE_SUPABASE_URL:-https://bhtsnervqiwchluwuxki.supabase.co}"
+ANON_KEY="${FUN_SOURCE_ANON_KEY:?❌ Thiếu biến môi trường FUN_SOURCE_ANON_KEY.}"
 
 if [[ -z "${FUN_JWT:-}" ]]; then
   echo "❌ Thiếu biến môi trường FUN_JWT." >&2
@@ -43,10 +43,19 @@ SQL="$*"
 # Tạo JSON payload an toàn bằng python (có sẵn ở mọi máy)
 PAYLOAD=$(python3 -c "import json,sys; print(json.dumps({'sql': sys.argv[1], 'mode': sys.argv[2]}))" "$SQL" "$MODE")
 
-curl -sS -X POST \
-  "$SUPABASE_URL/functions/v1/admin-sql" \
-  -H "Authorization: Bearer $FUN_JWT" \
-  -H "apikey: $ANON_KEY" \
-  -H "Content-Type: application/json" \
-  "${EXTRA_HEADER[@]}" \
-  -d "$PAYLOAD" | python3 -m json.tool
+if [[ "$MODE" == "write" ]]; then
+  curl -sS -X POST \
+    "$SUPABASE_URL/functions/v1/admin-sql" \
+    -H "Authorization: Bearer $FUN_JWT" \
+    -H "apikey: $ANON_KEY" \
+    -H "Content-Type: application/json" \
+    -H "x-admin-confirm: yes" \
+    -d "$PAYLOAD" | python3 -m json.tool
+else
+  curl -sS -X POST \
+    "$SUPABASE_URL/functions/v1/admin-sql" \
+    -H "Authorization: Bearer $FUN_JWT" \
+    -H "apikey: $ANON_KEY" \
+    -H "Content-Type: application/json" \
+    -d "$PAYLOAD" | python3 -m json.tool
+fi
