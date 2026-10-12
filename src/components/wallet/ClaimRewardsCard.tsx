@@ -19,18 +19,18 @@ interface ClaimRewardsCardProps {
 const getEpochStatusInfo = (status: string | undefined) => {
   switch (status) {
     case 'snapshot':
-      return { label: 'Sẵn sàng claim', color: 'bg-green-50 text-green-700 border-green-200 dark:bg-green-950/30 dark:text-green-400 dark:border-green-800', emoji: '✅' };
+      return { labelKey: 'walletReadyToClaim', color: 'bg-green-50 text-green-700 border-green-200 dark:bg-green-950/30 dark:text-green-400 dark:border-green-800', emoji: '✅' };
     case 'finalized':
-      return { label: 'Đã hoàn tất', color: 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/30 dark:text-blue-400 dark:border-blue-800', emoji: '🔒' };
+      return { labelKey: 'crcEpochFinalized', color: 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/30 dark:text-blue-400 dark:border-blue-800', emoji: '🔒' };
     default:
-      return { label: 'Đang tích lũy', color: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-800', emoji: '⏳' };
+      return { labelKey: 'crcEpochAccumulating', color: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-800', emoji: '⏳' };
   }
 };
 
-const formatMonth = (epochMonth: string) => {
+const formatMonth = (epochMonth: string, t: (key: string, params?: Record<string, string | number>) => string) => {
   if (!epochMonth) return '';
   const [y, m] = epochMonth.split('-');
-  return `T${parseInt(m)}/${y}`;
+  return t('crcMonthShort', { month: parseInt(m), year: y });
 };
 
 const EpochBlock = ({ epochData, onClaim, isClaiming, hasLinkedWallet }: { epochData: EpochWithAllocation; onClaim: (id: string) => void; isClaiming: boolean; hasLinkedWallet: boolean }) => {
@@ -49,9 +49,9 @@ const EpochBlock = ({ epochData, onClaim, isClaiming, hasLinkedWallet }: { epoch
     <div className="rounded-lg border border-border p-3.5 space-y-3">
       <div className="flex items-center gap-2">
         <TrendingUp className="w-4 h-4 text-muted-foreground" />
-        <span className="font-semibold text-sm text-foreground">{formatMonth(epoch.epoch_month)}</span>
+        <span className="font-semibold text-sm text-foreground">{formatMonth(epoch.epoch_month, t)}</span>
         <Badge variant="outline" className={`${epochStatus.color} text-[10px]`}>
-          {epochStatus.emoji} {epochStatus.label}
+          {epochStatus.emoji} {t(epochStatus.labelKey)}
         </Badge>
       </div>
 
@@ -76,23 +76,23 @@ const EpochBlock = ({ epochData, onClaim, isClaiming, hasLinkedWallet }: { epoch
         <div className="border-t border-border pt-3 space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <div className="text-[11px] text-muted-foreground">Light Score của bạn</div>
+              <div className="text-[11px] text-muted-foreground">{t('crcYourLightScore')}</div>
               <div className="text-lg font-bold text-foreground">{formatFUN(allocation.light_score_total)}</div>
             </div>
             <div>
-              <div className="text-[11px] text-muted-foreground">Tỷ lệ</div>
+              <div className="text-[11px] text-muted-foreground">{t('crcSharePercent')}</div>
               <div className="text-lg font-bold text-foreground">{allocation.share_percent.toFixed(2)}%</div>
             </div>
           </div>
 
           {!allocation.is_eligible && (
             <div className="bg-destructive/10 border border-destructive/20 rounded-md p-2.5 text-sm text-destructive">
-              ⚠️ Không đủ điều kiện: {allocation.reason_codes.join(', ')}
+              {t('crcNotEligible', { reasons: allocation.reason_codes.join(', ') })}
             </div>
           )}
 
           <div className="flex items-center justify-between bg-primary/5 rounded-lg p-3 border border-primary/10">
-            <span className="font-semibold text-sm text-foreground">FUN phân bổ:</span>
+            <span className="font-semibold text-sm text-foreground">{t('crcFunAllocated')}</span>
             <div className="flex items-center gap-2">
               <img src={funLogo} alt="FUN" className="w-5 h-5 rounded-full" />
               <span className="text-xl font-bold text-amber-600">{formatFUN(allocation.allocation_amount_capped)} FUN</span>
@@ -102,7 +102,7 @@ const EpochBlock = ({ epochData, onClaim, isClaiming, hasLinkedWallet }: { epoch
           {isMinted ? (
             <div className="text-center py-2 space-y-1.5">
               <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-800">
-                <CheckCircle2 className="w-3 h-3 mr-1" /> Đã mint thành công lên blockchain
+                <CheckCircle2 className="w-3 h-3 mr-1" /> {t('crcMintedSuccess')}
               </Badge>
               {allocation?.mint_tx_hash && (
                 <a
@@ -110,21 +110,21 @@ const EpochBlock = ({ epochData, onClaim, isClaiming, hasLinkedWallet }: { epoch
                   target="_blank" rel="noopener noreferrer"
                   className="inline-flex items-center gap-1 text-[11px] text-primary hover:underline"
                 >
-                  Xem giao dịch <ExternalLink className="w-3 h-3" />
+                  {t('viewTransaction')} <ExternalLink className="w-3 h-3" />
                 </a>
               )}
             </div>
           ) : isOnChainPending ? (
             <div className="text-center py-2">
               <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/30 dark:text-blue-400 dark:border-blue-800">
-                <Loader2 className="w-3 h-3 mr-1 animate-spin" /> Đang gửi lên blockchain...
+                <Loader2 className="w-3 h-3 mr-1 animate-spin" /> {t('crcSendingToChain')}
               </Badge>
             </div>
           ) : isMintFailed ? (
             <div className="space-y-2">
               <div className="text-center">
                 <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-800">
-                  <AlertTriangle className="w-3 h-3 mr-1" /> Lệnh mint cũ đã hủy — vui lòng claim lại
+                  <AlertTriangle className="w-3 h-3 mr-1" /> {t('crcMintCancelled')}
                 </Badge>
               </div>
               {hasLinkedWallet ? (
@@ -136,13 +136,13 @@ const EpochBlock = ({ epochData, onClaim, isClaiming, hasLinkedWallet }: { epoch
                   {isClaiming ? (
                     <><Loader2 className="w-4 h-4 mr-2 animate-spin" />{t('walletProcessing')}</>
                   ) : (
-                    <><Rocket className="w-4 h-4 mr-2" />Claim lại {formatFUN(allocation!.allocation_amount_capped)} FUN</>
+                    <><Rocket className="w-4 h-4 mr-2" />{t('crcClaimAgain', { amount: formatFUN(allocation!.allocation_amount_capped) })}</>
                   )}
                 </Button>
               ) : (
                 <Link to="/wallet/asset" className="block">
                   <Button variant="outline" size="sm" className="w-full border-amber-400 text-amber-800 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/40">
-                    <WalletIcon className="w-3.5 h-3.5 mr-2" /> Liên kết ví ngay để claim lại
+                    <WalletIcon className="w-3.5 h-3.5 mr-2" /> {t('crcLinkWalletClaimAgain')}
                   </Button>
                 </Link>
               )}
@@ -150,7 +150,7 @@ const EpochBlock = ({ epochData, onClaim, isClaiming, hasLinkedWallet }: { epoch
           ) : isAwaitingSig ? (
             <div className="text-center py-2">
               <Badge variant="outline" className="bg-violet-50 text-violet-700 border-violet-200 dark:bg-violet-950/30 dark:text-violet-400 dark:border-violet-800">
-                <Clock className="w-3 h-3 mr-1" /> Đã claim — chờ Admin ký ({sigCount}/3)
+                <Clock className="w-3 h-3 mr-1" /> {t('crcAwaitingSignature', { signed: sigCount })}
               </Badge>
             </div>
           ) : canClaim ? (
@@ -163,7 +163,7 @@ const EpochBlock = ({ epochData, onClaim, isClaiming, hasLinkedWallet }: { epoch
                 {isClaiming ? (
                   <><Loader2 className="w-4 h-4 mr-2 animate-spin" />{t('walletProcessing')}</>
                 ) : (
-                  <><Rocket className="w-4 h-4 mr-2" />Claim {formatFUN(allocation.allocation_amount_capped)} FUN</>
+                  <><Rocket className="w-4 h-4 mr-2" />{t('crcClaimFun', { amount: formatFUN(allocation.allocation_amount_capped) })}</>
                 )}
               </Button>
             ) : (
@@ -171,12 +171,12 @@ const EpochBlock = ({ epochData, onClaim, isClaiming, hasLinkedWallet }: { epoch
                 <div className="flex items-start gap-2 text-xs text-amber-800 dark:text-amber-300 leading-relaxed">
                   <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
                   <div>
-                    <strong>Chưa thể mint on-chain.</strong> Bạn đang có <strong>{formatFUN(allocation.allocation_amount_capped)} FUN</strong> đã được phân bổ, nhưng cần liên kết ví Web3 (MetaMask/Trust) trên mạng <strong>BSC</strong> để nhận token thật. FUN được đúc trực tiếp vào ví on-chain — không có ví thì không có địa chỉ đích để mint.
+                    <strong>{t('crcMintBlockedTitle')}</strong>{t('crcMintBlockedBefore')}<strong>{formatFUN(allocation.allocation_amount_capped)} FUN</strong>{t('crcMintBlockedMid')}<strong>BSC</strong>{t('crcMintBlockedAfter')}
                   </div>
                 </div>
                 <Link to="/wallet/asset" className="block">
                   <Button variant="outline" size="sm" className="w-full border-amber-400 text-amber-800 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/40">
-                    <WalletIcon className="w-3.5 h-3.5 mr-2" /> Liên kết ví ngay để claim
+                    <WalletIcon className="w-3.5 h-3.5 mr-2" /> {t('crcLinkWalletToClaim')}
                   </Button>
                 </Link>
               </div>
@@ -184,7 +184,7 @@ const EpochBlock = ({ epochData, onClaim, isClaiming, hasLinkedWallet }: { epoch
           ) : null}
         </div>
       ) : (
-        <p className="text-center py-2 text-sm text-muted-foreground">Không có allocation trong epoch này.</p>
+        <p className="text-center py-2 text-sm text-muted-foreground">{t('crcNoAllocation')}</p>
       )}
     </div>
   );
@@ -272,7 +272,7 @@ export const ClaimRewardsCard = ({ onClaimSuccess }: ClaimRewardsCardProps) => {
           return (
             <MintBlockedAlert
               reason="SOFT_CEILING"
-              message="Allocation bị cắt theo SoftCeiling tháng"
+              message={t('crcSoftCeilingCut')}
               rawAmount={cutAlloc.allocation_amount}
               cappedAmount={cutAlloc.allocation_amount_capped}
               softCeiling={CASCADE_CONFIG.softCeiling}
@@ -285,14 +285,14 @@ export const ClaimRewardsCard = ({ onClaimSuccess }: ClaimRewardsCardProps) => {
           <div className="rounded-lg border border-amber-300 dark:border-amber-800 bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/20 p-3.5 space-y-2.5">
             <div className="flex items-center gap-2">
               <WalletIcon className="w-4 h-4 text-amber-700 dark:text-amber-400" />
-              <span className="font-semibold text-sm text-amber-900 dark:text-amber-200">Bạn có {formatFUN(totalPendingFun)} FUN đang chờ mint</span>
+              <span className="font-semibold text-sm text-amber-900 dark:text-amber-200">{t('crcPendingMintTitle', { amount: formatFUN(totalPendingFun) })}</span>
             </div>
             <p className="text-xs text-amber-800 dark:text-amber-300 leading-relaxed">
-              Hệ thống đã <strong>phân bổ FUN</strong> dựa trên Light Score của bạn. Tuy nhiên, FUN là token thật trên blockchain <strong>BSC</strong> — cần một <strong>địa chỉ ví Web3</strong> để hệ thống đúc token vào. Bạn chưa liên kết ví, nên FUN tạm giữ ở dạng <em>quyền nhận</em> (allocation) và sẽ được mint ngay sau khi bạn liên kết ví.
+              {t('crcPendingMintBefore')}<strong>{t('crcAllocatedFunStrong')}</strong>{t('crcPendingMintMid1')}<strong>BSC</strong>{t('crcPendingMintMid2')}<strong>{t('crcWeb3WalletAddressStrong')}</strong>{t('crcPendingMintMid3')}<em>{t('crcClaimRightEm')}</em>{t('crcPendingMintAfter')}
             </p>
             <Link to="/wallet/asset">
               <Button size="sm" className="w-full bg-amber-600 hover:bg-amber-700 text-white">
-                <WalletIcon className="w-3.5 h-3.5 mr-2" /> Liên kết ví Web3 ngay
+                <WalletIcon className="w-3.5 h-3.5 mr-2" /> {t('crcLinkWeb3WalletNow')}
               </Button>
             </Link>
           </div>
@@ -302,9 +302,9 @@ export const ClaimRewardsCard = ({ onClaimSuccess }: ClaimRewardsCardProps) => {
         <div className="rounded-lg border border-border p-3.5 space-y-3">
           <div className="flex items-center gap-2">
             <Calendar className="w-4 h-4 text-muted-foreground" />
-            <span className="font-semibold text-sm text-foreground">{formatMonth(currentMonth.epoch_month)}</span>
+            <span className="font-semibold text-sm text-foreground">{formatMonth(currentMonth.epoch_month, t)}</span>
             <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-800 text-[10px]">
-              ⏳ Đang tích lũy
+              ⏳ {t('crcEpochAccumulating')}
             </Badge>
           </div>
           <div className="grid grid-cols-2 gap-3">
@@ -318,7 +318,7 @@ export const ClaimRewardsCard = ({ onClaimSuccess }: ClaimRewardsCardProps) => {
             </div>
           </div>
           <div className="rounded-md bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/40 p-2.5 text-xs text-amber-800 dark:text-amber-300 leading-relaxed">
-            🌙 Chu kỳ tháng này đang diễn ra — phân bổ FUN sẽ chính thức mở vào <strong>ngày 01 tháng sau</strong> nhé bạn! Mọi Light Score bạn tích lũy đến cuối tháng đều được tính đầy đủ. 💛
+            {t('crcCycleNoteBefore')}<strong>{t('crcCycleNoteStrong')}</strong>{t('crcCycleNoteAfter')}
           </div>
         </div>
 
@@ -330,8 +330,8 @@ export const ClaimRewardsCard = ({ onClaimSuccess }: ClaimRewardsCardProps) => {
         ) : (
           <div className="text-center py-8">
             <Gift className="w-10 h-10 mx-auto text-muted-foreground/40 mb-3" />
-            <p className="text-sm text-muted-foreground">Chưa có epoch nào được snapshot</p>
-            <p className="text-xs text-muted-foreground mt-1">Tiếp tục tích lũy Light Score.</p>
+            <p className="text-sm text-muted-foreground">{t('crcNoEpochSnapshot')}</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('crcKeepEarning')}</p>
           </div>
         )}
       </CardContent>

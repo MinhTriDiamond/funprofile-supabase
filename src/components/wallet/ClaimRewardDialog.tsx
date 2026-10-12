@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useLanguage } from '@/i18n/LanguageContext';
 import {
   Dialog,
   DialogContent,
@@ -38,6 +39,7 @@ export const ClaimRewardDialog = ({
   rewardStatus = 'pending',
   onSuccess,
 }: ClaimRewardDialogProps) => {
+  const { t } = useLanguage();
   const [amount, setAmount] = useState('');
   const [step, setStep] = useState<ClaimStep>('input');
 
@@ -53,7 +55,7 @@ export const ClaimRewardDialog = ({
 
   const formatNumber = (num: number) => num.toLocaleString('vi-VN');
   const formatUsd = (num: number) =>
-    camlyPrice === null ? 'Chưa có giá' : `$${(num * camlyPrice).toFixed(2)}`;
+    camlyPrice === null ? t('ggsNoPrice') : `$${(num * camlyPrice).toFixed(2)}`;
 
   const dailyRemaining = Math.max(0, DAILY_CLAIM_CAP - dailyClaimed);
   const maxClaimable = Math.min(claimableAmount, dailyRemaining);
@@ -93,16 +95,16 @@ export const ClaimRewardDialog = ({
           Claim CAMLY Rewards
         </DialogTitle>
         <DialogDescription>
-          Gửi yêu cầu rút thưởng CAMLY — Admin sẽ duyệt và chuyển token vào ví bạn
+          {t('crdDialogDesc')}
         </DialogDescription>
       </DialogHeader>
 
       {rewardStatus !== 'approved' && (
         <div className="bg-yellow-50 border-2 border-yellow-300 rounded-xl p-4 my-4 text-center">
           <div className="text-3xl mb-2">⏳</div>
-          <p className="font-bold text-yellow-700 text-base mb-1">Chờ Admin xét duyệt</p>
+          <p className="font-bold text-yellow-700 text-base mb-1">{t('crdWaitingTitle')}</p>
           <p className="text-yellow-600 text-sm">
-            Tài khoản của bạn cần được Admin duyệt trước khi có thể claim phần thưởng. Vui lòng chờ hoặc liên hệ Admin.
+            {t('crdWaitingDesc')}
           </p>
         </div>
       )}
@@ -110,7 +112,7 @@ export const ClaimRewardDialog = ({
       {rewardStatus === 'approved' && (
         <div className="space-y-6 py-4">
           <div className="bg-gradient-to-r from-yellow-50 to-amber-50 border border-yellow-200 rounded-xl p-4">
-            <p className="text-sm text-yellow-700 mb-1">Số dư khả dụng</p>
+            <p className="text-sm text-yellow-700 mb-1">{t('crdAvailableBalance')}</p>
             <p className="text-2xl font-bold text-yellow-800">
               {formatNumber(claimableAmount)} CAMLY
             </p>
@@ -119,7 +121,7 @@ export const ClaimRewardDialog = ({
 
           <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4">
             <div className="flex justify-between items-center mb-2">
-              <p className="text-sm text-blue-700">Đã claim hôm nay</p>
+              <p className="text-sm text-blue-700">{t('crdClaimedToday')}</p>
               <p className="text-sm font-semibold text-blue-800">{formatNumber(dailyClaimed)} / {formatNumber(DAILY_CLAIM_CAP)}</p>
             </div>
             <div className="w-full bg-blue-100 rounded-full h-2 mb-2">
@@ -129,20 +131,20 @@ export const ClaimRewardDialog = ({
               />
             </div>
             <p className="text-sm text-blue-600">
-              Còn được claim hôm nay: <span className="font-bold">{formatNumber(dailyRemaining)} CAMLY</span>
+              {t('crdRemainingToday')}<span className="font-bold">{formatNumber(dailyRemaining)} CAMLY</span>
             </p>
             {dailyRemaining <= 0 && (
-              <p className="text-sm text-red-500 font-medium mt-1">⚠️ Đã hết giới hạn claim hôm nay</p>
+              <p className="text-sm text-red-500 font-medium mt-1">{t('crdDailyLimitReached')}</p>
             )}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="amount">Số lượng claim</Label>
+            <Label htmlFor="amount">{t('crdAmountLabel')}</Label>
             <div className="relative">
               <Input
                 id="amount"
                 type="text"
-                placeholder="Nhập số lượng CAMLY"
+                placeholder={t('crdAmountPlaceholder')}
                 value={amount ? formatNumber(Number(amount)) : ''}
                 onChange={(e) => handleAmountChange(e.target.value.replace(/\./g, ''))}
                 className="pr-16 text-lg font-medium"
@@ -162,14 +164,14 @@ export const ClaimRewardDialog = ({
             )}
             {amount && Number(amount) > maxClaimable && (
               <p className="text-sm text-red-500">
-                {Number(amount) > claimableAmount ? 'Vượt quá số dư khả dụng' : 'Vượt quá giới hạn claim hôm nay'}
+                {Number(amount) > claimableAmount ? t('crdExceedBalance') : t('crdExceedDailyLimit')}
               </p>
             )}
           </div>
 
           {externalWallet ? (
             <div className="space-y-2">
-              <Label>Ví nhận</Label>
+              <Label>{t('crdReceivingWallet')}</Label>
               <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg border">
                 <Wallet className="w-5 h-5 text-amber-600" />
                 <span className="text-sm font-mono">
@@ -179,20 +181,20 @@ export const ClaimRewardDialog = ({
             </div>
           ) : (
             <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-center">
-              <p className="text-sm text-red-600">Vui lòng kết nối ví để claim reward</p>
+              <p className="text-sm text-red-600">{t('crdConnectWalletPrompt')}</p>
             </div>
           )}
 
           <div className="flex items-center gap-2 text-sm text-muted-foreground bg-gray-50 rounded-lg p-3">
             <Wallet className="w-4 h-4" />
-            <span>Mạng: BNB Smart Chain (BSC)</span>
+            <span>{t('crdNetworkLabel')}</span>
           </div>
         </div>
       )}
 
       <div className="flex gap-3">
         <Button variant="outline" onClick={() => onOpenChange(false)} className="flex-1">
-          {rewardStatus === 'approved' ? 'Hủy' : 'Đóng'}
+          {rewardStatus === 'approved' ? t('cancel') : t('close')}
         </Button>
         {rewardStatus === 'approved' && (
           <Button
@@ -201,7 +203,7 @@ export const ClaimRewardDialog = ({
             className="flex-1 bg-gradient-to-r from-yellow-500 to-amber-500 hover:from-yellow-600 hover:to-amber-600 text-white"
           >
             <Gift className="w-4 h-4 mr-2" />
-            Gửi yêu cầu Claim
+            {t('crdSubmitClaim')}
           </Button>
         )}
       </div>
@@ -213,9 +215,9 @@ export const ClaimRewardDialog = ({
       <div className="w-20 h-20 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-6 animate-pulse">
         <Loader2 className="w-10 h-10 text-yellow-600 animate-spin" />
       </div>
-      <h3 className="text-xl font-semibold mb-2">Đang gửi yêu cầu...</h3>
+      <h3 className="text-xl font-semibold mb-2">{t('crsSendingRequest')}</h3>
       <p className="text-muted-foreground mb-4">
-        Vui lòng chờ trong khi hệ thống xử lý yêu cầu claim của bạn
+        {t('crdWaitingProcessDesc')}
       </p>
       <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
         <div className="w-2 h-2 bg-yellow-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
@@ -230,23 +232,23 @@ export const ClaimRewardDialog = ({
       <div className="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-6">
         <Clock className="w-12 h-12 text-amber-600" />
       </div>
-      <h3 className="text-xl font-semibold text-amber-700 mb-2">⏳ Chờ Admin Duyệt</h3>
+      <h3 className="text-xl font-semibold text-amber-700 mb-2">{t('crdPendingTitle')}</h3>
       <p className="text-muted-foreground mb-4">
-        Yêu cầu claim <span className="font-bold text-amber-700">{formatNumber(result?.amount || 0)} CAMLY</span> đã được gửi thành công!
+        {t('crdClaimSentBefore')}<span className="font-bold text-amber-700">{formatNumber(result?.amount || 0)} CAMLY</span>{t('crdClaimSentAfter')}
       </p>
       <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mx-4 mb-6 text-left">
-        <p className="text-sm text-amber-800 mb-2">📋 <strong>Tiếp theo:</strong></p>
+        <p className="text-sm text-amber-800 mb-2">📋 <strong>{t('crdNextSteps')}</strong></p>
         <ul className="text-sm text-amber-700 space-y-1">
-          <li>• Admin sẽ xem xét và duyệt yêu cầu của bạn</li>
-          <li>• Sau khi được duyệt, CAMLY sẽ được gửi vào ví của bạn</li>
-          <li>• Bạn sẽ nhận thông báo khi giao dịch hoàn tất</li>
+          <li>{t('crdNextStep1')}</li>
+          <li>{t('crdNextStep2')}</li>
+          <li>{t('crdNextStep3')}</li>
         </ul>
       </div>
       <Button
         onClick={handleClose}
         className="w-full bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-white font-bold"
       >
-        Đã hiểu, đóng
+        {t('crdUnderstoodClose')}
       </Button>
     </div>
   );
@@ -256,13 +258,13 @@ export const ClaimRewardDialog = ({
       <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
         <AlertCircle className="w-12 h-12 text-red-600" />
       </div>
-      <h3 className="text-xl font-semibold text-red-700 mb-2">Gửi yêu cầu chưa thành công</h3>
+      <h3 className="text-xl font-semibold text-red-700 mb-2">{t('crdErrorTitle')}</h3>
       <p className="text-muted-foreground mb-6">
-        {error || 'Đã xảy ra sự cố, vui lòng thử lại sau'}
+        {error || t('crdErrorFallback')}
       </p>
       <div className="flex gap-3">
-        <Button variant="outline" onClick={() => onOpenChange(false)} className="flex-1">Đóng</Button>
-        <Button onClick={() => setStep('input')} className="flex-1">Thử lại</Button>
+        <Button variant="outline" onClick={() => onOpenChange(false)} className="flex-1">{t('close')}</Button>
+        <Button onClick={() => setStep('input')} className="flex-1">{t('walletRetry')}</Button>
       </div>
     </div>
   );

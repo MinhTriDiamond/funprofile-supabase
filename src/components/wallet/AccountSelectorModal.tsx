@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useLanguage } from '@/i18n/LanguageContext';
 import { useBalance } from 'wagmi';
 import { bsc } from 'wagmi/chains';
 import { useActiveAccount } from '@/contexts/ActiveAccountContext';
@@ -60,6 +61,7 @@ function AccountRow({
   isActive: boolean;
   onSelect: () => void;
 }) {
+  const { t } = useLanguage();
   const shortened = `${address.slice(0, 6)}...${address.slice(-4)}`.toUpperCase();
 
   // Lazy-load balance BNB native
@@ -93,7 +95,7 @@ function AccountRow({
           <span className="font-mono text-sm font-medium text-gray-900">{shortened}</span>
           {isActive && (
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-xs font-medium">
-              <Check className="w-3 h-3" /> Đang dùng
+              <Check className="w-3 h-3" /> {t('asmActiveBadge')}
             </span>
           )}
         </div>
@@ -111,6 +113,7 @@ function AccountRow({
 
 // ---- Nội dung chính ----
 function SelectorContent({ onClose }: { onClose: () => void }) {
+  const { t } = useLanguage();
   const { accounts, activeAddress, lastUsedAt, setActiveAddress, refreshAccounts, isLoadingAccounts } = useActiveAccount();
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedSearch = useDebounce(searchQuery, 300);
@@ -131,9 +134,9 @@ function SelectorContent({ onClose }: { onClose: () => void }) {
   const handleSelect = useCallback((address: string) => {
     setActiveAddress(address);
     const short = `${address.slice(0, 6)}...${address.slice(-4)}`;
-    toast.success(`Đã chọn tài khoản ${short}`);
+    toast.success(t('asmSelectedToast', { address: short }));
     onClose();
-  }, [setActiveAddress, onClose]);
+  }, [setActiveAddress, onClose, t]);
 
   return (
     <div className="space-y-3 pb-2">
@@ -142,7 +145,7 @@ function SelectorContent({ onClose }: { onClose: () => void }) {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
-            placeholder="Tìm theo địa chỉ..."
+            placeholder={t('asmSearchPlaceholder')}
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
             className="pl-9 h-9"
@@ -161,14 +164,14 @@ function SelectorContent({ onClose }: { onClose: () => void }) {
 
       {/* Số lượng */}
       <p className="text-xs text-muted-foreground px-1">
-        {accounts.length} tài khoản trong ví
+        {t('asmAccountCount', { count: accounts.length })}
       </p>
 
       {/* Danh sách accounts */}
       <div className="space-y-1 max-h-[360px] overflow-y-auto pr-1">
         {sortedAccounts.length === 0 ? (
           <p className="text-sm text-muted-foreground text-center py-6">
-            {debouncedSearch ? 'Không tìm thấy tài khoản phù hợp' : 'Không có tài khoản nào'}
+            {debouncedSearch ? t('asmNoMatch') : t('asmNoAccounts')}
           </p>
         ) : (
           sortedAccounts.map(addr => (
@@ -187,6 +190,7 @@ function SelectorContent({ onClose }: { onClose: () => void }) {
 
 // ---- Component chính: responsive Dialog / Drawer ----
 export const AccountSelectorModal = ({ open, onOpenChange }: AccountSelectorModalProps) => {
+  const { t } = useLanguage();
   const isMobile = useIsMobile();
 
   const handleClose = useCallback(() => onOpenChange(false), [onOpenChange]);
@@ -196,8 +200,8 @@ export const AccountSelectorModal = ({ open, onOpenChange }: AccountSelectorModa
       <Drawer open={open} onOpenChange={onOpenChange}>
         <DrawerContent className="px-4">
           <DrawerHeader className="text-left">
-            <DrawerTitle>Chọn tài khoản</DrawerTitle>
-            <DrawerDescription>Chọn tài khoản bạn muốn sử dụng trong ví</DrawerDescription>
+            <DrawerTitle>{t('asmTitle')}</DrawerTitle>
+            <DrawerDescription>{t('asmDescription')}</DrawerDescription>
           </DrawerHeader>
           <SelectorContent onClose={handleClose} />
         </DrawerContent>
@@ -209,8 +213,8 @@ export const AccountSelectorModal = ({ open, onOpenChange }: AccountSelectorModa
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Chọn tài khoản</DialogTitle>
-          <DialogDescription>Chọn tài khoản bạn muốn sử dụng trong ví</DialogDescription>
+          <DialogTitle>{t('asmTitle')}</DialogTitle>
+          <DialogDescription>{t('asmDescription')}</DialogDescription>
         </DialogHeader>
         <SelectorContent onClose={handleClose} />
       </DialogContent>

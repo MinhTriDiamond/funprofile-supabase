@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useLanguage } from '@/i18n/LanguageContext';
 import { AlertTriangle, CheckCircle2, Loader2, Plus } from 'lucide-react';
 import { isAddress } from 'viem';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -14,6 +15,7 @@ interface AddCustomTokenDialogProps {
 }
 
 export function AddCustomTokenDialog({ open, onOpenChange, onAdded }: AddCustomTokenDialogProps) {
+  const { t } = useLanguage();
   const { readMetadata, addToken } = useCustomTokenActions();
   const [address, setAddress] = useState('');
   const [metadata, setMetadata] = useState<CustomTokenMetadata | null>(null);
@@ -44,7 +46,7 @@ export function AddCustomTokenDialog({ open, onOpenChange, onAdded }: AddCustomT
       const result = await readMetadata(address);
       setMetadata(result);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Token không hợp lệ trên BNB Smart Chain.');
+      setError(err instanceof Error ? err.message : t('adtInvalidToken'));
     } finally {
       setIsChecking(false);
     }
@@ -61,12 +63,12 @@ export function AddCustomTokenDialog({ open, onOpenChange, onAdded }: AddCustomT
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md rounded-2xl">
         <DialogHeader>
-          <DialogTitle>Thêm token BEP-20</DialogTitle>
+          <DialogTitle>{t('adtTitle')}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
           <div className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
-            Chỉ thêm token trên BNB Smart Chain Mainnet. Hãy kiểm tra đúng contract để tránh token giả mạo.
+            {t('adtNote')}
           </div>
 
           <div className="space-y-2">
@@ -106,17 +108,17 @@ export function AddCustomTokenDialog({ open, onOpenChange, onAdded }: AddCustomT
 
           <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
             <Button variant="outline" onClick={() => onOpenChange(false)}>
-              Hủy
+              {t('cancel')}
             </Button>
             {!metadata ? (
               <Button onClick={handlePreview} disabled={!canCheck || isChecking}>
                 {isChecking ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CheckCircle2 className="mr-2 h-4 w-4" />}
-                Kiểm tra token
+                {t('adtCheckToken')}
               </Button>
             ) : (
               <Button onClick={handleAdd} disabled={addToken.isPending}>
                 {addToken.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Plus className="mr-2 h-4 w-4" />}
-                Thêm token
+                {t('adtAddToken')}
               </Button>
             )}
           </div>

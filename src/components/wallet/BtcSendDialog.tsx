@@ -42,7 +42,7 @@ export const BtcSendDialog = ({ isOpen, onClose, btcAddress }: BtcSendDialogProp
 
   const handleReopenWallet = () => {
     if (!bip21Uri) {
-      toast.info('Hãy điền địa chỉ và số lượng trước.');
+      toast.info(t('bsdFillFirst'));
       return;
     }
     window.location.href = bip21Uri;
@@ -51,13 +51,13 @@ export const BtcSendDialog = ({ isOpen, onClose, btcAddress }: BtcSendDialogProp
   const handleCopyUri = async () => {
     if (!bip21Uri) return;
     const ok = await copyToClipboard(bip21Uri);
-    if (ok) toast.success('Đã sao chép liên kết Bitcoin (bitcoin:...). Dán vào ví để gửi.');
+    if (ok) toast.success(t('bsdLinkCopied'));
   };
 
   const handleCopyInfo = async () => {
-    const text = `Địa chỉ: ${recipientAddress}\nSố lượng: ${amount} BTC`;
+    const text = t('bsdCopyInfo', { address: recipientAddress, amount });
     const ok = await copyToClipboard(text);
-    if (ok) toast.success('Đã sao chép thông tin giao dịch');
+    if (ok) toast.success(t('bsdInfoCopied'));
   };
 
   const handleMax = () => {
@@ -75,7 +75,7 @@ export const BtcSendDialog = ({ isOpen, onClose, btcAddress }: BtcSendDialogProp
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <img src={btcLogo} alt="BTC" className="w-12 h-12 rounded-full" />
-            Gửi BTC
+            {t('bsdTitle')}
           </DialogTitle>
         </DialogHeader>
 
@@ -90,7 +90,7 @@ export const BtcSendDialog = ({ isOpen, onClose, btcAddress }: BtcSendDialogProp
 
           {/* Balance */}
           <div className="bg-orange-50 border border-orange-200 rounded-xl p-3">
-            <p className="text-xs text-muted-foreground mb-1">Số dư khả dụng</p>
+            <p className="text-xs text-muted-foreground mb-1">{t('bsdAvailableBalance')}</p>
             <div className="flex items-center justify-between">
               <span className="font-bold text-lg">
                 {isLoading ? '...' : `${balance.toFixed(8)} BTC`}
@@ -103,9 +103,9 @@ export const BtcSendDialog = ({ isOpen, onClose, btcAddress }: BtcSendDialogProp
 
           {/* Recipient */}
           <div>
-            <label className="text-sm font-medium mb-1 block">Địa chỉ người nhận</label>
+            <label className="text-sm font-medium mb-1 block">{t('bsdRecipientAddress')}</label>
             <Input
-              placeholder="bc1q... hoặc 1... hoặc 3..."
+              placeholder={t('bsdAddressPlaceholder')}
               value={recipientAddress}
               onChange={(e) => setRecipientAddress(e.target.value.trim())}
             />
@@ -113,7 +113,7 @@ export const BtcSendDialog = ({ isOpen, onClose, btcAddress }: BtcSendDialogProp
 
           {/* Amount */}
           <div>
-            <label className="text-sm font-medium mb-1 block">Số lượng BTC</label>
+            <label className="text-sm font-medium mb-1 block">{t('bsdAmountLabel')}</label>
             <div className="relative">
               <Input
                 type="number"
@@ -142,13 +142,13 @@ export const BtcSendDialog = ({ isOpen, onClose, btcAddress }: BtcSendDialogProp
               </p>
             )}
             {parsedAmount > 0 && !hasEnough && (
-              <p className="text-xs text-red-500 mt-1">Số dư không đủ</p>
+              <p className="text-xs text-red-500 mt-1">{t('bsdInsufficientBalance')}</p>
             )}
           </div>
 
           {/* Info notice */}
           <div className="bg-muted/50 rounded-lg p-3 text-xs text-muted-foreground">
-            <p>⚠️ Giao dịch BTC sẽ được mở qua ví Bitcoin trên thiết bị của bạn (Trust Wallet, Bitget, v.v.). Ứng dụng không thể ký giao dịch BTC trực tiếp.</p>
+            <p>{t('bsdNotice')}</p>
           </div>
 
           {/* Actions */}
@@ -160,13 +160,13 @@ export const BtcSendDialog = ({ isOpen, onClose, btcAddress }: BtcSendDialogProp
                 className="flex-1 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white"
               >
                 <Send className="w-4 h-4 mr-2" />
-                Mở ví BTC để gửi
+                {t('bsdOpenWallet')}
               </Button>
               <Button
                 variant="outline"
                 onClick={handleCopyInfo}
                 disabled={!recipientAddress || !parsedAmount}
-                title="Sao chép thông tin"
+                title={t('bsdCopyInfoTitle')}
               >
                 <Copy className="w-4 h-4" />
               </Button>
@@ -180,7 +180,7 @@ export const BtcSendDialog = ({ isOpen, onClose, btcAddress }: BtcSendDialogProp
                 disabled={!recipientAddress || !hasEnough}
                 className="flex-1"
               >
-                Mở lại ví
+                {t('bsdReopenWallet')}
               </Button>
               <Button
                 variant="outline"
@@ -189,7 +189,7 @@ export const BtcSendDialog = ({ isOpen, onClose, btcAddress }: BtcSendDialogProp
                 disabled={!recipientAddress || !hasEnough}
                 className="flex-1"
               >
-                Sao chép liên kết bitcoin:
+                {t('bsdCopyBitcoinLink')}
               </Button>
             </div>
           </div>

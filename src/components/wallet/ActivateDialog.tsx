@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useLanguage } from '@/i18n/LanguageContext';
 import {
   Dialog,
   DialogContent,
@@ -32,6 +33,7 @@ export const ActivateDialog = ({
   lockedBalance,
   onSuccess,
 }: ActivateDialogProps) => {
+  const { t } = useLanguage();
   const { address } = useAccount();
   const [amount, setAmount] = useState<number>(0);
   const [sliderValue, setSliderValue] = useState<number[]>([0]);
@@ -62,10 +64,10 @@ export const ActivateDialog = ({
   useEffect(() => {
     if (isSuccess && txHash && txHash !== lastToastedHash.current) {
       lastToastedHash.current = txHash;
-      toast.success('Activate thành công!', {
-        description: 'FUN của bạn đã được kích hoạt.',
+      toast.success(t('activateSuccess'), {
+        description: t('activateDesc'),
         action: {
-          label: 'Xem TX',
+          label: t('viewTx'),
           onClick: () => window.open(getTxUrl(txHash), '_blank'),
         },
       });
@@ -114,16 +116,16 @@ export const ActivateDialog = ({
       const shortMsg = (error as { shortMessage?: string })?.shortMessage;
       const combined = `${msg} ${shortMsg ?? ''}`.toLowerCase();
       if (msg.includes('User rejected')) {
-        toast.error('Đã hủy giao dịch');
+        toast.error(t('txCancelled'));
       } else if (msg.includes('insufficient funds')) {
-        toast.error('Không đủ BNB để trả gas');
+        toast.error(t('insufficientBnb'));
       } else if (combined.includes('gas limit too high') || combined.includes('gas limit')) {
-        toast.error('Ví estimate gas quá cao', {
-          description: 'Mở MetaMask → Advanced → Edit gas → đặt Gas Limit = 300000 rồi gửi lại ạ.',
+        toast.error(t('acdGasTooHighTitle'), {
+          description: t('acdGasTooHighDesc'),
           duration: 8000,
         });
       } else {
-        toast.error(shortMsg || 'Không thể activate FUN');
+        toast.error(shortMsg || t('cannotActivate'));
       }
     }
   };
@@ -141,7 +143,7 @@ export const ActivateDialog = ({
             Activate FUN Money
           </DialogTitle>
           <DialogDescription>
-            Chuyển FUN từ trạng thái LOCKED sang ACTIVATED để sử dụng trong hệ sinh thái
+            {t('activateConvertDesc')}
           </DialogDescription>
         </DialogHeader>
 
@@ -151,7 +153,7 @@ export const ActivateDialog = ({
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Lock className="w-5 h-5 text-amber-600" />
-                <span className="text-sm text-amber-700">Số dư LOCKED</span>
+                <span className="text-sm text-amber-700">{t('lockedBalanceLabel')}</span>
               </div>
               <div className="flex items-center gap-2">
                 <img src={funLogo} alt="FUN" className="w-5 h-5 rounded-full" />
@@ -163,7 +165,7 @@ export const ActivateDialog = ({
           {/* Amount Input */}
           <div className="space-y-3">
             <div className="flex justify-between items-center">
-              <Label>Số lượng Activate</Label>
+              <Label>{t('activateAmount')}</Label>
               <Button variant="ghost" size="sm" onClick={handleMaxClick}>
                 Max
               </Button>
@@ -221,13 +223,13 @@ export const ActivateDialog = ({
           {/* Gas Warning */}
           <div className="flex items-start gap-2 text-sm text-muted-foreground bg-muted/50 rounded-lg p-3">
             <Badge variant="outline" className="text-xs shrink-0">Gas Fee</Badge>
-            <p>Giao dịch này yêu cầu một lượng nhỏ BNB để trả phí gas trên BSC Testnet</p>
+            <p>{t('claimGasFeeNote')}</p>
           </div>
         </div>
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isProcessing}>
-            Hủy
+            {t('cancel')}
           </Button>
           <Button
             onClick={handleActivate}
@@ -237,7 +239,7 @@ export const ActivateDialog = ({
             {isProcessing ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                {isConfirming ? 'Đang xác nhận...' : 'Đang gửi...'}
+                {isConfirming ? t('claimConfirming') : t('claimSending')}
               </>
             ) : (
               <>

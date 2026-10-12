@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { useLanguage } from '@/i18n/LanguageContext';
 import { useAccount } from 'wagmi';
 import { useActiveAccount } from '@/contexts/ActiveAccountContext';
 import { AlertTriangle, ArrowRightLeft, Wallet } from 'lucide-react';
@@ -21,6 +22,7 @@ interface AccountMismatchModalProps {
 }
 
 export const AccountMismatchModal = ({ open, onOpenChange }: AccountMismatchModalProps) => {
+  const { t } = useLanguage();
   const { address: providerAddress } = useAccount();
   const { activeAddress, setActiveAddress, accounts } = useActiveAccount();
 
@@ -58,10 +60,10 @@ export const AccountMismatchModal = ({ open, onOpenChange }: AccountMismatchModa
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <AlertTriangle className="w-5 h-5 text-orange-500" />
-            Tài khoản không khớp
+            {t('accountMismatchTitle')}
           </DialogTitle>
           <DialogDescription>
-            Ví đang chọn tài khoản khác với tài khoản bạn đã chọn trong ứng dụng.
+            {t('accountMismatchDesc')}
           </DialogDescription>
         </DialogHeader>
 
@@ -69,11 +71,11 @@ export const AccountMismatchModal = ({ open, onOpenChange }: AccountMismatchModa
           {/* Hiển thị 2 address */}
           <div className="bg-orange-50 rounded-lg p-3 space-y-2 text-sm overflow-hidden">
             <div className="flex items-center justify-between">
-              <span className="text-muted-foreground flex-shrink-0">Ví hiện tại:</span>
+              <span className="text-muted-foreground flex-shrink-0">{t('currentWallet')}</span>
               <span className="font-mono font-medium truncate max-w-[140px] text-right">{shortProvider}</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-muted-foreground flex-shrink-0">Sẽ chuyển sang ví này:</span>
+              <span className="text-muted-foreground flex-shrink-0">{t('willSwitchTo')}</span>
               <span className="font-mono font-medium truncate max-w-[140px] text-right">{shortActive}</span>
             </div>
           </div>
@@ -85,7 +87,7 @@ export const AccountMismatchModal = ({ open, onOpenChange }: AccountMismatchModa
               className="w-full bg-emerald-600 hover:bg-emerald-700 text-white overflow-hidden"
             >
               <ArrowRightLeft className="w-4 h-4 mr-2 flex-shrink-0" />
-              <span className="truncate">Quay lại, tôi không chuyển địa chỉ ví nữa</span>
+              <span className="truncate">{t('goBackDontSwitch')}</span>
             </Button>
             <Button
               onClick={keepActive}
@@ -93,7 +95,7 @@ export const AccountMismatchModal = ({ open, onOpenChange }: AccountMismatchModa
               className="w-full overflow-hidden"
             >
               <Wallet className="w-4 h-4 mr-2 flex-shrink-0" />
-              <span className="truncate">Tiếp tục, tôi sẽ đổi sang địa chỉ ví đã chọn</span>
+              <span className="truncate">{t('continueWithSelected')}</span>
             </Button>
           </div>
         </div>

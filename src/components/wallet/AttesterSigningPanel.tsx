@@ -1,4 +1,5 @@
 import { memo, useState, useMemo } from 'react';
+import { useLanguage } from '@/i18n/LanguageContext';
 import { useAccount } from 'wagmi';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -48,12 +49,14 @@ const formatSignerAddress = (address?: string | null) => {
 };
 
 // Hiển thị tên đẹp: ưu tiên full_name, nếu trống thì dùng username (định dạng ví Web3 nếu cần)
-const formatRecipientName = (fullName?: string | null, username?: string | null) => {
+type TranslateFn = ReturnType<typeof useLanguage>['t'];
+
+const formatRecipientName = (fullName: string | null | undefined, username: string | null | undefined, t: TranslateFn) => {
   if (fullName?.trim()) return fullName.trim();
   if (!username) return 'Unknown';
   if (username.startsWith('wallet_0x')) {
     const addr = username.slice('wallet_'.length);
-    return `Ví ${addr.slice(0, 6)}…${addr.slice(-4)}`;
+    return t('aspWalletShort', { address: `${addr.slice(0, 6)}…${addr.slice(-4)}` });
   }
   return username;
 };
@@ -79,6 +82,7 @@ export const AttesterSigningPanel = memo(({
   const dateLocale = useDateLocale();
   const { address } = useAccount();
   const { stats } = useAttesterDashboardStats(address);
+  const { t } = useLanguage();
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [signingAll, setSigningAll] = useState(false);
   const [signAllProgress, setSignAllProgress] = useState({ current: 0, total: 0 });
@@ -92,7 +96,7 @@ export const AttesterSigningPanel = memo(({
           return requests.filter(r =>
             (r.profiles?.full_name?.toLowerCase().includes(q)) ||
             (r.profiles?.username?.toLowerCase().includes(q)) ||
-            (formatRecipientName(r.profiles?.full_name, r.profiles?.username).toLowerCase().includes(q)) ||
+            (formatRecipientName(r.profiles?.full_name, r.profiles?.username, t).toLowerCase().includes(q)) ||
             (r.id?.toLowerCase().includes(q))
           );
         })();
@@ -187,8 +191,8 @@ export const AttesterSigningPanel = memo(({
               <span className="text-foreground font-semibold text-base">GOV Multisig Dashboard</span>
               <p className="text-xs text-muted-foreground font-normal mt-0.5">
                 {needsMySign.length > 0
-                  ? `${needsMySign.length} lệnh cần chữ ký · ${requests.length} đang chờ · ${stats.confirmed_count.toLocaleString('vi-VN')} đã mint on-chain`
-                  : `${requests.length} lệnh hiển thị · ${stats.confirmed_count.toLocaleString('vi-VN')} đã mint on-chain`}
+                  ? t('aspHeaderNeedsSign', { count: needsMySign.length, total: requests.length, confirmed: stats.confirmed_count.toLocaleString('vi-VN') })
+                  : t('aspHeaderShowing', { total: requests.length, confirmed: stats.confirmed_count.toLocaleString('vi-VN') })}
               </p>
             </div>
           </CardTitle>
@@ -206,7 +210,7 @@ export const AttesterSigningPanel = memo(({
               {/* 1. Tổng lệnh đang hiển thị */}
               <div className="rounded-lg border border-border bg-card p-3 text-center">
                 <div className="text-xl md:text-2xl font-bold text-foreground tabular-nums">{requests.length.toLocaleString('vi-VN')}</div>
-                <div className="text-[11px] text-muted-foreground font-medium mt-0.5 leading-tight">Lệnh đang hiển thị</div>
+                <div className="text-[11px] text-muted-foreground font-medium mt-0.5 leading-tight">{t('aspStatShowing')}</div>
               </div>
 
               {/* 2. FUN chờ ký = pending_sig + signing */}
@@ -215,7 +219,7 @@ export const AttesterSigningPanel = memo(({
                   {formatFUN(stats.pending_sig_fun + stats.signing_fun)}
                 </div>
                 <div className="text-[11px] text-muted-foreground font-medium mt-0.5 leading-tight flex items-center justify-center gap-1">
-                  <Clock className="w-3 h-3" /> FUN chờ ký · {(stats.pending_sig_count + stats.signing_count).toLocaleString('vi-VN')}
+                  <Clock className="w-3 h-3" /> {t('aspStatFunPendingSign', { count: (stats.pending_sig_count + stats.signing_count).toLocaleString('vi-VN') })}
                 </div>
               </div>
 
@@ -223,7 +227,7 @@ export const AttesterSigningPanel = memo(({
               <div className="rounded-lg border border-blue-200 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-950/20 p-3 text-center">
                 <div className="text-xl md:text-2xl font-bold text-blue-600 tabular-nums">{formatFUN(stats.signed_fun)}</div>
                 <div className="text-[11px] text-muted-foreground font-medium mt-0.5 leading-tight flex items-center justify-center gap-1">
-                  <FileSignature className="w-3 h-3" /> Đủ chữ ký · {stats.signed_count.toLocaleString('vi-VN')}
+                  <FileSignature className="w-3 h-3" /> {t('aspStatFunSigned', { count: stats.signed_count.toLocaleString('vi-VN') })}
                 </div>
               </div>
 
@@ -233,7 +237,7 @@ export const AttesterSigningPanel = memo(({
                   <CheckCircle2 className="w-4 h-4" />{formatFUN(stats.confirmed_fun)}
                 </div>
                 <div className="text-[11px] text-muted-foreground font-medium mt-0.5 leading-tight">
-                  Đã mint on-chain · {stats.confirmed_count.toLocaleString('vi-VN')}
+                  {t('aspStatFunMinted', { count: stats.confirmed_count.toLocaleString('vi-VN') })}
                 </div>
               </div>
 
@@ -245,12 +249,12 @@ export const AttesterSigningPanel = memo(({
                       <XCircle className="w-4 h-4" />{formatFUN(stats.rejected_24h_fun)}
                     </div>
                     <div className="text-[11px] text-muted-foreground font-medium mt-0.5 leading-tight">
-                      Đã từ chối 24h · {stats.rejected_24h_count.toLocaleString('vi-VN')}
+                      {t('aspStatRejected24h', { count: stats.rejected_24h_count.toLocaleString('vi-VN') })}
                     </div>
                   </div>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="text-xs max-w-[220px]">
-                  Chỉ đếm các lệnh bị từ chối trong 24 giờ gần nhất. Sau 24h sẽ tự ẩn khỏi dashboard.
+                  {t('aspRejected24hTooltip')}
                 </TooltipContent>
               </Tooltip>
             </div>
@@ -262,8 +266,8 @@ export const AttesterSigningPanel = memo(({
           <Alert className="border-amber-300 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-800">
             <AlertTriangle className="h-4 w-4 text-amber-600" />
             <AlertDescription className="text-amber-900 dark:text-amber-200 text-sm">
-              <span className="font-semibold">Đã đạt giới hạn {DASHBOARD_LIMIT.toLocaleString('vi-VN')} lệnh hiển thị.</span>{' '}
-              Có thể còn lệnh khác chưa hiện ra. Hãy ký bớt hoặc dùng ô tìm kiếm bên dưới để lọc theo user/ID.
+              <span className="font-semibold">{t('aspLimitReached', { limit: DASHBOARD_LIMIT.toLocaleString('vi-VN') })}</span>{' '}
+              {t('aspLimitHint')}
             </AlertDescription>
           </Alert>
         )}
@@ -273,7 +277,7 @@ export const AttesterSigningPanel = memo(({
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Tìm user theo tên hoặc ID..."
+              placeholder={t('aspSearchPlaceholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-9 h-9 text-sm"
@@ -293,12 +297,12 @@ export const AttesterSigningPanel = memo(({
               {signingAll ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Đang ký {signAllProgress.current}/{signAllProgress.total}
+                  {t('aspSigningProgress', { current: signAllProgress.current, total: signAllProgress.total })}
                 </>
               ) : (
                 <>
                   <CheckCheck className="w-4 h-4 mr-2" />
-                  Ký tất cả ({needsMySign.length})
+                  {t('aspSignAll', { count: needsMySign.length })}
                 </>
               )}
             </Button>
@@ -310,7 +314,7 @@ export const AttesterSigningPanel = memo(({
                 size="sm"
               >
                 <Pen className="w-4 h-4 mr-2" />
-                Ký đã chọn ({selectedIds.size})
+                {t('aspSignSelected', { count: selectedIds.size })}
               </Button>
             )}
           </div>
@@ -321,7 +325,7 @@ export const AttesterSigningPanel = memo(({
           <div className="space-y-1.5">
             <Progress value={(signAllProgress.current / signAllProgress.total) * 100} className="h-2" />
             <p className="text-xs text-center text-muted-foreground">
-              Đang ký lệnh {signAllProgress.current}/{signAllProgress.total}…
+              {t('aspSigningOrderProgress', { current: signAllProgress.current, total: signAllProgress.total })}
             </p>
           </div>
         )}
@@ -336,7 +340,7 @@ export const AttesterSigningPanel = memo(({
             <div className="w-12 h-12 mx-auto rounded-full bg-muted flex items-center justify-center mb-3">
               <Shield className="w-6 h-6 text-muted-foreground/50" />
             </div>
-            <p className="text-sm text-muted-foreground">{searchQuery ? 'Không tìm thấy user' : 'Không có mint request nào'}</p>
+            <p className="text-sm text-muted-foreground">{searchQuery ? t('adminNotFound') : t('aspNoMintRequests')}</p>
           </div>
         ) : (
           <div className="rounded-lg border border-border overflow-hidden">
@@ -351,10 +355,10 @@ export const AttesterSigningPanel = memo(({
                       disabled={isAnySigning}
                     />
                   </div>
-                  <div>Người nhận</div>
+                  <div>{t('recipientLabel')}</div>
                   <div className="text-right">FUN</div>
-                  <div className="text-center">Tiến trình ký (3/3)</div>
-                  <div className="text-center">Ký</div>
+                  <div className="text-center">{t('aspColSigningProgress')}</div>
+                  <div className="text-center">{t('authWalletStepSign')}</div>
                 </div>
               </div>
 
@@ -406,6 +410,7 @@ const RequestRow = memo(({
   onSign,
   dateLocale,
 }: RequestRowProps) => {
+  const { t } = useLanguage();
   const sigs = req.multisig_signatures ?? {};
   const completed = req.multisig_completed_groups ?? [];
   const myGroupSigned = !!sigs[attesterGroup];
@@ -434,7 +439,7 @@ const RequestRow = memo(({
             disabled={isAnySigning}
           />
         ) : isRejected ? (
-          <span className="text-destructive text-base leading-none" aria-label="Bị từ chối">⛔</span>
+          <span className="text-destructive text-base leading-none" aria-label={t('aspRejected')}>⛔</span>
         ) : (
           <CheckCircle2 className="w-4 h-4 text-green-500" />
         )}
@@ -444,7 +449,7 @@ const RequestRow = memo(({
       <div className="min-w-0">
         <div className="flex items-center gap-1.5 flex-wrap">
           <span className="font-semibold text-foreground truncate text-base">
-            {formatRecipientName(req.profiles?.full_name, req.profiles?.username)}
+            {formatRecipientName(req.profiles?.full_name, req.profiles?.username, t)}
           </span>
           <span className="text-xs text-muted-foreground font-mono shrink-0">
             #{req.id.slice(0, 6)}
@@ -453,23 +458,23 @@ const RequestRow = memo(({
           {isThisSigning ? (
             <Badge className="shrink-0 text-[10px] px-1.5 py-0.5 bg-primary/15 text-primary border-primary/30 gap-1">
               <Loader2 className="w-2.5 h-2.5 animate-spin" />
-              Đang ký
+              {t('aspSigning')}
             </Badge>
           ) : isRejected ? (
             <Badge className="shrink-0 text-[10px] px-1.5 py-0.5 bg-destructive/15 text-destructive border-destructive/40">
-              ⛔ Bị từ chối
+              ⛔ {t('aspRejected')}
             </Badge>
           ) : isFullySigned ? (
             <Badge className="shrink-0 text-[10px] px-1.5 py-0.5 bg-green-100 text-green-700 border-green-300 dark:bg-green-900/40 dark:text-green-400 dark:border-green-700">
-              ✅ Đủ 3/3
+              {t('aspFullySigned')}
             </Badge>
           ) : myGroupSigned ? (
             <Badge variant="outline" className="shrink-0 text-[10px] px-1.5 py-0.5 bg-blue-50 text-blue-700 border-blue-300 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800">
-              Nhóm bạn đã ký · còn {3 - signedCount}/3
+              {t('aspYourGroupSigned', { remaining: 3 - signedCount })}
             </Badge>
           ) : (
             <Badge variant="outline" className="shrink-0 text-[10px] px-1.5 py-0.5 bg-amber-50 text-amber-700 border-amber-300 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800">
-              ⏳ Chưa ký · {signedCount}/3
+              {t('aspNotSignedYet', { count: signedCount })}
             </Badge>
           )}
         </div>
@@ -480,7 +485,7 @@ const RequestRow = memo(({
         {/* Lý do bị từ chối / lỗi — hiển thị nổi bật cho admin */}
         {req.error_message && (
           <div className="mt-1.5 rounded-md border border-destructive/40 bg-destructive/10 px-2 py-1 text-[11px] text-destructive font-medium leading-snug break-words">
-            <span className="font-semibold">Lý do:</span> {req.error_message}
+            <span className="font-semibold">{t('gnuMintRejectedReasonPrefix')}</span>{req.error_message}
           </div>
         )}
       </div>
@@ -513,12 +518,12 @@ const RequestRow = memo(({
                     <span className="shrink-0 text-xs">{gInfo.emoji}</span>
                     {isSigned ? (
                       <>
-                        <span className="truncate font-semibold">{signerName || 'Đã ký'}</span>
+                        <span className="truncate font-semibold">{signerName || t('aspSigned')}</span>
                         <CheckCircle2 className="w-3 h-3 shrink-0 text-green-500" />
                       </>
                     ) : (
                       <>
-                        <span className="truncate">Chờ ký</span>
+                        <span className="truncate">{t('aspAwaitingSign')}</span>
                         <Clock className="w-3 h-3 shrink-0 opacity-50" />
                       </>
                     )}
@@ -528,7 +533,7 @@ const RequestRow = memo(({
                   <p className="font-semibold">{gInfo.emoji} {gInfo.nameVi}</p>
                   {isSigned ? (
                     <>
-                      <p className="text-green-600">✅ {signerName || 'Đã ký'}</p>
+                      <p className="text-green-600">✅ {signerName || t('aspSigned')}</p>
                       {sig?.signer && (
                         <p className="font-mono text-[10px] text-muted-foreground break-all">{sig.signer}</p>
                       )}
@@ -540,7 +545,7 @@ const RequestRow = memo(({
                     </>
                   ) : (
                     <div className="space-y-0.5">
-                      <p className="text-muted-foreground">⏳ Chờ ký bởi:</p>
+                      <p className="text-muted-foreground">{t('aspAwaitingSignBy')}</p>
                       {gInfo.members.map(m => (
                         <p key={m.name} className="text-[10px]">• {m.name}</p>
                       ))}
@@ -581,11 +586,11 @@ const RequestRow = memo(({
             )}
           </Button>
         ) : isRejected ? (
-          <Badge className="bg-destructive/15 text-destructive border-destructive/40 text-[10px]">Đã huỷ</Badge>
+          <Badge className="bg-destructive/15 text-destructive border-destructive/40 text-[10px]">{t('aspCancelled')}</Badge>
         ) : myGroupSigned ? (
-          <span className="text-[11px] text-green-600 font-medium">✓ Đã ký</span>
+          <span className="text-[11px] text-green-600 font-medium">✓ {t('aspSigned')}</span>
         ) : (
-          <Badge className="bg-green-100 text-green-700 border-0 text-[10px] dark:bg-green-900/40 dark:text-green-400">Hoàn tất</Badge>
+          <Badge className="bg-green-100 text-green-700 border-0 text-[10px] dark:bg-green-900/40 dark:text-green-400">{t('completedProgress')}</Badge>
         )}
       </div>
     </div>
