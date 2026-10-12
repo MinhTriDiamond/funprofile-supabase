@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useLanguage } from '@/i18n/LanguageContext';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAdminRole } from '@/hooks/useAdminRole';
@@ -61,6 +62,7 @@ interface StreamMigrationResult {
 }
 
 const AdminMigration = () => {
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const { isAdmin, isLoading: adminLoading } = useAdminRole();
   const loading = adminLoading;
@@ -86,7 +88,7 @@ const AdminMigration = () => {
   // Redirect non-admin users
   useEffect(() => {
     if (!adminLoading && !isAdmin) {
-      toast.error('Bạn không có quyền truy cập trang này');
+      toast.error(t('amgNoAccess'));
       navigate('/');
     }
   }, [isAdmin, adminLoading, navigate]);
@@ -370,7 +372,7 @@ const AdminMigration = () => {
     };
 
     try {
-      toast.info('🔧 Đang quét database và kiểm tra R2...');
+      toast.info(t('amgRepairScanning'));
 
       const r2PublicUrl = import.meta.env.VITE_CLOUDFLARE_R2_PUBLIC_URL || '';
       
@@ -439,19 +441,19 @@ const AdminMigration = () => {
       repairResult.total = urlsToProcess.length;
 
       if (urlsToProcess.length === 0) {
-        toast.success('✅ Không còn files nào cần xử lý!');
+        toast.success(t('amgNoFilesToProcess'));
         setResult(repairResult);
         setRepairing(false);
         return;
       }
 
-      toast.info(`📊 Tìm thấy ${urlsToProcess.length} URLs cần kiểm tra`);
+      toast.info(`${t('amgFoundPrefix')}${urlsToProcess.length}${t('amgUrlsToCheckSuffix')}`);
 
       // Process each URL
       for (let i = 0; i < urlsToProcess.length; i++) {
         // Check if stop was requested
         if (stopProcessRef.current) {
-          toast.info('⏹️ Đã dừng quá trình');
+          toast.info(t('amgStopped'));
           break;
         }
         
@@ -460,7 +462,7 @@ const AdminMigration = () => {
         
         const item = urlsToProcess[i];
         const fileName = item.url.split('/').pop() || `file_${Date.now()}`;
-        setCurrentFile(`${i + 1}/${urlsToProcess.length}: Kiểm tra ${fileName}`);
+        setCurrentFile(`${i + 1}/${urlsToProcess.length}: ${t('amgChecking')} ${fileName}`);
         setProgress(Math.round((i / urlsToProcess.length) * 100));
 
         try {
@@ -549,15 +551,15 @@ const AdminMigration = () => {
 
       const total = repairResult.alreadyOnR2 + repairResult.migrated;
       if (repairResult.errors.length === 0) {
-        toast.success(`🎉 Hoàn thành! ${repairResult.alreadyOnR2} đã có trên R2, ${repairResult.migrated} uploaded mới!`);
+        toast.success(`${t('amgRepairDonePrefix')}${repairResult.alreadyOnR2}${t('amgRepairDoneMid')}${repairResult.migrated}${t('amgRepairDoneSuffix')}`);
       } else {
-        toast.warning(`⚠️ Xử lý ${total} files với ${repairResult.errors.length} lỗi`);
+        toast.warning(`${t('amgProcessedPrefix')}${total}${t('amgFilesWithMid')}${repairResult.errors.length}${t('amgErrorsSuffix')}`);
       }
 
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       console.error('Repair error:', error);
-      toast.error(`❌ Lỗi: ${errorMessage}`);
+      toast.error(`${t('amgErrorPrefix')}${errorMessage}`);
     } finally {
       setRepairing(false);
     }
@@ -569,11 +571,11 @@ const AdminMigration = () => {
     setFixUrlResult(null);
 
     try {
-      toast.info('🔧 Đang sửa URLs dash.cloudflare.com...');
+      toast.info(t('amgFixingDashUrls'));
 
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
-        toast.error('Vui lòng đăng nhập lại');
+        toast.error(t('amgPleaseRelogin'));
         return;
       }
 
@@ -602,17 +604,17 @@ const AdminMigration = () => {
       });
 
       if (data.total === 0) {
-        toast.success('✅ Không có URLs nào cần sửa!');
+        toast.success(t('amgNoUrlsToFix'));
       } else if (data.errors?.length === 0) {
-        toast.success(`🎉 Đã sửa ${data.fixed} URLs thành công!`);
+        toast.success(`${t('amgFixedDonePrefix')}${data.fixed}${t('amgUrlsSuccessSuffix')}`);
       } else {
-        toast.warning(`⚠️ Đã sửa ${data.fixed}/${data.total} URLs với ${data.errors.length} lỗi`);
+        toast.warning(`${t('amgFixedPrefix')}${data.fixed}/${data.total}${t('amgUrlsWithMid')}${data.errors.length}${t('amgErrorsSuffix')}`);
       }
 
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       console.error('Fix URLs error:', error);
-      toast.error(`❌ Lỗi: ${errorMessage}`);
+      toast.error(`${t('amgErrorPrefix')}${errorMessage}`);
     } finally {
       setFixingUrls(false);
     }
@@ -629,12 +631,12 @@ const AdminMigration = () => {
     const timeoutId = setTimeout(() => controller.abort(), 180000); // 3 minutes
 
     try {
-      const bucketLabel = specificBucket || 'tất cả buckets';
-      toast.info(dryRun ? `🔍 Đang kiểm tra ${bucketLabel}...` : `🗑️ Đang xóa ${bucketLabel}... (tối đa 3 phút)`);
+      const bucketLabel = specificBucket || t('amgAllBuckets');
+      toast.info(dryRun ? `${t('amgCheckingBucketPrefix')}${bucketLabel}...` : `${t('amgDeletingBucketPrefix')}${bucketLabel}${t('amgDeletingBucketSuffix')}`);
 
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
-        toast.error('Vui lòng đăng nhập lại');
+        toast.error(t('amgPleaseRelogin'));
         return;
       }
 
@@ -671,19 +673,19 @@ const AdminMigration = () => {
       });
 
       if (dryRun) {
-        toast.info(`📊 Tìm thấy ${data.totalFiles} files có thể xóa`);
+        toast.info(`${t('amgFoundPrefix')}${data.totalFiles}${t('amgFilesDeletableSuffix')}`);
       } else {
-        toast.success(`🎉 Đã xóa ${data.totalDeleted} files từ ${bucketLabel}!`);
+        toast.success(`${t('amgDeletedFromPrefix')}${data.totalDeleted}${t('amgFilesFromMid')}${bucketLabel}!`);
       }
 
     } catch (error: unknown) {
       clearTimeout(timeoutId);
       if (error instanceof Error && error.name === 'AbortError') {
-        toast.error('⏱️ Timeout! Thử xóa từng bucket riêng để tránh timeout.');
+        toast.error(t('amgCleanupTimeout'));
       } else {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         console.error('Cleanup error:', error);
-        toast.error(`❌ Lỗi: ${errorMessage}`);
+        toast.error(`${t('amgErrorPrefix')}${errorMessage}`);
       }
     } finally {
       setCleaningStorage(false);
@@ -701,11 +703,11 @@ const AdminMigration = () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
-        toast.error('Phiên đăng nhập hết hạn');
+        toast.error(t('amgSessionExpired'));
         return;
       }
 
-      toast.info(dryRun ? '🔍 Đang quét video orphan (preview)...' : '🗑️ Đang xóa video orphan...');
+      toast.info(dryRun ? t('amgScanningOrphanPreview') : t('amgDeletingOrphan'));
 
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/stream-orphan-cleanup`,
@@ -730,19 +732,19 @@ const AdminMigration = () => {
       setOrphanVideoResult(data as OrphanVideoResult);
 
       if ((data as OrphanVideoResult).dryRun) {
-        toast.info(`🔍 Tìm thấy ${(data as OrphanVideoResult).orphanVideosFound} video orphan trên ${(data as OrphanVideoResult).totalVideosOnStream} video`);
+        toast.info(`${t('amgFoundVideosPrefix')}${(data as OrphanVideoResult).orphanVideosFound}${t('amgOrphanOnMid')}${(data as OrphanVideoResult).totalVideosOnStream}${t('amgVideoWord')}`);
       } else {
-        toast.success(`✅ Đã xóa ${(data as OrphanVideoResult).orphanVideosDeleted} video orphan!`);
+        toast.success(`${t('amgDeletedSuccessPrefix')}${(data as OrphanVideoResult).orphanVideosDeleted}${t('amgVideoOrphanSuffix')}`);
       }
     } catch (error: unknown) {
       if (error instanceof Error && error.name === 'AbortError') {
-        toast.error('⏱️ Timeout khi dọn dẹp video. Vui lòng chạy lại (mỗi lần xóa tối đa 50 video).');
+        toast.error(t('amgVideoCleanupTimeout'));
         return;
       }
 
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       console.error('Orphan video cleanup error:', error);
-      toast.error(`❌ Lỗi: ${errorMessage}`);
+      toast.error(`${t('amgErrorPrefix')}${errorMessage}`);
     } finally {
       window.clearTimeout(timeoutId);
       setCleaningOrphanVideos(false);
@@ -756,9 +758,9 @@ const AdminMigration = () => {
 
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) { toast.error('Phiên đăng nhập hết hạn'); return; }
+      if (!session) { toast.error(t('amgSessionExpired')); return; }
 
-      toast.info(dryRun ? '🔍 Đang quét video Stream...' : '🚀 Đang migrate video từ Stream sang R2...');
+      toast.info(dryRun ? t('amgScanningStream') : t('amgMigratingStream'));
 
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/migrate-stream-to-r2`,
@@ -782,16 +784,16 @@ const AdminMigration = () => {
 
       if (dryRun) {
         const total = (data.postsWithStreamVideoUrl || 0) + (data.postsWithStreamMediaUrls || 0) + (data.commentsWithStreamVideo || 0);
-        toast.info(`🔍 Tìm thấy ${total} video cần migrate từ Stream sang R2`);
+        toast.info(`${t('amgFoundVideosPrefix')}${total}${t('amgVideosToMigrateSuffix')}`);
       } else {
         const migrated = data.results?.filter((r: any) => r.status === 'migrated').length || 0;
         const errors = data.results?.filter((r: any) => r.status === 'error').length || 0;
-        toast.success(`✅ Đã migrate ${migrated} video${errors > 0 ? `, ${errors} lỗi` : ''}`);
+        toast.success(`${t('amgMigratedPrefix')}${migrated}${t('amgVideoWord')}${errors > 0 ? `, ${errors}${t('amgErrorsSuffix')}` : ''}`);
       }
     } catch (error: unknown) {
       const msg = error instanceof Error ? error.message : 'Unknown error';
       console.error('Stream migration error:', error);
-      toast.error(`❌ Lỗi: ${msg}`);
+      toast.error(`${t('amgErrorPrefix')}${msg}`);
     } finally {
       setStreamMigrating(false);
       setStreamDryRunning(false);
@@ -814,7 +816,7 @@ const AdminMigration = () => {
     };
 
     try {
-      toast.info('🚀 Đang tải danh sách files...');
+      toast.info(t('amgLoadingFileList'));
 
       const r2PublicUrl = import.meta.env.VITE_CLOUDFLARE_R2_PUBLIC_URL || '';
       
@@ -884,19 +886,19 @@ const AdminMigration = () => {
       migrationResult.total = urlsToMigrate.length;
 
       if (urlsToMigrate.length === 0) {
-        toast.success('✅ Không còn files nào cần migrate!');
+        toast.success(t('amgNoFilesToMigrate'));
         setResult(migrationResult);
         setMigrating(false);
         return;
       }
 
-      toast.info(`📊 Tìm thấy ${urlsToMigrate.length} files cần migrate`);
+      toast.info(`${t('amgFoundPrefix')}${urlsToMigrate.length}${t('amgFilesToMigrateSuffix')}`);
 
       // Process each file with presigned URLs
       for (let i = 0; i < urlsToMigrate.length; i++) {
         // Check if stop was requested
         if (stopProcessRef.current) {
-          toast.info('⏹️ Đã dừng quá trình');
+          toast.info(t('amgStopped'));
           break;
         }
         
@@ -968,15 +970,15 @@ const AdminMigration = () => {
       setResult(migrationResult);
 
       if (migrationResult.errors.length === 0) {
-        toast.success(`🎉 Hoàn thành! Đã migrate ${migrationResult.migrated} files!`);
+        toast.success(`${t('amgMigrateDonePrefix')}${migrationResult.migrated}${t('amgFilesBangSuffix')}`);
       } else {
-        toast.warning(`⚠️ Migrate ${migrationResult.migrated} files với ${migrationResult.errors.length} lỗi`);
+        toast.warning(`${t('amgMigratePrefix')}${migrationResult.migrated}${t('amgFilesWithMid')}${migrationResult.errors.length}${t('amgErrorsSuffix')}`);
       }
 
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       console.error('Migration error:', error);
-      toast.error(`❌ Lỗi: ${errorMessage}`);
+      toast.error(`${t('amgErrorPrefix')}${errorMessage}`);
     } finally {
       setMigrating(false);
     }
@@ -1013,27 +1015,27 @@ const AdminMigration = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Database className="w-5 h-5 text-primary" />
-                🔧 Repair Database (Khuyến nghị)
+                {t('amgRepairTitle')}
               </CardTitle>
               <CardDescription>
-                Kiểm tra R2 trước khi upload - không bị trùng file
+                {t('amgRepairDesc')}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="bg-green-50 rounded-lg p-4 space-y-2">
-                <h4 className="font-medium text-green-700">✨ Tính năng thông minh:</h4>
+                <h4 className="font-medium text-green-700">{t('amgSmartFeatures')}</h4>
                 <ul className="text-sm text-green-600 space-y-1">
-                  <li>✅ <strong>Kiểm tra file trên R2 trước</strong> - tránh upload trùng</li>
-                  <li>✅ File đã có trên R2 → chỉ update DB (nhanh)</li>
-                  <li>✅ File chưa có → download & upload mới</li>
-                  <li>✅ Tiết kiệm băng thông và dung lượng R2</li>
+                  <li>✅ <strong>{t('amgRepairFeat1Strong')}</strong>{t('amgRepairFeat1Suffix')}</li>
+                  <li>{t('amgRepairFeat2')}</li>
+                  <li>{t('amgRepairFeat3')}</li>
+                  <li>{t('amgRepairFeat4')}</li>
                 </ul>
               </div>
 
               <Alert className="bg-blue-50 border-blue-200">
                 <Database className="h-4 w-4 text-blue-600" />
                 <AlertDescription className="text-blue-700">
-                  <strong>💡 Phù hợp khi:</strong> Đã migrate trước đó nhưng DB chưa update đúng (168+ files đã có trên R2 nhưng URL chưa đổi)
+                  <strong>{t('amgRepairBestForLabel')}</strong>{t('amgRepairBestFor')}
                 </AlertDescription>
               </Alert>
 
@@ -1046,7 +1048,7 @@ const AdminMigration = () => {
                 {repairing ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Đang xử lý... {progress}%
+                    {t('amgProcessing')} {progress}%
                   </>
                 ) : (
                   <>
@@ -1070,26 +1072,26 @@ const AdminMigration = () => {
                     <Button
                       onClick={() => {
                         skipCurrentRef.current = true;
-                        toast.info('⏭️ Đang bỏ qua file hiện tại...');
+                        toast.info(t('amgSkipping'));
                       }}
                       variant="outline"
                       size="sm"
                       className="border-yellow-500 text-yellow-600 hover:bg-yellow-50"
                     >
                       <SkipForward className="w-4 h-4 mr-1" />
-                      Bỏ qua file này
+                      {t('amgSkipThisFile')}
                     </Button>
                     <Button
                       onClick={() => {
                         stopProcessRef.current = true;
-                        toast.info('⏹️ Đang dừng quá trình...');
+                        toast.info(t('amgStopping'));
                       }}
                       variant="outline"
                       size="sm"
                       className="border-red-500 text-red-600 hover:bg-red-50"
                     >
                       <StopCircle className="w-4 h-4 mr-1" />
-                      Dừng lại
+                      {t('amgStop')}
                     </Button>
                   </div>
                 </div>
@@ -1105,20 +1107,20 @@ const AdminMigration = () => {
                 🔧 Fix Cloudflare Dashboard URLs
               </CardTitle>
               <CardDescription>
-                Sửa các URLs đang trỏ về dash.cloudflare.com thay vì R2 public URL
+                {t('amgFixDesc')}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="bg-orange-50 rounded-lg p-4 space-y-2">
-                <h4 className="font-medium text-orange-700">🔍 Vấn đề:</h4>
+                <h4 className="font-medium text-orange-700">{t('amgProblemLabel')}</h4>
                 <p className="text-sm text-orange-600">
-                  Có {71} URLs đang trỏ về <code className="bg-orange-100 px-1 rounded">dash.cloudflare.com</code> thay vì R2 public URL đúng.
+                  {t('amgFixIssuePrefix')}{71}{t('amgFixIssueMid')}<code className="bg-orange-100 px-1 rounded">dash.cloudflare.com</code>{t('amgFixIssueSuffix')}
                 </p>
-                <h4 className="font-medium text-orange-700 mt-2">✨ Giải pháp:</h4>
+                <h4 className="font-medium text-orange-700 mt-2">{t('amgSolutionLabel')}</h4>
                 <ul className="text-sm text-orange-600 space-y-1">
-                  <li>✅ Tự động trích xuất path từ URL sai</li>
-                  <li>✅ Tạo URL đúng với R2 public domain</li>
-                  <li>✅ Cập nhật database</li>
+                  <li>{t('amgSolution1')}</li>
+                  <li>{t('amgSolution2')}</li>
+                  <li>{t('amgSolution3')}</li>
                 </ul>
               </div>
 
@@ -1136,7 +1138,7 @@ const AdminMigration = () => {
                 {fixingUrls ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Đang sửa URLs...
+                    {t('amgFixingUrls')}
                   </>
                 ) : (
                   <>
@@ -1151,21 +1153,21 @@ const AdminMigration = () => {
                   <div className="grid grid-cols-3 gap-4">
                     <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg text-center">
                       <div className="text-xl font-bold text-blue-600">{fixUrlResult.total}</div>
-                      <div className="text-xs text-muted-foreground">Tổng URLs</div>
+                      <div className="text-xs text-muted-foreground">{t('amgTotalUrls')}</div>
                     </div>
                     <div className="p-3 bg-green-500/10 border border-green-500/20 rounded-lg text-center">
                       <div className="text-xl font-bold text-green-600 flex items-center justify-center gap-1">
                         <CheckCircle className="w-4 h-4" />
                         {fixUrlResult.fixed}
                       </div>
-                      <div className="text-xs text-muted-foreground">Đã sửa</div>
+                      <div className="text-xs text-muted-foreground">{t('amgFixed')}</div>
                     </div>
                     <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-center">
                       <div className="text-xl font-bold text-red-600 flex items-center justify-center gap-1">
                         <XCircle className="w-4 h-4" />
                         {fixUrlResult.errors.length}
                       </div>
-                      <div className="text-xs text-muted-foreground">Lỗi</div>
+                      <div className="text-xs text-muted-foreground">{t('amgErrors')}</div>
                     </div>
                   </div>
 
@@ -1173,7 +1175,7 @@ const AdminMigration = () => {
                     <Alert className="bg-green-500/10 border-green-500/20">
                       <CheckCircle className="h-4 w-4 text-green-600" />
                       <AlertDescription className="text-green-700">
-                        ✅ Không có URLs nào cần sửa!
+                        {t('amgNoUrlsToFix')}
                       </AlertDescription>
                     </Alert>
                   )}
@@ -1182,7 +1184,7 @@ const AdminMigration = () => {
                     <div className="space-y-2">
                       <h4 className="font-medium text-red-600 flex items-center gap-2">
                         <AlertTriangle className="w-4 h-4" />
-                        URLs gặp lỗi:
+                        {t('amgUrlsWithErrors')}
                       </h4>
                       <div className="max-h-32 overflow-y-auto space-y-2">
                         {fixUrlResult.errors.map((err, idx) => (
@@ -1204,28 +1206,28 @@ const AdminMigration = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Trash2 className="w-5 h-5 text-red-500" />
-                🗑️ Xóa Supabase Storage
+                {t('amgCleanupTitle')}
               </CardTitle>
               <CardDescription>
-                Xóa tất cả files cũ trên Supabase Storage sau khi migration hoàn tất
+                {t('amgCleanupDesc')}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <Alert className="bg-red-50 border-red-200">
                 <AlertTriangle className="h-4 w-4 text-red-600" />
                 <AlertDescription className="text-red-700">
-                  <strong>⚠️ CẢNH BÁO:</strong> Hành động này không thể hoàn tác! Chỉ thực hiện sau khi đã xác nhận tất cả files đã được migrate sang R2.
+                  <strong>{t('amgWarningLabel')}</strong>{t('amgCleanupWarning')}
                 </AlertDescription>
               </Alert>
 
               <div className="bg-gray-50 rounded-lg p-4 space-y-3">
-                <h4 className="font-medium text-gray-700">📋 Xóa từng bucket riêng (tránh timeout):</h4>
+                <h4 className="font-medium text-gray-700">{t('amgDeletePerBucket')}</h4>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                   {['posts', 'videos', 'avatars', 'comment-media'].map((bucket) => (
                     <Button
                       key={bucket}
                       onClick={() => {
-                        if (window.confirm(`⚠️ Xóa tất cả files trong bucket "${bucket}"?\n\nHành động này KHÔNG THỂ HOÀN TÁC!`)) {
+                        if (window.confirm(`${t('amgConfirmDeleteBucketPrefix')}${bucket}${t('amgConfirmDeleteBucketSuffix')}`)) {
                           runCleanupStorage(false, bucket);
                         }
                       }}
@@ -1252,19 +1254,19 @@ const AdminMigration = () => {
                   {cleaningStorage ? (
                     <>
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Đang xử lý...
+                      {t('amgProcessing')}
                     </>
                   ) : (
                     <>
                       <Database className="w-4 h-4 mr-2" />
-                      🔍 Kiểm tra trước (Preview)
+                      {t('amgPreviewFirst')}
                     </>
                   )}
                 </Button>
 
                 <Button 
                   onClick={() => {
-                    if (window.confirm('⚠️ BẠN CÓ CHẮC CHẮN MUỐN XÓA TẤT CẢ FILES?\n\nKHUYẾN NGHỊ: Dùng nút xóa từng bucket ở trên để tránh timeout!\n\nNhấn OK để tiếp tục.')) {
+                    if (window.confirm(t('amgConfirmDeleteAll'))) {
                       runCleanupStorage(false);
                     }
                   }}
@@ -1273,7 +1275,7 @@ const AdminMigration = () => {
                   size="lg"
                 >
                   <Trash2 className="w-4 h-4 mr-2" />
-                  🗑️ Xóa tất cả
+                  {t('amgDeleteAll')}
                 </Button>
               </div>
 
@@ -1283,8 +1285,8 @@ const AdminMigration = () => {
                     <Database className={`h-4 w-4 ${cleanupResult.dryRun ? 'text-blue-600' : 'text-green-600'}`} />
                     <AlertDescription className={cleanupResult.dryRun ? 'text-blue-700' : 'text-green-700'}>
                       {cleanupResult.dryRun 
-                        ? `🔍 Preview: Tìm thấy ${cleanupResult.totalFiles} files có thể xóa`
-                        : `✅ Đã xóa ${cleanupResult.totalDeleted} files thành công!`
+                        ? `${t('amgPreviewFoundPrefix')}${cleanupResult.totalFiles}${t('amgFilesDeletableSuffix')}`
+                        : `${t('amgDeletedSuccessPrefix')}${cleanupResult.totalDeleted}${t('amgFilesSuccessSuffix')}`
                       }
                     </AlertDescription>
                   </Alert>
@@ -1298,11 +1300,11 @@ const AdminMigration = () => {
                         <div className="text-xs text-muted-foreground font-mono">{bucket.bucket}</div>
                         {!cleanupResult.dryRun && bucket.totalFiles > 0 && (
                           <div className="text-xs text-green-600 mt-1">
-                            {bucket.deleted}/{bucket.totalFiles} đã xóa
+                            {bucket.deleted}/{bucket.totalFiles}{t('amgDeletedSuffix')}
                           </div>
                         )}
                         {bucket.errors.length > 0 && (
-                          <div className="text-xs text-red-500 mt-1">{bucket.errors.length} lỗi</div>
+                          <div className="text-xs text-red-500 mt-1">{bucket.errors.length}{t('amgErrorsSuffix')}</div>
                         )}
                       </div>
                     ))}
@@ -1321,7 +1323,7 @@ const AdminMigration = () => {
                 Migrate Stream → R2
               </CardTitle>
               <CardDescription>
-                Chuyển video từ Cloudflare Stream sang R2 (media.fun.rich). Mỗi batch xử lý 5 video.
+                {t('amgStreamDesc')}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -1333,7 +1335,7 @@ const AdminMigration = () => {
                   size="lg"
                 >
                   {streamDryRunning ? (
-                    <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Đang quét...</>
+                    <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> {t('amgScanning')}</>
                   ) : (
                     <>🔍 Preview (Dry Run)</>
                   )}
@@ -1345,14 +1347,14 @@ const AdminMigration = () => {
                   size="lg"
                 >
                   {streamMigrating ? (
-                    <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Đang migrate...</>
+                    <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> {t('amgMigrating')}</>
                   ) : (
                     <>🚀 Migrate Batch (5)</>
                   )}
                 </Button>
                 <Button
                   onClick={() => {
-                    if (window.confirm('⚠️ Migrate VÀ XÓA video gốc trên Stream?\n\nVideo sẽ bị xóa khỏi Cloudflare Stream sau khi migrate sang R2.\n\nNhấn OK để tiếp tục.')) {
+                    if (window.confirm(t('amgConfirmMigrateDelete'))) {
                       runStreamToR2Migration(false, true);
                     }
                   }}
@@ -1387,7 +1389,7 @@ const AdminMigration = () => {
                   {/* Migration results table */}
                   {streamMigrationResult.results && streamMigrationResult.results.length > 0 && (
                     <div className="space-y-2">
-                      <h4 className="font-medium">Kết quả migration:</h4>
+                      <h4 className="font-medium">{t('amgMigrationResults')}</h4>
                       <div className="max-h-64 overflow-y-auto">
                         <table className="w-full text-sm">
                           <thead className="bg-muted/50">
@@ -1421,7 +1423,7 @@ const AdminMigration = () => {
                   {streamMigrationResult.remaining && (
                     <Alert>
                       <AlertDescription>
-                        Còn lại: {streamMigrationResult.remaining.postsWithStreamVideoUrl} posts (video_url), {streamMigrationResult.remaining.postsWithStreamMediaUrls} posts (media_urls), {streamMigrationResult.remaining.commentsWithStreamVideo} comments
+                        {t('amgRemainingPrefix')}{streamMigrationResult.remaining.postsWithStreamVideoUrl} posts (video_url), {streamMigrationResult.remaining.postsWithStreamMediaUrls} posts (media_urls), {streamMigrationResult.remaining.commentsWithStreamVideo} comments
                       </AlertDescription>
                     </Alert>
                   )}
@@ -1435,27 +1437,27 @@ const AdminMigration = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Video className="w-5 h-5 text-purple-500" />
-                🎬 Dọn dẹp Video Orphan (Cloudflare Stream)
+                {t('amgOrphanTitle')}
               </CardTitle>
               <CardDescription>
-                Xóa video trên Cloudflare Stream không còn được tham chiếu trong database
+                {t('amgOrphanDesc')}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="bg-purple-50 rounded-lg p-4 space-y-2">
-                <h4 className="font-medium text-purple-700">🔍 Chức năng:</h4>
+                <h4 className="font-medium text-purple-700">{t('amgFeaturesLabel')}</h4>
                 <ul className="text-sm text-purple-600 space-y-1">
-                  <li>✅ Quét tất cả video trên Cloudflare Stream</li>
-                  <li>✅ So sánh với video URLs trong database (posts, comments, profiles)</li>
-                  <li>✅ Xóa video không còn được sử dụng (orphan)</li>
-                  <li>✅ Tiết kiệm dung lượng và chi phí Cloudflare Stream</li>
+                  <li>{t('amgOrphanFeat1')}</li>
+                  <li>{t('amgOrphanFeat2')}</li>
+                  <li>{t('amgOrphanFeat3')}</li>
+                  <li>{t('amgOrphanFeat4')}</li>
                 </ul>
               </div>
 
               <Alert className="bg-yellow-50 border-yellow-200">
                 <AlertTriangle className="h-4 w-4 text-yellow-600" />
                 <AlertDescription className="text-yellow-700">
-                  <strong>💡 Khuyến nghị:</strong> Chạy Preview trước để xem số lượng video orphan
+                  <strong>{t('amgRecommendLabel')}</strong>{t('amgOrphanRecommend')}
                 </AlertDescription>
               </Alert>
 
@@ -1470,19 +1472,19 @@ const AdminMigration = () => {
                   {cleaningOrphanVideos ? (
                     <>
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Đang quét...
+                      {t('amgScanning')}
                     </>
                   ) : (
                     <>
                       <Video className="w-4 h-4 mr-2" />
-                      🔍 Kiểm tra (Preview)
+                      {t('amgPreviewCheck')}
                     </>
                   )}
                 </Button>
 
                 <Button 
                   onClick={() => {
-                    if (window.confirm('⚠️ XÓA TẤT CẢ VIDEO ORPHAN?\n\nHành động này không thể hoàn tác!\n\nNhấn OK để tiếp tục.')) {
+                    if (window.confirm(t('amgConfirmDeleteOrphans'))) {
                       runCleanupOrphanVideos(false);
                     }
                   }}
@@ -1491,7 +1493,7 @@ const AdminMigration = () => {
                   size="lg"
                 >
                   <Trash2 className="w-4 h-4 mr-2" />
-                  🗑️ Xóa Orphan Videos
+                  {t('amgDeleteOrphanVideos')}
                 </Button>
               </div>
 
@@ -1500,7 +1502,7 @@ const AdminMigration = () => {
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg text-center">
                       <div className="text-lg font-bold text-blue-600">{orphanVideoResult.totalVideosOnStream}</div>
-                      <div className="text-xs text-muted-foreground">Videos trên CF</div>
+                      <div className="text-xs text-muted-foreground">{t('amgVideosOnCf')}</div>
                     </div>
                     <div className="p-3 bg-green-500/10 border border-green-500/20 rounded-lg text-center">
                       <div className="text-lg font-bold text-green-600">{orphanVideoResult.totalVideosInDb}</div>
@@ -1508,13 +1510,13 @@ const AdminMigration = () => {
                     </div>
                     <div className="p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-lg text-center">
                       <div className="text-lg font-bold text-yellow-600">{orphanVideoResult.orphanVideosFound}</div>
-                      <div className="text-xs text-muted-foreground">Orphan tìm thấy</div>
+                      <div className="text-xs text-muted-foreground">{t('amgOrphansFound')}</div>
                     </div>
                     <div className="p-3 bg-purple-500/10 border border-purple-500/20 rounded-lg text-center">
                       <div className="text-lg font-bold text-purple-600 flex items-center justify-center gap-1">
                         {orphanVideoResult.dryRun ? '—' : orphanVideoResult.orphanVideosDeleted}
                       </div>
-                      <div className="text-xs text-muted-foreground">Đã xóa</div>
+                      <div className="text-xs text-muted-foreground">{t('amgDeleted')}</div>
                     </div>
                   </div>
 
@@ -1522,7 +1524,7 @@ const AdminMigration = () => {
                     <Alert className="bg-purple-50 border-purple-200">
                       <Video className="h-4 w-4 text-purple-600" />
                       <AlertDescription className="text-purple-700">
-                        🔍 <strong>Preview:</strong> Tìm thấy {orphanVideoResult.orphanVideosFound} video orphan có thể xóa
+                        🔍 <strong>Preview:</strong>{t('amgPreviewFoundMid')}{orphanVideoResult.orphanVideosFound}{t('amgOrphanDeletableSuffix')}
                       </AlertDescription>
                     </Alert>
                   )}
@@ -1531,7 +1533,7 @@ const AdminMigration = () => {
                     <Alert className="bg-green-50 border-green-200">
                       <CheckCircle className="h-4 w-4 text-green-600" />
                       <AlertDescription className="text-green-700">
-                        ✅ Đã xóa {orphanVideoResult.orphanVideosDeleted} video orphan!
+                        {t('amgDeletedSuccessPrefix')}{orphanVideoResult.orphanVideosDeleted}{t('amgVideoOrphanSuffix')}
                       </AlertDescription>
                     </Alert>
                   )}
@@ -1540,7 +1542,7 @@ const AdminMigration = () => {
                     <div className="space-y-2">
                       <h4 className="font-medium text-red-600 flex items-center gap-2">
                         <AlertTriangle className="w-4 h-4" />
-                        Lỗi ({orphanVideoResult.errors.length}):
+                        {t('amgErrorsLabelPrefix')}{orphanVideoResult.errors.length}):
                       </h4>
                       <div className="max-h-32 overflow-y-auto space-y-1">
                         {orphanVideoResult.errors.map((err, idx) => (
@@ -1555,7 +1557,7 @@ const AdminMigration = () => {
                   {orphanVideoResult.deletedUids.length > 0 && orphanVideoResult.deletedUids.length <= 10 && (
                     <div className="space-y-2">
                       <h4 className="font-medium text-purple-600 text-sm">
-                        {orphanVideoResult.dryRun ? 'Video UIDs sẽ xóa:' : 'Video UIDs đã xóa:'}
+                        {orphanVideoResult.dryRun ? t('amgUidsToDelete') : t('amgUidsDeleted')}
                       </h4>
                       <div className="text-xs font-mono bg-gray-50 p-2 rounded space-y-1 max-h-24 overflow-y-auto">
                         {orphanVideoResult.deletedUids.map((uid, idx) => (
@@ -1577,14 +1579,14 @@ const AdminMigration = () => {
                 🚀 Standard Migration
               </CardTitle>
               <CardDescription>
-                Migration thông thường - upload tất cả files (có thể tạo file trùng)
+                {t('amgStandardDesc')}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <Alert className="bg-yellow-50 border-yellow-200">
                 <AlertTriangle className="h-4 w-4 text-yellow-600" />
                 <AlertDescription className="text-yellow-700">
-                  <strong>⚠️ Lưu ý:</strong> Sẽ upload lại tất cả files, có thể tạo file trùng trên R2 nếu đã migrate trước đó.
+                  <strong>{t('amgNoteLabel')}</strong>{t('amgStandardNote')}
                 </AlertDescription>
               </Alert>
 
@@ -1598,7 +1600,7 @@ const AdminMigration = () => {
                 {migrating ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Đang migrate... {progress}%
+                    {t('amgMigrating')} {progress}%
                   </>
                 ) : (
                   <>
@@ -1622,26 +1624,26 @@ const AdminMigration = () => {
                     <Button
                       onClick={() => {
                         skipCurrentRef.current = true;
-                        toast.info('⏭️ Đang bỏ qua file hiện tại...');
+                        toast.info(t('amgSkipping'));
                       }}
                       variant="outline"
                       size="sm"
                       className="border-yellow-500 text-yellow-600 hover:bg-yellow-50"
                     >
                       <SkipForward className="w-4 h-4 mr-1" />
-                      Bỏ qua file này
+                      {t('amgSkipThisFile')}
                     </Button>
                     <Button
                       onClick={() => {
                         stopProcessRef.current = true;
-                        toast.info('⏹️ Đang dừng quá trình...');
+                        toast.info(t('amgStopping'));
                       }}
                       variant="outline"
                       size="sm"
                       className="border-red-500 text-red-600 hover:bg-red-50"
                     >
                       <StopCircle className="w-4 h-4 mr-1" />
-                      Dừng lại
+                      {t('amgStop')}
                     </Button>
                   </div>
                 </div>
@@ -1659,32 +1661,32 @@ const AdminMigration = () => {
                   ) : (
                     <AlertTriangle className="w-5 h-5 text-yellow-500" />
                   )}
-                  Kết Quả
+                  {t('amgResultsTitle')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg text-center">
                     <div className="text-2xl font-bold text-blue-600">{result.total}</div>
-                    <div className="text-sm text-muted-foreground">Tổng files</div>
+                    <div className="text-sm text-muted-foreground">{t('amgTotalFiles')}</div>
                   </div>
                   <div className="p-4 bg-purple-500/10 border border-purple-500/20 rounded-lg text-center">
                     <div className="text-2xl font-bold text-purple-600">{result.alreadyOnR2}</div>
-                    <div className="text-sm text-muted-foreground">Đã có trên R2</div>
+                    <div className="text-sm text-muted-foreground">{t('amgAlreadyOnR2')}</div>
                   </div>
                   <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-lg text-center">
                     <div className="text-2xl font-bold text-green-600 flex items-center justify-center gap-1">
                       <CheckCircle className="w-5 h-5" />
                       {result.migrated}
                     </div>
-                    <div className="text-sm text-muted-foreground">Upload mới</div>
+                    <div className="text-sm text-muted-foreground">{t('amgNewUploads')}</div>
                   </div>
                   <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-lg text-center">
                     <div className="text-2xl font-bold text-red-600 flex items-center justify-center gap-1">
                       <XCircle className="w-5 h-5" />
                       {result.errors.length}
                     </div>
-                    <div className="text-sm text-muted-foreground">Lỗi</div>
+                    <div className="text-sm text-muted-foreground">{t('amgErrors')}</div>
                   </div>
                 </div>
 
@@ -1692,7 +1694,7 @@ const AdminMigration = () => {
                   <Alert className="bg-green-500/10 border-green-500/20">
                     <CheckCircle className="h-4 w-4 text-green-600" />
                     <AlertDescription className="text-green-700">
-                      ✅ Không còn files nào cần xử lý! Tất cả đã được chuyển sang R2.
+                      {t('amgAllDone')}
                     </AlertDescription>
                   </Alert>
                 )}
@@ -1701,7 +1703,7 @@ const AdminMigration = () => {
                   <Alert className="bg-purple-500/10 border-purple-500/20">
                     <Database className="h-4 w-4 text-purple-600" />
                     <AlertDescription className="text-purple-700">
-                      📝 {result.alreadyOnR2} files đã có trên R2 - chỉ cập nhật URL trong database (không upload lại)
+                      📝 {result.alreadyOnR2}{t('amgAlreadyNoteSuffix')}
                     </AlertDescription>
                   </Alert>
                 )}
@@ -1710,7 +1712,7 @@ const AdminMigration = () => {
                   <div className="space-y-2">
                     <h4 className="font-medium text-red-600 flex items-center gap-2">
                       <AlertTriangle className="w-4 h-4" />
-                      Files gặp lỗi:
+                      {t('amgFilesWithErrors')}
                     </h4>
                     <div className="max-h-48 overflow-y-auto space-y-2">
                       {result.errors.map((err, idx) => (
