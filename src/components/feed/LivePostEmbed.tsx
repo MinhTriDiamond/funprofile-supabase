@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useLanguage } from '@/i18n/LanguageContext';
 import { useNavigate } from 'react-router-dom';
 import { Eye, Radio, Video, X } from 'lucide-react';
 import { toast } from 'sonner';
@@ -34,6 +35,7 @@ interface LivePostEmbedProps {
 
 export const LivePostEmbed = ({ metadata, hostName, postId, resolvedLiveSessionId }: LivePostEmbedProps) => {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const frameRef = useRef<HTMLDivElement>(null);
   const sessionId = resolvedLiveSessionId || metadata.live_session_id || null;
   const viewerCount = metadata.viewer_count ?? 0;
@@ -78,11 +80,11 @@ export const LivePostEmbed = ({ metadata, hostName, postId, resolvedLiveSessionI
       return;
     }
     if (postId) {
-      toast.info('Phiên live chưa sẵn sàng, đang mở bài viết.');
+      toast.info(t('lpeNotReadyOpening'));
       navigate(`/post/${postId}`);
       return;
     }
-    toast.info('Phiên live chưa sẵn sàng.');
+    toast.info(t('lpeNotReady'));
   }, [navigate, postId, sessionId]);
 
   useEffect(() => {
@@ -261,7 +263,7 @@ export const LivePostEmbed = ({ metadata, hostName, postId, resolvedLiveSessionI
       {isVideoReady && (
         <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center opacity-0 transition-opacity group-hover:opacity-100">
           <span className="rounded-full bg-black/50 px-4 py-2 text-sm font-semibold text-white backdrop-blur-sm">
-            Nhấn để xem trực tiếp
+            {t('lpeTapToWatch')}
           </span>
         </div>
       )}
@@ -272,14 +274,14 @@ export const LivePostEmbed = ({ metadata, hostName, postId, resolvedLiveSessionI
             <Radio className="h-8 w-8 text-white" />
           </div>
           <span className="rounded-full bg-black/40 px-4 py-1.5 text-sm font-semibold text-white backdrop-blur-sm">
-            Xem trực tiếp
+            {t('lpeWatchLive')}
           </span>
         </div>
       )}
 
       <div className="absolute bottom-3 left-3 right-3 z-10">
         <p className="max-w-[60%] truncate text-xs text-white/80 sm:max-w-[70%]">
-          {hostName} đang phát trực tiếp
+          {hostName} {t('pohLiveNowShort')}
         </p>
         {metadata.started_at && (
           <p className={cn(
@@ -292,7 +294,7 @@ export const LivePostEmbed = ({ metadata, hostName, postId, resolvedLiveSessionI
         )}
         {durationLimit.warningLevel === 'urgent' && (
           <p className="mt-1 max-w-[90%] rounded-md bg-red-600/85 px-2 py-1 text-[11px] font-bold text-white">
-            Livestream sẽ tự động kết thúc sau {Math.ceil((durationLimit.remainingSeconds || 0) / 60)} phút.
+            {t('lpeAutoEndBefore')}{Math.ceil((durationLimit.remainingSeconds || 0) / 60)}{t('lpeAutoEndAfter')}
           </p>
         )}
       </div>

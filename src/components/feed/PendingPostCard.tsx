@@ -3,6 +3,7 @@
  * Giao diện tối giản, không cho tương tác (like/comment/share), có chip "Đang đăng…".
  */
 import { Loader2 } from 'lucide-react';
+import { useLanguage } from '@/i18n/LanguageContext';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import type { FeedPost } from '@/hooks/useFeedPosts';
 
@@ -11,7 +12,8 @@ interface PendingPostCardProps {
 }
 
 export function PendingPostCard({ post }: PendingPostCardProps) {
-  const displayName = post.profiles?.display_name || post.profiles?.username || 'Bạn';
+  const { t } = useLanguage();
+  const displayName = post.profiles?.display_name || post.profiles?.username || t('youLabel');
   const media = (post.media_urls || []).slice(0, 4);
 
   return (
@@ -33,10 +35,10 @@ export function PendingPostCard({ post }: PendingPostCardProps) {
             <span className="truncate text-sm font-semibold text-foreground">{displayName}</span>
             <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary">
               <Loader2 className="h-3 w-3 animate-spin" />
-              Đang đăng…
+              {t('ppcPosting')}
             </span>
           </div>
-          <div className="text-xs text-muted-foreground">Vừa xong · {visibilityLabel(post.visibility)}</div>
+          <div className="text-xs text-muted-foreground">{t('justNow')} · {t(visibilityLabelKey(post.visibility) as any)}</div>
         </div>
       </div>
 
@@ -70,19 +72,19 @@ export function PendingPostCard({ post }: PendingPostCardProps) {
       ) : null}
 
       <div className="border-t border-border/60 px-3 py-2 text-center text-xs text-muted-foreground sm:px-4">
-        Bài sẽ sẵn sàng trong giây lát — bạn có thể tiếp tục lướt.
+        {t('ppcReadySoon')}
       </div>
     </article>
   );
 }
 
-function visibilityLabel(v: string | undefined) {
+function visibilityLabelKey(v: string | undefined) {
   switch (v) {
     case 'friends':
-      return 'Bạn bè';
+      return 'privacyFriends';
     case 'private':
-      return 'Chỉ mình tôi';
+      return 'privacyOnlyMe';
     default:
-      return 'Công khai';
+      return 'privacyPublic';
   }
 }

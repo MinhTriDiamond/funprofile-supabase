@@ -1,4 +1,5 @@
 import { useState, memo, useCallback, useRef, Suspense } from 'react';
+import { useLanguage } from '@/i18n/LanguageContext';
 import { ImageViewer } from './ImageViewer';
 import { LazyImage } from '@/components/ui/LazyImage';
 import { FeedVideoPlayer } from './FeedVideoPlayer';
@@ -403,6 +404,7 @@ interface MediaGalleryViewerProps {
 }
 
 const MediaGalleryViewer = memo(({ media, isOpen, onClose, currentIndex, onPrev, onNext, setIndex }: MediaGalleryViewerProps) => {
+  const { t } = useLanguage();
   const videoRef = useRef<HTMLVideoElement>(null);
 
   if (!isOpen || media.length === 0) return null;
@@ -432,7 +434,7 @@ const MediaGalleryViewer = memo(({ media, isOpen, onClose, currentIndex, onPrev,
                 <button
                   onClick={() => downloadChunkedVideo(currentMedia.url)}
                   className="w-10 h-10 bg-black/50 hover:bg-black/80 rounded-full flex items-center justify-center text-white transition-colors"
-                  title="Tải video về máy"
+                  title={t('mdgDownloadVideo')}
                 >
                   <Download className="w-5 h-5" />
                 </button>
@@ -440,7 +442,7 @@ const MediaGalleryViewer = memo(({ media, isOpen, onClose, currentIndex, onPrev,
                 <button
                   onClick={() => downloadCloudflareMp4(currentMedia.url)}
                   className="w-10 h-10 bg-black/50 hover:bg-black/80 rounded-full flex items-center justify-center text-white transition-colors"
-                  title="Tải MP4 về máy"
+                  title={t('mdgDownloadMp4')}
                 >
                   <Download className="w-5 h-5" />
                 </button>
@@ -451,7 +453,7 @@ const MediaGalleryViewer = memo(({ media, isOpen, onClose, currentIndex, onPrev,
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-10 h-10 bg-black/50 hover:bg-black/80 rounded-full flex items-center justify-center text-white transition-colors"
-                  title="Tải video về máy"
+                  title={t('mdgDownloadVideo')}
                 >
                   <Download className="w-5 h-5" />
                 </a>
@@ -495,7 +497,7 @@ const MediaGalleryViewer = memo(({ media, isOpen, onClose, currentIndex, onPrev,
                 </Suspense>
               ) : isChunkedManifestUrl(currentMedia.url) && isAppleMobileSafari() ? (
                 <div className="flex h-[85vh] max-h-[85vh] w-[80vw] items-center justify-center bg-black p-4 text-center text-sm text-white/80">
-                  Replay đang được xử lý HLS cho Safari.
+                  {t('mdgReplayProcessing')}
                 </div>
               ) : isChunkedManifestUrl(currentMedia.url) ? (
                 <Suspense fallback={<div className="w-full h-[85vh] bg-muted animate-pulse" />}>

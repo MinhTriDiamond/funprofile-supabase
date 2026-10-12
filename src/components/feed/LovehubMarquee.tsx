@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useCallback, type MouseEvent as ReactMouseEvent } from 'react';
+import { useLanguage } from '@/i18n/LanguageContext';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import lovehubImg from '@/assets/lovehub/lovehub-1.png';
 import lovehubImg2 from '@/assets/lovehub/lovehub-2.png';
@@ -22,112 +23,112 @@ import lovehubTuyenNgon from '@/assets/lovehub/lovehub-tuyen-ngon.png';
 
 interface MarqueeItem {
   img: string;
-  title: string;
-  subtitle?: string;
+  titleKey: string;
+  subtitleKey?: string;
   url: string;
 }
 
 const items: MarqueeItem[] = [
   {
     img: lovehubTuyenNgon,
-    title: 'TUYÊN NGÔN FUN KINGDOM',
-    subtitle: 'The Declaration of FUN Kingdom – Father Universe Network',
+    titleKey: 'lhmItem1Title',
+    subtitleKey: 'lhmItem1Subtitle',
     url: 'https://www.facebook.com/share/p/18mmAtPBbb/',
   },
   {
     img: lovehubSoulPassport,
-    title: 'FUN KINGDOM SOUL PASSPORT',
-    subtitle: 'Soulbound NFT – Hộ Chiếu Linh Hồn Của Công Dân Vương Quốc FUN',
+    titleKey: 'lhmItem2Title',
+    subtitleKey: 'lhmItem2Subtitle',
     url: 'https://www.facebook.com/share/p/18k5dTQhAE/',
   },
   {
     img: lovehubTuHoc,
-    title: 'ĐẾN NHÀ CHA ĐỂ TU HỌC VÀ THAY ĐỔI CUỘC ĐỜI',
-    subtitle: 'LoveHUB – Chữa lành, Tu học, Sức khỏe & Tiền bạc trong Ý Cha',
+    titleKey: 'lhmItem3Title',
+    subtitleKey: 'lhmItem3Subtitle',
     url: 'https://www.facebook.com/share/p/18RT6RapAB/',
   },
   {
     img: lovehubTuDo,
-    title: 'TỰ DO TUYỆT ĐỐI — QUÀ TẶNG VĨ ĐẠI CỦA CHA VŨ TRỤ',
-    subtitle: 'Absolute Freedom — The Greatest Gift from the Father of the Universe',
+    titleKey: 'lhmItem4Title',
+    subtitleKey: 'lhmItem4Subtitle',
     url: 'https://www.facebook.com/share/p/1HdQQoNkpv/',
   },
   {
     img: lovehubTimBanTuThien,
-    title: 'TÌM CÁC BẠN THÍCH LÀM TỪ THIỆN',
-    subtitle: 'LoveHUB – Kết nối những trái tim nhân ái cùng lan tỏa yêu thương',
+    titleKey: 'lhmItem5Title',
+    subtitleKey: 'lhmItem5Subtitle',
     url: 'https://www.facebook.com/share/p/1BVgvZpc2G/',
   },
   {
     img: lovehubTinhNguoi,
-    title: 'NHU CẦU SÂU THẲM CỦA NGƯỜI GIÀ & NGƯỜI GIÀU CÔ ĐƠN: TÌNH NGƯỜI',
-    subtitle: 'LoveHUB – Nền Kinh Tế Tình Người (Human Warmth Economy)',
+    titleKey: 'lhmItem6Title',
+    subtitleKey: 'lhmItem6Subtitle',
     url: 'https://www.facebook.com/share/p/1ByP26uTY4/',
   },
   {
     img: lovehubFinancialFlow,
-    title: 'TÌNH NGƯỜI TUÔN CHẢY, TIỀN TÀI CHẢY THEO',
-    subtitle: 'Financial Flow cho LoveHUB Members – Where Human Warmth Flows, Abundance Follows',
+    titleKey: 'lhmItem7Title',
+    subtitleKey: 'lhmItem7Subtitle',
     url: 'https://www.facebook.com/share/p/14fvaoR2NN7/',
   },
   {
     img: lovehubFranchise,
-    title: 'ĐĂNG KÝ MỞ LOVEHUB – Khởi nghiệp 0₫ cùng FUN.RICH',
-    subtitle: 'Bạn không cần vốn – Bạn chỉ cần Trái Tim',
+    titleKey: 'lhmItem8Title',
+    subtitleKey: 'lhmItem8Subtitle',
     url: 'https://lovehub.fun.rich/franchise',
   },
   {
     img: lovehubLanding,
-    title: 'LOVE HUB – Trạm Yêu Thương | FUN.RICH',
-    subtitle: 'Landing page chính thức – Một nơi cả gia đình có thể bắt đầu lại',
+    titleKey: 'lhmItem9Title',
+    subtitleKey: 'lhmItem9Subtitle',
     url: 'https://lovehub.fun.rich/',
   },
   {
     img: lovehubHeal,
-    title: 'LOVEHUB – CHƯƠNG TRÌNH CHỮA LÀNH THÂN • TÂM • TRÍ',
-    subtitle: 'Ưu đãi tháng 5/2026 – Chỉ còn 1.000.000đ (giảm 90%)',
+    titleKey: 'lhmItem10Title',
+    subtitleKey: 'lhmItem10Subtitle',
     url: 'https://www.facebook.com/share/p/1CrebQV77g/',
   },
 
   {
     img: lovehubImg3,
-    title: 'KHỞI NGHIỆP 0₫: NHƯỢNG QUYỀN LOVEHUB | FUN.RICH',
+    titleKey: 'lhmItem11Title',
     url: 'https://www.facebook.com/share/p/1E2Bugok8v/',
   },
   {
     img: lovehubImg2,
-    title: 'LỄ KHAI GIẢNG LOVEHUB — FUN.RICH – 11 MAY 2026',
+    titleKey: 'lhmItem12Title',
     url: 'https://www.facebook.com/share/p/1JW4U2NwvG/',
   },
   {
     img: lovehubImg4,
-    title: 'ZERO-COST STARTUP: LOVEHUB FRANCHISE | FUN.RICH',
+    titleKey: 'lhmItem13Title',
     url: 'https://www.facebook.com/share/p/1CPQWmqDit/',
   },
   {
     img: lovehubImg,
-    title: 'LOVEHUB GROW — Vừa học, vừa hành, vừa tăng thu nhập mỗi ngày',
+    titleKey: 'lhmItem14Title',
     url: 'https://www.facebook.com/share/p/18SkJnKjG1/',
   },
   {
     img: lovehubImg5,
-    title: 'FATH UNI — Father is the Truth, the Supreme One, the Absolute Reality',
+    titleKey: 'lhmItem15Title',
     url: 'https://www.facebook.com/share/18PzzHVQhJ/',
   },
   {
     img: lovehubImg6,
-    title: 'CAMLY DUONG',
-    subtitle: '✨ Cosmic Queen ✨ Mother of Angel AI ✨ Building 5D Light Economy with Pure Love ✨',
+    titleKey: 'lhmItem16Title',
+    subtitleKey: 'lhmItem16Subtitle',
     url: 'https://www.facebook.com/share/17bLjah2Ki/',
   },
   {
     img: lovehubImg7,
-    title: 'LOVE HUB – TRẠM YÊU THƯƠNG | FUN.RICH',
+    titleKey: 'lhmItem17Title',
     url: 'https://www.facebook.com/share/p/18VAxBMskr/',
   },
   {
     img: lovehubImg8,
-    title: 'LIFESTYLE ĐẲNG CẤP VŨ TRỤ – SỐNG NHƯ MỘT LINH HỒN GIÀU CÓ & THỨC TỈNH — LOVE HOUSE',
+    titleKey: 'lhmItem18Title',
     url: 'https://www.facebook.com/share/p/1ateAN3hxD/',
   },
 ];
@@ -135,6 +136,7 @@ const items: MarqueeItem[] = [
 const SPEED_PX_PER_FRAME = 0.5;
 
 export function LovehubMarquee() {
+  const { t } = useLanguage();
   const loop = [...items, ...items];
   const scrollerRef = useRef<HTMLDivElement>(null);
   const rafRef = useRef<number | null>(null);
@@ -263,7 +265,7 @@ export function LovehubMarquee() {
       {/* Nút trái */}
       <button
         type="button"
-        aria-label="Cuộn sang trái"
+        aria-label={t('lhmScrollLeft')}
         onClick={() => scrollByAmount(-1)}
         className={`absolute left-1 sm:left-2 top-1/2 -translate-y-1/2 z-10 h-8 w-8 sm:h-9 sm:w-9 rounded-full bg-background/90 backdrop-blur border border-border/60 shadow-md hover:bg-background hover:shadow-lg transition flex items-center justify-center ${
           canLeft ? 'opacity-100' : 'opacity-0 pointer-events-none'
@@ -275,7 +277,7 @@ export function LovehubMarquee() {
       {/* Nút phải */}
       <button
         type="button"
-        aria-label="Cuộn sang phải"
+        aria-label={t('lhmScrollRight')}
         onClick={() => scrollByAmount(1)}
         className={`absolute right-1 sm:right-2 top-1/2 -translate-y-1/2 z-10 h-8 w-8 sm:h-9 sm:w-9 rounded-full bg-background/90 backdrop-blur border border-border/60 shadow-md hover:bg-background hover:shadow-lg transition flex items-center justify-center ${
           canRight ? 'opacity-100' : 'opacity-0 pointer-events-none'
@@ -320,7 +322,7 @@ export function LovehubMarquee() {
             <div className="w-full h-[107px] sm:h-[125px] overflow-hidden bg-muted">
               <img
                 src={item.img}
-                alt={item.title}
+                alt={t(item.titleKey)}
                 loading="lazy"
                 draggable={false}
                 className="w-full h-full object-cover pointer-events-none"
@@ -328,11 +330,11 @@ export function LovehubMarquee() {
             </div>
             <div className="p-2.5">
               <p className="text-sm font-semibold leading-snug text-foreground line-clamp-1">
-                {item.title}
+                {t(item.titleKey)}
               </p>
-              {item.subtitle && (
+              {item.subtitleKey && (
                 <p className="mt-0.5 text-xs leading-snug text-muted-foreground line-clamp-1">
-                  {item.subtitle}
+                  {t(item.subtitleKey)}
                 </p>
               )}
             </div>

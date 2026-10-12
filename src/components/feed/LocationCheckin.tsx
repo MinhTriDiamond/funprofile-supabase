@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useLanguage } from '@/i18n/LanguageContext';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -32,6 +33,7 @@ export const LocationCheckin = ({
   currentLocation,
   onSelectLocation,
 }: LocationCheckinProps) => {
+  const { t } = useLanguage();
   const [searchQuery, setSearchQuery] = useState(currentLocation || '');
   const [recentLocations] = useState<string[]>(() => {
     const saved = localStorage.getItem('recentLocations');
@@ -74,7 +76,7 @@ export const LocationCheckin = ({
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
-              placeholder="Tìm kiếm hoặc nhập vị trí..."
+              placeholder={t('locationSearchPlaceholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-9 pr-9"
@@ -97,7 +99,7 @@ export const LocationCheckin = ({
               onClick={handleCustomLocation}
             >
               <MapPin className="w-4 h-4 text-[#E74852]" />
-              <span>Thêm "{searchQuery}"</span>
+              <span>{t('lckAddPrefix')}{searchQuery}"</span>
             </Button>
           )}
         </div>
@@ -114,7 +116,7 @@ export const LocationCheckin = ({
                 onClick={handleRemoveLocation}
                 className="text-xs text-destructive hover:underline"
               >
-                Xóa
+                {t('delete')}
               </button>
             </div>
           </div>
@@ -127,7 +129,7 @@ export const LocationCheckin = ({
               <div className="mb-4">
                 <div className="flex items-center gap-2 px-2 py-1 text-xs text-muted-foreground">
                   <Clock className="w-3 h-3" />
-                  <span>Gần đây</span>
+                  <span>{t('searchRecentShort')}</span>
                 </div>
                 {recentLocations.map((location, index) => (
                   <button
@@ -148,7 +150,7 @@ export const LocationCheckin = ({
             <div>
               {!searchQuery && (
                 <div className="px-2 py-1 text-xs text-muted-foreground">
-                  Địa điểm phổ biến
+                  {t('lckPopularTitle')}
                 </div>
               )}
               {filteredLocations.length > 0 ? (
@@ -167,8 +169,8 @@ export const LocationCheckin = ({
               ) : searchQuery ? (
                 <div className="text-center py-8 text-muted-foreground">
                   <MapPin className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                  <p className="text-sm">Không tìm thấy địa điểm</p>
-                  <p className="text-xs mt-1">Bạn có thể nhập vị trí tùy chỉnh</p>
+                  <p className="text-sm">{t('lckNotFound')}</p>
+                  <p className="text-xs mt-1">{t('lckCustomHint')}</p>
                 </div>
               ) : null}
             </div>

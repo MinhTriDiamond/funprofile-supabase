@@ -4,6 +4,7 @@
  */
 
 import { useState, useCallback } from 'react';
+import { useLanguage } from '@/i18n/LanguageContext';
 import { X, Loader2, CheckCircle, AlertCircle, RotateCcw, GripVertical, ImagePlus, Video, Play } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -27,6 +28,7 @@ export function MediaUploadPreview({
   disabled = false,
   maxItems = 100,
 }: MediaUploadPreviewProps) {
+  const { t } = useLanguage();
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
@@ -77,17 +79,17 @@ export function MediaUploadPreview({
           {items.length}/{maxItems} file
           {items.filter(i => i.status === 'completed').length > 0 && (
             <span className="text-green-500 ml-2">
-              ✓ {items.filter(i => i.status === 'completed').length} đã tải xong
+              ✓ {items.filter(i => i.status === 'completed').length} {t('mupUploaded')}
             </span>
           )}
           {items.filter(i => i.status === 'uploading').length > 0 && (
             <span className="text-primary ml-2">
-              ⬆ {items.filter(i => i.status === 'uploading').length} đang tải
+              ⬆ {items.filter(i => i.status === 'uploading').length} {t('mupUploading')}
             </span>
           )}
         </span>
         <span className="text-xs">
-          Kéo để sắp xếp lại
+          {t('mupDragToReorder')}
         </span>
       </div>
 
@@ -151,7 +153,7 @@ export function MediaUploadPreview({
                     <div className="w-6 h-6 rounded-full border-2 border-white/50 flex items-center justify-center">
                       <span className="text-white text-xs">{index + 1}</span>
                     </div>
-                    <span className="text-white/70 text-xs mt-1">Đang chờ</span>
+                    <span className="text-white/70 text-xs mt-1">{t('walletPending')}</span>
                   </>
                 )}
               </div>
@@ -169,7 +171,7 @@ export function MediaUploadPreview({
               <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center p-2">
                 <AlertCircle className="w-6 h-6 text-destructive mb-1" />
                 <span className="text-white text-xs text-center mb-2 line-clamp-2">
-                  {item.error || 'Thất bại'}
+                  {item.error || t('mediaUploadFailed')}
                 </span>
                 <Button
                   variant="ghost"
@@ -178,7 +180,7 @@ export function MediaUploadPreview({
                   className="h-6 text-xs text-white hover:bg-white/20"
                 >
                   <RotateCcw className="w-3 h-3 mr-1" />
-                  Thử lại
+                  {t('errorsRetry')}
                 </Button>
               </div>
             )}
@@ -228,7 +230,7 @@ export function MediaUploadPreview({
       {/* Show "See more" if too many items */}
       {items.length > 12 && (
         <p className="text-sm text-center text-muted-foreground">
-          Hiển thị 12/{items.length} file • Cuộn để xem thêm
+          {t('displayingTx')} 12/{items.length} file • {t('mupScrollToSeeMore')}
         </p>
       )}
     </div>

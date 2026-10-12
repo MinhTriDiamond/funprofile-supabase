@@ -1,4 +1,5 @@
 import { ReactNode, useState } from 'react';
+import { useLanguage } from '@/i18n/LanguageContext';
 import { Link } from 'react-router-dom';
 import { Sparkles, Gift, Target, BookOpen, ShoppingBag, BicepsFlexed, ShieldAlert, Gamepad2 } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -12,33 +13,34 @@ import { resolvePetSprite, resolveFrameSprite, STAGE_NAMES } from '@/modules/pet
 interface MiniGameItem {
   to: string;
   icon: React.ComponentType<{ className?: string }>;
-  label: string;
-  desc: string;
+  labelKey: string;
+  descKey: string;
   color: string;
 }
 
 const PET_ITEMS: MiniGameItem[] = [
-  { to: '/pet/shop', icon: ShoppingBag, label: 'Cửa hàng Lumi', desc: 'Mua trang phục, khung nền bằng CAMLY', color: 'text-amber-500' },
-  { to: '/pet/arena', icon: BicepsFlexed, label: 'So tài Lumi', desc: 'So tài Lumi của thành viên khác', color: 'text-orange-500' },
-  { to: '/pet/appeal', icon: ShieldAlert, label: 'Kháng nghị', desc: 'Gửi kháng nghị nếu bị đánh dấu rủi ro nhầm', color: 'text-slate-500' },
+  { to: '/pet/shop', icon: ShoppingBag, labelKey: 'queNavShop', descKey: 'mgmShopDesc', color: 'text-amber-500' },
+  { to: '/pet/arena', icon: BicepsFlexed, labelKey: 'mgmArenaLabel', descKey: 'mgmArenaDesc', color: 'text-orange-500' },
+  { to: '/pet/appeal', icon: ShieldAlert, labelKey: 'mgmAppealLabel', descKey: 'mgmAppealDesc', color: 'text-slate-500' },
 ];
 
 const OTHER_ITEMS: MiniGameItem[] = [
-  { to: '/mystery-box', icon: Gift, label: 'Hộp Bí Ẩn', desc: 'Mở hộp nhận CAMLY, XP, vật phẩm hiếm', color: 'text-purple-500' },
-  { to: '/quests', icon: Target, label: 'Nhiệm vụ', desc: 'Hoàn thành nhiệm vụ hằng ngày để nhận thưởng', color: 'text-emerald-500' },
-  { to: '/docs/pet-game-guide', icon: BookOpen, label: '​', desc: 'Đọc hướng dẫn đầy đủ cho Linh thú Lumi', color: 'text-sky-500' },
+  { to: '/mystery-box', icon: Gift, labelKey: 'mysteryBox', descKey: 'mgmMysteryDesc', color: 'text-purple-500' },
+  { to: '/quests', icon: Target, labelKey: 'mgmQuestsLabel', descKey: 'mgmQuestsDesc', color: 'text-emerald-500' },
+  { to: '/docs/pet-game-guide', icon: BookOpen, labelKey: 'mgmGuideLabel', descKey: 'mgmGuideDesc', color: 'text-sky-500' },
 ];
 
-const MOOD_LABEL: Record<string, string> = {
-  happy: 'Vui vẻ',
-  excited: 'Hào hứng',
-  calm: 'Bình an',
-  sad: 'Buồn',
-  hungry: 'Đói',
-  sleepy: 'Buồn ngủ',
+const MOOD_LABEL_KEYS: Record<string, string> = {
+  happy: 'petMoodHappy',
+  excited: 'petMoodExcited',
+  calm: 'petMoodCalm',
+  sad: 'petMoodSad',
+  hungry: 'petMoodHungry',
+  sleepy: 'petMoodSleepy',
 };
 
 function LumiStatusTile({ onClick, large = false }: { onClick?: () => void; large?: boolean }) {
+  const { t } = useLanguage();
   const { data: pet } = usePetState();
   const { data: cosmetics } = usePetCosmetics();
   const equippedSkin = cosmetics?.find((c) => c.equipped && c.catalog.slot === 'skin');
@@ -57,9 +59,9 @@ function LumiStatusTile({ onClick, large = false }: { onClick?: () => void; larg
           <Sparkles className="w-6 h-6" />
         </div>
         <div className="min-w-0 flex-1">
-          <div className="font-semibold text-sm">Linh thú Lumi</div>
+          <div className="font-semibold text-sm">{t('mgmPetName')}</div>
           <div className="text-xs text-muted-foreground leading-snug">
-            Nhấn để bắt đầu nuôi Lumi
+            {t('mgmStartRaising')}
           </div>
         </div>
       </Link>
@@ -97,9 +99,9 @@ function LumiStatusTile({ onClick, large = false }: { onClick?: () => void; larg
           <Badge variant="secondary" className="text-[10px] px-1.5 py-0">{STAGE_NAMES[pet.evolution_stage]}</Badge>
         </div>
         <div className="text-[11px] text-muted-foreground flex flex-wrap gap-x-2 gap-y-0.5">
-          <span>Cấp <b className="text-foreground">{pet.level}</b></span>
+          <span>{t('petLevelLabel')}<b className="text-foreground">{pet.level}</b></span>
           <span>XP <b className="text-foreground">{pet.xp}</b></span>
-          <span>Tâm trạng <b className="text-foreground">{MOOD_LABEL[pet.mood] ?? pet.mood}</b></span>
+          <span>{t('petMoodLabel')}<b className="text-foreground">{MOOD_LABEL_KEYS[pet.mood] ? t(MOOD_LABEL_KEYS[pet.mood]) : pet.mood}</b></span>
         </div>
       </div>
     </Link>
@@ -114,6 +116,7 @@ interface MiniGameMenuProps {
 }
 
 function MenuBody({ onItemClick, large = false }: { onItemClick?: () => void; large?: boolean }) {
+  const { t } = useLanguage();
   const itemPadding = large ? 'p-3' : 'p-2';
   const iconBox = large ? 'w-11 h-11' : 'w-9 h-9';
   const iconSvg = large ? 'w-6 h-6' : 'w-5 h-5';
@@ -131,8 +134,8 @@ function MenuBody({ onItemClick, large = false }: { onItemClick?: () => void; la
           <Icon className={iconSvg} />
         </div>
         <div className="min-w-0 flex-1">
-          <div className="font-semibold text-sm break-words">{item.label}</div>
-          <div className="text-xs text-muted-foreground leading-snug break-words">{item.desc}</div>
+          <div className="font-semibold text-sm break-words">{t(item.labelKey)}</div>
+          <div className="text-xs text-muted-foreground leading-snug break-words">{t(item.descKey)}</div>
         </div>
       </Link>
     );
@@ -141,14 +144,14 @@ function MenuBody({ onItemClick, large = false }: { onItemClick?: () => void; la
   return (
     <div className={large ? 'space-y-4' : 'space-y-3'}>
       <div>
-        <h4 className="font-bold text-xs uppercase text-muted-foreground mb-2 px-1">✨ Linh thú Lumi</h4>
+        <h4 className="font-bold text-xs uppercase text-muted-foreground mb-2 px-1">{t('mgmPetSection')}</h4>
         <div className={large ? 'space-y-1' : 'space-y-0.5'}>
           <LumiStatusTile onClick={onItemClick} large={large} />
           {PET_ITEMS.map(renderItem)}
         </div>
       </div>
       <div className="border-t pt-3">
-        <h4 className="font-bold text-xs uppercase text-muted-foreground mb-2 px-1">🎁 Khác</h4>
+        <h4 className="font-bold text-xs uppercase text-muted-foreground mb-2 px-1">{t('mgmOtherSection')}</h4>
         <div className={large ? 'space-y-1' : 'space-y-0.5'}>{OTHER_ITEMS.map(renderItem)}</div>
       </div>
     </div>

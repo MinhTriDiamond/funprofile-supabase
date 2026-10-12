@@ -26,7 +26,7 @@ const formatVN = (iso: string) => {
 };
 
 export const NewMembersGlobalSearch = ({ query }: Props) => {
-  const { language } = useLanguage();
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const [users, setUsers] = useState<FoundUser[]>([]);
   const [loading, setLoading] = useState(false);
@@ -75,7 +75,7 @@ export const NewMembersGlobalSearch = ({ query }: Props) => {
   if (!users.length) {
     return (
       <div className="p-8 text-center text-muted-foreground">
-        {language === 'vi' ? 'Không tìm thấy thành viên' : 'No members found'}
+        {t('nmgNoMembersFound')}
       </div>
     );
   }

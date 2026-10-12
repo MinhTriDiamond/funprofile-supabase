@@ -1,4 +1,5 @@
 import { useId } from 'react';
+import { useLanguage } from '@/i18n/LanguageContext';
 import { Volume2, VolumeX } from 'lucide-react';
 
 interface LiveVolumeControlProps {
@@ -16,16 +17,17 @@ export const LiveVolumeControl = ({
   onVolumeChange,
   needsUserGesture = false,
 }: LiveVolumeControlProps) => {
+  const { t } = useLanguage();
   const sliderId = useId();
   const effectiveMuted = muted || volume <= 0;
-  const toggleLabel = effectiveMuted ? 'Bật âm thanh' : 'Tắt âm thanh';
+  const toggleLabel = effectiveMuted ? t('unmuteSound') : t('muteSound');
 
   return (
     <div
       className="absolute bottom-3 right-3 z-20 flex items-center gap-2 rounded-md bg-black/60 px-2 py-1.5 text-white shadow-lg backdrop-blur-sm"
       onClick={(event) => event.stopPropagation()}
       onPointerDown={(event) => event.stopPropagation()}
-      aria-label="Điều khiển âm lượng live"
+      aria-label={t('lvcControls')}
     >
       <button
         type="button"
@@ -36,7 +38,7 @@ export const LiveVolumeControl = ({
       >
         {effectiveMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
       </button>
-      <label className="sr-only" htmlFor={sliderId}>Âm lượng</label>
+      <label className="sr-only" htmlFor={sliderId}>{t('soundVolume')}</label>
       <input
         id={sliderId}
         type="range"
@@ -46,12 +48,12 @@ export const LiveVolumeControl = ({
         value={effectiveMuted ? 0 : Math.round(volume * 100)}
         onChange={(event) => onVolumeChange(Number(event.target.value) / 100)}
         className="h-8 w-24 cursor-pointer accent-white sm:w-28"
-        aria-label="Âm lượng"
-        title="Âm lượng"
+        aria-label={t('soundVolume')}
+        title={t('soundVolume')}
       />
       {needsUserGesture && (
         <span className="hidden whitespace-nowrap text-[11px] font-medium text-white/90 sm:inline">
-          Bấm để bật tiếng
+          {t('lvcTapToUnmute')}
         </span>
       )}
     </div>

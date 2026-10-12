@@ -33,7 +33,7 @@ interface SelectedPeriod {
 const PAGE_SIZE = 30;
 
 export const NewMembersModal = ({ open, onOpenChange }: NewMembersModalProps) => {
-  const { language } = useLanguage();
+  const { t } = useLanguage();
   const todayVN = getTodayVN();
   const [mode, setMode] = useState<ViewMode>('day');
   const [selectedPeriod, setSelectedPeriod] = useState<SelectedPeriod | null>(null);
@@ -74,7 +74,7 @@ export const NewMembersModal = ({ open, onOpenChange }: NewMembersModalProps) =>
   const formatLabel = (label: string) => {
     const [y, m, d] = label.split('-');
     if (mode === 'month') return `${m}/${y}`;
-    if (mode === 'week') return `${language === 'vi' ? 'Tuần' : 'Week'} ${d}/${m}/${y}`;
+    if (mode === 'week') return `${t('nmmWeek')} ${d}/${m}/${y}`;
     return `${d}/${m}/${y}`;
   };
 
@@ -93,7 +93,7 @@ export const NewMembersModal = ({ open, onOpenChange }: NewMembersModalProps) =>
       const start = new Date(Number(y), Number(m) - 1, Number(d));
       const end = new Date(start.getTime() + 6 * 24 * 60 * 60 * 1000);
       const endDate = `${end.getFullYear()}-${String(end.getMonth() + 1).padStart(2, '0')}-${String(end.getDate()).padStart(2, '0')}`;
-      return { startDate: periodLabel, endDate, label: `${language === 'vi' ? 'Tuần' : 'Week'} ${d}/${m}/${y}`, mode: currentMode };
+      return { startDate: periodLabel, endDate, label: `${t('nmmWeek')} ${d}/${m}/${y}`, mode: currentMode };
     }
     return { startDate: periodLabel, endDate: periodLabel, label: `${d}/${m}/${y}`, mode: currentMode };
   };
@@ -111,9 +111,9 @@ export const NewMembersModal = ({ open, onOpenChange }: NewMembersModalProps) =>
   };
 
   const modeLabels = {
-    day: language === 'vi' ? 'Ngày' : 'Day',
-    week: language === 'vi' ? 'Tuần' : 'Week',
-    month: language === 'vi' ? 'Tháng' : 'Month',
+    day: t('nmmDay'),
+    week: t('nmmWeek'),
+    month: t('nmmMonth'),
   };
 
   return (
@@ -122,7 +122,7 @@ export const NewMembersModal = ({ open, onOpenChange }: NewMembersModalProps) =>
         <DialogHeader>
           <DialogTitle className="flex items-center justify-center gap-2 text-lg font-bold text-green-800 dark:text-green-300">
             <Users className="w-5 h-5 text-green-700" />
-            {language === 'vi' ? 'Thành viên mới' : 'New Members'}
+            {t('nmmTitle')}
           </DialogTitle>
         </DialogHeader>
 
@@ -133,7 +133,7 @@ export const NewMembersModal = ({ open, onOpenChange }: NewMembersModalProps) =>
               className="flex items-center gap-1 text-[15px] text-green-800 dark:text-green-300 hover:text-green-900 dark:hover:text-green-200 transition-colors mb-2 self-start"
             >
               <ChevronLeft className="w-4 h-4" />
-              {language === 'vi' ? 'Quay lại' : 'Back'}
+              {t('phpBack')}
             </button>
             <NewMembersDateDetail date={selectedPeriod.startDate} endDate={selectedPeriod.endDate} periodLabel={selectedPeriod.label} />
           </div>
@@ -145,7 +145,7 @@ export const NewMembersModal = ({ open, onOpenChange }: NewMembersModalProps) =>
               <Input
                 value={globalSearch}
                 onChange={(e) => setGlobalSearch(e.target.value)}
-                placeholder={language === 'vi' ? 'Tìm bất kỳ thành viên nào theo tên hoặc @username...' : 'Search any member by name or @username...'}
+                placeholder={t('nmmSearchPlaceholder')}
                 className="pl-9 pr-9 h-9 text-sm"
               />
               {globalSearch && (
@@ -182,7 +182,7 @@ export const NewMembersModal = ({ open, onOpenChange }: NewMembersModalProps) =>
                     </div>
                   ) : !signups?.length ? (
                     <div className="p-8 text-center text-muted-foreground">
-                      {language === 'vi' ? 'Chưa có dữ liệu' : 'No data'}
+                      {t('nmmNoData')}
                     </div>
                   ) : (
                     <table className="w-full">
@@ -192,7 +192,7 @@ export const NewMembersModal = ({ open, onOpenChange }: NewMembersModalProps) =>
                             {modeLabels[mode]}
                           </th>
                           <th className="text-right p-2.5 font-semibold text-[15px] text-green-800 dark:text-green-300">
-                            {language === 'vi' ? 'Thành viên mới' : 'New Members'}
+                            {t('nmmTitle')}
                           </th>
                         </tr>
                       </thead>
@@ -209,7 +209,7 @@ export const NewMembersModal = ({ open, onOpenChange }: NewMembersModalProps) =>
                                 {formatLabel(row.period_label)}
                                 {isToday && (
                                   <span className="ml-1 text-[11px] uppercase text-green-700 dark:text-green-200 font-bold">
-                                    {language === 'vi' ? 'Hôm nay' : 'Today'}
+                                    {t('today')}
                                   </span>
                                 )}
                                 <ChevronDown className="w-3.5 h-3.5 text-green-700 dark:text-green-300 ml-auto rotate-[-90deg]" />
@@ -230,12 +230,12 @@ export const NewMembersModal = ({ open, onOpenChange }: NewMembersModalProps) =>
                     onClick={() => setLimit(l => l + PAGE_SIZE)}
                     className="w-full text-center text-sm text-primary hover:underline py-0.5"
                   >
-                    {language === 'vi' ? 'Xem thêm...' : 'Load more...'}
+                    {t('nmmLoadMore')}
                   </button>
                 )}
 
                 <div className="text-center text-[15px] font-semibold text-green-800 dark:text-green-300">
-                  {language === 'vi' ? 'Tổng' : 'Total'}: <span className="font-bold">{grandTotal}</span>
+                  {t('claimTotal')}: <span className="font-bold">{grandTotal}</span>
                 </div>
               </>
             )}

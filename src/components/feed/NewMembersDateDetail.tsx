@@ -59,7 +59,7 @@ const getPlatformName = (link: SocialLink): string => {
 };
 
 export const NewMembersDateDetail = ({ date, endDate, periodLabel }: Props) => {
-  const { language } = useLanguage();
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const isRange = endDate && endDate !== date;
@@ -104,7 +104,7 @@ export const NewMembersDateDetail = ({ date, endDate, periodLabel }: Props) => {
   return (
     <div className="flex-1 overflow-auto">
       <div className="text-center text-[15px] font-semibold mb-2 text-green-800 dark:text-green-300">
-        {displayLabel} — {users?.length || 0} {language === 'vi' ? 'thành viên mới' : 'new members'}
+        {displayLabel} — {users?.length || 0} {t('nmdNewMembers')}
       </div>
 
       {/* Search */}
@@ -113,7 +113,7 @@ export const NewMembersDateDetail = ({ date, endDate, periodLabel }: Props) => {
         <Input
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder={language === 'vi' ? 'Tìm theo tên hoặc username...' : 'Search by name or username...'}
+          placeholder={t('nmdSearchPlaceholder')}
           className="pl-9 pr-8 h-9 text-sm"
         />
         {searchQuery && (
@@ -141,8 +141,8 @@ export const NewMembersDateDetail = ({ date, endDate, periodLabel }: Props) => {
         if (!filtered?.length) return (
           <div className="p-8 text-center text-muted-foreground">
             {q
-              ? (language === 'vi' ? 'Không tìm thấy thành viên' : 'No members found')
-              : (language === 'vi' ? 'Không có thành viên mới' : 'No new members')}
+              ? t('nmdNoMembersFound')
+              : t('nmdNoNewMembers')}
           </div>
         );
 
