@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useLanguage } from '@/i18n/LanguageContext';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Globe2, Zap, CalendarDays } from 'lucide-react';
@@ -13,6 +14,7 @@ interface MonthlyStats {
 }
 
 export function CrossPlatformBanner() {
+  const { t } = useLanguage();
   const [monthlyStats, setMonthlyStats] = useState<MonthlyStats[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -38,7 +40,7 @@ export function CrossPlatformBanner() {
           const nextY = m === 12 ? y + 1 : y;
           months.push({
             key,
-            label: `Tháng ${m}`,
+            label: t('cpbMonth', { month: m }),
             start: `${key}-01`,
             end: `${nextY}-${String(nextM).padStart(2, '0')}-01`,
           });
@@ -104,9 +106,9 @@ export function CrossPlatformBanner() {
               <Globe2 className="w-5 h-5 text-primary" />
             </div>
             <div>
-              <p className="text-sm font-semibold text-foreground">Hệ sinh thái hợp nhất</p>
+              <p className="text-sm font-semibold text-foreground">{t('cpbTitle')}</p>
               <p className="text-xs text-muted-foreground">
-                Light Score & FUN Money được ghi nhận chung giữa tất cả nền tảng FUN
+                {t('cpbDesc')}
               </p>
             </div>
           </div>

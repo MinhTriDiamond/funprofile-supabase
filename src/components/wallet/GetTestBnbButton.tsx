@@ -1,9 +1,16 @@
 import { Button } from '@/components/ui/button';
+import { useLanguage } from '@/i18n/LanguageContext';
 import { Droplet, ExternalLink } from 'lucide-react';
 
-const FAUCETS = [
+interface Faucet {
+  name?: string;
+  nameKey?: string;
+  url: string;
+}
+
+const FAUCETS: Faucet[] = [
   {
-    name: 'BNB Chain Faucet (chính thức)',
+    nameKey: 'gtbOfficialFaucetName',
     url: 'https://www.bnbchain.org/en/testnet-faucet',
   },
   {
@@ -13,6 +20,7 @@ const FAUCETS = [
 ];
 
 export const GetTestBnbButton = () => {
+  const { t } = useLanguage();
   const handleOpen = (url: string) => {
     window.open(url, '_blank', 'noopener,noreferrer');
   };
@@ -28,13 +36,13 @@ export const GetTestBnbButton = () => {
             className="w-full"
           >
             <Droplet className="w-4 h-4 mr-2" />
-            <span className="truncate">{faucet.name}</span>
+            <span className="truncate">{faucet.nameKey ? t(faucet.nameKey as any) : faucet.name}</span>
             <ExternalLink className="w-3 h-3 ml-2 opacity-70" />
           </Button>
         ))}
       </div>
       <p className="text-xs text-center text-muted-foreground px-2">
-        Nhận tBNB miễn phí để trả phí gas khi ký giao dịch trên BSC Testnet. Dán địa chỉ ví của bạn vào faucet.
+        {t('gtbDesc')}
       </p>
     </div>
   );

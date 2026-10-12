@@ -1,4 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useLanguage } from '@/i18n/LanguageContext';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Lock, Unlock, Clock, AlertCircle } from 'lucide-react';
@@ -13,6 +14,7 @@ interface LockedGrantsPanelProps {
 }
 
 export function LockedGrantsPanel({ walletAddress }: LockedGrantsPanelProps) {
+  const { t } = useLanguage();
   const { grants, releasableGrants, totalLocked, isLoading, isConfigured, refetch } = useLockedGrants(walletAddress);
   const { writeContract, data: txHash, isPending } = useWriteContract();
   const [releasingIndex, setReleasingIndex] = useState<number | null>(null);
@@ -38,11 +40,11 @@ export function LockedGrantsPanel({ walletAddress }: LockedGrantsPanelProps) {
       } as any,
       {
         onSuccess: () => {
-          toast.success('Đã gửi giao dịch release!');
+          toast.success(t('lgpToastReleaseSent'));
           refetch();
         },
         onError: (err) => {
-          toast.error(`Lỗi: ${err.message.slice(0, 100)}`);
+          toast.error(t('lgpToastError', { message: err.message.slice(0, 100) }));
           setReleasingIndex(null);
         },
       },
@@ -56,7 +58,7 @@ export function LockedGrantsPanel({ walletAddress }: LockedGrantsPanelProps) {
       <CardHeader className="pb-3">
         <CardTitle className="text-sm font-medium flex items-center gap-2">
           <Lock className="w-4 h-4 text-primary" />
-          FUN Đang Khóa (Locked Grants)
+          {t('lgpTitle')}
           {totalLocked > 0n && (
             <Badge variant="secondary" className="ml-auto">
               {fromWei(totalLocked).toFixed(2)} FUN
@@ -79,15 +81,15 @@ export function LockedGrantsPanel({ walletAddress }: LockedGrantsPanelProps) {
                 <div className="text-xs text-muted-foreground flex items-center gap-1">
                   <Clock className="w-3 h-3" />
                   {isClaimed
-                    ? 'Đã nhận'
+                    ? t('walletReceived')
                     : isReleasable
-                      ? 'Sẵn sàng nhận'
-                      : `Mở khóa: ${releaseDate.toLocaleDateString('vi-VN')}`}
+                      ? t('lgpReadyToClaim')
+                      : t('lgpUnlockDate', { date: releaseDate.toLocaleDateString('vi-VN') })}
                 </div>
               </div>
               <div>
                 {isClaimed ? (
-                  <Badge variant="outline" className="text-muted-foreground">Đã nhận</Badge>
+                  <Badge variant="outline" className="text-muted-foreground">{t('walletReceived')}</Badge>
                 ) : isReleasable ? (
                   <Button
                     size="sm"
@@ -95,12 +97,12 @@ export function LockedGrantsPanel({ walletAddress }: LockedGrantsPanelProps) {
                     disabled={isPending || isConfirming || releasingIndex === idx}
                   >
                     <Unlock className="w-3 h-3 mr-1" />
-                    {releasingIndex === idx ? 'Đang xử lý...' : 'Nhận'}
+                    {releasingIndex === idx ? t('walletProcessing') : t('walletReceive')}
                   </Button>
                 ) : (
                   <Badge variant="secondary">
                     <Lock className="w-3 h-3 mr-1" />
-                    Đang khóa
+                    {t('lgpLocked')}
                   </Badge>
                 )}
               </div>
@@ -111,7 +113,7 @@ export function LockedGrantsPanel({ walletAddress }: LockedGrantsPanelProps) {
         {releasableGrants.length > 0 && (
           <div className="text-xs text-primary flex items-center gap-1 pt-1">
             <AlertCircle className="w-3 h-3" />
-            Bạn có {releasableGrants.length} khoản FUN sẵn sàng nhận!
+            {t('lgpReleasableNotice', { count: releasableGrants.length })}
           </div>
         )}
       </CardContent>

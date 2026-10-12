@@ -96,7 +96,7 @@ export function FunMoneyGuide() {
               <span className="text-xs font-semibold text-foreground">{t('funMoneyFlowSummary')}</span>
             </div>
             <div className="flex items-center justify-center gap-1 text-[10px] text-muted-foreground flex-wrap">
-              <span className="px-2 py-1 rounded bg-primary/10 text-primary font-medium">Hoạt động</span>
+              <span className="px-2 py-1 rounded bg-primary/10 text-primary font-medium">{t('usrBadgeActive')}</span>
               <span>→</span>
               <span className="px-2 py-1 rounded bg-emerald-500/10 text-emerald-700 font-medium">Epoch Snapshot</span>
               <span>→</span>

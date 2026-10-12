@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useLanguage } from '@/i18n/LanguageContext';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -62,6 +63,7 @@ export const ClaimRewardsSection = ({
 }: ClaimRewardsSectionProps) => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { t } = useLanguage();
   const [adminMessage, setAdminMessage] = useState('');
   const [isSendingMessage, setIsSendingMessage] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
@@ -85,12 +87,12 @@ export const ClaimRewardsSection = ({
   const [isRequestingApproval, setIsRequestingApproval] = useState(false);
 
   const statusConfig: Record<string, { label: string; color: string; disabled: boolean }> = {
-    loading: { label: 'Đang tải trạng thái thưởng…', color: 'text-gray-600', disabled: true },
-    inactive: { label: 'Chưa yêu cầu duyệt', color: 'text-gray-600', disabled: true },
-    pending: { label: 'Chờ Admin duyệt', color: 'text-yellow-600', disabled: true },
-    approved: { label: `Claim ${formatNumber(claimableReward)} CAMLY`, color: 'text-green-600', disabled: false },
-    on_hold: { label: 'Tạm giữ', color: 'text-orange-600', disabled: true },
-    rejected: { label: 'Từ chối', color: 'text-red-600', disabled: true },
+    loading: { label: t('crsLoadingRewardStatus'), color: 'text-gray-600', disabled: true },
+    inactive: { label: t('crsNotRequested'), color: 'text-gray-600', disabled: true },
+    pending: { label: t('crsWaitingAdminApproval'), color: 'text-yellow-600', disabled: true },
+    approved: { label: t('crsClaimAmount', { amount: formatNumber(claimableReward) }), color: 'text-green-600', disabled: false },
+    on_hold: { label: t('crsOnHold'), color: 'text-orange-600', disabled: true },
+    rejected: { label: t('adminReject'), color: 'text-red-600', disabled: true },
   };
 
   const config = statusConfig[rewardStatus] || statusConfig.inactive;
@@ -98,16 +100,16 @@ export const ClaimRewardsSection = ({
 
   const handleRequestApproval = async () => {
     const missing: string[] = [];
-    if (!hasFullName) missing.push('Họ tên đầy đủ (≥4 ký tự)');
-    if (!hasAvatar) missing.push('Ảnh đại diện');
-    if (!hasCover) missing.push('Ảnh bìa trang cá nhân');
-    if (!hasSocialLinks) missing.push('Liên kết mạng xã hội (≥1)');
-    if (!hasTodayPost) missing.push('Đăng ít nhất 1 bài hôm nay');
-    if (!isConnected) missing.push('Kết nối ví');
-    if (accountAgeDays < 7) missing.push(`Tài khoản ≥ 7 ngày (hiện ${accountAgeDays} ngày)`);
+    if (!hasFullName) missing.push(t('crsFullNameCond'));
+    if (!hasAvatar) missing.push(t('profilePhoto'));
+    if (!hasCover) missing.push(t('crsCoverPhoto'));
+    if (!hasSocialLinks) missing.push(t('crsSocialLinksCond'));
+    if (!hasTodayPost) missing.push(t('crsPostTodayCond'));
+    if (!isConnected) missing.push(t('connectWallet'));
+    if (accountAgeDays < 7) missing.push(t('crsAccountAgeCond', { days: accountAgeDays }));
     
     if (missing.length > 0) {
-      toast.error('Chưa đủ điều kiện gửi yêu cầu', {
+      toast.error(t('crsNotEligibleToRequest'), {
         description: missing.map(m => `• ${m}`).join('\n'),
         duration: 6000,
       });
@@ -117,7 +119,7 @@ export const ClaimRewardsSection = ({
     setIsRequestingApproval(true);
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user) { toast.error('Vui lòng đăng nhập'); return; }
+      if (!session?.user) { toast.error(t('crsLoginRequired')); return; }
 
       const { error } = await supabase
         .from('profiles')
@@ -125,14 +127,14 @@ export const ClaimRewardsSection = ({
         .eq('id', session.user.id);
       
       if (error) throw error;
-      toast.success('Đã gửi yêu cầu duyệt thành công! ✅', {
-        description: 'Admin sẽ xét duyệt trong thời gian sớm nhất.',
+      toast.success(t('crsRequestSentSuccess'), {
+        description: t('crsRequestSentDesc'),
       });
       // Force page reload to reflect new status
       window.location.reload();
     } catch (err) {
       console.error('Error requesting approval:', err);
-      toast.error('Gửi yêu cầu thất bại, vui lòng thử lại');
+      toast.error(t('crsRequestFailed'));
     } finally {
       setIsRequestingApproval(false);
     }
@@ -146,32 +148,32 @@ export const ClaimRewardsSection = ({
       return;
     }
     if (hasPendingClaim) {
-      toast.info(`Bạn đang có ${activePendingClaims?.length} lệnh claim chờ duyệt. Vui lòng đợi Admin xử lý.`);
+      toast.info(t('crsPendingClaimsToast', { count: activePendingClaims?.length }));
       return;
     }
     if (walletSecurity?.isBlocked) {
-      toast.error('Tài khoản bị khóa do thay đổi ví quá nhiều. Vui lòng liên hệ Admin.');
+      toast.error(t('crsAccountBlockedToast'));
       return;
     }
     if (walletSecurity?.isFrozen) {
-      toast.warning(`Rút thưởng tạm khóa do thay đổi ví. Vui lòng thử lại sau ${walletSecurity.freezeHoursLeft} giờ.`);
+      toast.warning(t('crsFrozenToast', { hours: walletSecurity.freezeHoursLeft }));
       return;
     }
     if (config.disabled) {
-      if (rewardStatus === 'pending') toast.info('Tài khoản cần được Admin xét duyệt trước khi claim. Vui lòng chờ.');
-      else if (rewardStatus === 'on_hold') toast.warning('Tài khoản đang bị tạm giữ, vui lòng liên hệ admin');
-      else if (rewardStatus === 'rejected') toast.error('Phần thưởng đã bị từ chối, vui lòng liên hệ admin');
+      if (rewardStatus === 'pending') toast.info(t('crsNeedApprovalToast'));
+      else if (rewardStatus === 'on_hold') toast.warning(t('crsOnHoldToast'));
+      else if (rewardStatus === 'rejected') toast.error(t('crsRejectedToast'));
       return;
     }
     if (!allConditionsMet) {
       const missing: string[] = [];
-      if (!hasFullName) missing.push('• Cập nhật họ tên đầy đủ (tối thiểu 4 ký tự)');
-      if (!hasAvatar) missing.push('• Thêm ảnh đại diện (hình người thật)');
-      if (!hasCover) missing.push('• Thêm ảnh bìa trang cá nhân');
-      if (!hasSocialLinks) missing.push('• Thêm ít nhất 1 liên kết mạng xã hội trên trang cá nhân');
-      if (!hasTodayPost) missing.push('• Đăng ít nhất 1 bài hôm nay');
-      if (!isConnected) missing.push('• Kết nối ví');
-      toast.warning('Chưa đủ điều kiện claim', {
+      if (!hasFullName) missing.push(t('crsUpdateFullName'));
+      if (!hasAvatar) missing.push(t('crsAddAvatar'));
+      if (!hasCover) missing.push(t('crsAddCover'));
+      if (!hasSocialLinks) missing.push(t('crsAddSocialLink'));
+      if (!hasTodayPost) missing.push(t('crsPostTodayBullet'));
+      if (!isConnected) missing.push(t('crsConnectWalletBullet'));
+      toast.warning(t('crsNotEligibleToClaim'), {
         description: missing.join('\n'),
         duration: 6000,
       });
@@ -184,14 +186,14 @@ export const ClaimRewardsSection = ({
 
   const handleSendToAdmin = async () => {
     if (!adminMessage.trim()) {
-      toast.warning('Vui lòng nhập nội dung tin nhắn');
+      toast.warning(t('crsEnterMessage'));
       return;
     }
     setIsSendingMessage(true);
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.user) {
-        toast.error('Vui lòng đăng nhập');
+        toast.error(t('crsLoginRequired'));
         return;
       }
       const userId = session.user.id;
@@ -252,13 +254,13 @@ export const ClaimRewardsSection = ({
         type: 'comment', // reuse existing type for bell notification
       });
 
-      toast.success('Đã gửi tin nhắn đến Admin!', {
-        description: 'Admin sẽ phản hồi sớm nhất có thể',
+      toast.success(t('crsMessageSentSuccess'), {
+        description: t('crsMessageSentDesc'),
       });
       setAdminMessage('');
     } catch (err) {
       console.error('Error sending admin message:', err);
-      toast.error('Gửi tin nhắn thất bại, vui lòng thử lại');
+      toast.error(t('crsMessageFailed'));
     } finally {
       setIsSendingMessage(false);
     }
@@ -279,7 +281,7 @@ export const ClaimRewardsSection = ({
     queryClient.invalidateQueries({ queryKey: ['wallet-security'] });
     // Trigger event để WalletCenterContainer refetch (nó listen window event)
     window.dispatchEvent(new CustomEvent('wallet:refetch-rewards'));
-    toast.success('Đang tải lại số dư…');
+    toast.success(t('crsRefreshingBalance'));
   };
 
   return (
@@ -294,7 +296,7 @@ export const ClaimRewardsSection = ({
             <div>
               <CardTitle className="text-lg text-white">Claim Rewards</CardTitle>
               <CardDescription className="text-white/80 text-xs">
-                Nhận thưởng CAMLY từ hoạt động trên FUN PROFILE
+                {t('crsHeaderDesc')}
               </CardDescription>
             </div>
           </div>
@@ -303,8 +305,8 @@ export const ClaimRewardsSection = ({
             onClick={handleManualRefresh}
             disabled={isLoading}
             className="w-9 h-9 rounded-full bg-white/20 hover:bg-white/30 active:bg-white/40 transition flex items-center justify-center shrink-0 disabled:opacity-50"
-            title="Tải lại số dư"
-            aria-label="Tải lại số dư"
+            title={t('crsRefreshBalance')}
+            aria-label={t('crsRefreshBalance')}
           >
             <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
           </button>
@@ -318,52 +320,52 @@ export const ClaimRewardsSection = ({
           <div className="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-xl p-3.5">
             <div className="flex items-center gap-1.5 mb-1.5">
               <CheckCircle2 className="w-4 h-4 text-green-600" />
-              <span className="text-xs text-green-700 font-medium">Có thể Claim</span>
+              <span className="text-xs text-green-700 font-medium">{t('crsClaimableLabel')}</span>
             </div>
             <div className="flex items-center gap-1.5">
               <img src={camlyLogo} alt="CAMLY" className="w-5 h-5 rounded-full" />
               {showSkeleton ? <SkeletonValue /> : <span className="text-lg font-bold text-green-800">{formatNumber(claimableReward)}</span>}
             </div>
-            <p className="text-xs text-green-600 mt-0.5">{camlyPrice === null ? 'Chưa có giá' : `~$${(claimableReward * camlyPrice).toFixed(2)}`}</p>
+            <p className="text-xs text-green-600 mt-0.5">{camlyPrice === null ? t('ggsNoPrice') : `~$${(claimableReward * camlyPrice).toFixed(2)}`}</p>
           </div>
 
           {/* Chờ duyệt */}
           <div className="bg-gradient-to-br from-yellow-50 to-amber-50 border border-yellow-200 rounded-xl p-3.5">
             <div className="flex items-center gap-1.5 mb-1.5">
               <Clock className="w-4 h-4 text-yellow-600" />
-              <span className="text-xs text-yellow-700 font-medium">Chờ duyệt</span>
+              <span className="text-xs text-yellow-700 font-medium">{t('adminPendingReview')}</span>
             </div>
             <div className="flex items-center gap-1.5">
               <img src={camlyLogo} alt="CAMLY" className="w-5 h-5 rounded-full" />
               {showSkeleton ? <SkeletonValue /> : <span className="text-lg font-bold text-yellow-800">{formatNumber(pendingAmount)}</span>}
             </div>
-            <p className="text-xs text-yellow-600 mt-0.5">{camlyPrice === null ? 'Chưa có giá' : `~$${(pendingAmount * camlyPrice).toFixed(2)}`}</p>
+            <p className="text-xs text-yellow-600 mt-0.5">{camlyPrice === null ? t('ggsNoPrice') : `~$${(pendingAmount * camlyPrice).toFixed(2)}`}</p>
           </div>
 
           {/* Đã Claim */}
           <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-3.5">
             <div className="flex items-center gap-1.5 mb-1.5">
               <Wallet className="w-4 h-4 text-blue-600" />
-              <span className="text-xs text-blue-700 font-medium">Đã Claim</span>
+              <span className="text-xs text-blue-700 font-medium">{t('walletClaimed')}</span>
             </div>
             <div className="flex items-center gap-1.5">
               <img src={camlyLogo} alt="CAMLY" className="w-5 h-5 rounded-full" />
               {showSkeleton ? <SkeletonValue /> : <span className="text-lg font-bold text-blue-800">{formatNumber(claimedAmount)}</span>}
             </div>
-            <p className="text-xs text-blue-600 mt-0.5">{camlyPrice === null ? 'Chưa có giá' : `~$${(claimedAmount * camlyPrice).toFixed(2)}`}</p>
+            <p className="text-xs text-blue-600 mt-0.5">{camlyPrice === null ? t('ggsNoPrice') : `~$${(claimedAmount * camlyPrice).toFixed(2)}`}</p>
           </div>
 
           {/* Tổng đã nhận */}
           <div className="bg-gradient-to-br from-purple-50 to-violet-50 border border-purple-200 rounded-xl p-3.5">
             <div className="flex items-center gap-1.5 mb-1.5">
               <TrendingUp className="w-4 h-4 text-purple-600" />
-              <span className="text-xs text-purple-700 font-medium">Tổng đã nhận</span>
+              <span className="text-xs text-purple-700 font-medium">{t('crsTotalReceived')}</span>
             </div>
             <div className="flex items-center gap-1.5">
               <img src={camlyLogo} alt="CAMLY" className="w-5 h-5 rounded-full" />
               {showSkeleton ? <SkeletonValue /> : <span className="text-lg font-bold text-purple-800">{formatNumber(totalReward)}</span>}
             </div>
-            <p className="text-xs text-purple-600 mt-0.5">{camlyPrice === null ? 'Chưa có giá' : `~$${(totalReward * camlyPrice).toFixed(2)}`}</p>
+            <p className="text-xs text-purple-600 mt-0.5">{camlyPrice === null ? t('ggsNoPrice') : `~$${(totalReward * camlyPrice).toFixed(2)}`}</p>
           </div>
         </div>
 
@@ -374,13 +376,13 @@ export const ClaimRewardsSection = ({
               <ClipboardCheck className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
               <div className="flex-1">
                 <p className="text-sm font-semibold text-blue-800">
-                  {rewardStatus === 'rejected' ? 'Yêu cầu bị từ chối — Gửi lại?' : 'Gửi yêu cầu duyệt để claim thưởng'}
+                  {rewardStatus === 'rejected' ? t('crsRequestRejectedTitle') : t('crsRequestTitle')}
                 </p>
                 <p className="text-xs text-blue-700 mt-1">
-                  Hoàn thành đủ 6 điều kiện cơ bản bên dưới rồi bấm nút gửi yêu cầu. Admin sẽ xét duyệt để bạn có thể claim CAMLY.
+                  {t('crsRequestDesc')}
                 </p>
                 {rewardStatus === 'rejected' && adminNotes && (
-                  <p className="text-xs text-red-600 mt-1">Lý do từ chối: {adminNotes}</p>
+                  <p className="text-xs text-red-600 mt-1">{t('crsRejectReason', { reason: adminNotes })}</p>
                 )}
                 <Button
                   onClick={handleRequestApproval}
@@ -389,9 +391,9 @@ export const ClaimRewardsSection = ({
                   className="mt-2 bg-blue-600 hover:bg-blue-700 text-white"
                 >
                   {isRequestingApproval ? (
-                    <><Loader2 className="w-4 h-4 mr-1.5 animate-spin" />Đang gửi...</>
+                    <><Loader2 className="w-4 h-4 mr-1.5 animate-spin" />{t('claimSending')}</>
                   ) : (
-                    <><Send className="w-4 h-4 mr-1.5" />Gửi yêu cầu duyệt</>
+                    <><Send className="w-4 h-4 mr-1.5" />{t('crsSendRequestBtn')}</>
                   )}
                 </Button>
               </div>
@@ -405,9 +407,9 @@ export const ClaimRewardsSection = ({
             <div className="flex items-start gap-2">
               <Clock className="w-5 h-5 text-yellow-600 shrink-0 mt-0.5" />
               <div>
-                <p className="text-sm font-semibold text-yellow-800">Chờ Admin xét duyệt ⏳</p>
+                <p className="text-sm font-semibold text-yellow-800">{t('crsWaitingApprovalTitle')}</p>
                 <p className="text-xs text-yellow-700 mt-1">
-                  Yêu cầu của bạn đã được gửi. Vui lòng chờ Admin duyệt để claim phần thưởng.
+                  {t('crsWaitingApprovalDesc')}
                 </p>
               </div>
             </div>
@@ -420,10 +422,10 @@ export const ClaimRewardsSection = ({
             <div className="flex items-start gap-2">
               <Info className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
               <div>
-                <p className="text-sm font-semibold text-amber-800">Tài khoản đang chờ xác minh 🙏</p>
+                <p className="text-sm font-semibold text-amber-800">{t('crsVerifyTitle')}</p>
                 <p className="text-xs text-amber-700 mt-1">{adminNotes}</p>
                 <p className="text-xs text-amber-600 mt-2">
-                  Hệ thống cần xác minh để bảo vệ quyền lợi cho tất cả mọi người. Vui lòng liên hệ Admin qua tin nhắn để được hỗ trợ nhanh nhất. Cảm ơn bạn đã thấu hiểu 💛
+                  {t('crsVerifyDesc')}
                 </p>
               </div>
             </div>
@@ -436,13 +438,13 @@ export const ClaimRewardsSection = ({
             <div className="flex items-start gap-2">
               <Lock className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
               <div>
-                <p className="text-sm font-semibold text-red-800">Tạm khóa rút thưởng do thay đổi ví 🔒</p>
+                <p className="text-sm font-semibold text-red-800">{t('crsFreezeTitle')}</p>
                 <p className="text-xs text-red-700 mt-1">
-                  Tài khoản đang được kiểm tra bảo mật. Vui lòng thử lại sau {walletSecurity.freezeHoursLeft} giờ.
+                  {t('crsFreezeDesc', { hours: walletSecurity.freezeHoursLeft })}
                 </p>
                 {walletSecurity.claimFreezeUntil && (
                   <p className="text-xs text-red-600 mt-1">
-                    ⏰ Mở khóa lúc: {new Date(walletSecurity.claimFreezeUntil).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })}
+                    {t('crsUnlockAt', { time: new Date(walletSecurity.claimFreezeUntil).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' }) })}
                   </p>
                 )}
               </div>
@@ -456,9 +458,9 @@ export const ClaimRewardsSection = ({
             <div className="flex items-start gap-2">
               <ShieldAlert className="w-5 h-5 text-red-700 shrink-0 mt-0.5" />
               <div>
-                <p className="text-sm font-semibold text-red-900">Tài khoản bị khóa rút thưởng ⛔</p>
+                <p className="text-sm font-semibold text-red-900">{t('crsBlockedTitle')}</p>
                 <p className="text-xs text-red-800 mt-1">
-                  Do thay đổi ví quá nhiều lần. Vui lòng liên hệ Admin để được hỗ trợ.
+                  {t('crsBlockedDesc')}
                 </p>
               </div>
             </div>
@@ -470,12 +472,12 @@ export const ClaimRewardsSection = ({
           <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-xl p-3.5 space-y-3">
             <div className="flex items-center gap-2">
               <MessageCircle className="w-4 h-4 text-blue-600" />
-              <p className="text-sm font-semibold text-blue-800 dark:text-blue-300">Nhắn tin với Admin</p>
+              <p className="text-sm font-semibold text-blue-800 dark:text-blue-300">{t('crsMessageAdminTitle')}</p>
             </div>
             <Textarea
               value={adminMessage}
               onChange={(e) => setAdminMessage(e.target.value)}
-              placeholder="Nhập nội dung cần hỗ trợ... (VD: Tài khoản em bị giữ, admin xem giúp em ạ)"
+              placeholder={t('crsMessagePlaceholder')}
               className="min-h-[80px] text-sm resize-none bg-white dark:bg-background"
               maxLength={500}
             />
@@ -488,9 +490,9 @@ export const ClaimRewardsSection = ({
                 className="bg-blue-600 hover:bg-blue-700 text-white"
               >
                 {isSendingMessage ? (
-                  <><Loader2 className="w-4 h-4 mr-1.5 animate-spin" />Đang gửi...</>
+                  <><Loader2 className="w-4 h-4 mr-1.5 animate-spin" />{t('claimSending')}</>
                 ) : (
-                  <><Send className="w-4 h-4 mr-1.5" />Gửi tin nhắn</>
+                  <><Send className="w-4 h-4 mr-1.5" />{t('sendMsgBtn')}</>
                 )}
               </Button>
             </div>
@@ -503,9 +505,9 @@ export const ClaimRewardsSection = ({
             <div className="flex items-start gap-2">
               <Clock className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
               <div>
-                <p className="text-sm font-semibold text-amber-800">Đang có lệnh claim chờ duyệt ⏳</p>
+                <p className="text-sm font-semibold text-amber-800">{t('crsPendingClaimBannerTitle')}</p>
                 <p className="text-xs text-amber-700 mt-1">
-                  Bạn có {activePendingClaims?.length} lệnh claim ({formatNumber(pendingClaimTotal)} CAMLY) đang chờ Admin duyệt. Không thể tạo lệnh mới cho đến khi được xử lý.
+                  {t('crsPendingClaimBannerDesc', { count: activePendingClaims?.length, amount: formatNumber(pendingClaimTotal) })}
                 </p>
               </div>
             </div>
@@ -528,7 +530,7 @@ export const ClaimRewardsSection = ({
                 className="w-full py-6 text-base rounded-xl font-bold shadow-lg bg-gray-200 text-gray-600"
               >
                 <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                Đang tải trạng thái thưởng…
+                {t('crsLoadingRewardStatus')}
               </Button>
             );
           }
@@ -542,7 +544,7 @@ export const ClaimRewardsSection = ({
                 className="w-full bg-gradient-to-r from-emerald-600 to-green-500 hover:from-emerald-700 hover:to-green-600 text-white font-bold py-6 text-base rounded-xl shadow-lg"
               >
                 <Wallet className="w-5 h-5 mr-2" />
-                Kết nối ví để Claim
+                {t('crsConnectWalletToClaim')}
               </Button>
             );
           }
@@ -558,12 +560,12 @@ export const ClaimRewardsSection = ({
               >
                 {isRequestingApproval ? (
                   <span className="flex items-center gap-2">
-                    <Loader2 className="w-5 h-5 animate-spin" />Đang gửi yêu cầu...
+                    <Loader2 className="w-5 h-5 animate-spin" />{t('crsSendingRequest')}
                   </span>
                 ) : (
                   <span className="flex items-center gap-2">
                     <Send className="w-5 h-5" />
-                    {rewardStatus === 'rejected' ? 'Gửi lại yêu cầu duyệt' : 'Gửi yêu cầu duyệt để Claim'}
+                    {rewardStatus === 'rejected' ? t('crsSendRequestAgain') : t('crsSendRequestToClaim')}
                   </span>
                 )}
               </Button>
@@ -575,13 +577,13 @@ export const ClaimRewardsSection = ({
             return (
               <Button
                 data-testid="claim-cta"
-                onClick={() => setAdminMessage(adminMessage || 'Admin xét duyệt giúp em với ạ')}
+                onClick={() => setAdminMessage(adminMessage || t('crsPresetAdminMessage'))}
                 aria-disabled="true"
                 className="w-full py-6 text-base rounded-xl font-bold shadow-lg bg-gradient-to-r from-yellow-400 to-amber-400 text-white"
-                title="Tài khoản đang chờ Admin xét duyệt. Bạn có thể nhắn Admin bên dưới."
+                title={t('crsWaitingCtaTitle')}
               >
                 <Clock className="w-5 h-5 mr-2" />
-                Đang chờ Admin duyệt — Nhắn Admin bên dưới
+                {t('crsWaitingCtaLabel')}
               </Button>
             );
           }
@@ -594,10 +596,10 @@ export const ClaimRewardsSection = ({
                 aria-disabled="true"
                 disabled
                 className="w-full py-6 text-base rounded-xl font-bold shadow-lg bg-amber-200 text-amber-800"
-                title={adminNotes || 'Tài khoản đang tạm giữ. Liên hệ Admin để được hỗ trợ.'}
+                title={adminNotes || t('crsOnHoldCtaTitle')}
               >
                 <AlertTriangle className="w-5 h-5 mr-2" />
-                Tạm giữ — Nhắn Admin để được hỗ trợ
+                {t('crsOnHoldCtaLabel')}
               </Button>
             );
           }
@@ -610,10 +612,10 @@ export const ClaimRewardsSection = ({
                 aria-disabled="true"
                 disabled
                 className="w-full py-6 text-base rounded-xl font-bold shadow-lg bg-red-200 text-red-800"
-                title={adminNotes || 'Tài khoản bị cấm rút thưởng. Liên hệ Admin để được hỗ trợ.'}
+                title={adminNotes || t('crsBannedCtaTitle')}
               >
                 <ShieldAlert className="w-5 h-5 mr-2" />
-                Bị cấm Claim — Liên hệ Admin
+                {t('crsBannedCtaLabel')}
               </Button>
             );
           }
@@ -626,10 +628,10 @@ export const ClaimRewardsSection = ({
                 aria-disabled="true"
                 disabled
                 className="w-full py-6 text-base rounded-xl font-bold shadow-lg bg-red-200 text-red-800"
-                title="Tài khoản bị khóa rút thưởng. Liên hệ Admin."
+                title={t('crsBlockedCtaTitle')}
               >
                 <ShieldAlert className="w-5 h-5 mr-2" />
-                Bị khóa rút thưởng — Liên hệ Admin
+                {t('crsBlockedCtaLabel')}
               </Button>
             );
           }
@@ -642,10 +644,10 @@ export const ClaimRewardsSection = ({
                 aria-disabled="true"
                 disabled
                 className="w-full py-6 text-base rounded-xl font-bold shadow-lg bg-red-100 text-red-700"
-                title={`Mở khoá sau ${walletSecurity.freezeHoursLeft} giờ`}
+                title={t('crsFrozenCtaTitle', { hours: walletSecurity.freezeHoursLeft })}
               >
                 <Lock className="w-5 h-5 mr-2" />
-                Tạm khóa {walletSecurity.freezeHoursLeft}h do thay đổi ví
+                {t('crsFrozenCtaLabel', { hours: walletSecurity.freezeHoursLeft })}
               </Button>
             );
           }
@@ -658,10 +660,10 @@ export const ClaimRewardsSection = ({
                 aria-disabled="true"
                 disabled
                 className="w-full py-6 text-base rounded-xl font-bold shadow-lg bg-amber-100 text-amber-800 border border-amber-300"
-                title={`Có ${activePendingClaims?.length} lệnh claim đang chờ Admin duyệt`}
+                title={t('crsPendingCtaTitle', { count: activePendingClaims?.length })}
               >
                 <Clock className="w-5 h-5 mr-2" />
-                Đang có {activePendingClaims?.length} lệnh chờ duyệt
+                {t('crsPendingCtaLabel', { count: activePendingClaims?.length })}
               </Button>
             );
           }
@@ -674,10 +676,10 @@ export const ClaimRewardsSection = ({
                 aria-disabled="true"
                 disabled
                 className="w-full py-6 text-base rounded-xl font-bold shadow-lg bg-gray-200 text-gray-700"
-                title="Đã hết giới hạn claim hôm nay, quay lại ngày mai"
+                title={t('crsDailyDoneTitle')}
               >
                 <Clock className="w-5 h-5 mr-2" />
-                Hết giới hạn ngày — quay lại ngày mai
+                {t('crsDailyDoneLabel')}
               </Button>
             );
           }
@@ -691,10 +693,10 @@ export const ClaimRewardsSection = ({
                 aria-disabled="true"
                 disabled
                 className="w-full py-6 text-base rounded-xl font-bold shadow-lg bg-white text-orange-700 border-2 border-orange-300"
-                title={`Cần thêm ${formatNumber(needed)} CAMLY để đạt ngưỡng ${formatNumber(MINIMUM_THRESHOLD)}`}
+                title={t('crsNeedMoreTitle', { needed: formatNumber(needed), threshold: formatNumber(MINIMUM_THRESHOLD) })}
               >
                 <Gift className="w-5 h-5 mr-2" />
-                Cần thêm {formatNumber(needed)} CAMLY để claim
+                {t('crsNeedMoreLabel', { needed: formatNumber(needed) })}
               </Button>
             );
           }
@@ -708,7 +710,7 @@ export const ClaimRewardsSection = ({
                 className="w-full py-6 text-base rounded-xl font-bold shadow-lg transition-all bg-gradient-to-r from-yellow-500 to-amber-500 hover:from-yellow-600 hover:to-amber-600 text-white hover:shadow-xl hover:scale-[1.01]"
               >
                 <Gift className="w-5 h-5 mr-2" />
-                Claim {formatNumber(claimableReward)} CAMLY
+                {t('crsClaimAmount', { amount: formatNumber(claimableReward) })}
               </Button>
             );
           }
@@ -720,10 +722,10 @@ export const ClaimRewardsSection = ({
               aria-disabled="true"
               disabled
               className="w-full py-6 text-base rounded-xl font-bold shadow-lg bg-gray-200 text-gray-700"
-              title={`Trạng thái: ${rewardStatus}`}
+              title={t('crsStatusFallbackTitle', { status: rewardStatus })}
             >
               <Info className="w-5 h-5 mr-2" />
-              Trạng thái "{rewardStatus}" — Nhắn Admin để được hỗ trợ
+              {t('crsStatusFallbackLabel', { status: rewardStatus })}
             </Button>
           );
         })()}
@@ -745,7 +747,7 @@ export const ClaimRewardsSection = ({
           {/* Minimum Threshold */}
           <div>
             <div className="flex justify-between items-center mb-1.5">
-              <span className="text-xs text-muted-foreground font-medium">Ngưỡng tối thiểu</span>
+              <span className="text-xs text-muted-foreground font-medium">{t('crsMinThresholdLabel')}</span>
               <span className="text-xs font-semibold text-gray-700">
                 {formatNumber(Math.min(claimableReward, MINIMUM_THRESHOLD))} / {formatNumber(MINIMUM_THRESHOLD)} CAMLY
               </span>
@@ -753,7 +755,7 @@ export const ClaimRewardsSection = ({
             <Progress value={minThresholdProgress} className="h-2.5 bg-gray-100" />
             {claimableReward < MINIMUM_THRESHOLD && (
               <p className="text-xs text-orange-600 mt-1">
-                ⚠️ Cần tối thiểu {formatNumber(MINIMUM_THRESHOLD)} CAMLY để claim
+                {t('crsMinThresholdNote', { amount: formatNumber(MINIMUM_THRESHOLD) })}
               </p>
             )}
           </div>
@@ -761,7 +763,7 @@ export const ClaimRewardsSection = ({
           {/* Daily Limit */}
           <div>
             <div className="flex justify-between items-center mb-1.5">
-              <span className="text-xs text-muted-foreground font-medium">Giới hạn hàng ngày</span>
+              <span className="text-xs text-muted-foreground font-medium">{t('crsDailyLimitLabel')}</span>
               <span className="text-xs font-semibold text-gray-700">
                 {formatNumber(dailyClaimed)} / {formatNumber(DAILY_LIMIT)} CAMLY
               </span>
@@ -769,7 +771,7 @@ export const ClaimRewardsSection = ({
             <Progress value={dailyProgress} className="h-2.5 bg-gray-100" />
             {dailyRemaining <= 0 && (
               <p className="text-xs text-red-600 mt-1">
-                ❌ Đã hết giới hạn claim hôm nay, vui lòng quay lại ngày mai
+                {t('crsDailyExhaustedNote')}
               </p>
             )}
           </div>
@@ -778,16 +780,16 @@ export const ClaimRewardsSection = ({
         {/* Bảng Điều Kiện Claim Thưởng */}
         {(() => {
           const conditions = [
-            { label: 'Họ tên đầy đủ (≥4 ký tự)', met: hasFullName },
-            { label: 'Ảnh đại diện (hình người thật)', met: hasAvatar },
-            { label: 'Ảnh bìa trang cá nhân', met: hasCover },
-            { label: 'Liên kết mạng xã hội (≥1)', met: hasSocialLinks },
-            { label: 'Đăng ít nhất 1 bài hôm nay', met: hasTodayPost },
-            { label: 'Kết nối ví (địa chỉ 0x...)', met: isConnected },
-            { label: 'Tài khoản ≥ 7 ngày', met: accountAgeDays >= 7 },
-            { label: 'Admin đã duyệt', met: rewardStatus === 'approved' || rewardStatus === 'claimed' },
-            { label: `Tối thiểu ${formatNumber(MINIMUM_THRESHOLD)} CAMLY`, met: claimableReward >= MINIMUM_THRESHOLD },
-            { label: `Chưa vượt ${formatNumber(DAILY_LIMIT)}/ngày`, met: dailyClaimed < DAILY_LIMIT },
+            { label: t('crsFullNameCond'), met: hasFullName },
+            { label: t('crsAvatarRealPhoto'), met: hasAvatar },
+            { label: t('crsCoverPhoto'), met: hasCover },
+            { label: t('crsSocialLinksCond'), met: hasSocialLinks },
+            { label: t('crsPostTodayCond'), met: hasTodayPost },
+            { label: t('crsConnectWalletCond'), met: isConnected },
+            { label: t('crsAccountAge7Days'), met: accountAgeDays >= 7 },
+            { label: t('crsAdminApprovedCond'), met: rewardStatus === 'approved' || rewardStatus === 'claimed' },
+            { label: t('crsMinAmountCond', { amount: formatNumber(MINIMUM_THRESHOLD) }), met: claimableReward >= MINIMUM_THRESHOLD },
+            { label: t('crsDailyCapCond', { amount: formatNumber(DAILY_LIMIT) }), met: dailyClaimed < DAILY_LIMIT },
           ];
           const metCount = conditions.filter(c => c.met).length;
           const total = conditions.length;
@@ -801,7 +803,7 @@ export const ClaimRewardsSection = ({
                 <div className="flex items-center gap-2">
                   <ClipboardCheck className={`w-4 h-4 ${allMet ? 'text-green-600' : 'text-orange-600'}`} />
                   <span className={`text-sm font-semibold ${allMet ? 'text-green-800' : 'text-orange-800'}`}>
-                    Điều kiện Claim Thưởng
+                    {t('crsConditionsTitle')}
                   </span>
                 </div>
                 <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${allMet ? 'bg-green-200 text-green-800' : 'bg-orange-200 text-orange-800'}`}>
@@ -827,7 +829,7 @@ export const ClaimRewardsSection = ({
                 <div className="px-3.5 pb-3">
                   <div className="flex items-center gap-2 bg-green-100 rounded-lg px-3 py-2">
                     <PartyPopper className="w-4 h-4 text-green-600" />
-                    <span className="text-sm font-semibold text-green-800">Sẵn sàng claim! 🎉</span>
+                    <span className="text-sm font-semibold text-green-800">{t('crsReadyToClaim')}</span>
                   </div>
                 </div>
               )}
@@ -840,7 +842,7 @@ export const ClaimRewardsSection = ({
                     className="w-full border-orange-300 text-orange-700 hover:bg-orange-100"
                     onClick={() => navigate('/profile')}
                   >
-                    Cập nhật trang cá nhân
+                    {t('crsUpdateProfile')}
                   </Button>
                 </div>
               )}

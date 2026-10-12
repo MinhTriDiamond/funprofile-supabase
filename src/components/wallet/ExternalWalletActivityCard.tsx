@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { useLanguage } from '@/i18n/LanguageContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -51,6 +52,7 @@ function CategoryIcon({ cat }: { cat: ExternalTx['category'] }) {
 }
 
 function TxRow({ tx }: { tx: ExternalTx }) {
+  const { t } = useLanguage();
   const dateLocale = useDateLocale();
   const watched = (tx.watchedAddress || '').toLowerCase();
   const isSend = (tx.from || '').toLowerCase() === watched;
@@ -69,7 +71,7 @@ function TxRow({ tx }: { tx: ExternalTx }) {
             }
           >
             {isSend ? <ArrowUpRight className="w-3 h-3 mr-0.5" /> : <ArrowDownLeft className="w-3 h-3 mr-0.5" />}
-            {isSend ? 'Gửi' : 'Nhận'}
+            {isSend ? t('walletSend') : t('walletReceive')}
           </Badge>
           <Badge variant="secondary" className="text-[10px] gap-1">
             <CategoryIcon cat={tx.category} />
@@ -93,7 +95,7 @@ function TxRow({ tx }: { tx: ExternalTx }) {
             tx.status === 'failed' && 'bg-destructive',
           )}
         >
-          {tx.status === 'success' ? 'Thành công' : tx.status === 'pending' ? 'Chờ xác nhận' : 'Thất bại'}
+          {tx.status === 'success' ? t('success') : tx.status === 'pending' ? t('ewaPending') : t('failed')}
         </Badge>
       </div>
 
@@ -142,6 +144,7 @@ function TxRow({ tx }: { tx: ExternalTx }) {
 }
 
 export function ExternalWalletActivityCard() {
+  const { t } = useLanguage();
   const { data: wallets, isLoading: walletsLoading } = useWatchedWallets();
   const { data, isFetching, refetch, error } = useExternalWalletActivity(wallets, 25);
   const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>('all');
@@ -172,7 +175,7 @@ export function ExternalWalletActivityCard() {
         <div className="flex items-center justify-between gap-2 flex-wrap">
           <CardTitle className="text-base flex items-center gap-2">
             <Wallet className="w-4 h-4 text-orange-600" />
-            Giao dịch ví ngoài (tự động đồng bộ)
+            {t('ewaTitle')}
             {(walletsLoading || isFetching) && (
               <RefreshCw className="w-3.5 h-3.5 animate-spin text-muted-foreground" />
             )}
@@ -180,11 +183,11 @@ export function ExternalWalletActivityCard() {
           <div className="flex items-center gap-1.5">
             <Button size="sm" variant="ghost" onClick={() => refetch()} className="h-7 gap-1 text-xs">
               <RefreshCw className={cn('w-3.5 h-3.5', isFetching && 'animate-spin')} />
-              Làm mới
+              {t('walletRefresh')}
             </Button>
             <Button size="sm" variant="outline" onClick={() => setManagerOpen(true)} className="h-7 gap-1 text-xs">
               <Settings2 className="w-3.5 h-3.5" />
-              Quản lý ví
+              {t('ewaManageWallets')}
             </Button>
           </div>
         </div>
@@ -197,7 +200,7 @@ export function ExternalWalletActivityCard() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent className="z-[9999]">
-              <SelectItem value="all">Mọi chain</SelectItem>
+              <SelectItem value="all">{t('ewaAllChains')}</SelectItem>
               <SelectItem value="bsc">BSC</SelectItem>
               <SelectItem value="btc">BTC</SelectItem>
             </SelectContent>
@@ -207,7 +210,7 @@ export function ExternalWalletActivityCard() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent className="z-[9999]">
-              <SelectItem value="all">Tất cả loại</SelectItem>
+              <SelectItem value="all">{t('ewaAllTypes')}</SelectItem>
               <SelectItem value="native">Native</SelectItem>
               <SelectItem value="token">Token</SelectItem>
               <SelectItem value="swap">Swap</SelectItem>
@@ -220,7 +223,7 @@ export function ExternalWalletActivityCard() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent className="z-[9999]">
-                <SelectItem value="all">Mọi ví</SelectItem>
+                <SelectItem value="all">{t('ewaAllWallets')}</SelectItem>
                 {wallets.map((w) => (
                   <SelectItem key={`${w.chain}:${w.address}`} value={w.address}>
                     {w.label} ({shorten(w.address)})
@@ -231,7 +234,7 @@ export function ExternalWalletActivityCard() {
           )}
           {lastSync && (
             <span className="ml-auto text-[10px] text-muted-foreground">
-              Đồng bộ {formatDistanceToNow(lastSync, { addSuffix: true })}
+              {t('ewaSyncedPrefix')}{formatDistanceToNow(lastSync, { addSuffix: true })}
             </span>
           )}
         </div>
@@ -242,7 +245,7 @@ export function ExternalWalletActivityCard() {
             <AlertTriangle className="w-4 h-4 text-destructive flex-shrink-0 mt-0.5" />
             <div className="flex-1 min-w-0">
               <div className="font-semibold text-destructive">
-                Một số nguồn dữ liệu đang lỗi — đang thử lại tự động.
+                {t('ewaSourceError')}
               </div>
               <ul className="mt-1 space-y-0.5 text-muted-foreground">
                 {error && <li>· {String((error as any)?.message || error)}</li>}
@@ -251,11 +254,11 @@ export function ExternalWalletActivityCard() {
                     · [{e.source}] {shorten(e.address)} — {e.message}
                   </li>
                 ))}
-                {errors.length > 3 && <li>· …và {errors.length - 3} lỗi khác</li>}
+                {errors.length > 3 && <li>{t('ewaMoreErrors', { count: errors.length - 3 })}</li>}
               </ul>
             </div>
             <Button size="sm" variant="ghost" onClick={() => refetch()} className="h-6 text-xs">
-              Thử lại
+              {t('walletRetry')}
             </Button>
           </div>
         )}
@@ -269,16 +272,16 @@ export function ExternalWalletActivityCard() {
           </div>
         ) : !wallets || wallets.length === 0 ? (
           <div className="text-center py-6 text-sm text-muted-foreground">
-            Chưa có ví nào được theo dõi.
+            {t('ewaNoWallets')}
             <div className="mt-2">
               <Button size="sm" variant="outline" onClick={() => setManagerOpen(true)}>
-                Thêm ví ngoài
+                {t('ewaAddWallet')}
               </Button>
             </div>
           </div>
         ) : filtered.length === 0 ? (
           <p className="text-center text-sm text-muted-foreground py-6">
-            {isFetching ? 'Đang quét…' : 'Chưa có giao dịch nào.'}
+            {isFetching ? t('ewaScanning') : t('ewaNoTx')}
           </p>
         ) : (
           <div className="space-y-2 max-h-[60vh] overflow-y-auto pr-1">
@@ -292,14 +295,13 @@ export function ExternalWalletActivityCard() {
           <div className="flex items-start gap-2 rounded-lg border border-amber-300/60 bg-amber-50 dark:bg-amber-950/20 p-2 text-[11px] text-amber-800 dark:text-amber-200">
             <AlertTriangle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
             <span>
-              Một số token không xác minh đã được ẩn để bảo vệ bạn ({suspiciousCount} sự kiện). Chỉ token nằm trong danh
-              sách đã duyệt mới hiển thị tại đây.
+              {t('ewaSuspiciousNote', { count: suspiciousCount })}
             </span>
           </div>
         )}
 
         <p className="text-[10px] text-muted-foreground text-center pt-1">
-          Dữ liệu chỉ để theo dõi. Giao dịch ví ngoài KHÔNG được tính Light Score.
+          {t('ewaFooterNote')}
         </p>
       </CardContent>
 

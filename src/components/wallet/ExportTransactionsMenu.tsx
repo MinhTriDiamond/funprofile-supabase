@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useLanguage } from '@/i18n/LanguageContext';
 import { Button } from '@/components/ui/button';
 import { Download, FileSpreadsheet, Loader2 } from 'lucide-react';
 import type { TxExportRow, ExportMeta } from '@/utils/export';
@@ -25,6 +26,7 @@ export function ExportTransactionsMenu({
   iconOnly = false,
   disabled,
 }: Props) {
+  const { t } = useLanguage();
   const [busy, setBusy] = useState(false);
 
   const handle = async () => {
@@ -44,7 +46,7 @@ export function ExportTransactionsMenu({
       className={iconOnly ? 'h-7 w-7' : 'h-7 px-2 gap-1.5'}
       disabled={disabled || busy}
       onClick={handle}
-      title="Xuất lịch sử giao dịch ra Excel"
+      title={t('etmExportTitle')}
     >
       {busy ? (
         <Loader2 className="w-4 h-4 animate-spin" />
@@ -53,7 +55,7 @@ export function ExportTransactionsMenu({
       ) : (
         <FileSpreadsheet className="w-4 h-4 text-green-600" />
       )}
-      {!iconOnly && <span className="text-xs">Xuất Excel</span>}
+      {!iconOnly && <span className="text-xs">{t('etmExportExcel')}</span>}
     </Button>
   );
 }

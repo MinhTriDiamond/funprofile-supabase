@@ -1,4 +1,5 @@
 import { memo } from 'react';
+import { useLanguage } from '@/i18n/LanguageContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -18,6 +19,7 @@ const DIMENSION_COLORS: Record<string, string> = {
 };
 
 export const DimensionScoreCard = memo(() => {
+  const { t } = useLanguage();
   const {
     dimensions, dimensionTotal, dimensionLevel,
     riskPenalty, streakBonusPct, inactiveDays, decayApplied,
@@ -40,9 +42,9 @@ export const DimensionScoreCard = memo(() => {
     return (
       <Card className="border-0 shadow-lg bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-950/20 dark:to-purple-950/20">
         <CardContent className="py-6 text-center">
-          <p className="text-lg font-semibold mb-1">🌱 5 Trụ Cột Danh Tiếng</p>
+          <p className="text-lg font-semibold mb-1">{t('dscTitle')}</p>
           <p className="text-sm text-muted-foreground">
-            Dữ liệu đang được tính toán. Vui lòng quay lại sau.
+            {t('dscComputing')}
           </p>
         </CardContent>
       </Card>
@@ -66,7 +68,7 @@ export const DimensionScoreCard = memo(() => {
           <CardTitle className="flex items-center gap-2 text-xl">
             <span className="text-2xl">🌟</span>
             <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-              5 TRỤ CỘT DANH TIẾNG
+              {t('dscHeading')}
             </span>
           </CardTitle>
           <Badge variant="secondary" className="text-sm">
@@ -83,8 +85,8 @@ export const DimensionScoreCard = memo(() => {
           </p>
           <p className="text-sm text-muted-foreground mt-1">
             {dimensionTotal !== null && dimensionTotal < 800
-              ? `Còn ${remaining.toLocaleString()} điểm để đạt ${nextLevel.emoji} ${nextLevel.name}`
-              : `${levelInfo.emoji} ${levelInfo.name} — Cấp cao nhất!`}
+              ? `${t('tokRemainA')}${remaining.toLocaleString()} ${t('walletPointsToNext')} ${nextLevel.emoji} ${nextLevel.name}`
+              : `${levelInfo.emoji} ${levelInfo.name}${t('dscMaxLevelSuffix')}`}
           </p>
         </div>
 

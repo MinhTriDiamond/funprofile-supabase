@@ -28,12 +28,12 @@ const PILLAR_ICONS = {
   giving: '🎁',
 };
 
-const PILLAR_NAMES = {
-  repentance: 'Sám Hối',
-  gratitude: 'Biết Ơn',
-  service: 'Phụng Sự',
-  help: 'Giúp Đỡ',
-  giving: 'Trao Tặng',
+const PILLAR_NAME_KEYS = {
+  repentance: 'pplpS9Key1Title',
+  gratitude: 'pplpS9Key2Title',
+  service: 'lsdPillarService',
+  help: 'lsdPillarHelp',
+  giving: 'lsdPillarGiving',
 };
 
 interface LightScoreDashboardProps {
@@ -77,9 +77,9 @@ export const LightScoreDashboard = ({ walletAddress, onActivate, onClaim }: Ligh
     return (
       <Card className="border-0 shadow-lg">
         <CardContent className="py-8 text-center">
-          <p className="text-muted-foreground mb-4">Không thể tải Light Score</p>
+          <p className="text-muted-foreground mb-4">{t('walletCannotLoadScore')}</p>
           <Button onClick={refetch} variant="outline" size="sm">
-            <RefreshCw className="w-4 h-4 mr-2" />Thử lại
+            <RefreshCw className="w-4 h-4 mr-2" />{t('walletRetry')}
           </Button>
         </CardContent>
       </Card>
@@ -153,7 +153,7 @@ export const LightScoreDashboard = ({ walletAddress, onActivate, onClaim }: Ligh
             )}
             {data.tier < 3 && (
               <p className="text-sm text-muted-foreground mt-1">
-                Còn {remaining.toLocaleString()} điểm để đạt {nextTier.emoji} {nextTier.name}
+                {t('tokRemainA')}{remaining.toLocaleString()} {t('walletPointsToNext')} {nextTier.emoji} {nextTier.name}
               </p>
             )}
           </div>
@@ -171,7 +171,7 @@ export const LightScoreDashboard = ({ walletAddress, onActivate, onClaim }: Ligh
               </div>
               {data.v2.v2_minted_amount > 0 && (
                 <p className="text-xs text-emerald-600 mt-1">
-                  💎 Đã mint: {data.v2.v2_minted_amount.toLocaleString()} FUN
+                  💎 {t('tokMinted')}{data.v2.v2_minted_amount.toLocaleString()} FUN
                 </p>
               )}
             </div>
@@ -193,7 +193,7 @@ export const LightScoreDashboard = ({ walletAddress, onActivate, onClaim }: Ligh
               {Object.entries(data.pillars).map(([key, value]) => (
                 <div key={key} className="flex items-center gap-2">
                   <span className="text-base">{PILLAR_ICONS[key as keyof typeof PILLAR_ICONS]}</span>
-                  <span className="flex-1 text-xs">{PILLAR_NAMES[key as keyof typeof PILLAR_NAMES]}</span>
+                  <span className="flex-1 text-xs">{t(PILLAR_NAME_KEYS[key as keyof typeof PILLAR_NAME_KEYS] as any)}</span>
                   <div className="w-20 bg-muted rounded-full h-1.5 overflow-hidden">
                     <div
                       className="h-full bg-gradient-to-r from-amber-400 to-orange-500 transition-all duration-500"
@@ -209,8 +209,7 @@ export const LightScoreDashboard = ({ walletAddress, onActivate, onClaim }: Ligh
           {/* v1 deprecation notice */}
           <div className="bg-amber-100/50 dark:bg-amber-900/20 rounded-lg p-2.5 border border-amber-200 dark:border-amber-800">
             <p className="text-[11px] text-amber-700 dark:text-amber-300 leading-relaxed">
-              ⚠️ <strong>v1 (Social Engagement)</strong> sẽ dần chuyển sang <strong>v2 (Truth Validation)</strong>. 
-              Hãy sử dụng PPLP v2 Submit Action ở trên để tích lũy Light Score bền vững.
+              ⚠️ <strong>v1 (Social Engagement)</strong>{t('lsdV1NoteMid')}<strong>v2 (Truth Validation)</strong>{t('lsdV1NoteSuffix')}
             </p>
           </div>
         </CardContent>
@@ -223,7 +222,7 @@ export const LightScoreDashboard = ({ walletAddress, onActivate, onClaim }: Ligh
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2 text-lg">
                 <img src={funLogo} alt="FUN" className="w-5 h-5 rounded-full" />
-                💰 Số dư On-chain
+                💰 {t('lsdOnchainBalance')}
               </CardTitle>
               <div className="flex items-center gap-2">
                 <a href={getAddressUrl(walletAddress)} target="_blank" rel="noopener noreferrer" className="text-white/80 hover:text-white">
@@ -272,7 +271,7 @@ export const LightScoreDashboard = ({ walletAddress, onActivate, onClaim }: Ligh
                 {total > 0 && (
                   <div className="space-y-1.5">
                     <div className="flex justify-between text-xs">
-                      <span className="text-muted-foreground">Tiến trình kích hoạt</span>
+                      <span className="text-muted-foreground">{t('lsdActivationProgress')}</span>
                       <span className="font-medium text-green-600">{activatedPercent.toFixed(1)}%</span>
                     </div>
                     <Progress value={activatedPercent} className="h-2 bg-amber-100" />
@@ -312,9 +311,9 @@ export const LightScoreDashboard = ({ walletAddress, onActivate, onClaim }: Ligh
         <Card className="border-0 shadow-md">
           <CardContent className="py-6 text-center">
             <Coins className="w-10 h-10 mx-auto text-amber-400 mb-3" />
-            <p className="text-sm text-muted-foreground mb-3">Kết nối ví để xem số dư FUN on-chain</p>
+            <p className="text-sm text-muted-foreground mb-3">{t('lsdConnectToView')}</p>
             <Button onClick={() => navigate('/wallet')} variant="outline" size="sm">
-              <Wallet className="w-4 h-4 mr-2" />Thiết lập ví
+              <Wallet className="w-4 h-4 mr-2" />{t('lsdSetupWallet')}
             </Button>
           </CardContent>
         </Card>
