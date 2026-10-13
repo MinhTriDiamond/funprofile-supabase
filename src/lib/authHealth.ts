@@ -1,5 +1,5 @@
 export const SUPABASE_AUTH_TRANSIENT_MESSAGE =
-  'Lovable Cloud đang mất kết nối tạm thời với hệ thống đăng nhập. Vui lòng đợi 1–2 phút rồi thử lại.';
+  'Hệ thống đăng nhập đang tạm thời gián đoạn. Vui lòng đợi 1–2 phút rồi thử lại.';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string | undefined;
 
