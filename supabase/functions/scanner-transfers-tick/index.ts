@@ -19,7 +19,6 @@
 
 import { corsHeaders, handleCors } from "../_shared/cors.ts";
 import { createAdminClient } from "../_shared/supabase.ts";
-import { requireCronOrAdmin } from "../_shared/httpAuth.ts";
 import {
   CHAIN_ID,
   TOKENS,
@@ -46,6 +45,26 @@ const SYMBOL_BY_ADDR = new Map(
 const DECIMALS_BY_ADDR = new Map(
   Object.entries(TOKENS).map(([addr, m]) => [addr, m.decimals]),
 );
+
+/**
+ * Guard cho cron — cùng ngữ nghĩa các hàm cron khác trong hệ:
+ * hoặc header `x-cron-secret` khớp CRON_SHARED_SECRET (fallback CRON_SECRET),
+ * hoặc `Authorization: Bearer` khớp SUPABASE_PUBLISHABLE_KEY (fallback
+ * SUPABASE_ANON_KEY) — đúng dạng job cron 72 đang dùng.
+ */
+function cronAuthorized(req: Request): boolean {
+  const cronSecret = Deno.env.get("CRON_SHARED_SECRET") ??
+    Deno.env.get("CRON_SECRET");
+  const presented = req.headers.get("x-cron-secret");
+  if (cronSecret && presented && presented === cronSecret) return true;
+  const token = (req.headers.get("Authorization") ?? "").replace(
+    /^Bearer\s+/i,
+    "",
+  );
+  const pub = Deno.env.get("SUPABASE_PUBLISHABLE_KEY") ??
+    Deno.env.get("SUPABASE_ANON_KEY");
+  return !!(pub && token && token === pub);
+}
 
 function alchemyUrl(): string | null {
   const u = (Deno.env.get("ALCHEMY_BSC_RPC_URL") ?? "").trim();
@@ -169,8 +188,9 @@ Deno.serve(async (req) => {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
 
-  const denied = await requireCronOrAdmin(req);
-  if (denied) return denied;
+  if (!cronAuthorized(req)) {
+    return json({ ok: false, error: "unauthorized" }, 401);
+  }
 
   const url = alchemyUrl();
   if (!url) {
