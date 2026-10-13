@@ -1655,7 +1655,7 @@ export const CreatePost = ({ onPostCreated, initialAction }: FacebookCreatePostP
                     onFocus={() => {
                       if (isMobileComposerViewport) setComposerMode('focus');
                     }}
-                    className="min-h-[132px] max-h-[360px] resize-none overflow-hidden border-0 bg-transparent px-0 text-[17px] leading-relaxed shadow-none placeholder:text-muted-foreground/75 focus-visible:ring-0 focus-visible:ring-offset-0"
+                    className="min-h-[132px] max-h-[360px] resize-none overflow-y-auto border-0 bg-transparent px-0 text-[17px] leading-relaxed shadow-none placeholder:text-muted-foreground/75 focus-visible:ring-0 focus-visible:ring-offset-0"
                     disabled={loading}
                     autoFocus={isInnerWorkMode}
                   />
