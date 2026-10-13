@@ -1,3 +1,4 @@
+import funEcosystemMintAsset from '@/assets/tokens/fun-ecosystem-mint.gif.asset.json';
 import { useState, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -184,7 +185,7 @@ export const AppNavbar = () => {
                   }`}
                 >
                   <img
-                    src={new URL('@/assets/tokens/fun-ecosystem-mint.gif', import.meta.url).href}
+                    src={funEcosystemMintAsset.url}
                     alt={t('navMintFunMoney')}
                     className="w-7 h-7 rounded-full"
                   />
