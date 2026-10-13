@@ -276,6 +276,9 @@ verify_jwt = false
     verify_jwt = false
   [functions.alchemy-transfers-probe]
     verify_jwt = false
+
+[functions.alchemy-logs-span-probe]
+    verify_jwt = false
   [functions.scanner-health-watchdog]
     verify_jwt = false
   [functions.scanner-backfill-window]
