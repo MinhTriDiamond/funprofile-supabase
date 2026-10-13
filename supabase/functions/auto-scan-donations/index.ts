@@ -184,8 +184,9 @@ Deno.serve(async (req) => {
     resetMoralisFailures();
     const moralisApiKey = Deno.env.get("MORALIS_API_KEY");
     if (!moralisApiKey) {
-      return new Response(JSON.stringify({ error: "MORALIS_API_KEY not configured" }), {
-        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      // Moralis đã tắt theo quyết định chỉ dùng Alchemy (13/10/2026) — bỏ qua êm, không báo lỗi 500.
+      return new Response(JSON.stringify({ ok: true, skipped: true, reason: "moralis_disabled", newTransfers: 0 }), {
+        status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
