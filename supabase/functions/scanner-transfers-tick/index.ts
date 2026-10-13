@@ -100,27 +100,37 @@ async function alchemyRpc(
   params: any[],
   // deno-lint-ignore no-explicit-any
 ): Promise<any> {
-  const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), RPC_TIMEOUT_MS);
-  try {
-    const res = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params }),
-      signal: ctrl.signal,
-    });
-    const json = await res.json().catch(() => null);
-    if (!res.ok || !json || json.error) {
-      throw new Error(
-        `alchemy ${method} http=${res.status} err=${
-          json?.error?.message ?? "no-body"
-        }`,
-      );
+  // Gói free có trần tốc độ (compute units/giây) — gặp 429/rate-limit thì
+  // lùi nhịp rồi thử lại tối đa 3 lần thay vì bỏ cả ví.
+  const BACKOFFS_MS = [800, 2000, 4500];
+  let lastError: Error | null = null;
+  for (let attempt = 0; attempt <= BACKOFFS_MS.length; attempt++) {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), RPC_TIMEOUT_MS);
+    try {
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params }),
+        signal: ctrl.signal,
+      });
+      const json = await res.json().catch(() => null);
+      if (res.ok && json && !json.error) return json.result;
+      const msg = String(json?.error?.message ?? `http=${res.status}`);
+      lastError = new Error(`alchemy ${method} err=${msg}`);
+      const rateLimited = res.status === 429 ||
+        /rate|compute units|too many requests/i.test(msg);
+      if (!rateLimited || attempt === BACKOFFS_MS.length) throw lastError;
+    } catch (e) {
+      if (e === lastError) throw e;
+      lastError = e instanceof Error ? e : new Error(String(e));
+      if (attempt === BACKOFFS_MS.length) throw lastError;
+    } finally {
+      clearTimeout(timer);
     }
-    return json.result;
-  } finally {
-    clearTimeout(timer);
+    await new Promise((r) => setTimeout(r, BACKOFFS_MS[attempt]));
   }
+  throw lastError ?? new Error("alchemy rpc failed");
 }
 
 /** Lấy toàn bộ transfers VÀO một ví trong [fromBlock, toBlock] (có trần trang). */
@@ -436,22 +446,12 @@ Deno.serve(async (req) => {
     summary.donations_written = writtenDonations;
     summary.ingest_errors = ingestErrors;
 
-    // ── Chốt watermark cho các ví đã quét ──
-    if (advanceTo.size > 0) {
-      const rows = [...advanceTo.entries()].map(([wallet_address, last_block]) => ({
-        wallet_address,
-        last_block,
-        updated_at: new Date().toISOString(),
-      }));
-      const { error: wmErr } = await admin.from(WM_TABLE).upsert(rows, {
-        onConflict: "wallet_address",
-      });
-      if (wmErr) throw new Error(`ghi watermark lỗi: ${wmErr.message}`);
-    }
     summary.watermarks_advanced = advanceTo.size;
     summary.duration_ms = Date.now() - started;
 
-    // ── Ghi một dòng telemetry vào scanner_tick_log (best-effort) ──
+    // ── Ghi telemetry TRƯỚC khi chốt watermark (best-effort) ──
+    // để mọi lượt chạy đều để lại dấu vết quan sát được, kể cả khi
+    // bước chốt watermark gặp lỗi.
     try {
       await admin.from("scanner_tick_log").insert({
         chain_id: CHAIN_ID,
@@ -467,12 +467,25 @@ Deno.serve(async (req) => {
         wallets_tracked: walletToUser.size,
         rpc_healthy: 1,
         duration_ms: summary.duration_ms,
-        ok: true,
-        error_message: null,
-        rpc_endpoint_stats: [{ url: "alchemy(***)", attempts: 1, failures: 0, timeouts: 0 }],
+        ok: walletErrors === 0,
+        error_message: walletErrors > 0 ? `${walletErrors} ví lỗi RPC` : null,
+        rpc_endpoint_stats: [{ url: "alchemy(***)", attempts: 1, failures: walletErrors, timeouts: 0 }],
       });
     } catch (_) {
       // Telemetry lỗi không được làm hỏng lượt quét.
+    }
+
+    // ── Chốt watermark cho các ví đã quét ──
+    if (advanceTo.size > 0) {
+      const rows = [...advanceTo.entries()].map(([wallet_address, last_block]) => ({
+        wallet_address,
+        last_block,
+        updated_at: new Date().toISOString(),
+      }));
+      const { error: wmErr } = await admin.from(WM_TABLE).upsert(rows, {
+        onConflict: "wallet_address",
+      });
+      if (wmErr) throw new Error(`ghi watermark lỗi: ${wmErr.message}`);
     }
 
     return json(summary);
