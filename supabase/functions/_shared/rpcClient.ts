@@ -25,16 +25,16 @@ export function maskEndpoint(url: string): string {
   return url;
 }
 
+// 13/10/2026: loại meowrpc + 48.club (hỏng 100% trong thống kê tick 3 ngày:
+// 3.196/3.196 và 2.785/2.785 lượt gọi lỗi — giữ lại chỉ đốt lượt thử + timeout).
 export const BSC_RPC_ENDPOINTS = [
   "https://bsc-dataseed.bnbchain.org",
   "https://bsc-rpc.publicnode.com",
   "https://1rpc.io/bnb",
-  "https://bsc.meowrpc.com",
   "https://bsc.blockrazor.xyz",
   "https://bsc.rpc.blxrbdn.com",
   "https://bsc-dataseed1.defibit.io",
   "https://bsc-dataseed2.defibit.io",
-  "https://bsc.48.club",
 ];
 
 /**
@@ -62,13 +62,23 @@ export function rpcEndpoints(): string[] {
   return paid.length > 0 ? [...paid, ...BSC_RPC_ENDPOINTS] : [...BSC_RPC_ENDPOINTS];
 }
 
-/** Endpoint getLogs: CHỈ endpoint free. Cả QuickNode free và Alchemy free
- * đều giới hạn eth_getLogs quá chặt (5–10 block/lần) và dính rate limit
- * (đo thực tế 15/09/2026) ⇒ không dùng cho quét log. Chỉ dùng các endpoint
- * công khai đã kiểm chứng (blxrbdn 5.000 block, 1rpc 50 block, blockrazor 25 block).
- * Nếu nâng cấp Alchemy/QuickNode trả phí, thêm vào đây với maxSpan thực tế. */
+/** Endpoint getLogs.
+ * 15/09/2026: Alchemy/QuickNode gói free giới hạn getLogs 5–10 block/lần và
+ * dính rate limit ⇒ khi đó chỉ dùng endpoint công khai đã kiểm chứng
+ * (blxrbdn 5.000 block, 1rpc 50 block, blockrazor 25 block).
+ * 13/10/2026: Alchemy trở thành nguồn getLogs khi có span đo thật qua biến
+ * môi trường ALCHEMY_LOGS_MAX_SPAN (đo bằng hàm tạm alchemy-logs-span-probe,
+ * đặt qua Secrets — chỉnh span KHÔNG cần deploy lại). Chưa đặt biến này thì
+ * hành vi y như cũ. Danh sách luôn xếp span giảm dần (ưu tiên quét nhanh). */
 export function logsEndpoints(): LogsEndpoint[] {
-  return [...BSC_LOGS_ENDPOINTS];
+  const out: LogsEndpoint[] = [...BSC_LOGS_ENDPOINTS];
+  const alchemy = alchemyUrl();
+  const span = Number(Deno.env.get("ALCHEMY_LOGS_MAX_SPAN") ?? "0");
+  if (alchemy && Number.isFinite(span) && span >= 100) {
+    out.push({ url: alchemy, maxSpan: Math.floor(span) });
+  }
+  out.sort((a, b) => b.maxSpan - a.maxSpan);
+  return out;
 }
 
 
