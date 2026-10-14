@@ -96,9 +96,39 @@ async function fetchTokenTxBscScan(wallet: string, cutoffSec: number, apiKey: st
   return out;
 }
 
+// Bao mat (2026-10-14): cong cu khoi phuc chi danh cho may moc noi bo hoac admin dang nhap.
+function machineAuthorized(req: Request): boolean {
+  const cronSecret = Deno.env.get("CRON_SHARED_SECRET") ?? Deno.env.get("CRON_SECRET");
+  if (cronSecret && req.headers.get("x-cron-secret") === cronSecret) return true;
+  const svcKey = Deno.env.get("SUPABASE_SECRET_KEY") ?? Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  if (svcKey && req.headers.get("Authorization") === `Bearer ${svcKey}`) return true;
+  return false;
+}
+
+async function adminAuthorized(req: Request): Promise<boolean> {
+  const token = (req.headers.get("Authorization") || "").replace(/^Bearer\s+/i, "");
+  if (!token) return false;
+  try {
+    const admin = createAdminClient();
+    const { data } = await admin.auth.getUser(token);
+    const uid = data?.user?.id;
+    if (!uid) return false;
+    const { data: roles } = await admin.from("user_roles").select("role").eq("user_id", uid);
+    return (roles ?? []).some((r: any) => r.role === "admin");
+  } catch {
+    return false;
+  }
+}
+
 Deno.serve(async (req) => {
   const cors = handleCors(req);
   if (cors) return cors;
+
+  if (!machineAuthorized(req) && !(await adminAuthorized(req))) {
+    return new Response(JSON.stringify({ error: "unauthorized" }), {
+      status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
 
   try {
     const apiKey = Deno.env.get("BSCSCAN_API_KEY") || null;
