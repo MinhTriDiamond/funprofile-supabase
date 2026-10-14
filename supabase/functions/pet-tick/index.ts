@@ -6,9 +6,25 @@ import { createAdminClient } from "../_shared/supabase.ts";
 
 const BATCH_LIMIT = 5000;
 
+// Bao mat (2026-10-14): chi may moc noi bo (cron secret hoac khoa dich vu) moi duoc kich hoat tick.
+function machineAuthorized(req: Request): boolean {
+  const cronSecret = Deno.env.get("CRON_SHARED_SECRET") ?? Deno.env.get("CRON_SECRET");
+  if (cronSecret && req.headers.get("x-cron-secret") === cronSecret) return true;
+  const svcKey = Deno.env.get("SUPABASE_SECRET_KEY") ?? Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  if (svcKey && req.headers.get("Authorization") === `Bearer ${svcKey}`) return true;
+  return false;
+}
+
 Deno.serve(async (req) => {
   const cors = handleCors(req);
   if (cors) return cors;
+
+  if (!machineAuthorized(req)) {
+    return new Response(JSON.stringify({ error: "unauthorized" }), {
+      status: 401,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
 
   const sb = createAdminClient();
   const now = new Date();
