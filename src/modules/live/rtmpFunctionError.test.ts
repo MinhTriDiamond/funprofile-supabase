@@ -13,6 +13,23 @@ describe('readFunctionError', () => {
     expect(result).toMatchObject({ message: 'Phiên không hợp lệ', code: 'BAD_SESSION', status: 409 });
   });
 
+  it('extracts structured Cloudflare upstream status and code', async () => {
+    const response = new Response(JSON.stringify({
+      error: 'Cloudflare Stream từ chối yêu cầu tạo Live Input.',
+      code: 'CLOUDFLARE_UPSTREAM_ERROR',
+      upstream_status: 403,
+      upstream_code: 10000,
+    }), { status: 502 });
+    const result = await readFunctionError(new FunctionsHttpError(response));
+
+    expect(result).toMatchObject({
+      code: 'CLOUDFLARE_UPSTREAM_ERROR',
+      status: 502,
+      upstreamStatus: 403,
+      upstreamCode: 10000,
+    });
+  });
+
   it('returns a plain text response body', async () => {
     const response = new Response('Tạm thời không thể tạo phiên', { status: 503 });
     const result = await readFunctionError(new FunctionsHttpError(response));

@@ -4,6 +4,7 @@ import { decryptStreamKey, encryptStreamKey, tryDecryptStreamKey } from '../_sha
 import { corsHeaders, createAdminClient, json, requireUser } from '../_shared/httpAuth.ts';
 import { armSession, supersedeOtherArmedSessions } from '../_shared/rtmpArmingService.ts';
 import { isRtmpSessionEndedOrFrozen } from '../_shared/rtmpSessionStatus.ts';
+import { CloudflareApiError } from '../_shared/cloudflareApiError.ts';
 
 /**
  * Self-heal khi giải mã stream_key cũ thất bại (secret rotate). Tạo Live Input
@@ -553,6 +554,20 @@ Deno.serve(async (req) => {
       { resumed: false, armed: true, armed_session_token: armed.armed_session_token },
     ));
   } catch (error) {
+    if (error instanceof CloudflareApiError) {
+      console.error('[create-rtmp-live-session] Cloudflare upstream failure', {
+        operation: error.message,
+        upstreamStatus: error.upstreamStatus,
+        upstreamCodes: error.upstreamCodes,
+      });
+      return json({
+        error: 'Cloudflare Stream từ chối yêu cầu tạo Live Input.',
+        code: 'CLOUDFLARE_UPSTREAM_ERROR',
+        upstream_status: error.upstreamStatus,
+        upstream_code: error.upstreamCodes[0] ?? null,
+      }, 502);
+    }
+
     let message: string;
     if (error instanceof Error) message = error.message;
     else if (error && typeof error === 'object') {

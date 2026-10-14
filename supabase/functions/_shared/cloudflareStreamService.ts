@@ -1,3 +1,5 @@
+import { CloudflareApiError, getCloudflareErrorCodes } from './cloudflareApiError.ts';
+
 export interface StreamPlaybackUrls {
   hls: string;
   dash: string;
@@ -305,7 +307,7 @@ export async function createStreamLiveInput(options: {
   });
   const data = await resp.json().catch(() => null);
   if (!resp.ok || !data?.success || !data?.result?.uid) {
-    throw new Error(`Cloudflare Live Input create failed: ${resp.status} ${JSON.stringify(data?.errors || data).slice(0, 300)}`);
+    throw new CloudflareApiError('Live Input create', resp.status, getCloudflareErrorCodes(data));
   }
   const input = data.result;
   return {

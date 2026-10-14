@@ -4,6 +4,8 @@ export interface RtmpFunctionError {
   message: string;
   code?: string;
   status?: number;
+  upstreamStatus?: number;
+  upstreamCode?: number;
   details?: unknown;
 }
 
@@ -36,6 +38,8 @@ export async function readFunctionError(error: unknown): Promise<RtmpFunctionErr
             message: stringField(payload.error) || stringField(payload.message) || EMPTY_BODY_MESSAGE,
             code: stringField(payload.code),
             status,
+            upstreamStatus: typeof payload.upstream_status === 'number' ? payload.upstream_status : undefined,
+            upstreamCode: typeof payload.upstream_code === 'number' ? payload.upstream_code : undefined,
             details: payload.details,
           };
         }

@@ -285,6 +285,11 @@ export default function RtmpLivePage() {
           // Gọi lại không kèm sessionId để backend tự tạo session mới.
           return await createOrResumeSession({ persistent: explicitPersistent, forceNew: true, resumeOnly: false });
         }
+        if (info.code === 'CLOUDFLARE_UPSTREAM_ERROR') {
+          const upstreamStatus = info.upstreamStatus ? `HTTP ${info.upstreamStatus}` : 'lỗi upstream';
+          const upstreamCode = info.upstreamCode ? `, mã ${info.upstreamCode}` : '';
+          throw new Error(`Cloudflare từ chối tạo Live Input (${upstreamStatus}${upstreamCode}). Hãy kiểm tra cấu hình Stream và quyền API của token.`);
+        }
         const reason = info.message || 'Edge Function không cung cấp chi tiết lỗi.';
         const status = info.status ? ` (HTTP ${info.status})` : '';
         throw new Error(`Không thể tạo hoặc khôi phục phiên Live Producer: ${reason}${status}`);
