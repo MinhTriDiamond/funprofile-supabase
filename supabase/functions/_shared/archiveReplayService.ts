@@ -17,6 +17,7 @@ import {
   updateReplayPostArchiveProgress,
   upsertCreatorLibrary,
 } from './replayFeedService.ts';
+import { canReuseConfirmedR2Object, mayPublishR2Replay } from './r2ArchiveDiagnostics.ts';
 
 // ============ STATE-MACHINE PHASES (resumable) ============
 // Mỗi cron tick chỉ chạy 1 phase + 1 đơn vị công việc nhỏ → < 30s wall-time.
@@ -367,6 +368,26 @@ async function patchReplay(admin: SupabaseClient, replayId: string, patch: Recor
   if (error) console.warn('[PATCH_REPLAY_ERROR]', { replayId, error: error.message });
 }
 
+async function persistConfirmedR2Object(
+  admin: SupabaseClient,
+  replayId: string,
+  object: { key: string; bucket: string; url: string; size: number; expectedSize?: number },
+): Promise<void> {
+  const { error } = await (admin as any).rpc('live_replays_patch', {
+    p_id: replayId,
+    p_patch: {
+      r2_object_key: object.key,
+      r2_bucket: object.bucket,
+      r2_video_url: object.url,
+      filesize_bytes: object.size,
+      ...(object.expectedSize && object.expectedSize > 0 ? { mp4_total_bytes: object.expectedSize } : {}),
+      archive_status: ArchiveStep.VERIFYING_R2,
+      updated_at: new Date().toISOString(),
+    },
+  });
+  if (error) throw new Error('R2 object confirmed but archive metadata could not be saved');
+}
+
 async function acquireLease(admin: SupabaseClient, replayId: string): Promise<boolean> {
   const { data, error } = await (admin as any).rpc('archive_acquire_lease', { p_id: replayId, p_minutes: LEASE_MINUTES });
   if (error) {
@@ -499,12 +520,30 @@ async function runMultipartInit(admin: SupabaseClient, replay: any): Promise<Rec
   // ===== Fallback single PUT cho file < 100MB (Agora replay ngắn) =====
   if (totalBytes < SINGLE_PUT_THRESHOLD) {
     console.log('[ARCHIVE_FAST_PATH] single PUT', { replay_id: replay.id, totalBytes });
-    const videoResp = await fetch(replay.cloudflare_mp4_download_url);
-    if (!videoResp.ok || !videoResp.body) throw new Error(`MP4 download failed: ${videoResp.status}`);
-    await markArchiveStep(admin, replay, ArchiveStep.UPLOADING_R2);
-    const uploaded = await uploadMp4ToR2(objectKey, videoResp.body, { contentLength: totalBytes });
+    let uploaded: { key: string; bucket: string; url: string; size: number } | null = null;
+    const existingObject = await headR2Object(objectKey);
+    if (canReuseConfirmedR2Object(existingObject.exists, existingObject.size, totalBytes)) {
+      uploaded = {
+        key: objectKey,
+        bucket: existingObject.bucket,
+        url: replay.r2_video_url || r2PublicUrlForKey(objectKey),
+        size: existingObject.size,
+      };
+    }
+    if (!uploaded) {
+      const videoResp = await fetch(replay.cloudflare_mp4_download_url);
+      if (!videoResp.ok || !videoResp.body) throw new Error(`MP4 download failed: ${videoResp.status}`);
+      await markArchiveStep(admin, replay, ArchiveStep.UPLOADING_R2);
+      uploaded = await uploadMp4ToR2(objectKey, videoResp.body, { contentLength: totalBytes });
+    }
+    if (!canReuseConfirmedR2Object(true, uploaded.size, totalBytes)) {
+      throw new Error(`R2 object size mismatch after upload: ${uploaded.size}/${totalBytes}`);
+    }
+    // Persist the signed HEAD-confirmed object before probing the public domain.
+    // A later retry can verify this deterministic object without uploading again.
+    await persistConfirmedR2Object(admin, replay.id, { ...uploaded, expectedSize: totalBytes });
     const playable = await verifyR2PlayableUrl(uploaded.url, 1024);
-    if (!playable.ok) throw new Error(`R2 playable verification failed: ${playable.status}`);
+    if (!mayPublishR2Replay(playable.ok)) throw new Error(`R2 playable verification failed: ${playable.error || `HTTP ${playable.status}`}`);
     await patchReplay(admin, replay.id, {
       r2_object_key: uploaded.key,
       r2_bucket: uploaded.bucket,
@@ -660,14 +699,21 @@ async function runVerifying(admin: SupabaseClient, replay: any): Promise<Record<
 
   const rescueCompletedObject = async (reason: string): Promise<Record<string, unknown> | null> => {
     if (!replay.r2_object_key) return null;
-    const head = await headR2Object(replay.r2_object_key).catch(() => ({ exists: false, size: 0 }));
+    const head = await headR2Object(replay.r2_object_key).catch(() => ({ exists: false, size: 0, bucket: replay.r2_bucket || '' }));
     if (!head.exists || head.size <= 0) return null;
     if (expectedBytes > 0 && head.size < expectedBytes) {
       throw new Error(`R2 object size mismatch after complete rescue: ${head.size}/${expectedBytes}`);
     }
     const r2Url = replay.r2_video_url || r2PublicUrlForKey(replay.r2_object_key);
+    await persistConfirmedR2Object(admin, replay.id, {
+      key: replay.r2_object_key,
+      bucket: replay.r2_bucket || head.bucket,
+      url: r2Url,
+      size: head.size,
+      expectedSize: expectedBytes,
+    });
     const playable = await verifyR2PlayableUrl(r2Url, 1024);
-    if (!playable.ok) throw new Error(`R2 playable verification failed during complete rescue: ${playable.status}`);
+    if (!mayPublishR2Replay(playable.ok)) throw new Error(`R2 playable verification failed during complete rescue: ${playable.error || `HTTP ${playable.status}`}`);
 
     const now = new Date().toISOString();
     await patchReplay(admin, replay.id, {
@@ -729,8 +775,18 @@ async function runVerifying(admin: SupabaseClient, replay: any): Promise<Record<
   // HEAD + Range verify
   const head = await headR2Object(completed.key);
   if (!head.exists || head.size <= 0) throw new Error('R2 HEAD verification failed after complete');
+  if (expectedBytes > 0 && head.size < expectedBytes) {
+    throw new Error(`R2 object size mismatch after complete: ${head.size}/${expectedBytes}`);
+  }
+  await persistConfirmedR2Object(admin, replay.id, {
+    key: completed.key,
+    bucket: completed.bucket || head.bucket,
+    url: completed.url,
+    size: head.size,
+    expectedSize: expectedBytes,
+  });
   const playable = await verifyR2PlayableUrl(completed.url, 1024);
-  if (!playable.ok) throw new Error(`R2 playable verification failed: ${playable.status}`);
+  if (!mayPublishR2Replay(playable.ok)) throw new Error(`R2 playable verification failed: ${playable.error || `HTTP ${playable.status}`}`);
 
   const now = new Date().toISOString();
   await patchReplay(admin, replay.id, {
@@ -916,8 +972,15 @@ export async function archiveReplay(admin: SupabaseClient, replayId: string): Pr
 
   // SELF-HEAL: nếu R2 đã có file đầy đủ → finalize ngay (giữ nguyên path cũ)
   if (replay.r2_object_key && replay.r2_video_url) {
-    const exists = await headR2Object(replay.r2_object_key).catch(() => ({ exists: false, size: 0 }));
-    if (exists.exists && exists.size > 0) {
+    const exists = await headR2Object(replay.r2_object_key).catch(() => ({ exists: false, size: 0, bucket: replay.r2_bucket || '' }));
+    const expectedBytes = Number(replay.mp4_total_bytes || replay.filesize_bytes || 0);
+    if (canReuseConfirmedR2Object(exists.exists, exists.size, expectedBytes)) {
+      const playable = await verifyR2PlayableUrl(replay.r2_video_url, 1024);
+      if (!mayPublishR2Replay(playable.ok)) {
+        const message = `R2 playable verification failed: ${playable.error || `HTTP ${playable.status}`}`;
+        await recordTransientFailure(admin, replay, message);
+        return { ok: true, status: 'skipped_unverified_r2_object', replay_id: replay.id };
+      }
       const post = await finalizeArchived(admin, replay, replay.r2_video_url);
       const patch: Record<string, unknown> = {
         archive_status: ArchiveStep.REPLAY_POSTED,
@@ -939,6 +1002,10 @@ export async function archiveReplay(admin: SupabaseClient, replayId: string): Pr
       }
       await cleanupR2Source(admin, { ...replay, ...patch });
       return { ok: true, status: 'self_healed', replay_id: replay.id, post_id: post.post_id };
+    }
+    if (exists.exists && exists.size > 0) {
+      await recordTransientFailure(admin, replay, 'R2 signed HEAD object size is below the expected replay size');
+      return { ok: true, status: 'skipped_incomplete_r2_object', replay_id: replay.id };
     }
   }
 

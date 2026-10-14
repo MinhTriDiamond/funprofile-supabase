@@ -1,3 +1,5 @@
+import { describeR2PlayableFailure, isSafeR2PublicBaseUrl } from './r2ArchiveDiagnostics.ts';
+
 interface R2Config {
   accountId: string;
   accessKeyId: string;
@@ -23,6 +25,7 @@ function getR2Config(): R2Config {
   if (!accountId || !accessKeyId || !secretAccessKey || !bucketName || !publicUrl) {
     throw new Error('Missing Cloudflare R2 config');
   }
+  if (!isSafeR2PublicBaseUrl(publicUrl)) throw new Error('Invalid R2 public URL config');
   const endpoint = Deno.env.get('R2_ENDPOINT');
   const endpointHost = endpoint ? new URL(endpoint).host : null;
   return {
@@ -96,17 +99,18 @@ export async function uploadMp4ToR2(
     headers['content-length'] = String(options.contentLength);
   }
   const resp = await signedR2Request('PUT', key, headers, body as BodyInit);
-  if (!resp.ok) throw new Error(`R2 upload failed: ${resp.status} ${await resp.text().catch(() => '')}`);
+  if (!resp.ok) throw new Error(`R2 upload failed: HTTP ${resp.status}`);
   const verified = await headR2Object(key);
   if (!verified.exists || verified.size <= 0) throw new Error('R2 upload verification failed');
   return { key, bucket: r2.bucketName, url: `${r2.publicUrl}/${key}`, size: verified.size };
 }
 
-export async function headR2Object(key: string): Promise<{ exists: boolean; size: number }> {
+export async function headR2Object(key: string): Promise<{ exists: boolean; size: number; bucket: string }> {
+  const r2 = getR2Config();
   const resp = await signedR2Request('HEAD', key);
-  if (resp.status === 404) return { exists: false, size: 0 };
+  if (resp.status === 404) return { exists: false, size: 0, bucket: r2.bucketName };
   if (!resp.ok) throw new Error(`R2 HEAD failed: ${resp.status}`);
-  return { exists: true, size: Number(resp.headers.get('content-length') || 0) };
+  return { exists: true, size: Number(resp.headers.get('content-length') || 0), bucket: r2.bucketName };
 }
 
 export async function deleteR2Object(key: string): Promise<void> {
@@ -197,9 +201,9 @@ export async function verifyR2PlayableUrl(url: string, rangeBytes = 1): Promise<
       return { ok: true, status: r.status, contentLength };
     }
     try { await r.arrayBuffer(); } catch { /* ignore */ }
-    return { ok: false, status: r.status, contentLength, error: `unexpected status ${r.status}` };
+    return { ok: false, status: r.status, contentLength, error: describeR2PlayableFailure(r.status) };
   } catch (err) {
-    return { ok: false, status: 0, contentLength: null, error: err instanceof Error ? err.message : String(err) };
+    return { ok: false, status: 0, contentLength: null, error: describeR2PlayableFailure(0, err) };
   }
 }
 

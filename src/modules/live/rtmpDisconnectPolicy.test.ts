@@ -22,6 +22,12 @@ describe('mayAutoEndRtmpDisconnect', () => {
     expect(mayAutoEndRtmpDisconnect(disconnected, { ...disconnected, confirmedDisconnected: false })).toBe(false);
   });
 
+  it('does not start or expire grace from an unknown Cloudflare input state', () => {
+    const unknown = { ...disconnected, confirmedDisconnected: false, hasReadError: true };
+    expect(mayAutoEndRtmpDisconnect(unknown, disconnected)).toBe(false);
+    expect(mayAutoEndRtmpDisconnect(disconnected, unknown)).toBe(false);
+  });
+
   it('ends only after both checks confirm a prolonged real disconnect', () => {
     expect(mayAutoEndRtmpDisconnect(disconnected, disconnected)).toBe(true);
   });
