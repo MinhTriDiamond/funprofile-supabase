@@ -336,7 +336,7 @@ async function handleLiveInputEvent(admin: any, event: any, type: string): Promi
   const detailsComplete = !!session.title?.trim() && !!session.description?.trim();
   if (isDisconnected) {
     const recheck = await detectRtmpLiveConnection(session, { skewSeconds: 60 });
-    if (recheck.connected) {
+    if (recheck.connected || recheck.videoStreaming) {
       const recheckUrls = recheck.activeVideoUid ? getStreamPlaybackUrls(recheck.activeVideoUid) : null;
       const nextStatus = session.status === 'live' || ((session.status === 'disconnect_grace' || session.status === 'reconnecting') && (session.post_id || session.live_post_id))
         ? 'live'
@@ -376,6 +376,13 @@ async function handleLiveInputEvent(admin: any, event: any, type: string): Promi
         source_connected: true,
         diagnostics: recheck.diagnostics,
       });
+    }
+    if (!recheck.confirmedDisconnected || recheck.errors?.length || recheck.reason === 'cloudflare_soft_fail' || recheck.reason === 'unknown_input_state') {
+      console.warn('[WEBHOOK] defer disconnect event: Cloudflare state not confirmed', {
+        live_session_id: session.id,
+        reason: recheck.reason,
+      });
+      return json({ ok: true, ignored: 'cloudflare_disconnect_not_confirmed', live_session_id: session.id });
     }
   }
   const liveInputVideos = isConnected

@@ -185,13 +185,13 @@ Deno.serve(async (req) => {
       try {
         const detection = await detectRtmpLiveConnection(s, { skewSeconds: 60 });
         const reasonStr = (detection as any).reason || '';
-        if (reasonStr === 'cloudflare_soft_fail') {
+        if (reasonStr === 'cloudflare_soft_fail' || reasonStr === 'unknown_input_state') {
           console.log('[grace-watchdog] skip cloudflare_soft_fail', s.id);
           continue;
         }
         const inputConnected = !!(detection as any).inputConnected;
         const videoStreaming = !!(detection as any).videoStreaming;
-        if (inputConnected && videoStreaming) {
+        if (inputConnected || videoStreaming) {
           await admin
             .from('live_sessions')
             .update({
@@ -202,9 +202,10 @@ Deno.serve(async (req) => {
               updated_at: nowIso,
             })
             .eq('id', s.id);
-          keptAlive.push({ session_id: s.id, reason: 'input_connected_with_active_video' });
+          keptAlive.push({ session_id: s.id, reason: inputConnected ? 'input_connected' : 'current_session_video_active' });
           continue;
         }
+        if (!(detection as any).confirmedDisconnected || (detection as any).errors?.length) continue;
         // input "connected" nhưng KHÔNG có active video — case stuck của persistent input
         verifiedFallback.push({ session: s, detection });
       } catch (e) {
@@ -240,8 +241,11 @@ Deno.serve(async (req) => {
 
           const inputConnected = !!(detection as any).inputConnected;
           const videoStreaming = !!(detection as any).videoStreaming;
-          // Chỉ giữ alive khi CẢ input lẫn video còn streaming (chốt chặn false-positive)
-          if (inputConnected && videoStreaming) {
+          const confirmedDisconnected = !!(detection as any).confirmedDisconnected;
+          const hasReadError = (detection as any).errors?.length > 0
+            || detection.reason === 'cloudflare_soft_fail'
+            || detection.reason === 'unknown_input_state';
+          if (inputConnected || videoStreaming) {
             await admin.from('live_sessions').update({
               status: session.post_id || session.live_post_id
                 ? 'live'
@@ -255,8 +259,12 @@ Deno.serve(async (req) => {
               live_input_status: 'live',
               updated_at: nowIso,
             }).eq('id', session.id);
-            keptAlive.push({ session_id: session.id, reason: 'recheck_input_and_video_active' });
+            keptAlive.push({ session_id: session.id, reason: inputConnected ? 'recheck_input_connected' : 'recheck_current_session_video_active' });
             results.push({ session_id: session.id, ok: true, skipped: 'source_reconnected', detection_reason: detection.reason, reason });
+            continue;
+          }
+          if (!confirmedDisconnected || hasReadError) {
+            results.push({ session_id: session.id, ok: true, skipped: 'cloudflare_disconnect_not_confirmed', reason });
             continue;
           }
         }

@@ -1,4 +1,5 @@
 import { CloudflareApiError, getCloudflareErrorCodes } from './cloudflareApiError.ts';
+import { isConfirmedRtmpDisconnectedState, isVideoInRtmpSessionWindow } from './rtmpDisconnectPolicy.ts';
 
 export interface StreamPlaybackUrls {
   hls: string;
@@ -24,13 +25,13 @@ function rewriteIngestUrl(url: string | null): string | null {
 }
 
 export function getStreamAccountId(): string | null {
-  return Deno.env.get('CLOUDFLARE_STREAM_ACCOUNT_ID') ?? Deno.env.get('CLOUDFLARE_ACCOUNT_ID');
+  return Deno.env.get('CLOUDFLARE_STREAM_ACCOUNT_ID') ?? Deno.env.get('CLOUDFLARE_ACCOUNT_ID') ?? null;
 }
 
 export function getStreamToken(): string | null {
   return Deno.env.get('CLOUDFLARE_STREAM_TOKEN') ||
     Deno.env.get('CLOUDFLARE_STREAM_API_TOKEN') ||
-    Deno.env.get('CLOUDFLARE_API_TOKEN');
+    Deno.env.get('CLOUDFLARE_API_TOKEN') || null;
 }
 
 export interface StreamLiveInput {
@@ -354,7 +355,7 @@ export async function setStreamLiveInputEnabled(inputId: string, enabled: boolea
   return { enabled, status: resp.status, raw: data };
 }
 
-export async function listStreamLiveInputVideos(inputId: string): Promise<Record<string, unknown>[]> {
+export async function listStreamLiveInputVideos(inputId: string, throwOnError = false): Promise<Record<string, unknown>[]> {
   const accountId = getStreamAccountId();
   const token = getStreamToken();
   if (!accountId || !token) throw new Error('Missing Cloudflare Stream config');
@@ -363,7 +364,10 @@ export async function listStreamLiveInputVideos(inputId: string): Promise<Record
     headers: { Authorization: `Bearer ${token}` },
   });
   const data = await resp.json().catch(() => null);
-  if (!resp.ok || !data?.success) return [];
+  if (!resp.ok || !data?.success) {
+    if (throwOnError) throw new Error(`Cloudflare Live Input videos request failed (HTTP ${resp.status})`);
+    return [];
+  }
   const result = data.result;
   if (Array.isArray(result)) return result;
   if (Array.isArray(result?.videos)) return result.videos;
@@ -896,6 +900,8 @@ export function selectRtmpReplayVideoForSession(
 
 export interface RtmpLiveConnectionDetection {
   inputConnected: boolean;
+  inputState: string;
+  confirmedDisconnected: boolean;
   videoStreaming: boolean;
   connected: boolean;
   activeVideoUid: string | null;
@@ -906,7 +912,7 @@ export interface RtmpLiveConnectionDetection {
   videos: Record<string, unknown>[];
   /** true = Cloudflare xác nhận Live Input không còn tồn tại; null = chưa xác định */
   liveInputMissing: boolean | null;
-  reason: 'active_video_found' | 'input_connected_no_video' | 'vod_ready_not_live' | 'input_disconnected' | 'cloudflare_soft_fail' | 'no_input_id' | 'live_input_missing';
+  reason: 'active_video_found' | 'input_connected_no_video' | 'vod_ready_not_live' | 'input_disconnected' | 'cloudflare_soft_fail' | 'unknown_input_state' | 'no_input_id' | 'live_input_missing';
   errors: string[];
   diagnostics: {
     liveInputIdExists: boolean;
@@ -939,6 +945,8 @@ export async function detectRtmpLiveConnection(
   if (!inputId) {
     return {
       inputConnected: false,
+      inputState: '',
+      confirmedDisconnected: false,
       videoStreaming: false,
       connected: false,
       activeVideoUid: null,
@@ -972,6 +980,7 @@ export async function detectRtmpLiveConnection(
   } else if (inputProbe.exists === null && inputProbe.error) {
     errors.push(`getStreamLiveInput: ${inputProbe.error}`);
   }
+  const inputState = getLiveInputState(liveInput);
   const inputConnected = isLiveInputConnected(liveInput);
 
 
@@ -987,26 +996,27 @@ export async function detectRtmpLiveConnection(
       return null;
     });
     hasReadyVod = hasReadyVod || isStreamVideoReadyVod(persistedVideo);
-    if (persistedVideo && isStreamVideoActivelyLive(persistedVideo)) {
-      activeVideo = persistedVideo;
-      activeVideoUid = persistedUid;
-    }
     if (persistedVideo && isStreamVideoPlayable(persistedVideo)) {
       playableVideo = persistedVideo;
       playableVideoUid = persistedUid;
     }
   }
 
-  videos = await listStreamLiveInputVideos(inputId).catch((err) => {
+  videos = await listStreamLiveInputVideos(inputId, true).catch((err) => {
     errors.push(`listStreamLiveInputVideos: ${err?.message || String(err)}`);
     return [] as Record<string, unknown>[];
   });
   hasReadyVod = hasReadyVod || videos.some((video) => isStreamVideoReadyVod(video));
 
-  const sessionStartedAt = persistedUid ? null : (session.armed_at || session.created_at || null);
+  const sessionStartedAt = session.armed_at || session.created_at || null;
 
   if (!activeVideo) {
-    activeVideo = selectActiveLiveVideo(videos, sessionStartedAt as string | Date | null, skewSeconds);
+    const sessionVideos = videos.filter((video) => isVideoInRtmpSessionWindow(
+      typeof video.created === 'string' ? video.created : null,
+      sessionStartedAt as string | Date | null,
+      skewSeconds,
+    ));
+    activeVideo = sessionVideos.find((video) => isStreamVideoActivelyLive(video)) || null;
     const uid = activeVideo ? (activeVideo as { uid?: unknown }).uid : null;
     activeVideoUid = uid ? String(uid) : null;
   }
@@ -1036,7 +1046,9 @@ export async function detectRtmpLiveConnection(
           ? 'vod_ready_not_live'
           : cloudflareSoftFail
             ? 'cloudflare_soft_fail'
-            : 'input_disconnected';
+            : !inputState
+              ? 'unknown_input_state'
+              : 'input_disconnected';
   const diagnostics = {
     liveInputIdExists: true,
     liveInputState: getLiveInputState(liveInput),
@@ -1051,6 +1063,8 @@ export async function detectRtmpLiveConnection(
 
   return {
     inputConnected,
+    inputState,
+    confirmedDisconnected: liveInputMissing === true || isConfirmedRtmpDisconnectedState(inputState),
     videoStreaming,
     connected,
     activeVideoUid,
