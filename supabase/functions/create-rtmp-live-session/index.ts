@@ -89,6 +89,13 @@ function toBoolean(value: unknown, fallback: boolean): boolean {
   return fallback;
 }
 
+function safeDiagnosticMessage(value: string): string {
+  return value
+    .replace(/\bBearer\s+[^\s"']+/gi, 'Bearer [redacted]')
+    .replace(/((?:stream[_ -]?key|authorization|(?:cloudflare[_ -]?)?(?:api[_ -]?)?token|secret[_ -]?key|encryption[_ -]?key)\s*[:=]\s*)[^\s,;"']+/gi, '$1[redacted]')
+    .slice(0, 500);
+}
+
 async function serializeSession(session: any, streamKey: string | null, extras: Record<string, unknown> = {}) {
   return {
     ok: true,
@@ -550,9 +557,13 @@ Deno.serve(async (req) => {
     if (error instanceof Error) message = error.message;
     else if (error && typeof error === 'object') {
       const anyErr = error as any;
-      message = anyErr.message || anyErr.error_description || anyErr.hint || JSON.stringify(error);
+      message = anyErr.message || anyErr.error_description || anyErr.hint || 'Internal error';
     } else message = String(error);
-    console.error('[create-rtmp-live-session] failed', message, error);
-    return json({ error: message || 'Internal error' }, message === 'Unauthorized' ? 401 : 500);
+    const safeMessage = safeDiagnosticMessage(message || 'Internal error');
+    console.error('[create-rtmp-live-session] failed', {
+      errorType: error instanceof Error ? error.name : typeof error,
+      message: safeMessage,
+    });
+    return json({ error: safeMessage }, message === 'Unauthorized' ? 401 : 500);
   }
 });

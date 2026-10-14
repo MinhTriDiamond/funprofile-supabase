@@ -13,31 +13,8 @@ import { toast } from 'sonner';
 import { FacebookNavbar } from '@/components/layout/FacebookNavbar';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
-import { FunctionsHttpError } from '@supabase/supabase-js';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
-
-async function readFunctionError(error: unknown): Promise<{ message: string; code?: string; status?: number; details?: unknown }> {
-  if (error instanceof FunctionsHttpError) {
-    try {
-      const body = await error.context.json();
-      return {
-        message: typeof body?.error === 'string' ? body.error : (typeof body?.message === 'string' ? body.message : 'Edge Function lỗi'),
-        code: typeof body?.code === 'string' ? body.code : undefined,
-        status: typeof body?.status === 'number' ? body.status : (error.context?.status as number | undefined),
-        details: body?.details,
-      };
-    } catch {
-      try {
-        const text = await error.context.text();
-        return { message: text || error.message, status: error.context?.status as number | undefined };
-      } catch {
-        return { message: error.message };
-      }
-    }
-  }
-  if (error instanceof Error) return { message: error.message };
-  return { message: typeof error === 'string' ? error : 'Lỗi không xác định' };
-}
+import { readFunctionError } from '@/modules/live/rtmpFunctionError';
 
 interface ProducerSession {
   live_session_id: string;
@@ -308,7 +285,9 @@ export default function RtmpLivePage() {
           // Gọi lại không kèm sessionId để backend tự tạo session mới.
           return await createOrResumeSession({ persistent: explicitPersistent, forceNew: true, resumeOnly: false });
         }
-        throw error;
+        const reason = info.message || 'Edge Function không cung cấp chi tiết lỗi.';
+        const status = info.status ? ` (HTTP ${info.status})` : '';
+        throw new Error(`Không thể tạo hoặc khôi phục phiên Live Producer: ${reason}${status}`);
       }
       if (!data?.rtmps_url || !data?.stream_key) {
         if (data && (data as any).key_reset_required) {
