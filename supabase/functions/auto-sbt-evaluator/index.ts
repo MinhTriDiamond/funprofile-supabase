@@ -105,8 +105,36 @@ async function evalRule(rule: any, dids: any[]) {
   return issued;
 }
 
+// Bao mat (2026-10-14): ham cap SBT chi danh cho may moc noi bo hoac admin dang nhap.
+function machineAuthorized(req: Request): boolean {
+  const cronSecret = Deno.env.get('CRON_SHARED_SECRET') ?? Deno.env.get('CRON_SECRET');
+  if (cronSecret && req.headers.get('x-cron-secret') === cronSecret) return true;
+  const svcKey = Deno.env.get('SUPABASE_SECRET_KEY') ?? Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+  if (svcKey && req.headers.get('Authorization') === `Bearer ${svcKey}`) return true;
+  return false;
+}
+
+async function adminAuthorized(req: Request): Promise<boolean> {
+  const token = (req.headers.get('Authorization') || '').replace(/^Bearer\s+/i, '');
+  if (!token) return false;
+  try {
+    const { data } = await sb.auth.getUser(token);
+    const uid = data?.user?.id;
+    if (!uid) return false;
+    const { data: roles } = await sb.from('user_roles').select('role').eq('user_id', uid);
+    return (roles ?? []).some((r: any) => r.role === 'admin');
+  } catch {
+    return false;
+  }
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
+  if (!machineAuthorized(req) && !(await adminAuthorized(req))) {
+    return new Response(JSON.stringify({ ok: false, error: 'unauthorized' }), {
+      status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
   try {
     const { data: rules } = await sb.from('sbt_issuance_rules')
       .select('*').eq('mode', 'auto').eq('is_active', true);
