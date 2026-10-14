@@ -8,7 +8,7 @@ const corsHeaders = {
 
 const ANGEL_AI_ENDPOINT = "https://ssjoetiitctqzapymtzl.supabase.co/functions/v1/angel-chat";
 const LOVABLE_AI_ENDPOINT = "https://ai.gateway.lovable.dev/v1/chat/completions";
-const ANGEL_TIMEOUT_MS = 15000;
+const ANGEL_TIMEOUT_MS = 90000;
 
 const HIGH_IMPACT_CODES = ['SOCIAL_IMPACT', 'SERVICE', 'GIVING'];
 const MAX_HIGH_IMPACT_ACTIONS_PER_DAY = 3;
