@@ -378,27 +378,25 @@ async function decayTrustForSpam(supabase: any, userId: string): Promise<void> {
 }
 
 async function createReviewQueueItem(supabase: any, actionId: string, reason: string, priority = 'normal'): Promise<void> {
-  await supabase.from('pplp_v2_review_queue').upsert({
+  const { error } = await supabase.from('pplp_v2_review_queue').upsert({
     action_id: actionId,
     reason,
     priority,
-  }, { onConflict: 'action_id' }).catch((e: any) => {
-    console.warn('[Validate] Review queue insert failed:', e);
-  });
+  }, { onConflict: 'action_id' });
+  if (error) console.warn('[Validate] Review queue insert failed:', error);
 }
 
 // Record fraud signal
 async function recordFraudSignal(supabase: any, userId: string, actionId: string, signalType: string, severity: number, details: any): Promise<void> {
-  await supabase.from('pplp_v2_fraud_signals').insert({
+  const { error } = await supabase.from('pplp_v2_fraud_signals').insert({
     user_id: userId,
     action_id: actionId,
     signal_type: signalType,
     severity,
     details,
     source: 'ai_validation',
-  }).catch((e: any) => {
-    console.warn('[Validate] Fraud signal insert failed:', e);
   });
+  if (error) console.warn('[Validate] Fraud signal insert failed:', error);
 }
 
 // =============================================
