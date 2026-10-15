@@ -258,7 +258,11 @@ Deno.serve(async (req: Request) => {
           full_name: profile.full_name,
           avatar_url: profile.avatar_url,
           // Only disclose email when the granted scope includes it (Th1)
-          email: (authCode.scope || []).includes('email') ? (authUser?.email || null) : null
+          email: (authCode.scope || []).includes('email') ? (authUser?.email || null) : null,
+          // Whether FUN Profile has verified this email (confirmed signup or
+          // Google). Platforms use it for the same-email auto-link rule:
+          // auto-link only when the email is verified on BOTH sides.
+          email_verified: (authCode.scope || []).includes('email') ? !!authUser?.email_confirmed_at : null
         } : null
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
