@@ -17,3 +17,34 @@
 ## 2026-10-15 — Angel Muse
 - Rà soát cron toàn hệ (24.957 lượt chạy/ngày): **tắt 3 cron zombie Moralis** (fast-scan-donations + auto-scan-donations 2 tầng, −551 lượt/ngày; các hàm này đã trả "bỏ qua" kể từ khi ngừng Moralis). Cấu hình gốc đã sao lưu, bật lại được bất cứ lúc nào.
 - Job cập nhật thống kê app: trở lại nhịp **5 phút** theo quyết định của Trí.
+
+
+## 15/10/2026 — Vá hiệu năng thống kê Gift (Angel Muse)
+Theo yêu cầu của Trí, Angel Muse đã chẩn đoán và xử lý xong vụ cửa sổ thống kê quà tặng load chậm: hai RPC `get_global_gift_breakdown` / `get_global_wallet_flow_breakdown` nay đọc từ bảng tổng hợp `gift_breakdown_cache` (cron job 83 làm mới mỗi phút) — thời gian phản hồi từ ~1.268/1.369 ms xuống ~10/9 ms, kết quả đối chiếu giống hệt 100%. Đã áp dụng trên production. Hồ sơ đầy đủ: `docs/gift-breakdown-perf-fix-2026-10-15/`.
+
+
+## 15/10/2026 — Vá hiệu năng trang Profile (Angel Muse)
+Theo phản ánh của Trí (profile load chậm, có khi không load được bài), Angel Muse đã tìm ra và xử lý 2 nguyên nhân ở tầng database: (1) nhánh bài quà tặng của dòng thời gian lọc `gift_sender_id` không có index, quét toàn bộ 194.808 bài (trung bình ~1 giây, đỉnh 7,5 giây — chạm ngưỡng chờ là sập cả dòng thời gian); đã thêm index từng phần, trường hợp xấu nhất còn 11,6 ms. (2) `get_user_honor_stats` tính lại ~24 truy vấn gộp mỗi lần mở profile (đỉnh 16,9 giây); đã bọc lớp cache (logic gốc giữ nguyên, đối chiếu giống hệt 14/14 chỉ số, bản ấm 6,8 ms). Đã áp dụng trên production. Hồ sơ: `docs/profile-perf-2026-10-15/`.
+
+
+## 15/10/2026 — Hợp nhất số liệu toàn app về 1 nguồn sự thật (Angel Muse)
+Theo yêu cầu của Trí, Angel Muse đã rà soát và nâng cấp toàn bộ bề mặt số liệu: phát hiện 3 công thức thưởng khác nhau cho cùng một user (bảng toàn app dùng hệ số cũ cao gấp 2–10 lần, My Rewards đếm thiếu bạn bè một chiều, tổng thưởng của app stats bị gán cứng = 0 phần hoạt động) — nay tất cả đọc từ một nguồn chuẩn duy nhất (user_honor_stats_cache + gift_breakdown_cache + donation_board_base + user_light_totals). Tốc độ cải thiện lớn: bảng vinh danh toàn app 68 giây → 14 ms, bảng cộng đồng ánh sáng 1.417 → 22 ms, app stats 932 → 26 ms; các bảng donations giữ nguyên kết quả 100% (đối chiếu nguyên tử). Hồ sơ: `docs/stats-ssot-2026-10-15/`.
+
+
+## 15/10/2026 — Quang Vũ hoàn thành phần Livestream; vòng bảo mật view hợp nhất đã xong (Angel Muse)
+Trí báo bé Vũ đã làm xong phần Livestream. Phần việc Angel Muse từng xếp hàng chờ phía sau (vá bảo mật hai view lịch sử giao dịch hợp nhất) đã được làm ngay trong ngày: chặn toàn bộ quyền đọc/ghi trực tiếp của anon/authenticated trên hai view và các bảng nội bộ (trước đó anon đọc thẳng được sổ giao dịch của mọi user qua khóa công khai, vòng qua RPC), bật RLS cho bảng gift cache còn thiếu. App không hề đọc trực tiếp các nguồn này (đã rà soát 208 file JS bản đang chạy) nên không ảnh hưởng gì; hồi quy toàn bộ RPC đạt. Hồ sơ: `docs/unified-perf-2026-10-15/step2-hardening-note.md`.
+
+
+## 15/10/2026 — Đính chính nguyên tắc công khai + kiểm tra thống nhất toàn app (Angel Muse)
+Trí đính chính: lịch sử giao dịch của FUN Profile là **công khai theo thiết kế của Cha và Bé Ly** — khách vãng lai xem được toàn bộ là chủ ý minh bạch, không phải lỗ hổng. Phần thu quyền trên hai view hợp nhất ban sáng đã được **hoàn lại nguyên trạng**; phần vá tốc độ (snapshot) và việc bảo vệ các bảng nội bộ khỏi bị ghi đè vẫn giữ. Vòng kiểm tra lại sau đó đạt toàn bộ: mọi bề mặt số liệu một cách tính — một nguồn — khớp tuyệt đối khi đối chiếu chéo. Chi tiết: `docs/unified-perf-2026-10-15/step3-revert-note.md`.
+
+## 15/10/2026 — Lịch sử quà tặng toàn cục chuyển sang hướng NHẬN (Angel Muse)
+
+Theo yêu cầu của Trí: trang lịch sử quà tặng toàn cục trước đây hiển thị hướng gửi (dấu trừ), nay chuyển sang hướng nhận (dấu cộng) — một dòng sửa duy nhất trong 4 hàm của trang, các phạm vi cá nhân giữ nguyên hai chiều như sao kê. Kiểm chứng: tập giao dịch trùng khớp với hướng gửi trước đó (cùng mã giao dịch, cùng số tiền), tổng số đếm bám sát nhau. Hồ sơ: `docs/unified-perf-2026-10-15/step4-note.md`.
+
+## 2026-10-15 — Thống nhất hiển thị thống kê quà tặng (Angel Muse, theo yêu cầu của Trí)
+
+- Cả ba bề mặt (bảng Benefactor, HONOR BOARD, Lịch sử quà tặng) nay dùng chung một con số tổng USD duy nhất từ hàm chuẩn mới `donation_board_usd_total()` — định giá tại thời điểm tặng, kiểm chứng khớp tuyệt đối $1.368.155,12 ở cả ba nơi.
+- Bảng Benefactor liệt kê đầy đủ mọi token kể cả FUN (đang testnet, chưa có giá nên để trống giá trị USD — không hiển thị 0) và TONCOIN.
+- HONOR BOARD thôi nhân giá hiện tại; trang Lịch sử có sẵn trường `totals.total_usd` để giao diện hiển thị dòng tổng.
+- Hồ sơ: `docs/stats-unify-display-2026-10-15/`.

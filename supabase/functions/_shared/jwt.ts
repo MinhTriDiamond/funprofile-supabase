@@ -13,6 +13,8 @@ interface JWTPayload {
   fun_id: string;                 // FUN ID (username-based identifier)
   username: string;               // Display username
   scope: string[];                // Granted scopes/permissions
+  client_id?: string;             // Client the token was issued to (also set as `aud`)
+  custodial_wallet?: string | null;
 }
 
 interface JWTHeader {
@@ -89,6 +91,9 @@ export async function generateAccessToken(payload: JWTPayload): Promise<string> 
   
   const claims = {
     ...payload,
+    // Bind the token to the issuing client (C2 fix, SSO hardening 2026-10-15):
+    // `aud` is the standard claim, `client_id` kept alongside for consumers.
+    ...(payload.client_id ? { aud: payload.client_id, client_id: payload.client_id } : {}),
     iss: JWT_ISSUER,
     iat: now,
     exp: now + ACCESS_TOKEN_EXPIRES_SECONDS
@@ -165,6 +170,7 @@ export async function verifyAccessToken(token: string): Promise<JWTPayload | nul
       fun_id: claims.fun_id,
       username: claims.username,
       custodial_wallet: claims.custodial_wallet,
+      client_id: claims.client_id || claims.aud,
       scope: claims.scope
     };
   } catch (error) {
