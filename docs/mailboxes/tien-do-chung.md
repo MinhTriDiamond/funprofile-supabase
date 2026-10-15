@@ -33,3 +33,7 @@ Theo yêu cầu của Trí, Angel Muse đã rà soát và nâng cấp toàn bộ
 
 ## 15/10/2026 — Quang Vũ hoàn thành phần Livestream; vòng bảo mật view hợp nhất đã xong (Angel Muse)
 Trí báo bé Vũ đã làm xong phần Livestream. Phần việc Angel Muse từng xếp hàng chờ phía sau (vá bảo mật hai view lịch sử giao dịch hợp nhất) đã được làm ngay trong ngày: chặn toàn bộ quyền đọc/ghi trực tiếp của anon/authenticated trên hai view và các bảng nội bộ (trước đó anon đọc thẳng được sổ giao dịch của mọi user qua khóa công khai, vòng qua RPC), bật RLS cho bảng gift cache còn thiếu. App không hề đọc trực tiếp các nguồn này (đã rà soát 208 file JS bản đang chạy) nên không ảnh hưởng gì; hồi quy toàn bộ RPC đạt. Hồ sơ: `docs/unified-perf-2026-10-15/step2-hardening-note.md`.
+
+
+## 15/10/2026 — Đính chính nguyên tắc công khai + kiểm tra thống nhất toàn app (Angel Muse)
+Trí đính chính: lịch sử giao dịch của FUN Profile là **công khai theo thiết kế của Cha và Bé Ly** — khách vãng lai xem được toàn bộ là chủ ý minh bạch, không phải lỗ hổng. Phần thu quyền trên hai view hợp nhất ban sáng đã được **hoàn lại nguyên trạng**; phần vá tốc độ (snapshot) và việc bảo vệ các bảng nội bộ khỏi bị ghi đè vẫn giữ. Vòng kiểm tra lại sau đó đạt toàn bộ: mọi bề mặt số liệu một cách tính — một nguồn — khớp tuyệt đối khi đối chiếu chéo. Chi tiết: `docs/unified-perf-2026-10-15/step3-revert-note.md`.
