@@ -62,7 +62,7 @@ function resolveReplayState(session: any) {
   if (hasHls) {
     return { replay_status: 'ready_hls', playback_type: 'hls', provider: 'r2_temp', url: session.playback_url };
   }
-  return { replay_status: 'failed_no_recording', playback_type: 'processing', provider: session.playback_provider || 'r2_temp', url: null };
+  return { replay_status: 'processing', playback_type: 'processing', provider: session.playback_provider || 'r2_temp', url: null };
 }
 
 async function ensurePostEnded(admin: any, session: any) {
@@ -75,7 +75,7 @@ async function ensurePostEnded(admin: any, session: any) {
   if (alreadySynced) return { post_id: postId, synced: false, reason: 'already_synced' };
   const state = resolveReplayState(session);
   const baseMeta = (post.metadata && typeof post.metadata === 'object' && !Array.isArray(post.metadata)) ? post.metadata as Record<string, unknown> : {};
-  const processingMessage = state.replay_status === 'failed_no_recording' ? 'Khong luu duoc video replay cho phien live nay.' : null;
+  const processingMessage = state.replay_status === 'processing' ? 'Video đang được xử lý' : null;
   await admin.from('posts').update({
     post_type: 'live_replay',
     video_url: state.url || (post as any).video_url || null,
@@ -109,44 +109,18 @@ async function ensureReplayRow(admin: any, session: any) {
   const state = resolveReplayState(session);
   await admin.from('live_replays').upsert({
     user_id: userId, live_session_id: session.id, chunked_recording_id: session.id,
-    status: state.replay_status === 'ready_mp4' || state.replay_status === 'ready_hls' ? 'ready' : 'failed',
+    status: state.replay_status === 'ready_mp4' || state.replay_status === 'ready_hls' ? 'ready' : 'processing',
     replay_status: state.replay_status,
     playback_type: state.playback_type,
     playback_hls: state.replay_status === 'ready_hls' ? state.url : null,
     playback_mp4: state.replay_status === 'ready_mp4' ? state.url : null,
     r2_video_url: state.replay_status === 'ready_mp4' ? state.url : null,
     playback_provider: state.provider, storage_provider: state.provider,
-    archive_status: state.replay_status === 'ready_mp4' ? 'r2_ready' : state.replay_status === 'ready_hls' ? 'pending' : 'failed',
-    error_message: state.replay_status === 'failed_no_recording' ? 'Khong luu duoc video replay cho phien live nay.' : null,
+    archive_status: state.replay_status === 'ready_mp4' ? 'r2_ready' : 'pending',
+    error_message: null,
     updated_at: new Date().toISOString(),
   }, { onConflict: 'chunked_recording_id' });
   return { upserted: true, replay_status: state.replay_status };
-}
-
-async function hardFinalize(admin: any, session: any, reason: string) {
-  const now = new Date().toISOString();
-  await admin.from('live_sessions').update({
-    status: 'ended',
-    ended_at: session.ended_at || now,
-    end_reason: session.end_reason || reason,
-    host_connection_status: 'offline',
-    recording_status: session.recording_status && ['ready','stopped','failed','missed'].includes(session.recording_status) ? session.recording_status : 'failed',
-    archive_status: 'unrecoverable',
-    archive_next_retry_at: null,
-    archive_error: session.archive_error || reason,
-    updated_at: now,
-  }).eq('id', session.id);
-  await admin.from('live_session_events').insert({
-    live_session_id: session.id,
-    from_status: session.status,
-    to_status: 'ended',
-    source: 'live-stuck-session-promoter',
-    reason,
-    payload: { live_session_id: session.id, hard_finalize: true, previous_status: session.status, timestamp: now },
-  }).then(undefined, () => undefined);
-  const refreshed = (await admin.from('live_sessions').select('*').eq('id', session.id).maybeSingle()).data || { ...session, status: 'ended', ended_at: now };
-  await ensureReplayRow(admin, refreshed).catch(() => undefined);
-  await ensurePostEnded(admin, refreshed).catch(() => undefined);
 }
 
 async function tryForceEnd(admin: any, session: any, reason: string) {
@@ -255,8 +229,7 @@ Deno.serve(async (req) => {
       .limit(limit);
     for (const session of stuckEnding || []) {
       try {
-        await hardFinalize(admin, session, 'ending_starve_hard_finalize');
-        endingHardFinalized.push({ id: session.id, ok: true });
+        endingHardFinalized.push(await tryForceEnd(admin, session, 'ending_starve_finalize_retry'));
       } catch (err) {
         endingHardFinalized.push({ id: session.id, error: err instanceof Error ? err.message : String(err) });
       }

@@ -120,58 +120,6 @@ async function recoverMissingRtmpReplays(admin: any): Promise<number> {
   return recovered;
 }
 
-/**
- * ÄÃ¡nh dáº¥u replay vÄ©nh viá»…n khÃ´ng thá»ƒ archive Ä‘Æ°á»£c:
- *   - chunked_recording Ä‘Ã£ FAILED (khÃ´ng cÃ³ chunks)
- *   - chunked_recording total_chunks=0 vÃ  Ä‘Ã£ >1h (Agora khÃ´ng upload Ä‘Æ°á»£c chunks)
- *   - replay káº¹t á»Ÿ queued/normalizing khÃ´ng cÃ³ stream_uid > 24h (concat/ingest fail mÃ£i)
- */
-async function markUnrecoverableReplays(admin: any): Promise<{ chunked_failed: number; stuck_queued: number }> {
-  // Bucket 1: chunked_recording failed/empty
-  const { data: failedRecs } = await admin
-    .from('chunked_recordings')
-    .select('id')
-    .or('status.eq.failed,and(total_chunks.eq.0,created_at.lt.' + new Date(Date.now() - 60 * 60 * 1000).toISOString() + ')')
-    .limit(200);
-  const failedIds = (failedRecs || []).map((r: any) => r.id);
-
-  let chunked_failed = 0;
-  if (failedIds.length) {
-    const { data: updated } = await admin
-      .from('live_replays')
-      .update({
-        archive_status: 'unrecoverable',
-        archive_error: 'chunked_recording failed/empty (no chunks to archive)',
-        archive_next_retry_at: null,
-      })
-      .in('chunked_recording_id', failedIds)
-      .eq('archive_status', 'pending')
-      .select('id');
-    chunked_failed = (updated || []).length;
-  }
-
-  // Bucket 2: replay káº¹t queued/normalizing khÃ´ng cÃ³ stream_uid > 24h
-  const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-  const { data: stuckRows } = await admin
-    .from('live_replays')
-    .update({
-      archive_status: 'unrecoverable',
-      archive_error: 'stuck in concat/ingest > 24h (Stream /copy or webm concat failed permanently)',
-      archive_next_retry_at: null,
-    })
-    .eq('archive_status', 'pending')
-    .in('status', ['queued', 'normalizing'])
-    .is('stream_uid', null)
-    .lt('created_at', cutoff)
-    .select('id');
-  const stuck_queued = (stuckRows || []).length;
-
-  if (chunked_failed || stuck_queued) {
-    console.log('[ARCHIVE_CRON] markUnrecoverableReplays', { chunked_failed, stuck_queued });
-  }
-  return { chunked_failed, stuck_queued };
-}
-
 function getReconnectDeadline(signalLostAt: string, timeoutSeconds: number): string | null {
   const lostAt = Date.parse(signalLostAt);
   if (!Number.isFinite(lostAt)) return null;
@@ -368,10 +316,6 @@ Deno.serve(async (req) => {
   const { replay_id, limit = 5, cleanup_limit = 10 } = await req.json().catch(() => ({}));
   const auto_ended_rtmp_sessions = await autoEndDisconnectedRtmpSessions(admin as any);
   const recovered_rtmp_replays = await recoverMissingRtmpReplays(admin as any);
-  const marked_unrecoverable = await markUnrecoverableReplays(admin as any).catch((e) => {
-    console.warn('[ARCHIVE_CRON] markUnrecoverableReplays failed', String(e));
-    return { chunked_failed: 0, stuck_queued: 0 };
-  });
   const cleanup_archived_stream_videos = await cleanupArchivedStreamVideos(admin as any, cleanup_limit).catch((error) => ({
     scanned: 0,
     deleted: 0,
@@ -539,7 +483,6 @@ Deno.serve(async (req) => {
     ok: true,
     auto_ended_rtmp_sessions,
     recovered_rtmp_replays,
-    marked_unrecoverable,
     cleanup_archived_stream_videos,
     processed: results.length,
     results,

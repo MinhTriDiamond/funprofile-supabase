@@ -10,6 +10,7 @@ import {
 } from '../_shared/r2MultiBucketService.ts';
 import { createOrUpdateReplayPost, createOrUpdateTempHlsReplayPost, upsertCreatorLibrary } from '../_shared/replayFeedService.ts';
 import { queryRecording, stopRecording } from '../_shared/agoraCloudRecordingService.ts';
+import { isPendingAgoraRecording } from '../_shared/agoraRecordingWebhookPolicy.ts';
 
 const HLS_RETRY_MS = 15_000;
 const MP4_RETRY_BASE_MS = 30_000;
@@ -17,8 +18,6 @@ const MP4_RETRY_BASE_MS = 30_000;
 // Lý do: tránh case viewer đang phát HLS thì bị đứt giữa chừng vì cleanup chạy quá sớm,
 // và để FE có đủ thời gian đảo player sang MP4 vĩnh viễn. Storage tạm không đáng kể.
 const CLEANUP_DELAY_MS = 24 * 60 * 60 * 1000;
-const MAX_ARCHIVE_RETRIES = 20;
-const BACKLOG_SCAN_MS = 7 * 24 * 60 * 60 * 1000;
 
 class RetryableArchiveSourceNotReadyError extends Error {
   constructor(message: string) {
@@ -156,71 +155,6 @@ async function logEvent(admin: any, session: any, event: string, payload: Record
   }).then(undefined, () => undefined);
 }
 
-// Sau bao lâu (kể từ ended_at) thì coi như recording sẽ KHÔNG bao giờ về nữa
-// và fail-final post placeholder. 30 phút đủ để Agora flush mọi case bình thường.
-const FAIL_FINAL_AFTER_MS = 30 * 60 * 1000;
-
-async function failFinalNoRecording(admin: any, session: any, reason: string) {
-  const now = new Date().toISOString();
-  const postId = session.post_id || session.live_post_id || null;
-  const userId = userIdOf(session);
-
-  await admin.from('live_sessions').update({
-    status: 'ended',
-    recording_status: session.recording_status === 'missed' ? 'missed' : 'failed',
-    archive_status: 'unrecoverable',
-    archive_next_retry_at: null,
-    archive_error: `no_recording_after_${Math.round(FAIL_FINAL_AFTER_MS / 60000)}min:${reason}`,
-    updated_at: now,
-  }).eq('id', session.id);
-
-  if (userId) {
-    await admin.from('live_replays').upsert({
-      user_id: userId,
-      live_session_id: session.id,
-      chunked_recording_id: session.id,
-      status: 'failed',
-      replay_status: 'failed_no_recording',
-      playback_type: 'processing',
-      playback_hls: null,
-      playback_mp4: null,
-      temp_hls_url: null,
-      archive_status: 'failed',
-      cleanup_status: 'pending',
-      error_message: `no_recording_after_${Math.round(FAIL_FINAL_AFTER_MS / 60000)}min:${reason}`,
-      updated_at: now,
-    }, { onConflict: 'chunked_recording_id' }).then(undefined, (error: any) => {
-      console.warn('[live-webcam-recording-processor] failed_no_recording replay upsert failed', session.id, error?.message || error);
-    });
-  }
-
-  if (postId) {
-    const { data: post } = await admin.from('posts').select('metadata').eq('id', postId).maybeSingle();
-    const metadata = {
-      ...((post?.metadata && typeof post.metadata === 'object') ? post.metadata : {}),
-      live_status: 'ended',
-      live_session_id: session.id,
-      replay_status: 'failed_no_recording',
-      replay_ready: false,
-      playback_type: 'processing',
-      processing_message: 'Không lưu được video (live quá ngắn hoặc gián đoạn).',
-      cleanup_reason: `no_recording_after_${Math.round(FAIL_FINAL_AFTER_MS / 60000)}min`,
-      cleanup_at: now,
-    };
-    await admin.from('posts').update({
-      post_type: 'live_replay',
-      video_url: null,
-      replay_status: 'failed_no_recording',
-      replay_ready: false,
-      processing_message: 'Không lưu được video (live quá ngắn hoặc gián đoạn).',
-      metadata,
-      updated_at: now,
-    }).eq('id', postId).then(undefined, () => undefined);
-  }
-
-  await logEvent(admin, session, 'replay_failed_no_recording', { reason });
-}
-
 async function keepTempHlsPostAfterArchiveFailure(admin: any, replay: any, hlsUrl: string, message: string) {
   const postId = replay.replay_post_id || null;
   if (!postId || !hlsUrl) return;
@@ -255,23 +189,16 @@ async function keepTempHlsPostAfterArchiveFailure(admin: any, replay: any, hlsUr
 }
 
 async function updateProcessing(admin: any, session: any, reason: string, nextDelayMs = HLS_RETRY_MS) {
-  // Fail-final check: live đã kết thúc đủ lâu mà vẫn không có file nào → bỏ cuộc.
-  const endedAtMs = session.ended_at ? new Date(session.ended_at).getTime() : 0;
-  const aged = endedAtMs > 0 && Date.now() - endedAtMs > FAIL_FINAL_AFTER_MS;
-  const exhausted = Number(session.archive_retry_count || 0) >= MAX_ARCHIVE_RETRIES;
-  if (aged || exhausted) {
-    await failFinalNoRecording(admin, session, aged ? `aged_${reason}` : `exhausted_${reason}`);
-    return;
-  }
-
   const now = new Date().toISOString();
+  const retryCount = Number(session.archive_retry_count || 0) + 1;
+  const retryDelayMs = Math.min(15 * 60_000, Math.max(nextDelayMs, 30_000 * (2 ** Math.min(retryCount - 1, 5))));
   await admin.from('live_sessions').update({
     status: session.recording_status === 'failed' ? 'failed' : 'processing_replay',
     recording_status: session.recording_status === 'failed' ? 'failed' : 'processing',
     archive_status: 'pending',
-    archive_retry_count: Number(session.archive_retry_count || 0) + 1,
-    archive_next_retry_at: new Date(Date.now() + nextDelayMs).toISOString(),
-    archive_error: null,
+    archive_retry_count: retryCount,
+    archive_next_retry_at: new Date(Date.now() + retryDelayMs).toISOString(),
+    archive_error: reason,
     updated_at: now,
   }).eq('id', session.id);
 
@@ -829,61 +756,42 @@ async function processSession(admin: any, session: any): Promise<Record<string, 
     const message = error instanceof Error ? error.message : String(error);
     const sourceNotReady = error instanceof RetryableArchiveSourceNotReadyError || isMissingSourceObjectError(message);
     const retryCount = Number(session.archive_retry_count || replay.retry_count || 0) + 1;
-    const giveUp = retryCount >= MAX_ARCHIVE_RETRIES;
-    const nextDelayMs = Math.min(15 * 60_000, MP4_RETRY_BASE_MS * retryCount);
-    const shouldFail = giveUp;
+    const nextDelayMs = Math.min(60 * 60_000, MP4_RETRY_BASE_MS * (2 ** Math.min(retryCount - 1, 7)));
     await admin.from('live_replays').update({
-      replay_status: shouldFail ? 'failed' : 'processing',
+      replay_status: 'processing',
       playback_type: 'processing',
       playback_hls: null,
       temp_hls_url: null,
       playback_provider: 'r2',
       storage_provider: 'r2',
-      archive_status: shouldFail ? 'failed' : 'pending',
+      archive_status: 'pending',
       error_message: message,
       retry_count: retryCount,
-      archive_next_retry_at: shouldFail ? null : new Date(Date.now() + nextDelayMs).toISOString(),
+      archive_next_retry_at: new Date(Date.now() + nextDelayMs).toISOString(),
       updated_at: new Date().toISOString(),
     }).eq('id', replay.id).then(undefined, () => undefined);
     await admin.from('live_sessions').update({
-      archive_status: shouldFail ? 'failed' : 'pending',
-      recording_status: shouldFail ? 'failed' : 'processing',
-      status: shouldFail ? 'failed' : 'processing_replay',
+      archive_status: 'pending',
+      recording_status: 'processing',
+      status: 'processing_replay',
       archive_retry_count: retryCount,
-      archive_next_retry_at: shouldFail ? null : new Date(Date.now() + nextDelayMs).toISOString(),
+      archive_next_retry_at: new Date(Date.now() + nextDelayMs).toISOString(),
       archive_error: message,
       updated_at: new Date().toISOString(),
     }).eq('id', session.id).then(undefined, () => undefined);
-    if (shouldFail && (session.post_id || session.live_post_id)) {
-      const postId = session.post_id || session.live_post_id;
-      const { data: post } = await admin.from('posts').select('metadata').eq('id', postId).maybeSingle();
-      await admin.from('posts').update({
-        video_url: null,
-        replay_status: 'failed',
-        replay_ready: false,
-        processing_message: 'Video đang xử lý lỗi, vui lòng thử lại sau',
-        metadata: {
-          ...((post?.metadata && typeof post.metadata === 'object') ? post.metadata : {}),
-          replay_status: 'failed',
-          replay_ready: false,
-          archive_error: message,
-          processing_message: 'Video đang xử lý lỗi, vui lòng thử lại sau',
-        },
-        updated_at: new Date().toISOString(),
-      }).eq('id', postId).then(undefined, () => undefined);
-    }
-    await logEvent(admin, session, shouldFail ? 'archive_unrecoverable' : 'archive_retry_scheduled', {
+    await logEvent(admin, session, 'archive_retry_scheduled', {
       reason: message,
       error: message,
       retry_count: retryCount,
       source_not_ready: sourceNotReady,
+      retry_delay_ms: nextDelayMs,
       temp_bucket: tempBucket,
       temp_prefix: tempPrefix,
       archive_bucket: archiveBucket,
       archive_key: archiveKeyFor(userId, session.id),
       file_size: mp4.size,
     });
-    return { id: session.id, status: shouldFail ? 'archive_failed' : 'archive_retry', error: message };
+    return { id: session.id, status: 'archive_retry', error: message };
   }
 }
 
@@ -908,9 +816,7 @@ Deno.serve(async (req) => {
       // 'processing' included so sessions stuck mid-process (orphaned by a previous run crash)
       // are retried by the regular cron instead of being silently left behind.
       .in('recording_status', ['stopped', 'ready', 'failed', 'recording', 'processing'])
-      .or(`archive_status.is.null,archive_status.in.(${archiveStates.join(',')})`)
-      .lt('archive_retry_count', MAX_ARCHIVE_RETRIES)
-      .gte('created_at', new Date(Date.now() - BACKLOG_SCAN_MS).toISOString());
+      .or(`archive_status.is.null,archive_status.in.(${archiveStates.join(',')})`);
 
     if (typeof body.session_id === 'string' && body.session_id.trim()) {
       query = query.eq('id', body.session_id.trim());
@@ -926,24 +832,27 @@ Deno.serve(async (req) => {
 
     const results: Array<Record<string, unknown>> = [];
     for (const session of rows || []) {
+      if (!isPendingAgoraRecording(session)) {
+        results.push({ id: session.id, status: 'skip_not_pending' });
+        continue;
+      }
       try {
         results.push(await processSession(admin, session));
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
         console.error('[live-webcam-recording-processor] session error', session.id, message);
         const retryCount = Number(session.archive_retry_count || 0) + 1;
-        const giveUp = retryCount >= MAX_ARCHIVE_RETRIES;
-        const nextDelaySec = Math.min(15 * 60, 60 * retryCount);
+        const nextDelayMs = Math.min(60 * 60_000, 60_000 * (2 ** Math.min(retryCount - 1, 6)));
         await admin.from('live_sessions').update({
-          archive_status: giveUp ? 'unrecoverable' : 'pending',
+          archive_status: 'pending',
           archive_retry_count: retryCount,
-          archive_next_retry_at: giveUp ? null : new Date(Date.now() + nextDelaySec * 1000).toISOString(),
+          archive_next_retry_at: new Date(Date.now() + nextDelayMs).toISOString(),
           error_message: message,
           archive_error: message,
           updated_at: new Date().toISOString(),
         }).eq('id', session.id).then(undefined, () => undefined);
-        await logEvent(admin, session, giveUp ? 'archive_unrecoverable' : 'archive_retry_scheduled', { reason: message, error: message, retry_count: retryCount });
-        results.push({ id: session.id, status: giveUp ? 'failed' : 'pending_retry', error: message });
+        await logEvent(admin, session, 'archive_retry_scheduled', { reason: message, retry_count: retryCount, retry_delay_ms: nextDelayMs });
+        results.push({ id: session.id, status: 'pending_retry', error: message });
       }
     }
 

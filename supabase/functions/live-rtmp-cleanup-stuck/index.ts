@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { createClient } from 'npm:@supabase/supabase-js@2';
-import { deleteStreamLiveInput, deleteStreamVideo, getStreamVideo } from '../_shared/cloudflareStreamService.ts';
+import { getStreamVideo } from '../_shared/cloudflareStreamService.ts';
+import { classifyLivestreamOrphan } from '../_shared/livestreamRecoveryPolicy.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -80,7 +81,7 @@ async function rearchiveRecoverable(admin: any, dryRun: boolean, limit: number):
   return results;
 }
 
-async function cleanupDeadLetter(admin: any, dryRun: boolean, limit: number, deleteStreamSource: boolean): Promise<CleanupResult[]> {
+async function cleanupDeadLetter(admin: any, limit: number): Promise<CleanupResult[]> {
   const sixHoursAgo = new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString();
   const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
 
@@ -105,73 +106,19 @@ async function cleanupDeadLetter(admin: any, dryRun: boolean, limit: number, del
   const results: CleanupResult[] = [];
   for (const s of candidates) {
     const userId = s.host_user_id || s.owner_id || s.user_id;
-    let deleteDetail: any = { skipped: true };
-
-    if (s.cloudflare_video_uid) {
-      // Verify still exists; 404 means already gone
-      const video = await getStreamVideo(s.cloudflare_video_uid).catch(() => null);
-      if (video) {
-        if (dryRun || !deleteStreamSource) {
-          results.push({ session_id: s.id, user_id: userId, cf_uid: s.cloudflare_video_uid, action: 'would_delete_stream' });
-          continue;
-        }
-        try {
-          deleteDetail = await deleteStreamVideo(s.cloudflare_video_uid);
-        } catch (e) {
-          deleteDetail = { error: e instanceof Error ? e.message : String(e) };
-          results.push({ session_id: s.id, user_id: userId, cf_uid: s.cloudflare_video_uid, action: 'delete_stream_failed', detail: deleteDetail });
-          continue;
-        }
-      } else {
-        deleteDetail = { already_gone: true };
-      }
-    }
-
-    if (dryRun) {
-      results.push({ session_id: s.id, user_id: userId, cf_uid: s.cloudflare_video_uid, action: 'would_mark_unrecoverable' });
-      continue;
-    }
-
-    const nowIso = new Date().toISOString();
-    await admin.from('live_sessions').update({
-      archive_status: 'unrecoverable',
-      archive_error: s.archive_error || 'auto-cleanup: cannot archive',
-      status: s.status === 'failed' ? 'failed' : 'failed',
-      updated_at: nowIso,
-    }).eq('id', s.id);
-
-    await admin.from('live_replays').update({
-      status: 'failed',
-      archive_status: 'unrecoverable',
-      updated_at: nowIso,
-    }).eq('live_session_id', s.id);
-
-    // Idempotent notification
-    if (userId) {
-      const { data: existing } = await admin
-        .from('notifications')
-        .select('id')
-        .eq('user_id', userId)
-        .eq('type', 'live_replay_failed')
-        .filter('metadata->>session_id', 'eq', s.id)
-        .limit(1);
-      if (!existing || existing.length === 0) {
-        await admin.from('notifications').insert({
-          user_id: userId,
-          type: 'live_replay_failed',
-          title: 'Replay live không khả dụng',
-          message: 'Buổi live RTMP gần đây không thể tạo bản replay (Cloudflare Stream không cho ra MP4). Hệ thống đã dọn dẹp video gốc.',
-          metadata: { session_id: s.id, cf_uid: s.cloudflare_video_uid, reason: s.archive_error || 'cannot_archive' },
-        });
-      }
-    }
-
-    results.push({ session_id: s.id, user_id: userId, cf_uid: s.cloudflare_video_uid, action: 'cleaned', detail: deleteDetail });
+    // Age/retry count is not proof that a source or recording is unrecoverable.
+    // Keep the Cloudflare source and report candidates for reviewed recovery.
+    const classification = classifyLivestreamOrphan({
+      providerHandle: !!s.cloudflare_video_uid,
+      providerQuery: 'unknown',
+      providerQuerySucceeded: false,
+    });
+    results.push({ session_id: s.id, user_id: userId, cf_uid: s.cloudflare_video_uid, action: `${classification}_review_required` });
   }
   return results;
 }
 
-async function cleanupWaitingForObs(admin: any, dryRun: boolean, limit: number): Promise<CleanupResult[]> {
+async function cleanupWaitingForObs(admin: any, limit: number): Promise<CleanupResult[]> {
   // Session RTMP kẹt ở 'waiting_for_obs' > 24h → chưa từng có OBS kết nối
   // → end cứng. Chỉ xoá Cloudflare Live Input khi input đó KHÔNG dùng chung
   // (không phải luồng cố định và không được rtmp_stream_configs tham chiếu).
@@ -203,57 +150,18 @@ async function cleanupWaitingForObs(admin: any, dryRun: boolean, limit: number):
       sharedInput = !!(cfg && cfg.length > 0);
     }
 
-    if (dryRun) {
-      results.push({
-        session_id: s.id,
-        user_id: userId,
-        cf_uid: inputId,
-        action: 'would_end_never_connected',
-        detail: { shared_input: sharedInput, would_delete_live_input: !!inputId && !sharedInput },
-      });
-      continue;
-    }
-
-    let deleteDetail: any = { skipped: !inputId };
-    if (inputId && sharedInput) {
-      deleteDetail = { skipped_shared_persistent_input: inputId };
-    } else if (inputId) {
-      try {
-        await deleteStreamLiveInput(inputId);
-        deleteDetail = { deleted_live_input: inputId };
-      } catch (e) {
-        deleteDetail = { delete_live_input_error: e instanceof Error ? e.message : String(e) };
-      }
-    }
-
-    const nowIso = new Date().toISOString();
-    await admin.from('live_sessions').update({
-      status: 'ended',
-      end_reason: 'never_connected',
-      ended_at: nowIso,
-      is_input_armed: false,
-      live_input_disabled_at: inputId && !sharedInput ? nowIso : null,
-      updated_at: nowIso,
-    }).eq('id', s.id).is('ended_at', null);
-
-
-    await admin.from('live_session_events').insert({
-      live_session_id: s.id,
-      from_status: s.status,
-      to_status: 'ended',
-      source: 'live-rtmp-cleanup-stuck',
-      reason: 'never_connected',
-      payload: {
-        live_session_id: s.id,
-        host_user_id: userId,
-        cloudflare_live_input_id: inputId,
-        age_hours: s.created_at ? (Date.now() - new Date(s.created_at).getTime()) / 3_600_000 : null,
-        delete: deleteDetail,
-        timestamp: nowIso,
-      },
-    }).then(undefined, () => {});
-
-    results.push({ session_id: s.id, user_id: userId, cf_uid: inputId, action: 'ended_never_connected', detail: deleteDetail });
+    const classification = classifyLivestreamOrphan({
+      providerHandle: !!inputId,
+      providerQuery: 'unknown',
+      providerQuerySucceeded: false,
+    });
+    results.push({
+      session_id: s.id,
+      user_id: userId,
+      cf_uid: inputId,
+      action: `${classification}_review_required`,
+      detail: { shared_input: sharedInput, input_id_present: !!inputId, basis: 'age alone is insufficient' },
+    });
   }
   return results;
 }
@@ -271,17 +179,15 @@ Deno.serve(async (req) => {
 
   const body = await req.json().catch(() => ({}));
   const dryRun = body?.dry_run === true;
-  const deleteStreamSource = body?.delete_stream_source === true;
   const limit = Math.min(Math.max(Number(body?.limit) || 10, 1), 50);
 
   const rearchive = await rearchiveRecoverable(admin, dryRun, limit);
-  const cleanup = await cleanupDeadLetter(admin, dryRun, limit, deleteStreamSource);
-  const neverConnected = await cleanupWaitingForObs(admin, dryRun, limit);
+  const cleanup = await cleanupDeadLetter(admin, limit);
+  const neverConnected = await cleanupWaitingForObs(admin, limit);
 
   return json({
     ok: true,
     dry_run: dryRun,
-    delete_stream_source: deleteStreamSource,
     rearchived: rearchive.filter((r) => r.action === 'rearchive_queued').length,
     deleted_from_stream: cleanup.filter((r) => r.action === 'cleaned').length,
     ended_never_connected: neverConnected.filter((r) => r.action === 'ended_never_connected').length,

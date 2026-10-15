@@ -10,7 +10,6 @@ import { corsHeaders, createAdminClient, json } from '../_shared/httpAuth.ts';
 
 const IDLE_AGE_MS = 2 * 60 * 1000;
 const PROCESSING_STALE_MS = 10 * 60 * 1000;
-const PROCESSING_GIVE_UP_MS = 60 * 60 * 1000;
 const MAX_RECOVERY_ATTEMPTS = 5;
 const BATCH_LIMIT = 50;
 
@@ -194,25 +193,6 @@ async function handleIdle(admin: any, session: any): Promise<Record<string, unkn
 async function handleProcessing(admin: any, session: any, ageMs: number): Promise<Record<string, unknown>> {
   const attempts = Number(session.recovery_attempts) || 0;
   const ts = nowIso();
-  const tooOld = ageMs > PROCESSING_GIVE_UP_MS;
-  const exhausted = attempts >= MAX_RECOVERY_ATTEMPTS;
-
-  if (tooOld && exhausted) {
-    await admin.from('live_sessions').update({
-      recording_status: 'failed',
-      archive_status: 'unrecoverable',
-      archive_next_retry_at: null,
-      recovery_attempts: attempts + 1,
-      last_recovery_at: ts,
-      recording_error: session.recording_error || 'processing_stuck_giveup',
-      archive_error: 'processing_stuck_giveup',
-      updated_at: ts,
-    }).eq('id', session.id);
-    await propagateFailedNoRecording(admin, session, 'processing_stuck_giveup');
-    await notifyHost(admin, session, 'live_recording_failed', 'processing_stuck_giveup');
-    await logEvent(admin, session, 'orphan_recover_processing_giveup', { age_ms: ageMs, attempts });
-    return { id: session.id, action: 'gave_up' };
-  }
 
   await admin.from('live_sessions').update({
     recording_status: 'stopped',
@@ -265,6 +245,7 @@ Deno.serve(async (req) => {
       .eq('recording_provider', 'agora')
       .eq('recording_status', 'processing')
       .lt('ended_at', processingCutoff)
+      .or(`last_recovery_at.is.null,last_recovery_at.lt.${processingCutoff}`)
       .order('ended_at', { ascending: true })
       .limit(BATCH_LIMIT);
     if (procError) throw procError;

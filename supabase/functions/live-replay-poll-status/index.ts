@@ -48,7 +48,6 @@ Deno.serve(async (req) => {
       .not('stream_uid', 'is', null)
       .limit(50);
 
-    const STUCK_PENDING_UPLOAD_SECONDS = 600; // 10 phút Cloudflare pendingupload
     const STUCK_NORMALIZING_SECONDS = 1800;   // 30 phút concat treo
 
     // Watchdog: replay 'normalizing' quá 30 phút (không có stream_uid) → mark failed.
@@ -60,18 +59,10 @@ Deno.serve(async (req) => {
       .lt('concat_started_at', new Date(Date.now() - STUCK_NORMALIZING_SECONDS * 1000).toISOString())
       .limit(20);
     for (const sr of stuckNorm || []) {
-      const reason = `concat normalizing stuck > ${STUCK_NORMALIZING_SECONDS}s`;
-      console.warn('[CF_STREAM] [POLL] watchdog normalizing', { replay_id: sr.id });
+      console.info('[CF_STREAM] [POLL] normalizing requires reconciliation', { replay_id: sr.id });
       await (admin as any).from('live_replays').update({
-        status: 'failed',
-        error_message: reason,
-        last_error_at: new Date().toISOString(),
-        last_cf_status: 'concat_stuck',
+        last_cf_status: 'normalizing_stuck_review',
       }).eq('id', sr.id);
-      await admin.from('live_sessions').update({
-        recording_status: 'failed',
-        recording_error: reason,
-      }).eq('id', sr.live_session_id);
     }
 
     // Fallback post: replay 'failed'/'skipped_legacy' nhưng post vẫn còn 'cloudflare_stream_pending'.
@@ -137,33 +128,13 @@ Deno.serve(async (req) => {
         }).eq('id', replay.live_session_id);
         results.push({ uid, status: 'failed', reason });
       } else {
-        // Watchdog: pendingupload quá lâu => mark failed để FE hiện chunk fallback,
-        // tránh kẹt UI vô tận. KHÔNG retry tự động (snapshot có thể đã hỏng).
-        const startedAt = (replay as any).processing_started_at ? new Date((replay as any).processing_started_at).getTime() : 0;
-        const ageSec = startedAt ? (Date.now() - startedAt) / 1000 : 0;
-        const isStuckPending = state === 'pendingupload' && startedAt && ageSec > STUCK_PENDING_UPLOAD_SECONDS;
-        if (isStuckPending) {
-          const reason = `pendingupload stuck > ${Math.round(ageSec)}s on Cloudflare Stream`;
-          console.warn('[CF_STREAM] [POLL] watchdog mark failed', { uid, ageSec });
-          await (admin as any).from('live_replays').update({
-            status: 'failed',
-            error_message: reason,
-            last_error_at: new Date().toISOString(),
-            last_cf_status: 'pendingupload_stuck',
-            last_cf_response: { ...video, age_seconds: Math.round(ageSec) },
-          }).eq('id', replay.id);
-          await admin.from('live_sessions').update({
-            recording_status: 'failed',
-            recording_error: reason,
-          }).eq('id', replay.live_session_id);
-          results.push({ uid, status: 'failed', reason });
-        } else {
-          await (admin as any).from('live_replays').update({
-            last_cf_status: state,
-            last_cf_response: video,
-          }).eq('id', replay.id);
-          results.push({ uid, status: replay.status, state, age_seconds: Math.round(ageSec) });
-        }
+        // `pendingupload` is a non-terminal provider state. Age alone is not
+        // enough to fail the replay; keep polling/reconciliation eligible.
+        await (admin as any).from('live_replays').update({
+          last_cf_status: state,
+          last_cf_response: video,
+        }).eq('id', replay.id);
+        results.push({ uid, status: replay.status, state });
       }
     }
 

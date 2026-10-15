@@ -1,5 +1,8 @@
 project_id = "tljfqavndndfsvtazibe"
 
+[functions.agora-cloud-recording-webhook]
+verify_jwt = false
+
 [functions]
   [functions.admin-batch-mint-requests]
     verify_jwt = false

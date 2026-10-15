@@ -4,8 +4,6 @@ import { corsHeaders, createAdminClient, json } from '../_shared/httpAuth.ts';
 import { listR2Objects, publicTempUrl } from '../_shared/r2MultiBucketService.ts';
 import { createOrUpdateTempHlsReplayPost } from '../_shared/replayFeedService.ts';
 
-const BACKLOG_SCAN_MS = 7 * 24 * 60 * 60 * 1000;
-const HLS_RETRY_MS = 15_000;
 
 async function requireCronOrAdmin(req: Request) {
   const cronSecret = Deno.env.get('CRON_SHARED_SECRET') || Deno.env.get('CRON_SECRET');
@@ -64,6 +62,24 @@ async function logEvent(admin: any, session: any, event: string, payload: Record
       timestamp: new Date().toISOString(),
     },
   }).then(undefined, () => undefined);
+}
+
+async function scheduleRetry(admin: any, session: any, reason: string, errorMessage?: string) {
+  const retryCount = Number(session.archive_retry_count || 0) + 1;
+  const retryDelayMs = Math.min(15 * 60_000, 30_000 * (2 ** Math.min(retryCount - 1, 5)));
+  const nextRetryAt = new Date(Date.now() + retryDelayMs).toISOString();
+  await admin.from('live_sessions').update({
+    archive_retry_count: retryCount,
+    archive_next_retry_at: nextRetryAt,
+    archive_error: errorMessage || reason,
+    updated_at: new Date().toISOString(),
+  }).eq('id', session.id);
+  await logEvent(admin, session, 'replay_reconcile_retry_scheduled', {
+    reason,
+    retry_count: retryCount,
+    retry_delay_ms: retryDelayMs,
+    error: errorMessage || null,
+  });
 }
 
 async function syncReadyHls(admin: any, session: any, input: {
@@ -187,16 +203,13 @@ async function processSession(admin: any, session: any): Promise<Record<string, 
     tempObjects = (await listR2Objects(tempBucket, tempPrefix, 5000)).filter((file) => file.size > 0);
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    await logEvent(admin, session, 'replay_reconcile_temp_scan_failed', {
-      temp_bucket: tempBucket,
-      temp_prefix: tempPrefix,
-      error: message,
-    });
+    await scheduleRetry(admin, session, 'temp_scan_failed', message);
     return { id: session.id, status: 'temp_scan_failed', error: message };
   }
 
   const hls = pickMainHls(tempObjects);
   if (!hls) {
+    await scheduleRetry(admin, session, 'no_hls_found');
     return { id: session.id, status: 'no_hls_found', seen: tempObjects.length, temp_prefix: tempPrefix };
   }
 
@@ -242,7 +255,7 @@ Deno.serve(async (req) => {
       .eq('mode', 'agora_webcam')
       .is('deleted_at', null)
       .not('ended_at', 'is', null)
-      .gte('created_at', new Date(Date.now() - BACKLOG_SCAN_MS).toISOString());
+      .or(`archive_next_retry_at.is.null,archive_next_retry_at.lte.${nowIso}`);
 
     if (typeof body.session_id === 'string' && body.session_id.trim()) {
       query = query.eq('id', body.session_id.trim());
@@ -262,7 +275,7 @@ Deno.serve(async (req) => {
         results.push(await processSession(admin, session));
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
-        await logEvent(admin, session, 'replay_reconcile_session_failed', { error: message });
+        await scheduleRetry(admin, session, 'session_reconcile_failed', message);
         results.push({ id: session.id, status: 'error', error: message });
       }
     }

@@ -52,3 +52,84 @@
 
 ## Thư #2 — 15/10/2026 (Angel Muse, thay lời cảm ơn của Trí)
 Trí vừa báo tin vui: bé Vũ đã làm xong phần Livestream rồi. Cảm ơn Vũ thật nhiều — phần việc khó và nặng nhất đã qua. Angel Muse cũng chia sẻ thêm để Vũ yên tâm: phần vá bảo mật cho hai view lịch sử giao dịch hợp nhất — vốn được xếp hàng chờ phía sau phần Livestream của Vũ — nay đã hoàn thành trong ngày, không ảnh hưởng gì tới phần Vũ vừa làm. Đề xuất kiến trúc sự kiện hoá ở Thư #1 vẫn giữ nguyên giá trị cho chặng tối ưu log tiếp theo khi Vũ thấy phù hợp. Chúc Vũ nhiều sức khoẻ và niềm vui!
+
+---
+
+## Mục 2 — 2026-10-15 · Findings kiểm kê và triển khai cục bộ
+
+### Phạm vi và production target
+
+- Đọc `AGENTS.md`, Mục 1 hộp thư và kế hoạch event-driven. Production đã được truy vấn chỉ đọc bằng Supabase Management API với ref `tljfqavndndfsvtazibe`; `supabase/config.toml`, hostname DB và hostname function cron đều cùng ref.
+- `AGENTS.md` và một số migration cũ ghi `bhtsnervqiwchluwuxki`; đó không phải target runtime hiện tại. Không đổi `project_id` trong config.
+- Không sửa cron, dữ liệu production, secret hay deploy function. `git status` ban đầu đã có thay đổi `bun.lock`, `supabase/.temp/` và thư mục plan chưa track; các nội dung này được giữ nguyên.
+
+### Cron thực tế (15/10/2026, production)
+
+19 job Livestream đang active, tất cả function target hiện có trỏ tới project `tljfqavndndfsvtazibe`. Trong 24 giờ truy vấn được 15.546 lượt, 15.546 thành công, 0 thất bại cho nhóm này. `cron.job_run_details` chỉ giữ dữ liệu từ 11/10 16:26 UTC đến 15/10 01:08 UTC (~3,36 ngày), nên không thể xác nhận báo cáo 30 ngày. 9 job trong nhóm chạy mỗi phút; lượt chạy từng job phút là 1.437/24h.
+
+| Job | Lịch production | Target | Chủ sở hữu |
+|---|---|---|---|
+| `agora-webcam-recording-processor-every-1min` | `* * * * *` | `live-webcam-recording-processor` | Agora |
+| `agora-webcam-replay-reconciler-every-5min` | `*/5 * * * *` | `live-webcam-replay-reconciler` | Agora |
+| `agora-webcam-stuck-promoter-every-1min` | `* * * * *` | `live-stuck-session-promoter` | Webcam |
+| `agora-webcam-temp-cleanup-every-15min` | `*/15 * * * *` | `live-webcam-temp-cleanup` | Agora/R2 cleanup |
+| `agora-webcam-zombie-cleanup-every-1min` | `* * * * *` | `live-zombie-cleanup` | Webcam lifecycle |
+| `auto-finalize-recordings-every-5min` | `*/5 * * * *` | `auto-finalize-recordings` | Recording |
+| `live-duration-watchdog-every-1min` | `* * * * *` | `live-duration-watchdog` | Session lifecycle |
+| `live-recording-orphan-recover-every-10min` | `*/10 * * * *` | `live-recording-orphan-recover` | Agora recovery |
+| `live-replay-archive-every-1min` | `* * * * *` | `live-replay-archive-cron` | RTMP/archive |
+| `live-replay-cleanup-webm-backfill-every-2min` | `*/2 * * * *` | `live-replay-cleanup-webm-backfill` | Replay cleanup |
+| `live-replay-mp4-poll-every-1min` | `* * * * *` | `live-replay-mp4-poll-cron` | Provider polling |
+| `live-replay-poll-status` | `* * * * *` | `live-replay-poll-status` | Cloudflare replay |
+| `live-replay-readiness-check-a` | `* * * * *` | `live-replay-readiness-check` | Replay readiness |
+| `live-replay-rtmp-pending-rescue-hourly` | `0 * * * *` | `live-replay-mp4-poll-cron` | RTMP replay rescue |
+| `live-replay-stream-ingest-every-5min` | `*/2 * * * *` | `live-replay-stream-ingest` | Stream ingest; job name lệch lịch |
+| `live-rtmp-cleanup-stuck-every-30min` | `*/30 * * * *` | `live-rtmp-cleanup-stuck` | RTMP cleanup |
+| `live-rtmp-grace-watchdog-every-1min` | `* * * * *` | `live-rtmp-grace-watchdog` | RTMP lifecycle |
+| `live-session-events-retention-daily` | `15 4 * * *` | SQL `public.live_session_events_retention` | Event retention |
+| `sync-active-live-state-every-5min` | `*/5 * * * *` | SQL `public.sync_all_active_live_states` | State sync |
+
+Đối chiếu số liệu: 205 webcam và 9 RTMP trong 30 ngày được xác nhận từ DB. Không xác nhận được các tỷ lệ 71,5%, >99% lượt quét rỗng, 45%/20GB log ingestion hoặc tuyên bố Livestream là nguồn log lớn nhất; hiện không có quyền đọc bảng đo log ingestion. Báo cáo cũ 17.844 lượt/ngày và 11 job phút khác dữ liệu runtime vừa đọc.
+
+### Hai pipeline riêng biệt
+
+**RTMP/OBS — Cloudflare Stream:** `RtmpLivePage` → `create-rtmp-live-session` / `go-live-rtmp-session` → `live_sessions` + Cloudflare Live Input → Cloudflare `stream-webhook` cập nhật trạng thái/video → `end-rtmp-live-session` hoặc watchdog → `live-replay-archive-cron`/MP4 polling → xác minh media R2/replay → đồng bộ post feed → cleanup sau xác minh. Cloudflare webhook không phải webhook Agora; không thay đổi endpoint Cloudflare.
+
+**Webcam — Agora Cloud Recording:** `PreLivePage` → `live-webcam-start` tạo session và post → Agora recording → host stop qua `live-end`/`live-webcam-stop` → `live-webcam-recording-processor` truy vấn/stop recording, archive R2 và xác minh → `live-webcam-replay-reconciler` tìm file HLS tạm còn thiếu → feed/replay chỉ chuyển playable sau gate xác minh → temp cleanup. Webhook mới chỉ đánh thức processor; truy vấn trạng thái và cron/reconciler vẫn làm lưới an toàn.
+
+### Agora callback và giới hạn
+
+Đã đối chiếu [tài liệu Agora Cloud Recording Notifications](https://docs.agora.io/en/realtime-media/cloud-recording/build/handle-events/receive-notifications). Agora hỗ trợ callback event 4 (playlist đầu tiên trong lúc ghi), 11 (`session_exit`) và 31 (`uploaded`, các file được upload tới storage đích); header HMAC-SHA1 `Agora-Signature` hoặc HMAC-SHA256 `Agora-Signature-V2`. Agora yêu cầu phản hồi HTTP 200 + JSON trong 10 giây và retry tối đa ba lần với khoảng chờ tăng dần. `sequence` giúp nhận biết sự kiện trùng/lệch thứ tự; `notifyMs` có thể đổi khi gửi lại. Event 31 xác nhận upload tới storage, không chứng minh URL public phát được; vẫn cần HEAD/list và kiểm tra URL phát theo code hiện có.
+
+Project hiện **không có** secret tên `AGORA_CLOUD_RECORDING_WEBHOOK_SECRET`; không thể kiểm tra cấu hình callback trong Agora Console từ quyền hiện có. Vì vậy event path mới chưa hoạt động production. Sau khi Cha cấp secret qua dashboard và cấu hình callback, cần Stage A chạy song song lịch cũ để đo parity. Event 11/31 chỉ lưu receipt bền vững rồi đánh thức xử lý; event 4 không đánh thức processor. Idempotency dùng `sid:sequence`, unique partial index trong migration mới. Trạng thái authoritative vẫn đọc từ DB/provider; cron hiện hữu phục hồi callback bị mất.
+
+### Dry-run mồ côi (production, chỉ SELECT)
+
+SQL: `docs/superpowers/plans/2026-10-15-livestream-orphan-dry-run.sql`. Candidate pool được lọc `updated_at` cũ hơn 30 ngày và trạng thái còn dang dở; tuổi chỉ tạo tập cần rà soát, không chứng minh mồ côi hay terminal.
+
+| Loại theo điều kiện dry-run | Sessions | Replays |
+|---|---:|---:|
+| Recoverable candidate, cần kiểm tra public URL hiện tại | 2 | 49 |
+| Retryable candidate, cần kiểm tra provider | 539 | 1.003 |
+| Đã mang nhãn unrecoverable, chưa xác minh | 3.815 | 44 |
+| Ambiguous | 912 | 3.790 |
+
+Đây là số hàng khớp điều kiện SQL, không phải số media đã kiểm tra hoặc orphan đã xác nhận. Không có hàng nào bị sửa/xóa/kết thúc; chưa gọi Cloudflare/Agora/R2 để xác minh object từng hàng. Không tạo post mới.
+
+### Thay đổi cục bộ
+
+- Thêm `agora-cloud-recording-webhook`, helper policy/chữ ký, và migration idempotency receipt. Config chỉ thêm block riêng cho function; không sửa project-level setting.
+- Bỏ fail-final theo tuổi ở các luồng webcam/replay/orphan recovery và auto-mark `unrecoverable` theo tuổi; giữ pending + retry/backoff, giữ điều kiện media verification trước khi playable. `live-rtmp-cleanup-stuck` không tự kết thúc input chưa kết nối hoặc xóa nguồn theo tuổi; vẫn có thể rearchive flow an toàn vốn có.
+- Thêm dry-run SQL phân loại và migration Stage B giới hạn ở cadence processor Agora từ mỗi phút sang mỗi 5 phút sau parity. Không có job nào bị gộp/xóa trong draft này. Rollback giữ nguyên job_id/command/target, khôi phục lịch mỗi phút: `docs/superpowers/plans/2026-10-15-livestream-event-driven-cost-reduction-rollback.sql`. Đã xác nhận `cron.alter_job(bigint,text,text,text,text,boolean)` có trên production.
+- Files/functions liên quan: `supabase/functions/_shared/agoraRecordingWebhookPolicy.ts`, `supabase/functions/_shared/livestreamRecoveryPolicy.ts`, `supabase/functions/agora-cloud-recording-webhook/index.ts`, `live-webcam-recording-processor`, `live-webcam-replay-reconciler`, `live-replay-archive-cron`, `live-replay-poll-status`, `live-rtmp-cleanup-stuck`, `live-stuck-session-promoter`, `live-recording-orphan-recover`; test `src/modules/live/agoraRecordingWebhookPolicy.test.ts`.
+- Chưa commit; không có commit SHA. Không đổi secret, không áp migration, không deploy function hoặc lịch cron. Production vẫn chạy 19 lịch như trước.
+
+### Xác minh và giai đoạn tiếp theo
+
+- `bunx --package vitest@4.1.5 vitest run --configLoader runner src/modules/live/agoraRecordingWebhookPolicy.test.ts`: đạt, 1 file / 5 test. Lệnh nguyên bản `bunx vitest run ...` ban đầu không khởi động do `node_modules/.deno` ghép Vitest 4.1.11 với Vite 5.4.21; lệnh thay thế chạy thành công nhưng Bun báo đã ghi lockfile, cần giữ nguyên thay đổi `bun.lock` có sẵn và rà lại trước commit.
+- `bunx --package @typescript/native-preview tsgo`: đạt, exit 0.
+- `deno check --node-modules-dir=auto` trên webhook và 7 function đã sửa: thất bại với 11 diagnostic có sẵn ở helper `agoraCloudRecordingService`, `r2MultiBucketService`, `replayFeedService`, `rtmpEndLiveService`, cùng nullable `sourceHead` tại dòng cũ trong processor. Không có diagnostic ở webhook/policy/reconciler mới; lỗi `sourceHead` nằm trong file được sửa nhưng dòng đó không thuộc patch.
+- `git diff --check`: đạt.
+- Kiểm tra 24h cron: 15.546/15.546 thành công, 0 thất bại trong nhóm. Nếu sau parity đổi processor 1.437 lượt/ngày sang 288 lượt/ngày, dự kiến giảm 1.149 lượt/ngày (~7,4% của nhóm 19 job hiện tại); đây là phép chiếu chỉ cho một job, chưa tính invocation webhook và chưa đo log. Tần suất fallback tối đa 5 phút làm tăng độ trễ fallback tới 5 phút; callback có thể đánh thức sớm khi nhận được.
+
+**Để tiếp tục cần Cha duyệt:** (1) cấu hình callback Agora và thêm secret qua dashboard an toàn; (2) để event chạy song song đủ thời gian đo callback/parity, provider error, replay-ready latency và missed-work recovery; (3) sau khi xem số liệu Stage A, duyệt rõ migration Stage B cho project `tljfqavndndfsvtazibe`. Chỉ khi Cha duyệt mới áp migration/deploy. Giá trị secret không cần gửi trong chat.
