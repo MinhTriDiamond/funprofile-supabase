@@ -25,3 +25,7 @@ Cả 6 function đã deploy lên project đích qua Management API (đều lên 
 - Bắt buộc PKCE ngay tại authorize (hiện enforce đầy đủ ở token endpoint: secret bắt buộc + verifier bắt buộc khi có challenge — chặn được đường khai thác mà không gãy client cũ).
 
 Mã nguồn: các commit "SSO hardening 2026-10-15" trên main (8 file: _shared/jwt.ts, _shared/clientAuth.ts, sso-authorize, sso-token, sso-verify, sso-refresh, sso-register, sso-revoke).
+
+## Bổ sung cùng ngày (sau kiểm chứng authorize của lovehub_client)
+- Đăng ký `lovehub_client` trong oauth_clients (redirect https://lovehub.fun/auth/callback; scopes profile/email/wallet/rewards/platform_data) với client_secret RỖNG có chủ đích. Kiểm chứng cho thấy khi đó sso-token/sso-refresh bỏ qua bước kiểm secret (vì điều kiện cũ chỉ kiểm khi client có secret) → đã siết thành kiểm VÔ ĐIỀU KIỆN: verifyClientSecret với secret lưu rỗng luôn thất bại, client chưa được cấp secret thật thì fail-closed 401 ở cả token và refresh (deploy v71, kiểm chứng sống đạt). Secret thật (bcrypt) sẽ được đặt vào ngày nối cùng Trí.
+- SDK @fun-ecosystem/sso-sdk lên 1.1.1: API_BASE_URL chuyển từ project tiền-migration (bhtsnervqiwchluwuxki) về project đích fun.rich (tljfqavndndfsvtazibe) ở cả hai nơi lưu mã nguồn (sdk-package/ trong repo này + repo sso-sdk riêng); constants + package.json đã read-back kiểm chứng.
