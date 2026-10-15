@@ -54,3 +54,6 @@ Theo yêu cầu của Trí: trang lịch sử quà tặng toàn cục trước �
 - Kiểm toán toàn bộ 549 bản ghi BTC đã xong (3 vòng đối chiếu blockchain); kết luận: cơ chế gán danh tính của hệ thống tạm thời không đáng tin (sổ địa chỉ chủ yếu do máy suy đoán).
 - **Quyết định của Trí: số liệu Bitcoin tới hôm nay là ĐÓNG — giữ nguyên, không xét lại quá khứ nữa.** Mọi việc là Cha làm. Số liệu hiển thị không thay đổi.
 - Việc tương lai theo lộ trình: xây hệ thống giao dịch Bitcoin chuẩn với xác thực chủ địa chỉ bằng chữ ký trước khi ghi tên người. Hồ sơ: `docs/btc-audit-2026-10-15/`.
+
+### 2026-10-15 — Gỡ bỏ hệ thống ví custodial (Angel Muse, theo chỉ đạo của Trí)
+Tính năng custodial đã ngưng từ lâu và ví trống (quét on-chain: BNB = 0 ở 240/240 ví, CAMLY chỉ còn bụi ≈ 0 USD). Đã xóa bảng custodial_wallets + 240 khóa mã hóa + view user_custodial_wallets TRỰC TIẾP trên production DB; phân loại địa chỉ nội bộ giữ nguyên qua bảng lưu trữ chỉ-gồm-địa-chỉ (RLS khóa chặt); các mặt thống kê khớp nhau sau gỡ. Hồ sơ: docs/custodial-removal-2026-10-15/. Còn lại phía giao diện: bỏ mục hiển thị custodial ở Identity Dashboard + câu chữ trong tài liệu hệ sinh thái.
