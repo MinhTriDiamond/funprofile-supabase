@@ -17,17 +17,10 @@ function generateCode(length = 32): string {
   return result;
 }
 
-// Validate PKCE code challenge (S256)
-function verifyCodeChallenge(verifier: string, challenge: string, method: string): boolean {
-  if (method === 'plain') {
-    return verifier === challenge;
-  }
-  // S256: base64url(sha256(verifier)) === challenge
-  const encoder = new TextEncoder();
-  const data = encoder.encode(verifier);
-  // For S256, we'd need async crypto - simplified for now
-  return true; // Will be properly validated in sso-token
-}
+// NOTE (SSO hardening 2026-10-15, T3): the old verifyCodeChallenge() helper
+// that "simplified" PKCE validation to `return true` was removed — it was
+// never called in this handler, and the real S256 check lives in sso-token.
+// PKCE challenges are only stored here; method is restricted to S256 below.
 
 Deno.serve(async (req: Request) => {
   // Handle CORS
@@ -50,9 +43,17 @@ Deno.serve(async (req: Request) => {
     const scope = params.get('scope') || 'profile';
     const state = params.get('state');
     
-    // PKCE parameters (optional but recommended)
+    // PKCE parameters (optional but recommended; when present, S256 only —
+    // 'plain' is a downgrade path and is rejected, SSO hardening 2026-10-15)
     const code_challenge = params.get('code_challenge');
     const code_challenge_method = params.get('code_challenge_method') || 'S256';
+
+    if (code_challenge && code_challenge_method !== 'S256') {
+      return new Response(
+        JSON.stringify({ error: 'invalid_request', error_description: 'Only S256 code_challenge_method is supported' }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
     // Validate required parameters
     if (!client_id) {
@@ -112,7 +113,7 @@ Deno.serve(async (req: Request) => {
     if (!authHeader) {
       // Redirect to FUN PROFILE login page (not client's login page!)
       // After login, user will be redirected back to complete the authorize flow
-      const funProfileOrigin = Deno.env.get("FUN_PROFILE_ORIGIN") || "https://fun-profile.lovable.app";
+      const funProfileOrigin = Deno.env.get("FUN_PROFILE_ORIGIN") || "https://fun.rich";
       const loginUrl = new URL('/auth', funProfileOrigin);
       loginUrl.searchParams.set('return_to', externalUrl);
       loginUrl.searchParams.set('sso_flow', 'true');
@@ -137,6 +138,15 @@ Deno.serve(async (req: Request) => {
     const scopes = scope.split(' ').filter(s => s.length > 0);
     const allowedScopes = client.allowed_scopes || ['profile'];
     const validScopes = scopes.filter(s => allowedScopes.includes(s));
+
+    // If nothing requested is allowed, fail properly instead of issuing a
+    // code with an empty scope set (Th2)
+    if (validScopes.length === 0) {
+      return new Response(
+        JSON.stringify({ error: 'invalid_scope', error_description: 'None of the requested scopes are allowed for this client' }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
     // Generate authorization code
     const code = generateCode(48);
