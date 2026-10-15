@@ -11,7 +11,7 @@ export const DOMAINS = {
 } as const;
 
 // API Base URL for SSO endpoints
-export const API_BASE_URL = 'https://bhtsnervqiwchluwuxki.supabase.co/functions/v1';
+export const API_BASE_URL = 'https://tljfqavndndfsvtazibe.supabase.co/functions/v1';
 
 // Default SSO API base URL (Fun Profile)
 export const DEFAULT_BASE_URL = API_BASE_URL;
@@ -36,7 +36,7 @@ export const DEFAULT_SCOPES = ['profile'];
 export const TOKEN_REFRESH_BUFFER = 5 * 60 * 1000;
 
 // SDK version
-export const SDK_VERSION = '1.1.0';
+export const SDK_VERSION = '1.1.1';
 
 // Default timeout for requests (30 seconds)
 export const DEFAULT_TIMEOUT = 30000;
