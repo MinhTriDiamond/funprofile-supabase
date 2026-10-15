@@ -7,12 +7,9 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// Verify PKCE code challenge
+// Verify PKCE code challenge — S256 ONLY (SSO hardening 2026-10-15, T3:
+// the 'plain' method is a downgrade path and is no longer accepted)
 async function verifyPKCE(verifier: string, challenge: string, method: string): Promise<boolean> {
-  if (method === 'plain') {
-    return verifier === challenge;
-  }
-  
   // S256: base64url(sha256(verifier)) === challenge
   if (method === 'S256') {
     const encoder = new TextEncoder();
@@ -97,8 +94,18 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    // Verify client_secret (bcrypt hash, fallback plaintext legacy)
-    if (client.client_secret && client_secret) {
+    // Verify client_secret — REQUIRED for every confidential client
+    // (SSO hardening 2026-10-15, C3: previously a code_verifier alone could
+    // substitute for the secret, so a leaked authorization code + public
+    // client_id/redirect_uri were enough to mint tokens. PKCE stays an
+    // additional binding when a challenge exists, never a replacement.)
+    if (client.client_secret) {
+      if (!client_secret) {
+        return new Response(
+          JSON.stringify({ error: 'invalid_client', error_description: 'client_secret is required' }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
       const secretValid = await verifyClientSecret(client.client_secret, client_secret);
       if (!secretValid) {
         return new Response(
@@ -106,11 +113,6 @@ Deno.serve(async (req: Request) => {
           { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
-    } else if (client.client_secret && !client_secret && !code_verifier) {
-      return new Response(
-        JSON.stringify({ error: 'invalid_client', error_description: 'client_secret is required' }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
     }
 
     // Find and validate authorization code
@@ -168,11 +170,22 @@ Deno.serve(async (req: Request) => {
       }
     }
 
-    // Mark code as used
-    await supabase
+    // Mark code as used — ATOMIC claim (SSO hardening 2026-10-15, T2):
+    // the update only succeeds while is_used is still false, so two parallel
+    // requests carrying the same code cannot both pass.
+    const { data: claimed, error: claimError } = await supabase
       .from('oauth_codes')
       .update({ is_used: true })
-      .eq('id', authCode.id);
+      .eq('id', authCode.id)
+      .eq('is_used', false)
+      .select('id');
+
+    if (claimError || !claimed || claimed.length === 0) {
+      return new Response(
+        JSON.stringify({ error: 'invalid_grant', error_description: 'Authorization code has already been used' }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
     // Get user profile with wallet info for JWT claims
     const { data: profile } = await supabase
@@ -184,12 +197,13 @@ Deno.serve(async (req: Request) => {
     // Lấy email từ auth.users (profiles không lưu email)
     const { data: { user: authUser } } = await supabase.auth.admin.getUserById(authCode.user_id);
 
-    // Generate JWT access token with claims
+    // Generate JWT access token with claims (bound to this client — C2 fix)
     const access_token = await generateAccessToken({
       sub: authCode.user_id,
       fun_id: profile?.fun_id || '',
       username: profile?.username || '',
       custodial_wallet: null,
+      client_id,
       scope: authCode.scope
     });
 
@@ -243,7 +257,8 @@ Deno.serve(async (req: Request) => {
           username: profile.username,
           full_name: profile.full_name,
           avatar_url: profile.avatar_url,
-          email: authUser?.email || null
+          // Only disclose email when the granted scope includes it (Th1)
+          email: (authCode.scope || []).includes('email') ? (authUser?.email || null) : null
         } : null
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }

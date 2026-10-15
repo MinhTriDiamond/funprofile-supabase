@@ -1,12 +1,13 @@
 /**
  * Xác thực client_secret cho các luồng SSO.
  *
- * Hỗ trợ 2 dạng giá trị lưu trong `oauth_clients.client_secret`:
- *  - bcrypt hash (bắt đầu bằng `$2`) → so sánh bằng bcrypt.compare
- *  - plaintext (legacy, đang được migrate) → so sánh chuỗi thời gian hằng
+ * SSO hardening 2026-10-15 (T1): mọi client trong `oauth_clients` đều đã
+ * migrate sang bcrypt (kiểm chứng trên DB đích 2026-10-15 — cả 4 client đều
+ * là hash $2, 60 ký tự), nên fallback plaintext legacy đã được GỠ BỎ.
+ * Client không có secret trong DB => xác thực THẤT BẠI (trước đây trả true,
+ * nghĩa là client thiếu secret thì ai gọi cũng qua).
  *
- * Bên gọi (client) LUÔN gửi secret thô. Nhờ vậy có thể hash lại secret trong DB
- * mà không gãy tích hợp.
+ * Bên gọi (client) LUÔN gửi secret thô; DB chỉ lưu bcrypt hash.
  */
 import bcrypt from "npm:bcryptjs@2.4.3";
 
@@ -14,28 +15,16 @@ export function isBcryptHash(stored: string): boolean {
   return /^\$2[aby]?\$/.test(stored);
 }
 
-/** So sánh chuỗi thời gian hằng (chống timing attack). */
-function timingSafeEqual(a: string, b: string): boolean {
-  const ea = new TextEncoder().encode(a);
-  const eb = new TextEncoder().encode(b);
-  if (ea.length !== eb.length) return false;
-  let diff = 0;
-  for (let i = 0; i < ea.length; i++) diff |= ea[i] ^ eb[i];
-  return diff === 0;
-}
-
 export async function verifyClientSecret(
   stored: string | null | undefined,
   provided: string | null | undefined,
 ): Promise<boolean> {
-  if (!stored) return true; // client không đặt secret
+  if (!stored) return false; // client không có secret hợp lệ => không xác thực được
   if (!provided) return false;
-  if (isBcryptHash(stored)) {
-    try {
-      return await bcrypt.compare(provided, stored);
-    } catch {
-      return false;
-    }
+  if (!isBcryptHash(stored)) return false; // chỉ chấp nhận bcrypt hash
+  try {
+    return await bcrypt.compare(provided, stored);
+  } catch {
+    return false;
   }
-  return timingSafeEqual(stored, provided);
 }

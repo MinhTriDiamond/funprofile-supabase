@@ -79,11 +79,12 @@ Deno.serve(async (req: Request) => {
     }
 
     // OAuth 2.0 spec says revoke should always return 200
-    // even if token was not found (to prevent token probing)
+    // even if token was not found (to prevent token probing) — and the
+    // response must not reveal which case it was (SSO hardening 2026-10-15)
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         success: true,
-        message: tokenFound ? 'Token revoked successfully' : 'Token not found or already revoked'
+        message: 'Token revocation processed'
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );

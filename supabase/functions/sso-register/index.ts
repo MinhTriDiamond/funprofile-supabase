@@ -100,11 +100,24 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    // Verify client_secret (hỗ trợ cả bcrypt hash và plaintext legacy)
+    // Verify client_secret (bcrypt only — plaintext fallback removed, T1)
     if (!(await verifyClientSecret(client.client_secret, client_secret))) {
       return new Response(
         JSON.stringify({ error: 'invalid_client', error_description: 'Invalid client credentials' }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Parse scopes — filtered against the client's registered allowed_scopes
+    // (SSO hardening 2026-10-15, C4: previously the client could grant
+    // itself any scope, e.g. wallet/rewards/soul, regardless of its grant)
+    const requestedScopes = scope.split(' ').filter((s: string) => s.length > 0);
+    const allowedScopes: string[] = client.allowed_scopes || ['profile'];
+    const scopes = requestedScopes.filter((s: string) => allowedScopes.includes(s));
+    if (scopes.length === 0) {
+      return new Response(
+        JSON.stringify({ error: 'invalid_scope', error_description: 'None of the requested scopes are allowed for this client' }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
@@ -121,7 +134,20 @@ Deno.serve(async (req: Request) => {
     let isNewUser = false;
 
     if (existingUser) {
-      userId = existingUser.id;
+      // SSO hardening 2026-10-15 (C4): NEVER issue tokens for an existing
+      // account from sso-register. Previously any active client's secret +
+      // a known email was enough to obtain access/refresh tokens for that
+      // account — a full account-takeover path if one platform's secret
+      // leaked. Existing users must sign in through the authorization flow
+      // (sso-authorize), where they prove account ownership themselves.
+      return new Response(
+        JSON.stringify({
+          error: 'user_exists',
+          error_description: 'An account with this email already exists. Please sign in via the authorization flow instead of registering.',
+          is_new_user: false
+        }),
+        { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     } else {
       // Cổng chặn đăng ký (cutover migrate)
       const signupGate = await assertSignupEnabled(supabase, corsHeaders);
@@ -155,10 +181,11 @@ Deno.serve(async (req: Request) => {
       isNewUser = true;
 
       // Update profile with additional data
+      // (SSO hardening 2026-10-15, C4: no longer auto-sets
+      // law_of_light_accepted — accepting the Law of Light must be the
+      // user's own act inside FUN Profile, not a platform's say-so.)
       const updateData: Record<string, unknown> = {
-        registered_from: client.platform_name || client_id,
-        law_of_light_accepted: true,
-        law_of_light_accepted_at: new Date().toISOString()
+        registered_from: client.platform_name || client_id
       };
 
       if (phone) {
@@ -186,8 +213,7 @@ Deno.serve(async (req: Request) => {
 
     }
 
-    // Parse scopes
-    const scopes = scope.split(' ').filter((s: string) => s.length > 0);
+    // (scopes were parsed + filtered against allowed_scopes before user creation)
 
     // Get user profile for JWT claims
     const { data: profile } = await supabase
@@ -196,11 +222,12 @@ Deno.serve(async (req: Request) => {
       .eq('id', userId)
       .single();
 
-    // Generate JWT access token
+    // Generate JWT access token (client-bound — C2 fix)
     const access_token = await generateAccessToken({
       sub: userId,
       fun_id: profile?.fun_id || '',
       username: profile?.username || '',
+      client_id,
       scope: scopes
     });
 
