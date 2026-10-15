@@ -74,7 +74,7 @@ Deno.serve(async (req: Request) => {
 
     // Confidential clients authenticate on refresh too (SSO hardening
     // 2026-10-15, T6) — the official SDK always sends client_secret here.
-    if (client.client_secret) {
+    {
       if (!client_secret || !(await verifyClientSecret(client.client_secret, client_secret))) {
         return new Response(
           JSON.stringify({ error: 'invalid_client', error_description: 'Invalid client credentials' }),
