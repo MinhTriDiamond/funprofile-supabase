@@ -99,7 +99,7 @@ Deno.serve(async (req: Request) => {
     // substitute for the secret, so a leaked authorization code + public
     // client_id/redirect_uri were enough to mint tokens. PKCE stays an
     // additional binding when a challenge exists, never a replacement.)
-    if (client.client_secret) {
+    {
       if (!client_secret) {
         return new Response(
           JSON.stringify({ error: 'invalid_client', error_description: 'client_secret is required' }),
