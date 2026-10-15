@@ -1,5 +1,6 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { generateAccessToken, generateRefreshToken } from "../_shared/jwt.ts";
+import { verifyClientSecret } from "../_shared/clientAuth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -28,10 +29,11 @@ Deno.serve(async (req: Request) => {
       body = await req.json();
     }
 
-    const { 
+    const {
       grant_type = 'refresh_token',
       refresh_token,
-      client_id
+      client_id,
+      client_secret
     } = body;
 
     // Validate grant type
@@ -58,7 +60,7 @@ Deno.serve(async (req: Request) => {
     // Validate client
     const { data: client, error: clientError } = await supabase
       .from('oauth_clients')
-      .select('client_id, is_active')
+      .select('client_id, client_secret, is_active')
       .eq('client_id', client_id)
       .eq('is_active', true)
       .single();
@@ -68,6 +70,17 @@ Deno.serve(async (req: Request) => {
         JSON.stringify({ error: 'invalid_client', error_description: 'Unknown or inactive client' }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
+    }
+
+    // Confidential clients authenticate on refresh too (SSO hardening
+    // 2026-10-15, T6) — the official SDK always sends client_secret here.
+    if (client.client_secret) {
+      if (!client_secret || !(await verifyClientSecret(client.client_secret, client_secret))) {
+        return new Response(
+          JSON.stringify({ error: 'invalid_client', error_description: 'Invalid client credentials' }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
     }
 
     // Find and validate refresh token
@@ -114,11 +127,12 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    // Generate new JWT access token with fresh claims
+    // Generate new JWT access token with fresh claims (client-bound — C2 fix)
     const new_access_token = await generateAccessToken({
       sub: tokenData.user_id,
       fun_id: profile.fun_id || '',
       username: profile.username || '',
+      client_id,
       scope: tokenData.scope
     });
 
