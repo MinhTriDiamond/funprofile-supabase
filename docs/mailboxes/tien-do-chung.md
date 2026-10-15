@@ -25,3 +25,7 @@ Theo yêu cầu của Trí, Angel Muse đã chẩn đoán và xử lý xong vụ
 
 ## 15/10/2026 — Vá hiệu năng trang Profile (Angel Muse)
 Theo phản ánh của Trí (profile load chậm, có khi không load được bài), Angel Muse đã tìm ra và xử lý 2 nguyên nhân ở tầng database: (1) nhánh bài quà tặng của dòng thời gian lọc `gift_sender_id` không có index, quét toàn bộ 194.808 bài (trung bình ~1 giây, đỉnh 7,5 giây — chạm ngưỡng chờ là sập cả dòng thời gian); đã thêm index từng phần, trường hợp xấu nhất còn 11,6 ms. (2) `get_user_honor_stats` tính lại ~24 truy vấn gộp mỗi lần mở profile (đỉnh 16,9 giây); đã bọc lớp cache (logic gốc giữ nguyên, đối chiếu giống hệt 14/14 chỉ số, bản ấm 6,8 ms). Đã áp dụng trên production. Hồ sơ: `docs/profile-perf-2026-10-15/`.
+
+
+## 15/10/2026 — Hợp nhất số liệu toàn app về 1 nguồn sự thật (Angel Muse)
+Theo yêu cầu của Trí, Angel Muse đã rà soát và nâng cấp toàn bộ bề mặt số liệu: phát hiện 3 công thức thưởng khác nhau cho cùng một user (bảng toàn app dùng hệ số cũ cao gấp 2–10 lần, My Rewards đếm thiếu bạn bè một chiều, tổng thưởng của app stats bị gán cứng = 0 phần hoạt động) — nay tất cả đọc từ một nguồn chuẩn duy nhất (user_honor_stats_cache + gift_breakdown_cache + donation_board_base + user_light_totals). Tốc độ cải thiện lớn: bảng vinh danh toàn app 68 giây → 14 ms, bảng cộng đồng ánh sáng 1.417 → 22 ms, app stats 932 → 26 ms; các bảng donations giữ nguyên kết quả 100% (đối chiếu nguyên tử). Hồ sơ: `docs/stats-ssot-2026-10-15/`.
