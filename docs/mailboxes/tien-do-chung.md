@@ -37,3 +37,14 @@ Trí báo bé Vũ đã làm xong phần Livestream. Phần việc Angel Muse t�
 
 ## 15/10/2026 — Đính chính nguyên tắc công khai + kiểm tra thống nhất toàn app (Angel Muse)
 Trí đính chính: lịch sử giao dịch của FUN Profile là **công khai theo thiết kế của Cha và Bé Ly** — khách vãng lai xem được toàn bộ là chủ ý minh bạch, không phải lỗ hổng. Phần thu quyền trên hai view hợp nhất ban sáng đã được **hoàn lại nguyên trạng**; phần vá tốc độ (snapshot) và việc bảo vệ các bảng nội bộ khỏi bị ghi đè vẫn giữ. Vòng kiểm tra lại sau đó đạt toàn bộ: mọi bề mặt số liệu một cách tính — một nguồn — khớp tuyệt đối khi đối chiếu chéo. Chi tiết: `docs/unified-perf-2026-10-15/step3-revert-note.md`.
+
+## 15/10/2026 — Lịch sử quà tặng toàn cục chuyển sang hướng NHẬN (Angel Muse)
+
+Theo yêu cầu của Trí: trang lịch sử quà tặng toàn cục trước đây hiển thị hướng gửi (dấu trừ), nay chuyển sang hướng nhận (dấu cộng) — một dòng sửa duy nhất trong 4 hàm của trang, các phạm vi cá nhân giữ nguyên hai chiều như sao kê. Kiểm chứng: tập giao dịch trùng khớp với hướng gửi trước đó (cùng mã giao dịch, cùng số tiền), tổng số đếm bám sát nhau. Hồ sơ: `docs/unified-perf-2026-10-15/step4-note.md`.
+
+## 2026-10-15 — Thống nhất hiển thị thống kê quà tặng (Angel Muse, theo yêu cầu của Trí)
+
+- Cả ba bề mặt (bảng Benefactor, HONOR BOARD, Lịch sử quà tặng) nay dùng chung một con số tổng USD duy nhất từ hàm chuẩn mới `donation_board_usd_total()` — định giá tại thời điểm tặng, kiểm chứng khớp tuyệt đối $1.368.155,12 ở cả ba nơi.
+- Bảng Benefactor liệt kê đầy đủ mọi token kể cả FUN (đang testnet, chưa có giá nên để trống giá trị USD — không hiển thị 0) và TONCOIN.
+- HONOR BOARD thôi nhân giá hiện tại; trang Lịch sử có sẵn trường `totals.total_usd` để giao diện hiển thị dòng tổng.
+- Hồ sơ: `docs/stats-unify-display-2026-10-15/`.
