@@ -133,3 +133,15 @@ SQL: `docs/superpowers/plans/2026-10-15-livestream-orphan-dry-run.sql`. Candidat
 - Kiểm tra 24h cron: 15.546/15.546 thành công, 0 thất bại trong nhóm. Nếu sau parity đổi processor 1.437 lượt/ngày sang 288 lượt/ngày, dự kiến giảm 1.149 lượt/ngày (~7,4% của nhóm 19 job hiện tại); đây là phép chiếu chỉ cho một job, chưa tính invocation webhook và chưa đo log. Tần suất fallback tối đa 5 phút làm tăng độ trễ fallback tới 5 phút; callback có thể đánh thức sớm khi nhận được.
 
 **Để tiếp tục cần Cha duyệt:** (1) cấu hình callback Agora và thêm secret qua dashboard an toàn; (2) để event chạy song song đủ thời gian đo callback/parity, provider error, replay-ready latency và missed-work recovery; (3) sau khi xem số liệu Stage A, duyệt rõ migration Stage B cho project `tljfqavndndfsvtazibe`. Chỉ khi Cha duyệt mới áp migration/deploy. Giá trị secret không cần gửi trong chat.
+
+---
+
+## Cập nhật triển khai — 2026-10-15
+
+- Livestream changes đã commit bằng `11edc96` và push lên `main`; sau đó merge commit mới từ `origin/main` và push thành công tại `0ba498e`. Không force-push.
+- Test tập trung: 3 file / 14 test đạt. `bunx --package @typescript/native-preview tsgo --noEmit` đạt; `git diff --check` đạt.
+- Deploy thành công tới `tljfqavndndfsvtazibe`: `agora-cloud-recording-webhook` (ACTIVE v1), `live-recording-orphan-recover` (v70), `live-replay-archive-cron` (v75), `live-replay-poll-status` (v70), `live-rtmp-cleanup-stuck` (v70), `live-stuck-session-promoter` (v70), `live-webcam-recording-processor` (v70), `live-webcam-replay-reconciler` (v70).
+- Production preflight trước index: chưa có index, 0 receipt trùng và 0 receipt webhook cũ. Đã áp riêng `20261015090000_agora_recording_webhook_idempotency.sql` bằng query SQL trực tiếp; xác minh sau đó index tồn tại và vẫn 0 key trùng. `supabase db push --dry-run` đề xuất một backlog migration lớn, nên không chạy `db push`. SQL trực tiếp không tự ghi migration history; cần xử lý lệch migration history trong một đợt riêng.
+- Smoke test endpoint: OPTIONS trả 204; POST không chữ ký trả 401. `AGORA_CLOUD_RECORDING_WEBHOOK_SECRET` chưa có, webhook Agora chưa được cấu hình, nên chưa test được chữ ký hợp lệ hoặc callback/recording end-to-end.
+- Deno check webhook và `live-recording-orphan-recover`, `live-rtmp-cleanup-stuck` đạt. Các entrypoint replay/processor/promoter còn lỗi kiểu tại helper dùng chung (`replayFeedService`, `rtmpEndLiveService`, `r2MultiBucketService`, `agoraCloudRecordingService`) và nullable `sourceHead`; Supabase CLI vẫn deploy thành công, nhưng cần xử lý các diagnostic này trong một task riêng.
+- Không deploy hoặc áp dụng `20261015091000_reduce_agora_processor_cron_after_parity.sql`; file vẫn chỉ ở workspace, chờ đo parity Stage A và duyệt lịch.
