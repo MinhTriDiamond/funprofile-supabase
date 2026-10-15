@@ -48,3 +48,9 @@ Theo yêu cầu của Trí: trang lịch sử quà tặng toàn cục trước �
 - Bảng Benefactor liệt kê đầy đủ mọi token kể cả FUN (đang testnet, chưa có giá nên để trống giá trị USD — không hiển thị 0) và TONCOIN.
 - HONOR BOARD thôi nhân giá hiện tại; trang Lịch sử có sẵn trường `totals.total_usd` để giao diện hiển thị dòng tổng.
 - Hồ sơ: `docs/stats-unify-display-2026-10-15/`.
+
+## 2026-10-15 — Đóng băng số liệu Bitcoin (Angel Muse, theo quyết định của Trí)
+
+- Kiểm toán toàn bộ 549 bản ghi BTC đã xong (3 vòng đối chiếu blockchain); kết luận: cơ chế gán danh tính của hệ thống tạm thời không đáng tin (sổ địa chỉ chủ yếu do máy suy đoán).
+- **Quyết định của Trí: số liệu Bitcoin tới hôm nay là ĐÓNG — giữ nguyên, không xét lại quá khứ nữa.** Mọi việc là Cha làm. Số liệu hiển thị không thay đổi.
+- Việc tương lai theo lộ trình: xây hệ thống giao dịch Bitcoin chuẩn với xác thực chủ địa chỉ bằng chữ ký trước khi ghi tên người. Hồ sơ: `docs/btc-audit-2026-10-15/`.
