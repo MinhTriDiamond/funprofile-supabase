@@ -27,52 +27,61 @@ Deno.serve(async (req: Request) => {
     const jwtPayload = await verifyAccessToken(accessToken);
     
     if (jwtPayload) {
-      // JWT is valid - build response from claims
+      // JWT signature + expiry are valid. SSO hardening 2026-10-15 (C1+C2):
+      // a valid signature is NOT enough — the presented token must match a
+      // live, non-revoked row in cross_platform_tokens (so sso-revoke takes
+      // effect immediately), and the client binding comes from that exact
+      // row / the token's own client_id claim, never from "the user's most
+      // recent token" (which could belong to a different platform).
       console.log('[SSO-VERIFY] JWT verified locally for user:', jwtPayload.sub);
-      
+
       const scopes = jwtPayload.scope || [];
-      
-      // Build basic response from JWT claims (no DB needed for basic info)
+
+      const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+      const supabaseServiceKey = (Deno.env.get('SUPABASE_SECRET_KEY') ?? Deno.env.get('SUPABASE_SERVICE_ROLE_KEY'))!;
+      const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+      let tokenQuery = supabase
+        .from('cross_platform_tokens')
+        .select('id, client_id, last_used_at, access_token_expires_at')
+        .eq('user_id', jwtPayload.sub)
+        .eq('access_token', accessToken)
+        .eq('is_revoked', false);
+      if (jwtPayload.client_id) {
+        tokenQuery = tokenQuery.eq('client_id', jwtPayload.client_id);
+      }
+      const { data: tokenData } = await tokenQuery.maybeSingle();
+
+      if (!tokenData) {
+        return new Response(
+          JSON.stringify({ error: 'invalid_token', error_description: 'Token not found or revoked' }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      const clientId = tokenData.client_id;
+
+      // Build basic response from JWT claims
       const userInfo: Record<string, unknown> = {
         sub: jwtPayload.sub,
         fun_id: jwtPayload.fun_id,
         username: jwtPayload.username,
-        
+
         active: true,
         token_type: 'jwt'
       };
 
       // If scopes require additional data, query DB
-      const needsDbQuery = scopes.some(s => 
+      const needsDbQuery = scopes.some(s =>
         ['profile', 'email', 'wallet', 'soul', 'rewards', 'platform_data'].includes(s)
       );
 
       if (needsDbQuery) {
-        // Initialize Supabase client for additional data
-        const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-        const supabaseServiceKey = (Deno.env.get('SUPABASE_SECRET_KEY') ?? Deno.env.get('SUPABASE_SERVICE_ROLE_KEY'))!;
-        const supabase = createClient(supabaseUrl, supabaseServiceKey);
-
-        // Get full profile and token info
-        const { data: tokenData } = await supabase
+        // Update last_used_at for this exact token row
+        await supabase
           .from('cross_platform_tokens')
-          .select('client_id, last_used_at, access_token_expires_at')
-          .eq('user_id', jwtPayload.sub)
-          .eq('is_revoked', false)
-          .order('last_used_at', { ascending: false })
-          .limit(1)
-          .maybeSingle();
-
-        const clientId = tokenData?.client_id;
-
-        // Update last_used_at if token found in DB
-        if (tokenData) {
-          await supabase
-            .from('cross_platform_tokens')
-            .update({ last_used_at: new Date().toISOString() })
-            .eq('user_id', jwtPayload.sub)
-            .eq('client_id', clientId);
-        }
+          .update({ last_used_at: new Date().toISOString() })
+          .eq('id', tokenData.id);
 
         // Get profile data based on scopes
         const { data: profile } = await supabase
