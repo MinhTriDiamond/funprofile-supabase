@@ -145,3 +145,13 @@ SQL: `docs/superpowers/plans/2026-10-15-livestream-orphan-dry-run.sql`. Candidat
 - Smoke test endpoint: OPTIONS trả 204; POST không chữ ký trả 401. `AGORA_CLOUD_RECORDING_WEBHOOK_SECRET` chưa có, webhook Agora chưa được cấu hình, nên chưa test được chữ ký hợp lệ hoặc callback/recording end-to-end.
 - Deno check webhook và `live-recording-orphan-recover`, `live-rtmp-cleanup-stuck` đạt. Các entrypoint replay/processor/promoter còn lỗi kiểu tại helper dùng chung (`replayFeedService`, `rtmpEndLiveService`, `r2MultiBucketService`, `agoraCloudRecordingService`) và nullable `sourceHead`; Supabase CLI vẫn deploy thành công, nhưng cần xử lý các diagnostic này trong một task riêng.
 - Không deploy hoặc áp dụng `20261015091000_reduce_agora_processor_cron_after_parity.sql`; file vẫn chỉ ở workspace, chờ đo parity Stage A và duyệt lịch.
+
+## Điều tra replay RTMP không hiện video — 2026-10-15
+
+- Cha báo phiên RTMP đã kết thúc nhưng video không được lưu/hiện trên feed. Production row khớp ảnh là session `a62444df-dd60-4d34-8706-14e306db89af`, replay `3a778f45-792e-4f32-84b4-414bcb332ac0`, post `9268ae12-3fc2-4292-b032-fb39ba4a1ef1`.
+- Root cause đầu tiên được xác nhận từ `live_replays.archive_error`: `Invalid R2 public URL config`. Video Cloudflare đã materialize, nhưng validator trong `r2StorageService` chặn upload R2; vì vậy post bị giữ ở `processing` và không có URL video.
+- Đối chiếu năm replay R2 vừa xác minh thành công cho thấy public host hiện hành là `https://media.fun.rich`; HEAD một replay cũ trả 200. Đã cập nhật production secret `R2_PUBLIC_DOMAIN` sang host này (không đọc/ghi các secret khác).
+- Archive cron sau đó upload và xác minh MP4 thành công (`9,646,336` bytes; `r2_verified_at=2026-10-15 08:49:10 UTC`; public HEAD 200). Cron để phase `posting` ở trạng thái `archived` nên bucket recovery chỉ nhận lại sau ngưỡng 10 phút; đã requeue đúng replay có R2 verification để lịch cron xử lý tiếp.
+- Post đã được đồng bộ lại sang URL MP4 xác minh, `replay_ready=true`, `replay_status=ready_mp4`; session `archived`/`recording_status=ready`; replay `archive_phase=done`, `archive_status=replay_posted`, Cloudflare source đã xóa sau khi R2 sẵn sàng.
+- Thêm regression test: `createOrUpdateReplayPost` phải publish trạng thái ready khi replay row cũ vẫn mang `processing`/`stream_ready`. Sửa helper để verified R2 post luôn ghi `ready_mp4`, `r2_ready`, và xóa processing message.
+- Kiểm tra: test replay feed 2/2 đạt; `tsgo --noEmit` đạt; `git diff --check` đạt. Cần deploy `live-replay-archive-cron` để đưa helper đã sửa lên production và commit/push thay đổi code.
