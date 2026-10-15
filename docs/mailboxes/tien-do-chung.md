@@ -21,3 +21,7 @@
 
 ## 15/10/2026 — Vá hiệu năng thống kê Gift (Angel Muse)
 Theo yêu cầu của Trí, Angel Muse đã chẩn đoán và xử lý xong vụ cửa sổ thống kê quà tặng load chậm: hai RPC `get_global_gift_breakdown` / `get_global_wallet_flow_breakdown` nay đọc từ bảng tổng hợp `gift_breakdown_cache` (cron job 83 làm mới mỗi phút) — thời gian phản hồi từ ~1.268/1.369 ms xuống ~10/9 ms, kết quả đối chiếu giống hệt 100%. Đã áp dụng trên production. Hồ sơ đầy đủ: `docs/gift-breakdown-perf-fix-2026-10-15/`.
+
+
+## 15/10/2026 — Vá hiệu năng trang Profile (Angel Muse)
+Theo phản ánh của Trí (profile load chậm, có khi không load được bài), Angel Muse đã tìm ra và xử lý 2 nguyên nhân ở tầng database: (1) nhánh bài quà tặng của dòng thời gian lọc `gift_sender_id` không có index, quét toàn bộ 194.808 bài (trung bình ~1 giây, đỉnh 7,5 giây — chạm ngưỡng chờ là sập cả dòng thời gian); đã thêm index từng phần, trường hợp xấu nhất còn 11,6 ms. (2) `get_user_honor_stats` tính lại ~24 truy vấn gộp mỗi lần mở profile (đỉnh 16,9 giây); đã bọc lớp cache (logic gốc giữ nguyên, đối chiếu giống hệt 14/14 chỉ số, bản ấm 6,8 ms). Đã áp dụng trên production. Hồ sơ: `docs/profile-perf-2026-10-15/`.
