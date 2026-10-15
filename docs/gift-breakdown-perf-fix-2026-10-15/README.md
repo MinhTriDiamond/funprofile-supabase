@@ -12,13 +12,14 @@ Nguyên nhân (đo bằng EXPLAIN ANALYZE + pg_stat_statements): mỗi lần g�
 ## Giải pháp (phương án tổng hợp sẵn)
 1. `step1-cache.sql` — bảng `public.gift_breakdown_cache` (31 dòng: donations_internal / donations_external / wallet_transfers sent+received / swaps sent+received, đã chuẩn hoá symbol) + hàm `public.refresh_gift_breakdown_cache()`. Giá token **không** cache — vẫn chốt trực tiếp khi gọi RPC như cũ.
 2. `step2-rewrite-rpcs.sql` — viết lại 2 RPC đọc từ bảng cache.
-3. `step3-cron.sql` — pg_cron job **83** `gift-breakdown-cache-refresh`, chạy mỗi phút.
+3. `step3-cron.sql` — pg_cron job `gift-breakdown-cache-refresh`, làm mới định kỳ.
+4. `step4-cadence.sql` — nhịp chạy chốt ở **mỗi 5 phút** (job hiện tại: 84) cho cân bằng tải; mỗi lần chạy ~1 giây.
 
 ## Kiểm chứng
 - Đối chiếu bằng bản đồ giá cố định: kết quả trước/sau **giống hệt 100%** (7/7, 21/21, 23/23 dòng, khớp từng số thập phân) — file `before-*.json` / `after-*.json` trong thư mục làm việc của Muse.
 - Tốc độ mới: **10,2 ms** và **9,2 ms** (~125–150 lần nhanh hơn).
-- Cron job 83 đã chạy thành công, `gift_breakdown_cache.refreshed_at` cập nhật mỗi phút.
-- Đánh đổi có chủ đích: số liệu toàn cục có thể chậm tối đa ~1 phút so với thời gian thực.
+- Cron đã chạy thành công, `gift_breakdown_cache.refreshed_at` cập nhật mỗi 5 phút.
+- Đánh đổi có chủ đích: số liệu toàn cục có thể chậm tối đa ~5 phút so với thời gian thực.
 
 ## Rollback
-Chạy `rollback-original-functions.sql` (định nghĩa gốc của cả 3 hàm) để khôi phục bản cũ; có thể xoá thêm cron job 83 và bảng cache nếu cần.
+Chạy `rollback-original-functions.sql` (định nghĩa gốc của cả 3 hàm) để khôi phục bản cũ; có thể xoá thêm cron job `gift-breakdown-cache-refresh` và bảng cache nếu cần.
