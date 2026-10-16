@@ -26,6 +26,8 @@ import { MiniGameMenu } from './MiniGameMenu';
 import { ecosystemItems, shortcutItems as shortcutConfig, userMenuItems } from '@/config/navigation';
 import { EcosystemBelowItems } from './EcosystemBelowItems';
 import EcosystemWheel from './EcosystemWheel';
+import { Button } from '@/components/ui/button';
+import { Gift } from 'lucide-react';
 import { forceAppUpdate } from '@/hooks/useVersionCheck';
 
 interface Profile {
@@ -94,7 +96,7 @@ export const LeftSidebar = ({ onItemClick }: FacebookLeftSidebarProps) => {
   return (
     <div className="space-y-3">
       {/* Card 1: FUN ECOSYSTEM */}
-      <div className="bg-card/70 rounded-xl border-2 border-yellow-400/50 p-4 hover:border-yellow-400 hover:shadow-[0_0_20px_rgba(250,204,21,0.3)] transition-all duration-300 min-h-[80px] flex flex-col">
+      <div className="sidebar-ecosystem-panel rounded-xl border-2 p-4 transition-all duration-300 min-h-[80px] flex flex-col">
         <div className="flex items-center gap-2 mb-3">
           <img 
             src="/fun-ecosystem-logo-36.webp" 
@@ -102,34 +104,26 @@ export const LeftSidebar = ({ onItemClick }: FacebookLeftSidebarProps) => {
             className="w-8 h-8 rounded-full object-cover"
           />
           <h3 
-            className="font-black text-[22px] tracking-wider uppercase"
-            style={{
-              fontFamily: "'Orbitron', 'Rajdhani', sans-serif",
-              background: 'linear-gradient(90deg, #FF3B3B 0%, #FF7A1A 12%, #FFC700 25%, #8BD600 40%, #00C853 52%, #00BCD4 65%, #2979FF 78%, #8E24AA 90%, #C2185B 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
-              filter: 'drop-shadow(0 1px 0 rgba(255,255,255,0.4))',
-            }}
+            className="sidebar-metallic-title text-[22px] uppercase"
           >
             {t('funEcosystem')}
           </h3>
         </div>
         <EcosystemWheel onItemClick={onItemClick} />
 
-        <div className="mt-3 pt-3 border-t border-yellow-400/30 space-y-1">
+        <div className="sidebar-ecosystem-links mt-3 pt-3 border-t space-y-1">
           <EcosystemBelowItems onItemClick={onItemClick} />
           {movedUpItems.map((item) => (
-            <button
+            <Button variant="sidebar"
               key={item.label}
               onClick={() => { navigate(item.path); onItemClick?.(); }}
-              className="w-full flex items-center gap-3 p-2 rounded-xl hover:bg-white hover:shadow-[0_0_12px_rgba(34,197,94,0.5)] transition-all duration-300"
+              className={`sidebar-metallic-pill sidebar-link-pill ${item.path === "/donations" ? "sidebar-rose-pill" : "sidebar-sapphire-pill"} w-full flex items-center gap-3 p-2 transition-all duration-300`}
             >
-              <div className={`w-9 h-9 rounded-full bg-secondary flex items-center justify-center ${item.color}`}>
-                <item.icon className="w-5 h-5" />
+              <div className="sidebar-direct-logo w-9 h-9 flex items-center justify-center">
+                {item.path === "/donations" ? <Gift className="sidebar-gold-icon w-7 h-7" /> : <span className="relative h-8 w-8 pt-1.5"><UsersRound className="sidebar-gold-icon h-7 w-8" /><Crown className="sidebar-gold-icon sidebar-member-crown" /></span>}
               </div>
-              <span className="font-medium text-sm">{item.label}</span>
-            </button>
+              <span className="sidebar-gold-text font-semibold text-sm">{item.label}</span>
+            </Button>
           ))}
         </div>
       </div>
