@@ -2,10 +2,10 @@ import { describe, expect, it } from 'vitest';
 import { getRtmpPreviewRetryDelay } from './rtmpPreviewRetryPolicy';
 
 describe('getRtmpPreviewRetryDelay', () => {
-  it('uses increasing delays and stops after three automatic retries', () => {
-    expect(getRtmpPreviewRetryDelay(0)).toBe(2000);
-    expect(getRtmpPreviewRetryDelay(1)).toBe(4000);
-    expect(getRtmpPreviewRetryDelay(2)).toBe(6000);
-    expect(getRtmpPreviewRetryDelay(3)).toBeNull();
+  it('waits for Cloudflare to make the stream playable, then keeps retrying periodically', () => {
+    expect(getRtmpPreviewRetryDelay(0)).toBe(45000);
+    expect(getRtmpPreviewRetryDelay(1)).toBe(30000);
+    expect(getRtmpPreviewRetryDelay(2)).toBe(30000);
+    expect(getRtmpPreviewRetryDelay(10)).toBe(30000);
   });
 });

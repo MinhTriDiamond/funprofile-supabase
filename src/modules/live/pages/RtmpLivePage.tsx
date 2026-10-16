@@ -205,8 +205,8 @@ export default function RtmpLivePage() {
     if (!sourceConnected) return 'Đang chờ nguồn phát kết nối.';
     if (!producerPreviewReady) return 'Đang tải preview live.';
     if (!title.trim() || !description.trim()) return 'Vui lòng nhập tiêu đề và mô tả.';
-    if (!previewReady) return previewRetryCount >= 3
-      ? 'Chưa hiển thị được hình từ OBS. Vui lòng kiểm tra OBS hoặc bấm “Tải lại preview”.'
+    if (!previewReady) return previewRetryCount > 0
+      ? 'Chưa hiển thị được hình từ OBS. Hệ thống đang tiếp tục kết nối preview; vui lòng kiểm tra OBS nếu tình trạng kéo dài.'
       : 'Đã nhận luồng từ OBS, đang chờ hình ảnh đầu tiên trong preview.';
     if (credentials?.status === 'live') return 'Live đã public.';
     return null;
@@ -695,7 +695,7 @@ export default function RtmpLivePage() {
     }
   }, [canShowPreview, playbackUrl, sourceConnected]);
 
-  // Retry có giới hạn cho tới khi player render được khung hình thật, không coi manifest là đã có hình.
+  // Tiếp tục retry cho tới khi player render được khung hình thật, không coi manifest là đã có hình.
   useEffect(() => {
     if (!producerPreviewReady || previewReady) return;
     if (previewRetryStateRef.current.key !== previewAttemptKey) {
@@ -704,7 +704,6 @@ export default function RtmpLivePage() {
     }
     const retryCount = previewRetryStateRef.current.attempts;
     const delay = getRtmpPreviewRetryDelay(retryCount);
-    if (delay === null) return;
     const t = window.setTimeout(() => {
       if (previewRetryStateRef.current.key !== previewAttemptKey
         || previewRetryStateRef.current.attempts !== retryCount) return;
