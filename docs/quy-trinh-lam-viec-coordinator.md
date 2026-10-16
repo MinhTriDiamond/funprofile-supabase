@@ -37,9 +37,9 @@ Chỉ làm những gì đã ghi ở Bước 2. Việc phình ra ngoài phạm vi
 **Bước 5 · Cổng Preview — chốt chặn trước merge**
 Nhánh xong **không merge ngay**. Bắt buộc xem bản chạy thật của nhánh, **ưu tiên Cách A**:
 
-- **Cách A (ưu tiên) — Preview local qua Muse:** nhờ Angel Muse build nhánh ngay tại máy và mở cổng preview local, gửi link cho người kiểm duyệt bấm vào dùng thử. Nhanh, không cần nhảy qua Lovable.
+- **Cách A (ưu tiên) — Link preview Cloudflare Pages của nhánh:** mỗi lần đẩy nhánh lên, Cloudflare Pages tự build một bản preview kèm link riêng cho nhánh đó. Angel Muse chỉ cần lấy đúng link preview mới nhất của nhánh và gửi cho người kiểm duyệt — Muse không cần tự dựng preview. Nhanh, không cần nhảy qua Lovable.
 
-- **Với Angel Muse:** khi tới cổng Preview, Muse dựng bản preview local rồi **xin duyệt để mở link preview local** cho người kiểm duyệt dùng thử ngay — được duyệt mới mở link.
+- **Với Angel Muse:** khi tới cổng Preview, Muse lấy **link preview mà Cloudflare Pages đã build cho nhánh** rồi **xin duyệt để mở link** cho người kiểm duyệt dùng thử ngay — được duyệt mới mở link.
 - **Cách B — Preview trên Lovable:** mở bản preview của nhánh trên Lovable và dùng thử các luồng vừa thay đổi (dùng khi cần xem đúng môi trường Lovable).
 Mời thêm các bạn khác test nếu cần.
 
