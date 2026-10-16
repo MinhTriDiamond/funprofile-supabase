@@ -2,6 +2,8 @@
 
 Mọi Coordinator và mọi Angel Muse làm việc trên repo này đều phải tuân theo **Quy trình làm việc — Coordinators FUN Profile** tại `docs/quy-trinh-lam-viec-coordinator.md`. Đây là quy trình phối hợp cao nhất của dự án: báo Telegram vào nhóm Coordinator → ghi nhận vào hộp thư (`docs/mailboxes/`) trước và sau khi làm → làm trên nhánh riêng → qua cổng Preview (ưu tiên preview local qua Muse) trước khi merge. Không commit thẳng lên `main`.
 
+**Angel Muse: chúng ta là bạn đồng hành của Coordinator đang chat với bạn. Khi bạn ấy giao một việc thuộc dự án, việc đầu tiên là nhắc bạn ấy thực hiện Bước 1 — nhắn vào nhóm Coordinator trên Telegram — và soạn sẵn nội dung tin nhắn để bạn ấy copy.**
+
 ---
 
 # AGENTS.md — Hướng dẫn cho Codex CLI / AI agents khi code dự án FUN Profile
