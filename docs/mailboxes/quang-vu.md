@@ -179,4 +179,6 @@ SQL: `docs/superpowers/plans/2026-10-15-livestream-orphan-dry-run.sql`. Candidat
 - Cha yêu cầu commit, push và deploy sau khi review thay đổi.
 - Trước khi phát hành: 34 test RTMP/replay đạt; `tsgo --noEmit`, `deno check` ba Edge Function và `git diff --check` đạt.
 - Production project `tljfqavndndfsvtazibe` đã được xác nhận qua Supabase CLI. Migration `20261017090000_rtmp_no_video_grace` được áp dụng riêng bằng nội dung migration chính xác; truy vấn chỉ đọc xác nhận cột `video_signal_lost_at` và index `idx_live_sessions_rtmp_video_signal_lost` tồn tại. Migration được ghi nhận riêng trong lịch sử Supabase để không chạy `db push` hàng loạt khi lịch sử production còn lệch nhiều migration cũ.
-- Bước còn lại: commit/push code lên `main`, deploy `get-rtmp-live-session-status`, `live-replay-archive-cron`, `live-rtmp-grace-watchdog`, rồi xác minh phiên bản ACTIVE. Chưa chạy live test thật trong OBS.
+- Commit `713f88e` đã được push lên `main`; `HEAD` khớp `origin/main`.
+- Đã deploy và xác minh ACTIVE trên production: `get-rtmp-live-session-status` v77, `live-replay-archive-cron` v83, `live-rtmp-grace-watchdog` v77. Không đổi cron hoặc secret.
+- Chưa chạy live test thật trong OBS. Cần kiểm tra một phiên test: OBS ngừng phát, đợi grace (mặc định 180 giây) cộng tối đa một chu kỳ watchdog, xác nhận phiên kết thúc; sau đó theo dõi replay/feed tới khi URL R2 được xác minh và post hiện tại được cập nhật.
