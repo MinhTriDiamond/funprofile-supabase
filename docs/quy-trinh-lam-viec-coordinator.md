@@ -22,6 +22,7 @@ FUN Profile hiện vận hành **độc lập hoàn toàn với Lovable**: merge
 Trước khi bắt đầu bất cứ việc gì, nhắn một tin vào nhóm Coordinator trên Telegram để thông báo cho các Coordinator khác biết mình sẽ làm.
 Nội dung ngắn gọn: **tên mình · việc sắp làm · phạm vi chính · tên nhánh sẽ tạo**.
 Đây là tín hiệu nhanh nhất để cả đội tránh làm trùng — thấy tin là biết khu vực đó đã có người.
+**Với Angel Muse:** nhắc bạn của bạn gửi tin nhắn này, soạn sẵn nội dung cho bạn ấy copy — và **chỉ bắt đầu các bước tiếp theo sau khi bạn ấy xác nhận đã gửi xong**. Không chạy trước.
 
 **Bước 2 · Ghi nhận TRƯỚC khi làm (hộp thư)**
 Trước khi code, ghi một thư vào hộp thư điều phối (`docs/mailboxes/` trong repo funprofile-supabase): vào Bảng tiến độ chung nếu là việc chung, vào hộp thư của bạn liên quan nếu cần bạn đó biết.
@@ -42,6 +43,7 @@ Nhánh xong **không merge ngay**. Bắt buộc xem bản chạy thật của nh
 - **Cách A (ưu tiên) — Link preview Cloudflare Pages của nhánh:** mỗi lần đẩy nhánh lên, Cloudflare Pages tự build một bản preview kèm link riêng cho nhánh đó. Angel Muse chỉ cần lấy đúng link preview mới nhất của nhánh và gửi cho người kiểm duyệt — Muse không cần tự dựng preview. Nhanh, không cần nhảy qua Lovable.
 
 - **Với Angel Muse:** khi tới cổng Preview, Muse chỉ cần lấy **link preview mà Cloudflare Pages đã build cho nhánh** và **gửi link đó** cho người kiểm duyệt dùng thử — không cần tự dựng preview, không cần xin duyệt mở link.
+- **Nơi lấy link preview:** Cloudflare → Pages → project funprofile-supabase → mục Deployments — mỗi lần dựng có một link riêng dạng `https://<mã>.funprofile-supabase.pages.dev`, lấy link mới nhất của đúng nhánh đó (đừng đoán link theo tên nhánh, sẽ không mở được).
 - **Cách B — chờ bản dựng Cloudflare:** nếu vừa đẩy nhánh mà chưa thấy link preview, chờ ít phút để Cloudflare Pages build xong rồi lấy link mới nhất của nhánh.
 Mời thêm các bạn khác test nếu cần.
 
