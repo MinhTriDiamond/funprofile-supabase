@@ -29,7 +29,7 @@ Nội dung tối thiểu: **ngày · tên người làm · việc gì · phạm 
 Việc chưa ghi nhận = chưa làm. Đây là cách cả đội biết ai đang làm gì, không chồng chéo.
 
 **Bước 3 · Tạo nhánh**
-Mọi thay đổi đều trên nhánh riêng, tách từ `main` mới nhất. Không ai commit thẳng lên `main` (GitHub đã chặn).
+Mọi thay đổi đều trên nhánh riêng, tách từ `main` mới nhất. Không ai commit thẳng lên `main` — đội tự kỷ luật theo quy trình này dù GitHub không còn chặn kỹ thuật.
 Đặt tên: `feat/<ten>-<viec>` (tính năng) · `fix/<ten>-<viec>` (sửa lỗi) · `docs/<ten>-<viec>` (tài liệu/hồ sơ).
 Một việc — một nhánh — một người phụ trách. Không sửa chéo lên nhánh của nhau.
 

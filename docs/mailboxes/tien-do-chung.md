@@ -68,3 +68,10 @@ Tính năng custodial đã ngưng từ lâu và ví trống (quét on-chain: BNB
 - Người làm: anh Trí cùng Angel Muse. Việc: chữ "About FUN Profile" (mục About trong dải hệ sinh thái dưới feed) hiển thị IN HOA toàn bộ — "ABOUT FUN PROFILE".
 - Phạm vi: `src/components/feed/EcosystemBelowItems.tsx`. Nhánh: `fix/tri-about-fun-profile-uppercase`.
 - Trạng thái: ĐANG LÀM — chờ qua cổng Preview rồi mới merge (theo đúng 6 bước của quy trình).
+
+## 2026-10-16 — KẾT QUẢ thực hành quy trình (vòng 2): chữ "About FUN Profile" đã IN HOA — ĐÃ XONG
+- Đã làm: thêm lớp `uppercase` riêng cho mục About trong `src/components/feed/EcosystemBelowItems.tsx` — chữ hiển thị "ABOUT FUN PROFILE" ở mọi ngôn ngữ, không sửa từ điển.
+- Link PR: https://github.com/MinhTriDiamond/funprofile-supabase/pull/5 — đã merge vào `main` (sau khi anh Trí bỏ bảo vệ nhánh và phân công Angel Muse merge). Cloudflare Pages tự deploy lên fun.rich sau merge, không cần Publish.
+- Kiểm chứng: cổng Preview đạt trước merge (đối chiếu bản dựng preview của Cloudflare với production: bản preview có quy tắc uppercase cho mục About, production chưa có); sau merge, mã trên `main` đã chứa thay đổi.
+- Vòng thực hành đi đủ 6 bước: Telegram → ghi nhận hộp thư → nhánh riêng → làm trong phạm vi → cổng Preview (link Cloudflare) → merge + thư kết quả này.
+- Ghi chú: PR #4 (vòng 1 — bản màu đỏ) đã bị vòng 2 thay thế, còn mở chờ anh Trí quyết đóng.
