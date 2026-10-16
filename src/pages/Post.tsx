@@ -10,6 +10,8 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, Home } from 'lucide-react';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { SEOHead, buildArticleJsonLd } from '@/components/seo/SEOHead';
+import type { PostMetadata } from '@/components/feed/types';
+import { POST_DETAIL_SELECT } from './postDetailQuery';
 
 interface PostProfileData {
   username: string;
@@ -17,6 +19,9 @@ interface PostProfileData {
   avatar_url: string | null;
   full_name: string | null;
   public_wallet_address: string | null;
+  is_live: boolean | null;
+  current_live_session_id: string | null;
+  live_started_at: string | null;
 }
 
 interface PostWithProfile {
@@ -31,6 +36,12 @@ interface PostWithProfile {
   updated_at: string | null;
   user_id: string;
   visibility: string | null;
+  post_type: string | null;
+  replay_status: string | null;
+  replay_ready: boolean | null;
+  playback_provider: string | null;
+  processing_message: string | null;
+  metadata: PostMetadata | null;
   slug: string | null;
   profiles: PostProfileData;
   reactions: Array<{ id: string; user_id: string; type: string }>;
@@ -72,18 +83,10 @@ const Post = () => {
       setLoading(true);
     }
 
-    const selectCols = `
-      id, public_id, share_code, content, image_url, video_url, media_urls,
-      created_at, updated_at, user_id, visibility, slug,
-      profiles:public_profiles!posts_user_id_fkey (username, display_name, avatar_url, full_name, public_wallet_address),
-      reactions (id, user_id, type),
-      comments (id)
-    `;
-
     const fetchByColumn = async (column: 'id' | 'public_id', value: string) => {
       return supabase
         .from('posts')
-        .select(selectCols)
+        .select(POST_DETAIL_SELECT)
         .eq(column, value)
         .is('deleted_at', null)
         .maybeSingle();
@@ -113,7 +116,7 @@ const Post = () => {
         if (profile?.id) {
           const { data } = await supabase
             .from('posts')
-            .select(selectCols)
+            .select(POST_DETAIL_SELECT)
             .eq('user_id', profile.id)
             .eq('slug', slug)
             .is('deleted_at', null)
