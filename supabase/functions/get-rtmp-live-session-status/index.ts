@@ -8,6 +8,7 @@ import { corsHeaders, createAdminClient, HttpError, json, normalizeError, requir
 import { endRtmpLiveSession, getDisconnectGraceSeconds, getObsReconnectTimeoutSeconds } from '../_shared/rtmpEndLiveService.ts';
 import { isRtmpSessionEndedOrFrozen, rtmpFrozenStatusSqlList } from '../_shared/rtmpSessionStatus.ts';
 import { mayAutoEndRtmpDisconnect } from '../_shared/rtmpDisconnectPolicy.ts';
+import { safeErrorText } from '../_shared/safeErrorText.ts';
 
 function toIsoAfterSeconds(baseIso: string, seconds: number): string | null {
   const base = Date.parse(baseIso);
@@ -256,7 +257,7 @@ Deno.serve(async (req) => {
       try {
         finalDetection = await detectRtmpLiveConnection(session, { skewSeconds: 60 });
       } catch (error) {
-        console.warn('[RTMP_STATUS_FINAL_RECHECK_FAILED]', { liveSessionId, error: error instanceof Error ? error.message : 'Cloudflare read failed' });
+        console.warn('[RTMP_STATUS_FINAL_RECHECK_FAILED]', { liveSessionId, error: safeErrorText(error) });
       }
       const mayEnd = !!finalDetection && mayAutoEndRtmpDisconnect(
         {
@@ -334,42 +335,20 @@ Deno.serve(async (req) => {
     }
     if (!connected && connectedStatuses.includes(session.status) && !disconnectedAt) disconnectedAt = now;
     if (!connected && connectedStatuses.includes(session.status)) {
-      const nextStatus = reconnectExpired ? 'ended' : 'reconnecting';
-      const nextSignalStatus = reconnectExpired ? 'timeout_auto_end' : 'lost';
-      const nextLiveInputStatus = reconnectExpired ? 'ended' : 'waiting_reconnect';
-      const updateRow = {
-        status: nextStatus,
-        connection_status: reconnectExpired ? 'ended' : 'reconnecting',
-        source_connected: false,
-        last_disconnected_at: disconnectedAt,
-        disconnected_at: disconnectedAt,
-        live_input_status: nextLiveInputStatus,
-        signal_status: nextSignalStatus,
-        signal_lost_at: signalLostAt,
-        reconnect_deadline_at: reconnectExpired ? null : reconnectDeadlineAt,
-        auto_end_reason: reconnectExpired ? 'obs_signal_lost_timeout' : session.auto_end_reason || null,
-        updated_at: now,
-      };
-      await admin
-        .from('live_sessions')
-        .update(updateRow)
-        .eq('id', liveSessionId)
-        .not('status', 'in', rtmpFrozenStatusSqlList());
-      logObsSignal({
-        sessionId: session.id,
-        userId: session.owner_id || session.host_user_id || session.user_id || null,
-        status: reconnectExpired ? 'timeout_auto_end' : 'lost',
-        signalLostAt,
-        reconnectDeadlineAt: reconnectExpired ? null : reconnectDeadlineAt,
-        reason: reconnectExpired ? 'obs_signal_lost_timeout' : (pickedReason || 'obs_signal_lost_detected'),
-      });
-
       if (reconnectExpired) {
-        const result = await endRtmpLiveSession(admin, { ...session, cloudflare_video_uid: cloudflareVideoUid || session.cloudflare_video_uid, last_disconnected_at: disconnectedAt, signal_lost_at: signalLostAt, reconnect_deadline_at: reconnectDeadlineAt }, 'obs_signal_lost_timeout');
+        const result = await endRtmpLiveSession(admin, {
+          ...session,
+          cloudflare_video_uid: cloudflareVideoUid || session.cloudflare_video_uid,
+          last_disconnected_at: disconnectedAt,
+          signal_lost_at: signalLostAt,
+          reconnect_deadline_at: reconnectDeadlineAt,
+        }, 'obs_signal_lost_timeout');
+        const status = result.in_progress ? 'ending' : (result.status || 'ended');
+        const endReason = result.end_reason || 'obs_signal_lost_timeout';
         return json({
           ok: true,
           sessionId: session.id,
-          status: 'ended',
+          status,
           sourceConnected: false,
           playbackUrl: null,
           hlsUrl: null,
@@ -379,11 +358,11 @@ Deno.serve(async (req) => {
           reconnectDeadlineAt: null,
           live_session: {
             ...session,
-            status: 'ended',
-            connection_status: 'ended',
-            ended_at: now,
-            end_reason: 'obs_signal_lost_timeout',
-            auto_end_reason: 'obs_signal_lost_timeout',
+            status,
+            connection_status: status,
+            ended_at: result.ended_at || (status === 'ending' ? null : now),
+            end_reason: endReason,
+            auto_end_reason: endReason === 'manual' ? session.auto_end_reason : endReason,
             signal_status: 'timeout_auto_end',
             signal_lost_at: signalLostAt,
             reconnect_deadline_at: null,
@@ -394,9 +373,37 @@ Deno.serve(async (req) => {
           preview_ready: false,
           details_complete: !!session.title?.trim() && !!session.description?.trim(),
           can_go_live: false,
-          auto_ended: true,
+          auto_ended: result.ended && !result.idempotent,
+          end_in_progress: status === 'ending',
         });
       }
+
+      const updateRow = {
+        status: 'reconnecting',
+        connection_status: 'reconnecting',
+        source_connected: false,
+        last_disconnected_at: disconnectedAt,
+        disconnected_at: disconnectedAt,
+        live_input_status: 'waiting_reconnect',
+        signal_status: 'lost',
+        signal_lost_at: signalLostAt,
+        reconnect_deadline_at: reconnectDeadlineAt,
+        auto_end_reason: session.auto_end_reason || null,
+        updated_at: now,
+      };
+      await admin
+        .from('live_sessions')
+        .update(updateRow)
+        .eq('id', liveSessionId)
+        .not('status', 'in', rtmpFrozenStatusSqlList());
+      logObsSignal({
+        sessionId: session.id,
+        userId: session.owner_id || session.host_user_id || session.user_id || null,
+        status: 'lost',
+        signalLostAt,
+        reconnectDeadlineAt,
+        reason: pickedReason || 'obs_signal_lost_detected',
+      });
     }
 
     if (connected && session.status === 'reconnecting') {
@@ -604,7 +611,8 @@ Deno.serve(async (req) => {
     const info = normalizeError(error);
     const status = error instanceof HttpError ? error.status : (info.status || 500);
     const code = error instanceof HttpError ? error.code : (info.code || (status === 401 ? 'UNAUTHORIZED' : 'INTERNAL'));
-    console.error('[RTMP_STATUS_POLL_FAILED]', { status, code, message: info.message, stack: info.stack, details: info.details });
-    return json({ error: info.message, code, status, details: info.details }, status);
+    const message = safeErrorText(info.message);
+    console.error('[RTMP_STATUS_POLL_FAILED]', { status, code, message });
+    return json({ error: message, code, status }, status);
   }
 });

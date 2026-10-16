@@ -78,22 +78,24 @@ Deno.serve(async (req) => {
 
     const results: Array<Record<string, unknown>> = [];
     for (const session of candidates) {
-      await admin.from('live_session_events').insert({
-        live_session_id: session.id,
-        from_status: session.status,
-        to_status: 'ending',
-        source: 'live-duration-watchdog',
-        reason: 'duration_limit_triggered',
-        payload: {
+      const result = await forceEndLive(admin, session.id, 'duration_limit', { source: 'live-duration-watchdog' });
+      if (session.mode !== 'rtmp_obs' || (result as any).idempotent !== true) {
+        await admin.from('live_session_events').insert({
           live_session_id: session.id,
-          mode: session.mode || 'agora_webcam',
-          max_duration_minutes: getLiveMaxDurationMinutes(session.mode),
-          started_at: session.started_at,
-          timestamp: new Date().toISOString(),
-        },
-      }).then(undefined, () => undefined);
-
-      results.push(await forceEndLive(admin, session.id, 'duration_limit', { source: 'live-duration-watchdog' }));
+          from_status: session.status,
+          to_status: 'ending',
+          source: 'live-duration-watchdog',
+          reason: 'duration_limit_triggered',
+          payload: {
+            live_session_id: session.id,
+            mode: session.mode || 'agora_webcam',
+            max_duration_minutes: getLiveMaxDurationMinutes(session.mode),
+            started_at: session.started_at,
+            timestamp: new Date().toISOString(),
+          },
+        }).then(undefined, () => undefined);
+      }
+      results.push(result);
     }
 
     // Nhánh phụ: webcam mode mất heartbeat > 8 phút (16 nhịp 30s) ⇒ force-end

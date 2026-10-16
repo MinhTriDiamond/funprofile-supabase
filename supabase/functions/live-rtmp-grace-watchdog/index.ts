@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { createClient } from 'npm:@supabase/supabase-js@2';
-import { endRtmpLiveSession, getDisconnectGraceSeconds, getDisconnectGraceMinutes } from '../_shared/rtmpEndLiveService.ts';
+import { endRtmpLiveSession, getDisconnectGraceSeconds, getDisconnectGraceMinutes, retryPendingRtmpLiveInputDisables, type RtmpEndReason } from '../_shared/rtmpEndLiveService.ts';
+import { RTMP_END_CLAIM_LEASE_MS } from '../_shared/rtmpEndTransition.ts';
+import { safeErrorText } from '../_shared/safeErrorText.ts';
 import { detectRtmpLiveConnection } from '../_shared/cloudflareStreamService.ts';
 
 
@@ -115,6 +117,20 @@ Deno.serve(async (req) => {
     // last_source_seen_at/last_connection_check_at quá 2 * grace, verify Cloudflare API trước khi end.
     const fallbackCutoff = new Date(nowMs - graceSeconds * 2 * 1000).toISOString();
     const maxDurationCutoff = new Date(nowMs - maxHours * 3600 * 1000).toISOString();
+    const staleEndClaimCutoff = new Date(nowMs - RTMP_END_CLAIM_LEASE_MS).toISOString();
+
+    // A worker can die after claiming `ending`. Reclaim only claims older than
+    // the bounded lease; active workers keep exclusive ownership until then.
+    const { data: staleEnding, error: staleEndingError } = await admin
+      .from('live_sessions')
+      .select('*')
+      .eq('mode', 'rtmp_obs')
+      .eq('status', 'ending')
+      .is('ended_at', null)
+      .lt('updated_at', staleEndClaimCutoff)
+      .order('updated_at', { ascending: true })
+      .limit(30);
+    if (staleEndingError) throw staleEndingError;
 
     // 1) Legacy auto_end_at expired
     const { data: legacy } = await admin
@@ -209,24 +225,33 @@ Deno.serve(async (req) => {
         // input "connected" nhưng KHÔNG có active video — case stuck của persistent input
         verifiedFallback.push({ session: s, detection });
       } catch (e) {
-        console.warn('[grace-watchdog] detect failed', s.id, e instanceof Error ? e.message : String(e));
+        console.warn('[grace-watchdog] detect failed', s.id, safeErrorText(e));
       }
     }
 
     // Merge danh sách xử lý end. Tag mỗi session với reason rõ ràng.
-    const toEnd: Array<{ session: any; reason: string }> = [];
+    const toEnd: Array<{ session: any; reason: RtmpEndReason }> = [];
     for (const s of legacy || []) toEnd.push({ session: s, reason: 'disconnect_timeout' });
     for (const s of graceExpired || []) toEnd.push({ session: s, reason: 'disconnect_timeout' });
     for (const v of verifiedFallback) toEnd.push({ session: v.session, reason: 'source_disconnected_no_active_video' });
     for (const s of maxDurationExpired || []) {
       if (!toEnd.some((t) => t.session.id === s.id)) toEnd.push({ session: s, reason: 'max_duration_exceeded' });
     }
+    const validEndReasons = new Set<RtmpEndReason>([
+      'manual', 'disconnect_timeout', 'obs_signal_lost_timeout', 'cloudflare_error', 'admin_force', 'duration_limit',
+      'max_duration_exceeded', 'source_disconnected_no_active_video', 'host_clicked_end',
+    ]);
+    for (const s of staleEnding || []) {
+      if (toEnd.some((t) => t.session.id === s.id)) continue;
+      const persistedReason = validEndReasons.has(s.end_reason) ? s.end_reason as RtmpEndReason : 'manual';
+      toEnd.push({ session: s, reason: persistedReason });
+    }
 
     const results: Array<Record<string, unknown>> = [];
     for (const { session, reason } of toEnd) {
       try {
         // Recheck cuối cùng cho nhánh KHÔNG phải max_duration (không bao giờ recheck cho max_duration)
-        if (reason !== 'max_duration_exceeded' && session.cloudflare_live_input_id) {
+        if (session.status !== 'ending' && reason !== 'max_duration_exceeded' && session.cloudflare_live_input_id) {
           let detection: any = null;
           try {
             detection = await detectRtmpLiveConnection(session, { skewSeconds: 60 });
@@ -270,15 +295,19 @@ Deno.serve(async (req) => {
         }
 
         const r = await endRtmpLiveSession(admin, session, reason);
-        await notifyAutoEnded(admin, session, reason).catch((e) => console.warn('[grace-watchdog] notify failed', String(e)));
+        if (reason !== 'manual' && !r.idempotent && !r.in_progress) {
+          await notifyAutoEnded(admin, session, reason).catch((e) => console.warn('[grace-watchdog] notify failed', String(e)));
+        }
         console.log('[grace-watchdog] force_end', { session_id: session.id, reason, ...r });
         results.push({ session_id: session.id, reason, ...r });
       } catch (e) {
-        const msg = e instanceof Error ? e.message : String(e);
+        const msg = safeErrorText(e);
         console.error('[grace-watchdog] end failed', session.id, msg);
         results.push({ session_id: session.id, ok: false, error: msg, reason });
       }
     }
+
+    const liveInputDisableRetries = await retryPendingRtmpLiveInputDisables(admin, 30);
 
     const summary = {
       ok: true,
@@ -288,8 +317,10 @@ Deno.serve(async (req) => {
         stale_public: (stalePublic || []).length,
         stale_null: (staleNull || []).length,
         max_duration_expired: (maxDurationExpired || []).length,
+        stale_ending_claims: (staleEnding || []).length,
       },
       ended: results.filter((r) => !r.skipped && !r.error).length,
+      live_input_disable_retries: liveInputDisableRetries,
       kept_alive: keptAlive.length,
       results,
       kept_alive_details: keptAlive,
@@ -300,7 +331,7 @@ Deno.serve(async (req) => {
     console.log('[grace-watchdog] summary', summary);
     return json(summary);
   } catch (e) {
-    const msg = e instanceof Error ? e.message : String(e);
+    const msg = safeErrorText(e);
     console.error('[grace-watchdog] fatal', msg);
     return json({ error: msg }, 500);
   }

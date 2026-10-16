@@ -449,6 +449,21 @@ export async function forceEndLive(
   if (error) throw error;
   if (!session) return { ok: false, error: 'not_found' };
 
+  if (session.mode === 'rtmp_obs') {
+    const rtmpReason = reason === 'host_heartbeat_timeout' || reason === 'host_disconnected_timeout'
+      ? 'disconnect_timeout'
+      : reason === 'admin_force'
+        ? 'admin_force'
+        : reason === 'duration_limit' || reason === 'auto_duration_limit'
+          ? 'duration_limit'
+          : 'manual';
+    const result = await endRtmpLiveSession(admin, session, rtmpReason as any);
+    if (result.idempotent !== true) {
+      await logLiveEvent(admin, session, 'live_ended_success', { reason, source: options.source || 'force_end_live', rtmp: true }, 'ended');
+    }
+    return { ok: true, mode: 'rtmp_obs', ...result };
+  }
+
   if (
     FORCE_END_TERMINAL_STATUSES.has(String(session.status || '')) ||
     String(session.recording_status || '') === 'ready'
@@ -477,19 +492,6 @@ export async function forceEndLive(
       duplicate: true,
       idempotent: true,
     };
-  }
-
-  if (session.mode === 'rtmp_obs') {
-    const rtmpReason = reason === 'host_heartbeat_timeout' || reason === 'host_disconnected_timeout'
-      ? 'disconnect_timeout'
-      : reason === 'admin_force'
-        ? 'admin_force'
-        : reason === 'duration_limit' || reason === 'auto_duration_limit'
-          ? 'duration_limit'
-          : 'manual';
-    const result = await endRtmpLiveSession(admin, session, rtmpReason as any);
-    await logLiveEvent(admin, session, 'live_ended_success', { reason, source: options.source || 'force_end_live', rtmp: true }, 'ended');
-    return { ok: true, mode: 'rtmp_obs', ...result };
   }
 
   if (options.actorUserId && session.host_user_id !== options.actorUserId && session.owner_id !== options.actorUserId) {

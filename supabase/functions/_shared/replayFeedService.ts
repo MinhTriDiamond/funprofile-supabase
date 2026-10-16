@@ -149,7 +149,7 @@ export async function createOrUpdateInstantReplayPost(
     .eq('id', replay.live_session_id)
     .maybeSingle();
   const postId = liveSession?.post_id || (liveSession as any)?.live_post_id || null;
-  if (!postId || !cloudflareUrl) return null;
+  if (!liveSession || !postId || !cloudflareUrl) return null;
 
   const { data: post } = await admin
     .from('posts')
@@ -189,7 +189,7 @@ export async function createOrUpdateInstantReplayPost(
     replay_source: 'r2_pending',
     processing_message: progressMessage(replay.mp4_total_bytes
       ? (Number(replay.multipart_bytes_done || 0) / Number(replay.mp4_total_bytes || 1)) * 100
-      : null),
+      : null, null),
     cloudflare_playback_url: null,
     stream_uid: replay.stream_uid || replay.cloudflare_video_uid,
     cloudflare_video_uid: replay.stream_uid || replay.cloudflare_video_uid,
@@ -225,6 +225,7 @@ export async function createOrUpdateTempHlsReplayPost(
     .select('id, post_id, live_post_id, title, description, ended_at, privacy, host_user_id, owner_id, user_id, mode, recording_layout, recording_width, recording_height, recording_aspect_ratio, source_device_type')
     .eq('id', replay.live_session_id)
     .maybeSingle();
+  if (!liveSession) return null;
   const ownerId = ownerIdOfLiveSession(liveSession as any);
   let postId: string | null = liveSession?.post_id || (liveSession as any)?.live_post_id || replay.replay_post_id || null;
 
@@ -299,7 +300,7 @@ export async function createOrUpdateTempHlsReplayPost(
     return postId;
   }
 
-  if (!postId) return null;
+  if (!liveSession || !postId) return null;
   if (!verifyReplayPostOwnership(replay, liveSession as any, existingPost as any, postId)) return null;
 
   const now = new Date().toISOString();
@@ -368,6 +369,7 @@ export async function createOrUpdateReplayPost(
     .select('id, post_id, live_post_id, title, ended_at, privacy, host_user_id, owner_id, user_id, mode, recording_layout, recording_width, recording_height, recording_aspect_ratio, source_device_type')
     .eq('id', replay.live_session_id)
     .maybeSingle();
+  if (!liveSession) return null;
   const ownerId = ownerIdOfLiveSession(liveSession as any);
   let postId: string | null = liveSession?.post_id || (liveSession as any)?.live_post_id || null;
 

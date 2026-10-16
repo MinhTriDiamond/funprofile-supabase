@@ -1,5 +1,6 @@
 export const RTMP_FROZEN_STATUSES = [
   'ended',
+  'ending',
   'replay_temp_ready',
   'archiving_r2',
   'r2_ready',

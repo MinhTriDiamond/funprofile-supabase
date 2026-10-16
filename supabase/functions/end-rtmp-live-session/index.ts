@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { corsHeaders, createAdminClient, json, requireUser } from '../_shared/httpAuth.ts';
 import { endRtmpLiveSession } from '../_shared/rtmpEndLiveService.ts';
+import { safeErrorText } from '../_shared/safeErrorText.ts';
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: corsHeaders });
@@ -31,7 +32,7 @@ Deno.serve(async (req) => {
     try {
       const supabaseUrl = Deno.env.get('SUPABASE_URL');
       const serviceRoleKey = (Deno.env.get('SUPABASE_SECRET_KEY') ?? Deno.env.get('SUPABASE_SERVICE_ROLE_KEY'));
-      if (supabaseUrl && serviceRoleKey) {
+      if (!result.idempotent && !result.in_progress && supabaseUrl && serviceRoleKey) {
         fetch(`${supabaseUrl}/functions/v1/live-replay-archive-cron`, {
           method: 'POST',
           headers: {
@@ -47,7 +48,7 @@ Deno.serve(async (req) => {
 
     return json({ ok: true, ...result } as Record<string, unknown>);
   } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
+    const message = safeErrorText(error);
     return json({ error: message }, message === 'Unauthorized' ? 401 : 500);
   }
 });

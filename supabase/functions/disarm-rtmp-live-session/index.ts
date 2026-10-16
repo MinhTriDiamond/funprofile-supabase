@@ -2,6 +2,7 @@
 import { corsHeaders, createAdminClient, json, requireUser } from '../_shared/httpAuth.ts';
 import { disarmSession } from '../_shared/rtmpArmingService.ts';
 import { endRtmpLiveSession } from '../_shared/rtmpEndLiveService.ts';
+import { safeErrorText } from '../_shared/safeErrorText.ts';
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: corsHeaders });
@@ -35,7 +36,7 @@ Deno.serve(async (req) => {
     const r = await endRtmpLiveSession(admin, session, 'manual');
     return json({ ok: true, action: 'ended', live_session_id: session.id, ...r });
   } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
+    const message = safeErrorText(error);
     console.error('[disarm-rtmp-live-session] failed', message);
     return json({ error: message }, message === 'Unauthorized' ? 401 : 500);
   }
