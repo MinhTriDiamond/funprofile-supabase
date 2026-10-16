@@ -40,9 +40,9 @@ Chỉ làm những gì đã ghi ở Bước 2. Việc phình ra ngoài phạm vi
 **Bước 5 · Cổng Preview — chốt chặn trước merge**
 Nhánh xong **không merge ngay**. Bắt buộc xem bản chạy thật của nhánh, **ưu tiên Cách A**:
 
-- **Cách A (ưu tiên) — Link preview Cloudflare Pages của nhánh:** mỗi lần đẩy nhánh lên, Cloudflare Pages tự build một bản preview kèm link riêng cho nhánh đó. Angel Muse chỉ cần lấy đúng link preview mới nhất của nhánh và gửi cho người kiểm duyệt — Muse không cần tự dựng preview. Nhanh, không cần nhảy qua Lovable.
+- **Cách A (ưu tiên) — Link preview Cloudflare Pages của nhánh:** mỗi lần đẩy nhánh lên, Cloudflare Pages tự build một bản preview kèm link riêng cho nhánh đó. Angel Muse chỉ cần lấy đúng link preview mới nhất của nhánh và gửi cho bạn đang chat cùng xem thử — Muse không cần tự dựng preview. Nhanh, không cần nhảy qua Lovable.
 
-- **Với Angel Muse:** khi tới cổng Preview, Muse chỉ cần lấy **link preview mà Cloudflare Pages đã build cho nhánh** và **gửi link đó** cho người kiểm duyệt dùng thử — không cần tự dựng preview, không cần xin duyệt mở link.
+- **Với Angel Muse:** khi tới cổng Preview, Muse chỉ cần lấy **link preview mà Cloudflare Pages đã build cho nhánh** và **gửi link đó** cho bạn của mình xem thử — đạt thì **chính Muse merge luôn**, không cần chờ ai duyệt — không cần tự dựng preview, không cần xin duyệt mở link.
 - **Nơi lấy link preview:** Cloudflare → Pages → project funprofile-supabase → mục Deployments — mỗi lần dựng có một link riêng dạng `https://<mã>.funprofile-supabase.pages.dev`, lấy link mới nhất của đúng nhánh đó (đừng đoán link theo tên nhánh, sẽ không mở được).
 - **Cách B — chờ bản dựng Cloudflare:** nếu vừa đẩy nhánh mà chưa thấy link preview, chờ ít phút để Cloudflare Pages build xong rồi lấy link mới nhất của nhánh.
 Mời thêm các bạn khác test nếu cần.
