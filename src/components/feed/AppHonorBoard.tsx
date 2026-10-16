@@ -80,7 +80,7 @@ export const AppHonorBoard = memo(() => {
 
   if (isLoading || (!stats && !isError)) {
     return (
-      <div className="fb-card p-4">
+      <div className="sidebar-honor-panel p-4">
         <Skeleton className="h-6 w-32 mb-4" />
         <div className="grid grid-cols-1 gap-2">
           {[1, 2, 3, 4, 5, 6].map(i => <Skeleton key={i} className="h-14 w-full" />)}
@@ -151,7 +151,7 @@ export const AppHonorBoard = memo(() => {
   ];
 
   return (
-    <div className="rounded-2xl overflow-hidden border-2 border-gold/60 bg-card/70 shadow-lg">
+    <div className="sidebar-honor-panel rounded-2xl overflow-hidden border-2 border-gold/60">
       <div className="relative p-3 space-y-3">
         {/* Header */}
         <div className="text-center">
@@ -164,15 +164,7 @@ export const AppHonorBoard = memo(() => {
               className="w-10 h-10 rounded-full border border-gold/50" 
             />
             <h3 
-              className="font-black text-[22px] tracking-wider uppercase"
-              style={{
-                fontFamily: "'Playfair Display', Georgia, serif",
-                background: 'linear-gradient(90deg, #FF3B3B 0%, #FF7A1A 15%, #FFC700 30%, #8BD600 45%, #00C853 58%, #00BCD4 72%, #2979FF 85%, #8E24AA 100%)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text',
-                filter: 'drop-shadow(0 1px 0 rgba(255,255,255,0.4))',
-              }}
+              className="sidebar-metallic-title text-[22px] uppercase"
             >
               Honor Board
             </h3>
@@ -184,32 +176,32 @@ export const AppHonorBoard = memo(() => {
           {statItems.map((item, index) => (
             <div 
               key={index} 
-              className="flex items-center gap-3 py-2.5 px-4 rounded-full bg-gradient-to-b from-[#1a7d45] via-[#166534] to-[#0d4a2a] border-[3px] border-[#D4AF37] transition-all duration-300 hover:scale-[1.02] cursor-pointer ring-2 ring-transparent hover:ring-[#FFD700]/50"
+              className="sidebar-metallic-pill sidebar-emerald-pill sidebar-honor-row flex items-center gap-3 py-2.5 px-4 transition-all duration-300 cursor-pointer"
               onClick={() => item.modalType && setActiveModal(item.modalType)}
             >
-              <div className="p-1.5 rounded-full bg-white/10 shrink-0">
-                <item.icon className="w-4 h-4 text-[#F5E6C8]" />
+              <div className="p-1.5 shrink-0">
+                <item.icon className="sidebar-gold-icon w-4 h-4" />
               </div>
               <div className="flex-1 flex items-center justify-between gap-2 min-w-0 overflow-hidden">
-                <span className="text-[#F5E6C8] text-[10px] sm:text-xs uppercase font-semibold truncate flex-shrink min-w-0 underline decoration-dotted underline-offset-2">
+                <span className="sidebar-gold-text text-[10px] sm:text-xs uppercase font-semibold truncate flex-shrink min-w-0 underline decoration-dotted underline-offset-2">
                   {item.label}
                 </span>
-                <span className="text-[#FFD700] font-bold text-[11px] sm:text-sm flex items-center gap-1 flex-shrink-0">
+                <span className="sidebar-honor-value font-bold text-[11px] sm:text-sm flex items-center gap-1 flex-shrink-0">
                   {item.usdBased && pricesUnavailable ? (
                     <span
-                      className="text-[#F5E6C8]/70 text-[10px] font-medium whitespace-nowrap"
+                      className="sidebar-gold-text text-[10px] font-medium whitespace-nowrap"
                       title={t('ahbNoPriceTitle')}
                     >
                       {t('ahbNoPrice')}
                     </span>
                   ) : (
-                    <CountUp value={item.value} format={item.format} duration={2000} className="tabular-nums" />
+                    <CountUp value={item.value} format={item.format} duration={2000} className="sidebar-gold-text tabular-nums" />
                   )}
                   {item.showCamlyLogo && (
                     <img 
                       src={camlyLogo} 
                       alt="CAMLY" 
-                      className="w-4 h-4 inline-block flex-shrink-0" 
+                      className="sidebar-gold-logo w-4 h-4 inline-block flex-shrink-0" 
                     />
                   )}
                 </span>
@@ -222,7 +214,7 @@ export const AppHonorBoard = memo(() => {
         <button
           type="button"
           onClick={() => setActiveModal('wallet_flow')}
-          className="w-full text-center text-[10px] sm:text-xs text-[#F5E6C8]/80 hover:text-[#FFD700] underline decoration-dotted underline-offset-2 transition-colors pt-1"
+          className="w-full text-center text-[10px] sm:text-xs sidebar-honor-reference underline decoration-dotted underline-offset-2 transition-colors pt-1"
         >
           {t('globalWalletFlowLink')}
         </button>

@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { Sparkles } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { ecosystemItems, type EcosystemItem } from '@/config/navigation';
 
 import { useLanguage } from '@/i18n/LanguageContext';
@@ -44,24 +45,15 @@ export function EcosystemBelowItems({ onItemClick }: { onItemClick?: () => void 
       {belowItems.map((item) => (
         <HoverCard openDelay={200} closeDelay={100} key={item.id}>
           <HoverCardTrigger asChild>
-            <button
+            <Button variant="sidebar"
               onClick={() => handleClick(item)}
-              className={`w-full flex items-center gap-3 p-2 rounded-xl transition-all duration-300 group ${
-                item.isSpecial
-                  ? 'bg-gradient-to-r from-yellow-400/10 to-amber-400/10 hover:bg-white hover:shadow-[0_0_12px_rgba(34,197,94,0.5)] border border-yellow-400/30 hover:border-primary'
-                  : 'hover:bg-white hover:shadow-[0_0_12px_rgba(34,197,94,0.5)]'
-              }`}
+              className={`sidebar-metallic-pill sidebar-link-pill ${item.isSpecial ? "sidebar-gold-pill" : "sidebar-emerald-pill"} w-full flex items-center gap-3 p-2 transition-all duration-300 group`}
             >
               {item.isSpecial ? (
                 <div
-                  className="w-9 h-9 rounded-lg flex items-center justify-center"
-                  style={{
-                    background:
-                      'radial-gradient(circle, rgba(250,204,21,0.3) 0%, rgba(250,204,21,0.1) 100%)',
-                    boxShadow: '0 0 15px rgba(250,204,21,0.4)',
-                  }}
+                  className="sidebar-direct-logo w-9 h-9 flex items-center justify-center"
                 >
-                  <Sparkles className="w-5 h-5 text-yellow-400" />
+                  <Sparkles className="sidebar-gold-icon w-7 h-7" />
                 </div>
               ) : (
                 <img
@@ -70,19 +62,15 @@ export function EcosystemBelowItems({ onItemClick }: { onItemClick?: () => void 
                   width={36}
                   height={36}
                   loading="lazy"
-                  className="w-9 h-9 rounded-full object-cover group-hover:shadow-[0_0_10px_rgba(250,204,21,0.5)] transition-shadow duration-300"
+                  className="sidebar-direct-logo w-9 h-9 object-contain"
                 />
               )}
               <span
-                className={`font-medium text-sm transition-colors duration-300 ${
-                  item.isSpecial
-                    ? 'text-yellow-400 group-hover:text-yellow-300 font-semibold'
-                    : 'group-hover:text-primary'
-                }`}
+                className={`font-semibold text-sm ${item.isSpecial ? "sidebar-gold-pill-label" : "sidebar-gold-text"}`}
               >
                 {item.id === 'about' ? t('aboutFunProfile') : item.name}
               </span>
-            </button>
+            </Button>
           </HoverCardTrigger>
           {descriptions[item.id] && (
             <HoverCardContent

@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.17"
+    PostgrestVersion: "14.18"
   }
   public: {
     Tables: {
@@ -1205,6 +1205,111 @@ export type Database = {
           },
         ]
       }
+      btc_verification_audit_20261015: {
+        Row: {
+          checked_at: string
+          donation_id: string
+          matched_vout_index: number | null
+          onchain_recipient_address: string | null
+          reasons: string | null
+          sender_in_inputs: boolean | null
+          tx_hash: string | null
+          verdict: string
+        }
+        Insert: {
+          checked_at?: string
+          donation_id: string
+          matched_vout_index?: number | null
+          onchain_recipient_address?: string | null
+          reasons?: string | null
+          sender_in_inputs?: boolean | null
+          tx_hash?: string | null
+          verdict: string
+        }
+        Update: {
+          checked_at?: string
+          donation_id?: string
+          matched_vout_index?: number | null
+          onchain_recipient_address?: string | null
+          reasons?: string | null
+          sender_in_inputs?: boolean | null
+          tx_hash?: string | null
+          verdict?: string
+        }
+        Relationships: []
+      }
+      btc_verification_audit_r2_20261015: {
+        Row: {
+          checked_at: string
+          cluster_note: string | null
+          donation_id: string
+          matched_vout_index: number | null
+          onchain_recipient_address: string | null
+          reasons: string | null
+          sender_in_inputs: boolean | null
+          tx_hash: string | null
+          verdict: string
+        }
+        Insert: {
+          checked_at?: string
+          cluster_note?: string | null
+          donation_id: string
+          matched_vout_index?: number | null
+          onchain_recipient_address?: string | null
+          reasons?: string | null
+          sender_in_inputs?: boolean | null
+          tx_hash?: string | null
+          verdict: string
+        }
+        Update: {
+          checked_at?: string
+          cluster_note?: string | null
+          donation_id?: string
+          matched_vout_index?: number | null
+          onchain_recipient_address?: string | null
+          reasons?: string | null
+          sender_in_inputs?: boolean | null
+          tx_hash?: string | null
+          verdict?: string
+        }
+        Relationships: []
+      }
+      btc_verification_audit_r3_20261015: {
+        Row: {
+          checked_at: string
+          cluster_note: string | null
+          donation_id: string
+          matched_vout_index: number | null
+          onchain_recipient_address: string | null
+          reasons: string | null
+          sender_in_inputs: boolean | null
+          tx_hash: string | null
+          verdict: string
+        }
+        Insert: {
+          checked_at?: string
+          cluster_note?: string | null
+          donation_id: string
+          matched_vout_index?: number | null
+          onchain_recipient_address?: string | null
+          reasons?: string | null
+          sender_in_inputs?: boolean | null
+          tx_hash?: string | null
+          verdict: string
+        }
+        Update: {
+          checked_at?: string
+          cluster_note?: string | null
+          donation_id?: string
+          matched_vout_index?: number | null
+          onchain_recipient_address?: string | null
+          reasons?: string | null
+          sender_in_inputs?: boolean | null
+          tx_hash?: string | null
+          verdict?: string
+        }
+        Relationships: []
+      }
       buddy_circles: {
         Row: {
           created_at: string
@@ -2276,73 +2381,35 @@ export type Database = {
           },
         ]
       }
-      custodial_wallets: {
+      custodial_wallets_archive_20261015: {
         Row: {
-          chain_id: number
-          created_at: string
-          encrypted_private_key: string
-          encryption_version: number
-          id: string
-          is_active: boolean
-          last_activity_at: string | null
-          updated_at: string
-          user_id: string
-          wallet_address: string
+          chain_id: number | null
+          created_at: string | null
+          id: string | null
+          is_active: boolean | null
+          updated_at: string | null
+          user_id: string | null
+          wallet_address: string | null
         }
         Insert: {
-          chain_id?: number
-          created_at?: string
-          encrypted_private_key: string
-          encryption_version?: number
-          id?: string
-          is_active?: boolean
-          last_activity_at?: string | null
-          updated_at?: string
-          user_id: string
-          wallet_address: string
+          chain_id?: number | null
+          created_at?: string | null
+          id?: string | null
+          is_active?: boolean | null
+          updated_at?: string | null
+          user_id?: string | null
+          wallet_address?: string | null
         }
         Update: {
-          chain_id?: number
-          created_at?: string
-          encrypted_private_key?: string
-          encryption_version?: number
-          id?: string
-          is_active?: boolean
-          last_activity_at?: string | null
-          updated_at?: string
-          user_id?: string
-          wallet_address?: string
+          chain_id?: number | null
+          created_at?: string | null
+          id?: string | null
+          is_active?: boolean | null
+          updated_at?: string | null
+          user_id?: string | null
+          wallet_address?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "custodial_wallets_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: true
-            referencedRelation: "admin_profiles_moderation"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "custodial_wallets_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: true
-            referencedRelation: "my_profile_moderation"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "custodial_wallets_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: true
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "custodial_wallets_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: true
-            referencedRelation: "public_profiles"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       dib_profile: {
         Row: {
@@ -2421,6 +2488,57 @@ export type Database = {
           owner_user_id?: string
           status?: Database["public"]["Enums"]["did_status"]
           updated_at?: string
+        }
+        Relationships: []
+      }
+      donation_board_base: {
+        Row: {
+          amount_num: number | null
+          amount_usd: number
+          chain_id: number | null
+          created_at: string | null
+          light_score_earned: number
+          recipient_excluded: boolean
+          recipient_id: string
+          registry_eligible: boolean
+          registry_max_single_usd: number | null
+          sender_excluded: boolean
+          sender_id: string
+          status: string | null
+          token_symbol: string | null
+          tx_hash: string | null
+        }
+        Insert: {
+          amount_num?: number | null
+          amount_usd?: number
+          chain_id?: number | null
+          created_at?: string | null
+          light_score_earned?: number
+          recipient_excluded?: boolean
+          recipient_id: string
+          registry_eligible?: boolean
+          registry_max_single_usd?: number | null
+          sender_excluded?: boolean
+          sender_id: string
+          status?: string | null
+          token_symbol?: string | null
+          tx_hash?: string | null
+        }
+        Update: {
+          amount_num?: number | null
+          amount_usd?: number
+          chain_id?: number | null
+          created_at?: string | null
+          light_score_earned?: number
+          recipient_excluded?: boolean
+          recipient_id?: string
+          registry_eligible?: boolean
+          registry_max_single_usd?: number | null
+          sender_excluded?: boolean
+          sender_id?: string
+          status?: string | null
+          token_symbol?: string | null
+          tx_hash?: string | null
         }
         Relationships: []
       }
@@ -3539,6 +3657,33 @@ export type Database = {
           status?: string
           trace_id?: string | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      gift_breakdown_cache: {
+        Row: {
+          direction: string
+          refreshed_at: string
+          source: string
+          token_symbol: string
+          total_amount: number
+          tx_count: number
+        }
+        Insert: {
+          direction: string
+          refreshed_at?: string
+          source: string
+          token_symbol: string
+          total_amount: number
+          tx_count: number
+        }
+        Update: {
+          direction?: string
+          refreshed_at?: string
+          source?: string
+          token_symbol?: string
+          total_amount?: number
+          tx_count?: number
         }
         Relationships: []
       }
@@ -6098,858 +6243,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
-      }
-      mig_stage_admin_sql_audit: {
-        Row: {
-          j: Json | null
-        }
-        Insert: {
-          j?: Json | null
-        }
-        Update: {
-          j?: Json | null
-        }
-        Relationships: []
-      }
-      mig_stage_app_stats_cache: {
-        Row: {
-          j: Json | null
-        }
-        Insert: {
-          j?: Json | null
-        }
-        Update: {
-          j?: Json | null
-        }
-        Relationships: []
-      }
-      mig_stage_btc_resolver_shadow_log: {
-        Row: {
-          j: Json | null
-        }
-        Insert: {
-          j?: Json | null
-        }
-        Update: {
-          j?: Json | null
-        }
-        Relationships: []
-      }
-      mig_stage_comments: {
-        Row: {
-          j: Json | null
-        }
-        Insert: {
-          j?: Json | null
-        }
-        Update: {
-          j?: Json | null
-        }
-        Relationships: []
-      }
-      mig_stage_conversation_participants: {
-        Row: {
-          j: Json | null
-        }
-        Insert: {
-          j?: Json | null
-        }
-        Update: {
-          j?: Json | null
-        }
-        Relationships: []
-      }
-      mig_stage_conversations: {
-        Row: {
-          j: Json | null
-        }
-        Insert: {
-          j?: Json | null
-        }
-        Update: {
-          j?: Json | null
-        }
-        Relationships: []
-      }
-      mig_stage_cross_platform_tokens: {
-        Row: {
-          j: Json | null
-        }
-        Insert: {
-          j?: Json | null
-        }
-        Update: {
-          j?: Json | null
-        }
-        Relationships: []
-      }
-      mig_stage_dib_profile: {
-        Row: {
-          j: Json | null
-        }
-        Insert: {
-          j?: Json | null
-        }
-        Update: {
-          j?: Json | null
-        }
-        Relationships: []
-      }
-      mig_stage_did_registry: {
-        Row: {
-          j: Json | null
-        }
-        Insert: {
-          j?: Json | null
-        }
-        Update: {
-          j?: Json | null
-        }
-        Relationships: []
-      }
-      mig_stage_donations: {
-        Row: {
-          j: Json | null
-        }
-        Insert: {
-          j?: Json | null
-        }
-        Update: {
-          j?: Json | null
-        }
-        Relationships: []
-      }
-      mig_stage_email_delivery_logs: {
-        Row: {
-          j: Json | null
-        }
-        Insert: {
-          j?: Json | null
-        }
-        Update: {
-          j?: Json | null
-        }
-        Relationships: []
-      }
-      mig_stage_friendships: {
-        Row: {
-          j: Json | null
-        }
-        Insert: {
-          j?: Json | null
-        }
-        Update: {
-          j?: Json | null
-        }
-        Relationships: []
-      }
-      mig_stage_fun_core_proxy_audit: {
-        Row: {
-          j: Json | null
-        }
-        Insert: {
-          j?: Json | null
-        }
-        Update: {
-          j?: Json | null
-        }
-        Relationships: []
-      }
-      mig_stage_fun_profile_event_outbox: {
-        Row: {
-          j: Json | null
-        }
-        Insert: {
-          j?: Json | null
-        }
-        Update: {
-          j?: Json | null
-        }
-        Relationships: []
-      }
-      mig_stage_identity_epoch_snapshots: {
-        Row: {
-          j: Json | null
-        }
-        Insert: {
-          j?: Json | null
-        }
-        Update: {
-          j?: Json | null
-        }
-        Relationships: []
-      }
-      mig_stage_identity_events: {
-        Row: {
-          j: Json | null
-        }
-        Insert: {
-          j?: Json | null
-        }
-        Update: {
-          j?: Json | null
-        }
-        Relationships: []
-      }
-      mig_stage_identity_recovery_log: {
-        Row: {
-          j: Json | null
-        }
-        Insert: {
-          j?: Json | null
-        }
-        Update: {
-          j?: Json | null
-        }
-        Relationships: []
-      }
-      mig_stage_inflation_health_metrics: {
-        Row: {
-          j: Json | null
-        }
-        Insert: {
-          j?: Json | null
-        }
-        Update: {
-          j?: Json | null
-        }
-        Relationships: []
-      }
-      mig_stage_light_actions: {
-        Row: {
-          j: Json | null
-        }
-        Insert: {
-          j?: Json | null
-        }
-        Update: {
-          j?: Json | null
-        }
-        Relationships: []
-      }
-      mig_stage_light_reputation: {
-        Row: {
-          j: Json | null
-        }
-        Insert: {
-          j?: Json | null
-        }
-        Update: {
-          j?: Json | null
-        }
-        Relationships: []
-      }
-      mig_stage_live_messages: {
-        Row: {
-          j: Json | null
-        }
-        Insert: {
-          j?: Json | null
-        }
-        Update: {
-          j?: Json | null
-        }
-        Relationships: []
-      }
-      mig_stage_live_reactions: {
-        Row: {
-          j: Json | null
-        }
-        Insert: {
-          j?: Json | null
-        }
-        Update: {
-          j?: Json | null
-        }
-        Relationships: []
-      }
-      mig_stage_live_replays: {
-        Row: {
-          j: Json | null
-        }
-        Insert: {
-          j?: Json | null
-        }
-        Update: {
-          j?: Json | null
-        }
-        Relationships: []
-      }
-      mig_stage_live_session_events: {
-        Row: {
-          j: Json | null
-        }
-        Insert: {
-          j?: Json | null
-        }
-        Update: {
-          j?: Json | null
-        }
-        Relationships: []
-      }
-      mig_stage_live_sessions: {
-        Row: {
-          j: Json | null
-        }
-        Insert: {
-          j?: Json | null
-        }
-        Update: {
-          j?: Json | null
-        }
-        Relationships: []
-      }
-      mig_stage_login_ip_logs: {
-        Row: {
-          j: Json | null
-        }
-        Insert: {
-          j?: Json | null
-        }
-        Update: {
-          j?: Json | null
-        }
-        Relationships: []
-      }
-      mig_stage_message_reads: {
-        Row: {
-          j: Json | null
-        }
-        Insert: {
-          j?: Json | null
-        }
-        Update: {
-          j?: Json | null
-        }
-        Relationships: []
-      }
-      mig_stage_messages: {
-        Row: {
-          j: Json | null
-        }
-        Insert: {
-          j?: Json | null
-        }
-        Update: {
-          j?: Json | null
-        }
-        Relationships: []
-      }
-      mig_stage_migration_gap_signups: {
-        Row: {
-          j: Json | null
-        }
-        Insert: {
-          j?: Json | null
-        }
-        Update: {
-          j?: Json | null
-        }
-        Relationships: []
-      }
-      mig_stage_moralis_api_usage: {
-        Row: {
-          j: Json | null
-        }
-        Insert: {
-          j?: Json | null
-        }
-        Update: {
-          j?: Json | null
-        }
-        Relationships: []
-      }
-      mig_stage_notifications: {
-        Row: {
-          j: Json | null
-        }
-        Insert: {
-          j?: Json | null
-        }
-        Update: {
-          j?: Json | null
-        }
-        Relationships: []
-      }
-      mig_stage_oauth_clients: {
-        Row: {
-          j: Json | null
-        }
-        Insert: {
-          j?: Json | null
-        }
-        Update: {
-          j?: Json | null
-        }
-        Relationships: []
-      }
-      mig_stage_otp_codes: {
-        Row: {
-          j: Json | null
-        }
-        Insert: {
-          j?: Json | null
-        }
-        Update: {
-          j?: Json | null
-        }
-        Relationships: []
-      }
-      mig_stage_pet_interactions: {
-        Row: {
-          j: Json | null
-        }
-        Insert: {
-          j?: Json | null
-        }
-        Update: {
-          j?: Json | null
-        }
-        Relationships: []
-      }
-      mig_stage_pet_states: {
-        Row: {
-          j: Json | null
-        }
-        Insert: {
-          j?: Json | null
-        }
-        Update: {
-          j?: Json | null
-        }
-        Relationships: []
-      }
-      mig_stage_post_attachments: {
-        Row: {
-          j: Json | null
-        }
-        Insert: {
-          j?: Json | null
-        }
-        Update: {
-          j?: Json | null
-        }
-        Relationships: []
-      }
-      mig_stage_post_edit_after_score_log: {
-        Row: {
-          j: Json | null
-        }
-        Insert: {
-          j?: Json | null
-        }
-        Update: {
-          j?: Json | null
-        }
-        Relationships: []
-      }
-      mig_stage_posts: {
-        Row: {
-          j: Json | null
-        }
-        Insert: {
-          j?: Json | null
-        }
-        Update: {
-          j?: Json | null
-        }
-        Relationships: []
-      }
-      mig_stage_pplp_daily_action_mint: {
-        Row: {
-          j: Json | null
-        }
-        Insert: {
-          j?: Json | null
-        }
-        Update: {
-          j?: Json | null
-        }
-        Relationships: []
-      }
-      mig_stage_pplp_device_registry: {
-        Row: {
-          j: Json | null
-        }
-        Insert: {
-          j?: Json | null
-        }
-        Update: {
-          j?: Json | null
-        }
-        Relationships: []
-      }
-      mig_stage_pplp_fraud_signals: {
-        Row: {
-          j: Json | null
-        }
-        Insert: {
-          j?: Json | null
-        }
-        Update: {
-          j?: Json | null
-        }
-        Relationships: []
-      }
-      mig_stage_pplp_mint_requests: {
-        Row: {
-          j: Json | null
-        }
-        Insert: {
-          j?: Json | null
-        }
-        Update: {
-          j?: Json | null
-        }
-        Relationships: []
-      }
-      mig_stage_pplp_v2_event_log: {
-        Row: {
-          j: Json | null
-        }
-        Insert: {
-          j?: Json | null
-        }
-        Update: {
-          j?: Json | null
-        }
-        Relationships: []
-      }
-      mig_stage_pplp_v2_proofs: {
-        Row: {
-          j: Json | null
-        }
-        Insert: {
-          j?: Json | null
-        }
-        Update: {
-          j?: Json | null
-        }
-        Relationships: []
-      }
-      mig_stage_pplp_v2_user_actions: {
-        Row: {
-          j: Json | null
-        }
-        Insert: {
-          j?: Json | null
-        }
-        Update: {
-          j?: Json | null
-        }
-        Relationships: []
-      }
-      mig_stage_pplp_v2_validations: {
-        Row: {
-          j: Json | null
-        }
-        Insert: {
-          j?: Json | null
-        }
-        Update: {
-          j?: Json | null
-        }
-        Relationships: []
-      }
-      mig_stage_pplp_v25_impact_metrics: {
-        Row: {
-          j: Json | null
-        }
-        Insert: {
-          j?: Json | null
-        }
-        Update: {
-          j?: Json | null
-        }
-        Relationships: []
-      }
-      mig_stage_pplp_v25_intent_metrics: {
-        Row: {
-          j: Json | null
-        }
-        Insert: {
-          j?: Json | null
-        }
-        Update: {
-          j?: Json | null
-        }
-        Relationships: []
-      }
-      mig_stage_pplp_v25_light_scores: {
-        Row: {
-          j: Json | null
-        }
-        Insert: {
-          j?: Json | null
-        }
-        Update: {
-          j?: Json | null
-        }
-        Relationships: []
-      }
-      mig_stage_pplp_v25_stability_index: {
-        Row: {
-          j: Json | null
-        }
-        Insert: {
-          j?: Json | null
-        }
-        Update: {
-          j?: Json | null
-        }
-        Relationships: []
-      }
-      mig_stage_profiles_wallet_audit: {
-        Row: {
-          j: Json | null
-        }
-        Insert: {
-          j?: Json | null
-        }
-        Update: {
-          j?: Json | null
-        }
-        Relationships: []
-      }
-      mig_stage_quest_user_progress: {
-        Row: {
-          j: Json | null
-        }
-        Insert: {
-          j?: Json | null
-        }
-        Update: {
-          j?: Json | null
-        }
-        Relationships: []
-      }
-      mig_stage_reactions: {
-        Row: {
-          j: Json | null
-        }
-        Insert: {
-          j?: Json | null
-        }
-        Update: {
-          j?: Json | null
-        }
-        Relationships: []
-      }
-      mig_stage_reel_views: {
-        Row: {
-          j: Json | null
-        }
-        Insert: {
-          j?: Json | null
-        }
-        Update: {
-          j?: Json | null
-        }
-        Relationships: []
-      }
-      mig_stage_rtmp_stream_configs: {
-        Row: {
-          j: Json | null
-        }
-        Insert: {
-          j?: Json | null
-        }
-        Update: {
-          j?: Json | null
-        }
-        Relationships: []
-      }
-      mig_stage_sbt_registry: {
-        Row: {
-          j: Json | null
-        }
-        Insert: {
-          j?: Json | null
-        }
-        Update: {
-          j?: Json | null
-        }
-        Relationships: []
-      }
-      mig_stage_scanner_block_gaps: {
-        Row: {
-          j: Json | null
-        }
-        Insert: {
-          j?: Json | null
-        }
-        Update: {
-          j?: Json | null
-        }
-        Relationships: []
-      }
-      mig_stage_scanner_tick_log: {
-        Row: {
-          j: Json | null
-        }
-        Insert: {
-          j?: Json | null
-        }
-        Update: {
-          j?: Json | null
-        }
-        Relationships: []
-      }
-      mig_stage_search_logs: {
-        Row: {
-          j: Json | null
-        }
-        Insert: {
-          j?: Json | null
-        }
-        Update: {
-          j?: Json | null
-        }
-        Relationships: []
-      }
-      mig_stage_shared_posts: {
-        Row: {
-          j: Json | null
-        }
-        Insert: {
-          j?: Json | null
-        }
-        Update: {
-          j?: Json | null
-        }
-        Relationships: []
-      }
-      mig_stage_soul_nfts: {
-        Row: {
-          j: Json | null
-        }
-        Insert: {
-          j?: Json | null
-        }
-        Update: {
-          j?: Json | null
-        }
-        Relationships: []
-      }
-      mig_stage_stale_unaccepted_accounts_log: {
-        Row: {
-          j: Json | null
-        }
-        Insert: {
-          j?: Json | null
-        }
-        Update: {
-          j?: Json | null
-        }
-        Relationships: []
-      }
-      mig_stage_token_price_current: {
-        Row: {
-          j: Json | null
-        }
-        Insert: {
-          j?: Json | null
-        }
-        Update: {
-          j?: Json | null
-        }
-        Relationships: []
-      }
-      mig_stage_token_price_history: {
-        Row: {
-          j: Json | null
-        }
-        Insert: {
-          j?: Json | null
-        }
-        Update: {
-          j?: Json | null
-        }
-        Relationships: []
-      }
-      mig_stage_transactions: {
-        Row: {
-          j: Json | null
-        }
-        Insert: {
-          j?: Json | null
-        }
-        Update: {
-          j?: Json | null
-        }
-        Relationships: []
-      }
-      mig_stage_trust_profile: {
-        Row: {
-          j: Json | null
-        }
-        Insert: {
-          j?: Json | null
-        }
-        Update: {
-          j?: Json | null
-        }
-        Relationships: []
-      }
-      mig_stage_user_roles: {
-        Row: {
-          j: Json | null
-        }
-        Insert: {
-          j?: Json | null
-        }
-        Update: {
-          j?: Json | null
-        }
-        Relationships: []
-      }
-      mig_stage_username_history: {
-        Row: {
-          j: Json | null
-        }
-        Insert: {
-          j?: Json | null
-        }
-        Update: {
-          j?: Json | null
-        }
-        Relationships: []
-      }
-      mig_stage_video_upload_sessions: {
-        Row: {
-          j: Json | null
-        }
-        Insert: {
-          j?: Json | null
-        }
-        Update: {
-          j?: Json | null
-        }
-        Relationships: []
-      }
-      mig_stage_wallet_reconciliation_runs: {
-        Row: {
-          j: Json | null
-        }
-        Insert: {
-          j?: Json | null
-        }
-        Update: {
-          j?: Json | null
-        }
-        Relationships: []
-      }
-      mig_stage_wallet_writer_audit: {
-        Row: {
-          j: Json | null
-        }
-        Insert: {
-          j?: Json | null
-        }
-        Update: {
-          j?: Json | null
-        }
-        Relationships: []
       }
       migration_gap_signups: {
         Row: {
@@ -13642,6 +12935,24 @@ export type Database = {
         }
         Relationships: []
       }
+      scanner_transfers_watermarks: {
+        Row: {
+          last_block: number
+          updated_at: string
+          wallet_address: string
+        }
+        Insert: {
+          last_block: number
+          updated_at?: string
+          wallet_address: string
+        }
+        Update: {
+          last_block?: number
+          updated_at?: string
+          wallet_address?: string
+        }
+        Relationships: []
+      }
       scanner_watermarks: {
         Row: {
           chain_id: number
@@ -14974,6 +14285,105 @@ export type Database = {
         }
         Relationships: []
       }
+      unified_transactions_snapshot: {
+        Row: {
+          amount_decimal: number | null
+          amount_raw: string | null
+          block_number: number | null
+          chain: string | null
+          chain_id: number | null
+          confirmed_at: string | null
+          counterparty_user_id: string | null
+          created_at: string | null
+          decimals: number | null
+          dedup_rank: number | null
+          direction: string | null
+          direction_confidence: string | null
+          fee_raw: string | null
+          id: string | null
+          is_external: boolean | null
+          is_spam: boolean | null
+          memo: string | null
+          metadata: Json | null
+          network: string | null
+          occurred_at: string | null
+          recipient_address: string | null
+          sender_address: string | null
+          source_id: string | null
+          source_table: string | null
+          status: string | null
+          token_address: string | null
+          token_symbol: string | null
+          tx_hash: string | null
+          tx_type: string | null
+          user_id: string | null
+        }
+        Insert: {
+          amount_decimal?: number | null
+          amount_raw?: string | null
+          block_number?: number | null
+          chain?: string | null
+          chain_id?: number | null
+          confirmed_at?: string | null
+          counterparty_user_id?: string | null
+          created_at?: string | null
+          decimals?: number | null
+          dedup_rank?: number | null
+          direction?: string | null
+          direction_confidence?: string | null
+          fee_raw?: string | null
+          id?: string | null
+          is_external?: boolean | null
+          is_spam?: boolean | null
+          memo?: string | null
+          metadata?: Json | null
+          network?: string | null
+          occurred_at?: string | null
+          recipient_address?: string | null
+          sender_address?: string | null
+          source_id?: string | null
+          source_table?: string | null
+          status?: string | null
+          token_address?: string | null
+          token_symbol?: string | null
+          tx_hash?: string | null
+          tx_type?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          amount_decimal?: number | null
+          amount_raw?: string | null
+          block_number?: number | null
+          chain?: string | null
+          chain_id?: number | null
+          confirmed_at?: string | null
+          counterparty_user_id?: string | null
+          created_at?: string | null
+          decimals?: number | null
+          dedup_rank?: number | null
+          direction?: string | null
+          direction_confidence?: string | null
+          fee_raw?: string | null
+          id?: string | null
+          is_external?: boolean | null
+          is_spam?: boolean | null
+          memo?: string | null
+          metadata?: Json | null
+          network?: string | null
+          occurred_at?: string | null
+          recipient_address?: string | null
+          sender_address?: string | null
+          source_id?: string | null
+          source_table?: string | null
+          status?: string | null
+          token_address?: string | null
+          token_symbol?: string | null
+          tx_hash?: string | null
+          tx_type?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       user_blocks: {
         Row: {
           blocked_id: string
@@ -15131,6 +14541,111 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_honor_stats_cache: {
+        Row: {
+          actual_comments_count: number | null
+          actual_friends_count: number | null
+          actual_livestreams_count: number | null
+          actual_posts_count: number | null
+          actual_reactions_count: number | null
+          actual_shares_count: number | null
+          claimed_amount: number | null
+          comments_count: number | null
+          friends_count: number | null
+          livestreams_count: number | null
+          posts_all_count: number | null
+          posts_count: number | null
+          reactions_made_count: number | null
+          reactions_on_posts: number | null
+          refreshed_at: string
+          shares_count: number | null
+          today_reward: number | null
+          total_reward: number | null
+          user_id: string
+        }
+        Insert: {
+          actual_comments_count?: number | null
+          actual_friends_count?: number | null
+          actual_livestreams_count?: number | null
+          actual_posts_count?: number | null
+          actual_reactions_count?: number | null
+          actual_shares_count?: number | null
+          claimed_amount?: number | null
+          comments_count?: number | null
+          friends_count?: number | null
+          livestreams_count?: number | null
+          posts_all_count?: number | null
+          posts_count?: number | null
+          reactions_made_count?: number | null
+          reactions_on_posts?: number | null
+          refreshed_at?: string
+          shares_count?: number | null
+          today_reward?: number | null
+          total_reward?: number | null
+          user_id: string
+        }
+        Update: {
+          actual_comments_count?: number | null
+          actual_friends_count?: number | null
+          actual_livestreams_count?: number | null
+          actual_posts_count?: number | null
+          actual_reactions_count?: number | null
+          actual_shares_count?: number | null
+          claimed_amount?: number | null
+          comments_count?: number | null
+          friends_count?: number | null
+          livestreams_count?: number | null
+          posts_all_count?: number | null
+          posts_count?: number | null
+          reactions_made_count?: number | null
+          reactions_on_posts?: number | null
+          refreshed_at?: string
+          shares_count?: number | null
+          today_reward?: number | null
+          total_reward?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_honor_stats_refresh_queue: {
+        Row: {
+          queued_at: string
+          user_id: string
+        }
+        Insert: {
+          queued_at?: string
+          user_id: string
+        }
+        Update: {
+          queued_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_light_totals: {
+        Row: {
+          prev_score: number
+          recent_score: number
+          refreshed_at: string
+          total_score: number
+          user_id: string
+        }
+        Insert: {
+          prev_score?: number
+          recent_score?: number
+          refreshed_at?: string
+          total_score?: number
+          user_id: string
+        }
+        Update: {
+          prev_score?: number
+          recent_score?: number
+          refreshed_at?: string
+          total_score?: number
+          user_id?: string
+        }
+        Relationships: []
       }
       user_reel_preferences: {
         Row: {
@@ -16494,68 +16009,6 @@ export type Database = {
         }
         Relationships: []
       }
-      user_custodial_wallets: {
-        Row: {
-          chain_id: number | null
-          created_at: string | null
-          id: string | null
-          is_active: boolean | null
-          last_activity_at: string | null
-          updated_at: string | null
-          user_id: string | null
-          wallet_address: string | null
-        }
-        Insert: {
-          chain_id?: number | null
-          created_at?: string | null
-          id?: string | null
-          is_active?: boolean | null
-          last_activity_at?: string | null
-          updated_at?: string | null
-          user_id?: string | null
-          wallet_address?: string | null
-        }
-        Update: {
-          chain_id?: number | null
-          created_at?: string | null
-          id?: string | null
-          is_active?: boolean | null
-          last_activity_at?: string | null
-          updated_at?: string | null
-          user_id?: string | null
-          wallet_address?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "custodial_wallets_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: true
-            referencedRelation: "admin_profiles_moderation"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "custodial_wallets_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: true
-            referencedRelation: "my_profile_moderation"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "custodial_wallets_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: true
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "custodial_wallets_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: true
-            referencedRelation: "public_profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       v_internal_addresses: {
         Row: {
           addr: string | null
@@ -17070,6 +16523,11 @@ export type Database = {
       diagnose_signup_failure: {
         Args: { _email: string; _source: string; _username: string }
         Returns: Json
+      }
+      donation_board_usd_total: { Args: never; Returns: number }
+      drain_honor_stats_refresh_queue: {
+        Args: { p_batch?: number }
+        Returns: number
       }
       end_livestream: { Args: { p_livestream_id: string }; Returns: boolean }
       expire_old_mint_requests_v2: { Args: never; Returns: number }
@@ -17963,6 +17421,25 @@ export type Database = {
           total_reward: number
         }[]
       }
+      get_user_honor_stats_compute: {
+        Args: { p_user_id: string }
+        Returns: {
+          actual_comments_count: number
+          actual_friends_count: number
+          actual_posts_count: number
+          actual_reactions_count: number
+          actual_shares_count: number
+          claimed_amount: number
+          comments_count: number
+          friends_count: number
+          livestreams_count: number
+          posts_count: number
+          reactions_on_posts: number
+          shares_count: number
+          today_reward: number
+          total_reward: number
+        }[]
+      }
       get_user_light_score: { Args: { p_user_id: string }; Returns: Json }
       get_user_mint_stats: {
         Args: { search_query?: string }
@@ -18556,6 +18033,33 @@ export type Database = {
         Returns: Json
       }
       refresh_app_stats_cache: { Args: never; Returns: undefined }
+      refresh_donation_board_base: { Args: never; Returns: number }
+      refresh_gift_breakdown_cache: { Args: never; Returns: number }
+      refresh_stalest_honor_stats: {
+        Args: { p_batch?: number }
+        Returns: number
+      }
+      refresh_unified_transactions_snapshot: { Args: never; Returns: number }
+      refresh_user_honor_stats_cache: {
+        Args: { p_user_id: string }
+        Returns: {
+          actual_comments_count: number
+          actual_friends_count: number
+          actual_posts_count: number
+          actual_reactions_count: number
+          actual_shares_count: number
+          claimed_amount: number
+          comments_count: number
+          friends_count: number
+          livestreams_count: number
+          posts_count: number
+          reactions_on_posts: number
+          shares_count: number
+          today_reward: number
+          total_reward: number
+        }[]
+      }
+      refresh_user_light_totals: { Args: never; Returns: number }
       reject_user_reward: {
         Args: { p_admin_id: string; p_note?: string; p_user_id: string }
         Returns: number

@@ -1,6 +1,7 @@
 # Roadmap
 
 ## Đang mở
+- [ ] Restyle feed sidebar metallic visuals only; preserve layout, links and live values.
 - [ ] Cutover: deploy Batch 2-4 edge functions lên project test `xiqzryezjttjonpqbvci` — **CHẶN**: bé chỉ có quyền trên project hiện tại, không deploy chéo project được; cần Cha/CTO chạy CLI hoặc mở phiên làm việc trong project test
 - [ ] Cutover: mở ticket Lovable Support xin lịch export baseline — **CHẶN**: bé không mở ticket được; đề xuất xin sau khi Batch 2-4 deploy xong (cooldown 24h/lần, chỉ xin 1 lần)
 - [ ] Luồng BNB gốc của cron tụt ~9.700 block (~8h chuỗi) — đề xuất chuyển native sang Alchemy Transfers (category `external`)

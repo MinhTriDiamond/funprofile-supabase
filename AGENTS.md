@@ -1,5 +1,7 @@
 # AGENTS.md — Hướng dẫn cho Codex CLI / AI agents khi code dự án FUN Profile
-
+<!-- LOVABLE:BEGIN -->
+- Feed sidebar metallic finishes use scoped CSS tokens to preserve other pages and live bindings.
+<!-- LOVABLE:END -->
 > File này được Codex CLI, Claude Code, và mọi AI agent tự động đọc khi khởi động trong thư mục dự án. Tuân thủ NGHIÊM NGẶT các quy ước dưới đây.
 
 ---

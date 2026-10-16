@@ -9,6 +9,7 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
+        sidebar: "focus-visible:ring-gold",
         // Royal Premium - Glossy Green với Metallic Gold Border
         default: "bg-gradient-to-b from-[#1a7d45] via-[#166534] to-[#0d4a2a] text-[#E8D5A3] font-semibold rounded-full border-[2px] border-[#DAA520] shadow-[inset_0_1px_0_rgba(255,255,255,0.2),inset_0_-1px_0_rgba(0,0,0,0.15),0_0_8px_rgba(218,165,32,0.4),0_2px_4px_rgba(0,0,0,0.2)] hover:from-[#1d8a4c] hover:via-[#188639] hover:to-[#0e5530] hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_0_12px_rgba(218,165,32,0.5),0_3px_6px_rgba(0,0,0,0.25)] hover:scale-[1.02] duration-300",
         destructive: "bg-gradient-to-b from-[#dc2626] via-[#b91c1c] to-[#991b1b] text-white font-semibold rounded-full border-[2px] border-[#DAA520]/50 shadow-[inset_0_1px_0_rgba(255,255,255,0.15)] hover:from-[#ef4444] hover:via-[#dc2626] hover:to-[#b91c1c] duration-300",
