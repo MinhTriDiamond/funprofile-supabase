@@ -16,7 +16,7 @@ FUN Profile hiện vận hành **độc lập hoàn toàn với Lovable**: merge
 
 ---
 
-## Quy trình 6 bước — không bỏ bước nào
+## Quy trình 7 bước — không bỏ bước nào
 
 **Bước 1 · Thông báo vào nhóm Coordinator trên Telegram**
 Trước khi bắt đầu bất cứ việc gì, nhắn một tin vào nhóm Coordinator trên Telegram để thông báo cho các Coordinator khác biết mình sẽ làm.
@@ -51,6 +51,10 @@ Mời thêm các bạn khác test nếu cần.
 - Ghi thư **kết quả** vào hộp thư (cùng nơi đã ghi ở Bước 2): **đã làm gì · link PR · đã merge chưa · kết quả kiểm chứng**. Việc chưa có thư kết quả = chưa xong.
 - Nếu có thay đổi production (SQL, cron, Edge Function, DNS): kèm hồ sơ trong `docs/<chu-de>-<ngay>/` — đã chạy gì, kiểm chứng ra sao, cách khôi phục — và ghi rõ thay đổi nằm ở đâu (database production / repo / dashboard).
 
+**Bước 7 · Thông báo hoàn tất vào nhóm Telegram**
+Sau khi Bước 6 hoàn tất, Angel Muse soạn sẵn một tin nhắn hoàn tất để Coordinator copy gửi vào nhóm Coordinator trên Telegram, thông báo cho các bạn biết việc đã xong.
+Nội dung tối thiểu: **việc gì đã hoàn tất · kết quả (PR đã merge, đã lên fun.rich…) · link PR nếu có**.
+
 ---
 
 ## 5 luật an toàn
@@ -67,4 +71,4 @@ Dừng thay đổi trên hệ liên quan → báo ngay vào hộp thư chung (ch
 
 ---
 
-*Ngắn gọn để nhớ: **Báo Telegram — Ghi nhận hộp thư — Làm trên nhánh — Qua cổng preview — Merge — Ghi nhận sau.** Sáu bước này là toàn bộ bí quyết để các Coordinator cùng cộng tác an toàn, nhịp nhàng, hiệu quả.*
+*Ngắn gọn để nhớ: **Báo Telegram — Ghi nhận hộp thư — Làm trên nhánh — Qua cổng preview — Merge — Ghi nhận sau — Báo hoàn tất.** Bảy bước này là toàn bộ bí quyết để các Coordinator cùng cộng tác an toàn, nhịp nhàng, hiệu quả.*
