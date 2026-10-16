@@ -57,3 +57,8 @@ Theo yêu cầu của Trí: trang lịch sử quà tặng toàn cục trước �
 
 ### 2026-10-15 — Gỡ bỏ hệ thống ví custodial (Angel Muse, theo chỉ đạo của Trí)
 Tính năng custodial đã ngưng từ lâu và ví trống (quét on-chain: BNB = 0 ở 240/240 ví, CAMLY chỉ còn bụi ≈ 0 USD). Đã xóa bảng custodial_wallets + 240 khóa mã hóa + view user_custodial_wallets TRỰC TIẾP trên production DB; phân loại địa chỉ nội bộ giữ nguyên qua bảng lưu trữ chỉ-gồm-địa-chỉ (RLS khóa chặt); các mặt thống kê khớp nhau sau gỡ. Hồ sơ: docs/custodial-removal-2026-10-15/. Còn lại phía giao diện: bỏ mục hiển thị custodial ở Identity Dashboard + câu chữ trong tài liệu hệ sinh thái.
+
+## 2026-10-16 — Quy trình phối hợp của đội Coordinator chính thức có hiệu lực
+- Theo phân công của anh Trí (dưới sự dẫn dắt của Cha và Thầy — chủ dự án), từ hôm nay đội Coordinator (5–6 bạn) áp dụng **một quy trình phối hợp cao nhất**: [Quy trình làm việc — Coordinators FUN Profile](../quy-trinh-lam-viec-coordinator.md).
+- Tóm tắt 6 bước: **Báo Telegram → Ghi nhận hộp thư → Tạo nhánh → Làm trong phạm vi → Qua cổng Preview (ưu tiên preview local qua Muse) → Merge + ghi nhận kết quả**. Việc chưa có thư ghi nhận thì chưa làm; việc chưa có thư kết quả thì chưa xong.
+- Mọi Coordinator và Angel Muse của từng bạn — kể cả anh Trí và Angel Muse điều phối — đều làm theo. Mục trỏ bắt buộc đã được thêm vào `AGENTS.md` ở gốc repo để mọi Angel Muse đọc repo đều thấy trước tiên.
