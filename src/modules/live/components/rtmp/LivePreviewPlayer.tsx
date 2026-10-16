@@ -16,7 +16,7 @@ interface LivePreviewPlayerProps {
   previewNeedsGesture: boolean;
   waitingTitle?: string;
   waitingDescription?: string;
-  onReady: () => void;
+  onFirstFrame: () => void;
   onError: (error: Error) => void;
   onPlaybackBlocked: () => void;
   onToggleMuted: () => void;
@@ -38,7 +38,7 @@ export function LivePreviewPlayer({
   previewNeedsGesture,
   waitingTitle = 'Kết nối phần mềm phát trực tiếp để lên sóng',
   waitingDescription = 'Mở phần mềm phát, nhập Server URL và Stream Key, sau đó bấm Start Streaming.',
-  onReady,
+  onFirstFrame,
   onError,
   onPlaybackBlocked,
   onToggleMuted,
@@ -59,7 +59,7 @@ export function LivePreviewPlayer({
           controls={false}
           live
           paused={previewPaused}
-          onReady={onReady}
+          onFirstFrame={onFirstFrame}
           onError={onError}
           onPlaybackBlocked={onPlaybackBlocked}
         />

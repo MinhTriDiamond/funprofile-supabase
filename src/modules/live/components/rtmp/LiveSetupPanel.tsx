@@ -166,8 +166,10 @@ export function LiveSetupPanel({
         <div className="flex gap-2 rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">
           <TriangleAlert className="h-4 w-4 shrink-0 mt-0.5" />
           <span>
-            {sourceConnected && detailsComplete
+            {sourceConnected && detailsComplete && canGoLive
               ? 'Đã nhận tín hiệu RTMP/RTMPS từ nguồn phát. Bạn có thể phát trực tiếp.'
+              : sourceConnected && previewProps.canShowPreview && !canGoLive
+                ? disabledReason || 'Đang chờ preview hiển thị hình ảnh đầu tiên.'
               : inputConnected && !sourceConnected
                 ? 'Nguồn phát đã kết nối nhưng chưa có dữ liệu video. Đang chờ Cloudflare nhận khung hình đầu tiên...'
                 : disabledReason || 'Chờ tín hiệu nguồn phát...'}

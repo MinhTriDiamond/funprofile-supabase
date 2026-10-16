@@ -15,6 +15,7 @@ import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { readFunctionError } from '@/modules/live/rtmpFunctionError';
+import { getRtmpPreviewRetryDelay } from '@/modules/live/rtmpPreviewRetryPolicy';
 
 interface ProducerSession {
   live_session_id: string;
@@ -124,7 +125,8 @@ export default function RtmpLivePage() {
   const [credentials, setCredentials] = useState<ProducerSession | null>(null);
   const [persistentStream, setPersistentStream] = useState(false);
   const [previewReloadToken, setPreviewReloadToken] = useState(0);
-  const [previewReady, setPreviewReady] = useState(false);
+  const [previewReadyForKey, setPreviewReadyForKey] = useState<string | null>(null);
+  const [previewRetryCount, setPreviewRetryCount] = useState(0);
   const [previewMuted, setPreviewMuted] = useState(true);
   const [previewVolume, setPreviewVolume] = useState(0.8);
   const [previewPaused, setPreviewPaused] = useState(false);
@@ -138,6 +140,7 @@ export default function RtmpLivePage() {
   const connectionNoticeRef = useRef<string | null>(null);
   const statusErrorNoticeRef = useRef<string | null>(null);
   const previewContainerRef = useRef<HTMLDivElement | null>(null);
+  const previewRetryStateRef = useRef<{ key: string; attempts: number }>({ key: '', attempts: 0 });
   const previousPreviewStateRef = useRef<{
     sourceConnected: boolean;
     status?: string;
@@ -147,6 +150,13 @@ export default function RtmpLivePage() {
 
   const detailsComplete = title.trim().length > 0 && description.trim().length > 0;
   const playbackUrl = credentials?.preview_url || credentials?.hls_url || credentials?.playback_url || null;
+  const previewAttemptKey = JSON.stringify([
+    credentials?.live_session_id || null,
+    credentials?.cloudflare_video_uid || null,
+    playbackUrl,
+    sourceConnected,
+  ]);
+  const previewReady = previewReadyForKey === previewAttemptKey;
   const producerPreviewReady = !!credentials?.preview_ready && !!playbackUrl && sourceConnected && !!credentials?.cloudflare_video_uid;
   // FE phòng vệ: chỉ render preview khi BACKEND xác nhận source_connected + cloudflare_video_uid + playback_url thật.
   // Thiếu UID ⇒ là VOD/replay stale, KHÔNG render.
@@ -180,7 +190,7 @@ export default function RtmpLivePage() {
     () => viewers.filter((viewer) => viewer.userId !== userId),
     [userId, viewers],
   );
-  const canGoLive = !!credentials && sourceConnected && producerPreviewReady && detailsComplete && credentials.status !== 'live' && !isLockedLive;
+  const canGoLive = !!credentials && sourceConnected && producerPreviewReady && previewReady && detailsComplete && credentials.status !== 'live' && !isLockedLive;
   const canEndLive = !!credentials && (
     credentials.status === 'live'
     || credentials.status === 'disconnect_grace'
@@ -195,9 +205,12 @@ export default function RtmpLivePage() {
     if (!sourceConnected) return 'Đang chờ nguồn phát kết nối.';
     if (!producerPreviewReady) return 'Đang tải preview live.';
     if (!title.trim() || !description.trim()) return 'Vui lòng nhập tiêu đề và mô tả.';
+    if (!previewReady) return previewRetryCount >= 3
+      ? 'Chưa hiển thị được hình từ OBS. Vui lòng kiểm tra OBS hoặc bấm “Tải lại preview”.'
+      : 'Đã nhận luồng từ OBS, đang chờ hình ảnh đầu tiên trong preview.';
     if (credentials?.status === 'live') return 'Live đã public.';
     return null;
-  }, [credentials?.status, description, inputConnected, isLockedLive, producerPreviewReady, publishing, sourceConnected, title]);
+  }, [credentials?.status, description, inputConnected, isLockedLive, previewReady, previewRetryCount, producerPreviewReady, publishing, sourceConnected, title]);
 
   const persistentStreamRef = useRef(false);
   useEffect(() => { persistentStreamRef.current = persistentStream; }, [persistentStream]);
@@ -627,11 +640,11 @@ export default function RtmpLivePage() {
 
     previousPreviewStateRef.current = next;
     if (!canShowPreview) {
-      setPreviewReady(false);
+      setPreviewReadyForKey(null);
       return;
     }
     if (sourceChanged) {
-      setPreviewReady(false);
+      setPreviewReadyForKey(null);
       console.debug('[RTMP_PREVIEW_RELOAD_TRIGGERED]', {
         sessionId: credentials?.live_session_id,
         previousStatus: previous.status,
@@ -682,14 +695,25 @@ export default function RtmpLivePage() {
     }
   }, [canShowPreview, playbackUrl, sourceConnected]);
 
-  // Self-heal: producer báo ready nhưng player không lên trong 3s → bump thêm 1 lần (chống hls.js fail lần đầu).
+  // Retry có giới hạn cho tới khi player render được khung hình thật, không coi manifest là đã có hình.
   useEffect(() => {
     if (!producerPreviewReady || previewReady) return;
+    if (previewRetryStateRef.current.key !== previewAttemptKey) {
+      previewRetryStateRef.current = { key: previewAttemptKey, attempts: 0 };
+      setPreviewRetryCount(0);
+    }
+    const retryCount = previewRetryStateRef.current.attempts;
+    const delay = getRtmpPreviewRetryDelay(retryCount);
+    if (delay === null) return;
     const t = window.setTimeout(() => {
-      if (!previewReady) setPreviewReloadToken((n) => n + 1);
-    }, 3000);
+      if (previewRetryStateRef.current.key !== previewAttemptKey
+        || previewRetryStateRef.current.attempts !== retryCount) return;
+      previewRetryStateRef.current.attempts += 1;
+      setPreviewRetryCount(previewRetryStateRef.current.attempts);
+      setPreviewReloadToken((n) => n + 1);
+    }, delay);
     return () => window.clearTimeout(t);
-  }, [producerPreviewReady, previewReady, previewReloadToken]);
+  }, [previewAttemptKey, previewReady, producerPreviewReady, previewRetryCount]);
 
 
   // Disarm khi đóng tab CHỈ trong các trạng thái rỗng (chưa có nguồn video) để giải phóng input.
@@ -849,18 +873,20 @@ export default function RtmpLivePage() {
     }
   };
 
-  const handlePreviewReady = useCallback(() => {
-    setPreviewReady(true);
+  const handlePreviewFirstFrame = useCallback(() => {
+    setPreviewReadyForKey(previewAttemptKey);
+    previewRetryStateRef.current = { key: previewAttemptKey, attempts: 0 };
+    setPreviewRetryCount(0);
     setCredentials((current) => current ? { ...current, preview_ready: true } : current);
-    console.debug('[RTMP_PREVIEW_READY]', {
+    console.debug('[RTMP_PREVIEW_FIRST_FRAME]', {
       sessionId: credentials?.live_session_id,
       status: credentials?.status,
       playbackUrl,
     });
-  }, [credentials?.live_session_id, credentials?.status, playbackUrl]);
+  }, [credentials?.live_session_id, credentials?.status, playbackUrl, previewAttemptKey]);
 
   const handlePreviewError = useCallback((error: Error) => {
-    setPreviewReady(false);
+    setPreviewReadyForKey(null);
     console.debug('[RTMP_PREVIEW_ERROR]', {
       sessionId: credentials?.live_session_id,
       status: credentials?.status,
@@ -870,7 +896,9 @@ export default function RtmpLivePage() {
   }, [credentials?.live_session_id, credentials?.status, playbackUrl]);
 
   const reloadPreview = useCallback(() => {
-    setPreviewReady(false);
+    setPreviewReadyForKey(null);
+    previewRetryStateRef.current = { key: previewAttemptKey, attempts: 0 };
+    setPreviewRetryCount(0);
     setPreviewNeedsGesture(false);
     setPreviewPaused(false);
     setPreviewReloadToken((value) => value + 1);
@@ -880,7 +908,7 @@ export default function RtmpLivePage() {
       status: credentials?.status,
       playbackUrl,
     });
-  }, [credentials?.live_session_id, credentials?.status, playbackUrl]);
+  }, [credentials?.live_session_id, credentials?.status, playbackUrl, previewAttemptKey]);
 
   const statusLabel = useMemo(() => {
     if (!credentials) return 'Đang tạo';
@@ -895,7 +923,7 @@ export default function RtmpLivePage() {
   }, [credentials, detailsComplete, inputConnected, sourceConnected]);
 
   const checklistSteps = useMemo<ChecklistStep[]>(() => {
-    const step1Done = sourceConnected;
+    const step1Done = sourceConnected && producerPreviewReady && previewReady;
     const step2Done = detailsComplete;
     const step3Done = credentials?.status === 'live';
 
@@ -910,10 +938,12 @@ export default function RtmpLivePage() {
         id: 'source',
         title: 'Kết nối nguồn video',
         description: step1Done
-          ? 'Đã nhận tín hiệu RTMP/RTMPS từ nguồn phát'
-          : inputConnected
-            ? 'Nguồn phát đã kết nối — đang chờ Cloudflare nhận khung hình đầu tiên'
-            : 'Mở phần mềm phát và bấm Start Streaming',
+          ? 'Đã nhận và hiển thị video từ nguồn phát'
+          : sourceConnected && producerPreviewReady
+            ? 'Đã nhận luồng — đang chờ khung hình preview đầu tiên'
+            : inputConnected
+              ? 'Nguồn phát đã kết nối — đang chờ Cloudflare nhận khung hình đầu tiên'
+              : 'Mở phần mềm phát và bấm Start Streaming',
         status: compute(0, step1Done),
       },
       {
@@ -933,7 +963,7 @@ export default function RtmpLivePage() {
         status: compute(2, step3Done),
       },
     ];
-  }, [sourceConnected, inputConnected, detailsComplete, credentials?.status, canGoLive]);
+  }, [sourceConnected, inputConnected, producerPreviewReady, previewReady, detailsComplete, credentials?.status, canGoLive]);
   const previewProps = {
     containerRef: previewContainerRef,
     canShowPreview,
@@ -945,7 +975,7 @@ export default function RtmpLivePage() {
     previewVolume,
     previewPaused,
     previewNeedsGesture,
-    onReady: handlePreviewReady,
+    onFirstFrame: handlePreviewFirstFrame,
     onError: handlePreviewError,
     onPlaybackBlocked: () => setPreviewNeedsGesture(true),
     onToggleMuted: togglePreviewMuted,

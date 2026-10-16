@@ -15,6 +15,7 @@ export interface ReplayPlayerProps {
   live?: boolean;
   paused?: boolean;
   onReady?: () => void;
+  onFirstFrame?: () => void;
   onError?: (error: Error) => void;
   onPlaybackBlocked?: () => void;
 }
@@ -33,6 +34,7 @@ export const ReplayPlayer = memo(({
   live = false,
   paused = false,
   onReady,
+  onFirstFrame,
   onError,
   onPlaybackBlocked,
 }: ReplayPlayerProps) => {
@@ -82,6 +84,20 @@ export const ReplayPlayer = memo(({
       errorCountRef.current = 0;
       setError(null);
     };
+    let active = true;
+    let firstFrameScheduled = false;
+    let firstFrameCallbackId: number | null = null;
+    const notifyFirstFrame = () => {
+      if (!onFirstFrame || !active || firstFrameScheduled) return;
+      firstFrameScheduled = true;
+      if (typeof video.requestVideoFrameCallback === 'function') {
+        firstFrameCallbackId = video.requestVideoFrameCallback(() => {
+          if (active) onFirstFrame?.();
+        });
+      } else {
+        onFirstFrame?.();
+      }
+    };
 
     const handleReady = () => {
       setLoading(false);
@@ -100,6 +116,12 @@ export const ReplayPlayer = memo(({
     };
     const handleWaiting = () => setBuffering(true);
     const handlePlaying = () => {
+      setLoading(false);
+      setBuffering(false);
+      clearError();
+      notifyFirstFrame();
+    };
+    const handleCanPlay = () => {
       setLoading(false);
       setBuffering(false);
       clearError();
@@ -123,7 +145,7 @@ export const ReplayPlayer = memo(({
 
     video.addEventListener('waiting', handleWaiting);
     video.addEventListener('playing', handlePlaying);
-    video.addEventListener('canplay', handlePlaying);
+    video.addEventListener('canplay', handleCanPlay);
     video.addEventListener('seeked', handleSeeked);
 
     if (video.canPlayType('application/vnd.apple.mpegurl')) {
@@ -137,9 +159,13 @@ export const ReplayPlayer = memo(({
       video.addEventListener('error', nativeError);
 
       return () => {
+        active = false;
+        if (firstFrameCallbackId !== null && typeof video.cancelVideoFrameCallback === 'function') {
+          video.cancelVideoFrameCallback(firstFrameCallbackId);
+        }
         video.removeEventListener('waiting', handleWaiting);
         video.removeEventListener('playing', handlePlaying);
-        video.removeEventListener('canplay', handlePlaying);
+        video.removeEventListener('canplay', handleCanPlay);
         video.removeEventListener('seeked', handleSeeked);
         video.removeEventListener('loadedmetadata', handleReady);
         video.removeEventListener('error', nativeError);
@@ -195,9 +221,13 @@ export const ReplayPlayer = memo(({
       });
 
       return () => {
+        active = false;
+        if (firstFrameCallbackId !== null && typeof video.cancelVideoFrameCallback === 'function') {
+          video.cancelVideoFrameCallback(firstFrameCallbackId);
+        }
         video.removeEventListener('waiting', handleWaiting);
         video.removeEventListener('playing', handlePlaying);
-        video.removeEventListener('canplay', handlePlaying);
+        video.removeEventListener('canplay', handleCanPlay);
         video.removeEventListener('seeked', handleSeeked);
         hls.destroy();
         hlsRef.current = null;
@@ -211,10 +241,10 @@ export const ReplayPlayer = memo(({
     return () => {
       video.removeEventListener('waiting', handleWaiting);
       video.removeEventListener('playing', handlePlaying);
-      video.removeEventListener('canplay', handlePlaying);
+      video.removeEventListener('canplay', handleCanPlay);
       video.removeEventListener('seeked', handleSeeked);
     };
-  }, [src, autoPlay, paused, live, onReady, onError]);
+  }, [src, autoPlay, paused, live, onReady, onFirstFrame, onError]);
 
   const handleRetry = () => {
     setError(null);
