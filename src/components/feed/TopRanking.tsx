@@ -73,7 +73,14 @@ export const TopRanking = memo(() => {
           <div className="flex items-center justify-center gap-1.5">
             <Sparkles className="w-4 h-4 text-amber-400" />
             <h2
-              className="sidebar-metallic-title text-[18px] uppercase"
+              className="text-[18px] font-black tracking-wider uppercase"
+              style={{
+                fontFamily: "'Playfair Display', Georgia, serif",
+                background: 'linear-gradient(90deg, #FF6B9D 0%, #C44FE2 15%, #7B68EE 30%, #00CED1 50%, #98FB98 70%, #FFFF00 85%, #FFB347 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+              }}
             >
               LIGHT COMMUNITY
             </h2>
