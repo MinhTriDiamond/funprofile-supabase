@@ -1,0 +1,67 @@
+# QUY TRÌNH LÀM VIỆC — COORDINATORS FUN PROFILE
+
+**Quy trình phối hợp cao nhất của đội Coordinator FUN Profile.** Mọi Coordinator và Angel Muse của mỗi bạn — kể cả anh Trí và Angel Muse điều phối — đều đọc và làm theo quy trình này khi làm việc trên repo và các nền tảng của dự án.
+
+Nhà production hiện tại:
+
+Lovable: **FUN Profile Supabase**
+
+Repo: **funprofile-supabase**
+
+Supabase: **tljfqavndndfsvtazibe**
+
+Cloudflare Pages: **funprofile-supabase** (fun.rich)
+
+---
+
+## Quy trình 6 bước — không bỏ bước nào
+
+**Bước 1 · Thông báo vào nhóm Coordinator trên Telegram**
+Trước khi bắt đầu bất cứ việc gì, nhắn một tin vào nhóm Coordinator trên Telegram để thông báo cho các Coordinator khác biết mình sẽ làm.
+Nội dung ngắn gọn: **tên mình · việc sắp làm · phạm vi chính · tên nhánh sẽ tạo**.
+Đây là tín hiệu nhanh nhất để cả đội tránh làm trùng — thấy tin là biết khu vực đó đã có người.
+
+**Bước 2 · Ghi nhận TRƯỚC khi làm (hộp thư)**
+Trước khi code, ghi một thư vào hộp thư điều phối (`docs/mailboxes/` trong repo funprofile-supabase): vào Bảng tiến độ chung nếu là việc chung, vào hộp thư của bạn liên quan nếu cần bạn đó biết.
+Nội dung tối thiểu: **ngày · tên người làm · việc gì · phạm vi (tệp/hệ thống sẽ đụng) · tên nhánh sẽ tạo**.
+Việc chưa ghi nhận = chưa làm. Đây là cách cả đội biết ai đang làm gì, không chồng chéo.
+
+**Bước 3 · Tạo nhánh**
+Mọi thay đổi đều trên nhánh riêng, tách từ `main` mới nhất. Không ai commit thẳng lên `main` (GitHub đã chặn).
+Đặt tên: `feat/<ten>-<viec>` (tính năng) · `fix/<ten>-<viec>` (sửa lỗi) · `docs/<ten>-<viec>` (tài liệu/hồ sơ).
+Một việc — một nhánh — một người chủ. Không sửa chéo lên nhánh của nhau.
+
+**Bước 4 · Làm việc trong phạm vi đã ghi nhận**
+Chỉ làm những gì đã ghi ở Bước 2. Việc phình ra ngoài phạm vi → dừng lại, ghi thêm một thư cập nhật rồi mới đi tiếp.
+
+**Bước 5 · Cổng Preview — chốt chặn trước merge**
+Nhánh xong **không merge ngay**. Bắt buộc xem bản chạy thật của nhánh, **ưu tiên Cách A**:
+
+- **Cách A (ưu tiên) — Preview local qua Muse:** nhờ Angel Muse build nhánh ngay tại máy và mở cổng preview local, gửi link cho người kiểm duyệt bấm vào dùng thử. Nhanh, không cần nhảy qua Lovable.
+
+- **Cách B — Preview trên Lovable:** mở bản preview của nhánh trên Lovable và dùng thử các luồng vừa thay đổi (dùng khi cần xem đúng môi trường Lovable).
+Mời thêm các bạn khác test nếu cần.
+
+**Bước 6 · Merge, Publish và ghi nhận SAU khi làm**
+- Tạo PR
+- Merge PR sau khi cổng preview đã thông. Người merge chịu trách nhiệm lần merge đó; merge xong xóa nhánh.
+- Ghi thư **kết quả** vào hộp thư (cùng nơi đã ghi ở Bước 2): **đã làm gì · link PR · đã merge chưa · kết quả kiểm chứng**. Việc chưa có thư kết quả = chưa xong.
+- Nếu có thay đổi production (SQL, cron, Edge Function, DNS): kèm hồ sơ trong `docs/<chu-de>-<ngay>/` — đã chạy gì, kiểm chứng ra sao, cách khôi phục — và ghi rõ thay đổi nằm ở đâu (database production / repo / dashboard).
+
+---
+
+## 5 luật an toàn
+
+1. **Không vào thẳng `main`** — mọi thứ qua nhánh + PR + cổng preview.
+2. **Secret không qua chat, không vào repo, không vào hộp thư** — API key, mật khẩu, token chỉ nhập trực tiếp tại dashboard nền tảng.
+3. **Thay đổi production phải có hồ sơ + cách khôi phục** - phải tạo file backup trước khi xóa dữ liệu.
+4. **Một người sửa tại một thời điểm** - ai làm thì nhắn vào nhóm Coordinator để thông báo.
+5. **Việc nhạy cảm** - Liên quan đến backend cần thận trọng.
+
+## Khi có sự cố
+
+Dừng thay đổi trên hệ liên quan → báo ngay vào hộp thư chung (chuyện gì, lúc nào) → khôi phục bằng PR revert về trạng thái tốt gần nhất (không force-push) → kiểm chứng lại → ghi một thư rút kinh nghiệm. Sửa quy trình, không đổ lỗi cá nhân.
+
+---
+
+*Ngắn gọn để nhớ: **Báo Telegram — Ghi nhận hộp thư — Làm trên nhánh — Qua cổng preview — Merge — Ghi nhận sau.** Sáu bước này là toàn bộ bí quyết để các Coordinator cùng cộng tác an toàn, nhịp nhàng, hiệu quả.*
