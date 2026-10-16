@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { Sparkles } from 'lucide-react';
 import { ecosystemItems, type EcosystemItem } from '@/config/navigation';
 import FunEcosystemLogo from './FunEcosystemLogo';
-import { Button } from '@/components/ui/button';
 
 import { useLanguage } from '@/i18n/LanguageContext';
 import {
@@ -150,27 +149,25 @@ export default function EcosystemWheel({ onItemClick }: { onItemClick?: () => vo
   }, [paused, animate]);
 
   return (
-    <div className="sidebar-metallic-wheel space-y-3" ref={containerRef}>
+    <div className="space-y-3" ref={containerRef}>
       {/* Rotating wheel */}
       <div className="flex justify-center py-1">
         <div
-          className="sidebar-wheel-stage relative overflow-visible"
+          className="relative overflow-visible"
           style={{ width: dims.size, height: dims.size, zIndex: 20 }}
           onMouseEnter={() => setPaused(true)}
           onMouseLeave={() => setPaused(false)}
         >
-          <span aria-hidden="true" className="sidebar-wheel-star sidebar-wheel-star-one">✦</span>
-          <span aria-hidden="true" className="sidebar-wheel-star sidebar-wheel-star-two">✧</span>
-          <span aria-hidden="true" className="sidebar-wheel-star sidebar-wheel-star-three">✦</span>
           {/* Orbit ring */}
           <div
-            className="sidebar-orbit-ring absolute rounded-full"
+            className="absolute rounded-full"
             style={{
               width: dims.orbitRadius * 2,
               height: dims.orbitRadius * 2,
               top: '50%',
               left: '50%',
               transform: 'translate(-50%, -50%)',
+              border: '1.5px solid rgba(212,175,55,0.25)',
             }}
           />
 
@@ -185,9 +182,9 @@ export default function EcosystemWheel({ onItemClick }: { onItemClick?: () => vo
             return (
               <HoverCard openDelay={200} closeDelay={100} key={item.id}>
                 <HoverCardTrigger asChild>
-                  <Button variant="sidebar"
+                  <button
                     onClick={() => handleClick(item)}
-                    className="sidebar-orbit-button absolute flex items-center justify-center group/item"
+                    className="absolute flex items-center justify-center group/item"
                     style={{
                       left: cx,
                       top: cy,
@@ -196,17 +193,22 @@ export default function EcosystemWheel({ onItemClick }: { onItemClick?: () => vo
                     }}
                   >
                     <div
-                      className="sidebar-gold-medallion w-full h-full rounded-full flex items-center justify-center group-hover/item:scale-110 transition-transform duration-300 overflow-hidden"
+                      className="w-full h-full rounded-full flex items-center justify-center group-hover/item:scale-110 transition-transform duration-300 overflow-hidden"
+                      style={{
+                        background: 'linear-gradient(135deg, rgba(255,215,0,0.6), rgba(255,180,0,0.3), rgba(255,215,0,0.6))',
+                        boxShadow: '0 0 10px rgba(255,215,0,0.35), 0 0 3px rgba(255,215,0,0.2)',
+                        padding: '2px',
+                      }}
                     >
                       <img
                         src={item.avatar}
                         alt={item.name}
                         loading="lazy"
-                        className="sidebar-orbit-logo block rounded-full object-cover cursor-pointer w-full h-full"
+                        className="block rounded-full object-cover bg-card cursor-pointer w-full h-full"
                         style={{ transform: `scale(${logoScaleOverrides[item.id] || 1.15})` }}
                       />
                     </div>
-                  </Button>
+                  </button>
                 </HoverCardTrigger>
                 {ecosystemDescriptionKeys[item.id] && (
                   <HoverCardContent
@@ -235,13 +237,54 @@ export default function EcosystemWheel({ onItemClick }: { onItemClick?: () => vo
 
           {/* Center: FUN Ecosystem logo with sun halo */}
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
+            {/* Outer sun halo layer — slow pulse */}
+            <div
+              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full animate-[sun-halo-outer_3s_ease-in-out_infinite]"
+              style={{
+                width: dims.centerSize * 1.9,
+                height: dims.centerSize * 1.9,
+                background: 'radial-gradient(circle, rgba(255,200,0,0.25) 0%, rgba(255,160,0,0.12) 40%, transparent 70%)',
+              }}
+            />
+            {/* Inner sun halo layer — faster pulse, offset phase */}
+            <div
+              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full animate-[sun-halo-inner_2s_ease-in-out_0.5s_infinite]"
+              style={{
+                width: dims.centerSize * 1.55,
+                height: dims.centerSize * 1.55,
+                background: 'radial-gradient(circle, rgba(255,215,0,0.35) 0%, rgba(255,180,0,0.15) 50%, transparent 75%)',
+              }}
+            />
+            {/* Sun rays */}
+            <div
+              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full animate-[sun-rays_4s_linear_infinite]"
+              style={{
+                width: dims.centerSize * 1.7,
+                height: dims.centerSize * 1.7,
+                background: `conic-gradient(from 0deg,
+                  transparent 0deg, rgba(255,215,0,0.18) 10deg, transparent 20deg,
+                  transparent 45deg, rgba(255,200,0,0.15) 55deg, transparent 65deg,
+                  transparent 90deg, rgba(255,215,0,0.2) 100deg, transparent 110deg,
+                  transparent 135deg, rgba(255,200,0,0.12) 145deg, transparent 155deg,
+                  transparent 180deg, rgba(255,215,0,0.18) 190deg, transparent 200deg,
+                  transparent 225deg, rgba(255,200,0,0.15) 235deg, transparent 245deg,
+                  transparent 270deg, rgba(255,215,0,0.2) 280deg, transparent 290deg,
+                  transparent 315deg, rgba(255,200,0,0.12) 325deg, transparent 335deg,
+                  transparent 360deg)`,
+                filter: 'blur(2px)',
+              }}
+            />
             {/* Gold ring + logo */}
             <div
-              className="sidebar-center-ring relative rounded-full p-[3px]"
+              className="relative rounded-full p-[3px]"
+              style={{
+                background: 'linear-gradient(135deg, rgba(255,215,0,0.7), rgba(255,180,0,0.4), rgba(255,215,0,0.7))',
+                boxShadow: '0 0 20px rgba(255,215,0,0.45), 0 0 40px rgba(255,200,0,0.2)',
+              }}
             >
               <div
-                className="sidebar-center-disc rounded-full flex items-center justify-center overflow-hidden"
-                style={{ width: dims.centerSize, height: dims.centerSize }}
+                className="rounded-full flex items-center justify-center overflow-hidden"
+                style={{ width: dims.centerSize, height: dims.centerSize, background: 'rgba(255,255,255,0.92)' }}
               >
                 <FunEcosystemLogo size={dims.centerImgSize} />
               </div>
