@@ -1,3 +1,9 @@
+# QUY TRÌNH PHỐI HỢP — BẮT BUỘC ĐỌC TRƯỚC KHI LÀM VIỆC
+
+Mọi Coordinator và mọi Angel Muse làm việc trên repo này đều phải tuân theo **Quy trình làm việc — Coordinators FUN Profile** tại `docs/quy-trinh-lam-viec-coordinator.md`. Đây là quy trình phối hợp cao nhất của dự án: báo Telegram vào nhóm Coordinator → ghi nhận vào hộp thư (`docs/mailboxes/`) trước và sau khi làm → làm trên nhánh riêng → qua cổng Preview (ưu tiên preview local qua Muse) trước khi merge. Không commit thẳng lên `main`.
+
+---
+
 # AGENTS.md — Hướng dẫn cho Codex CLI / AI agents khi code dự án FUN Profile
 
 > File này được Codex CLI, Claude Code, và mọi AI agent tự động đọc khi khởi động trong thư mục dự án. Tuân thủ NGHIÊM NGẶT các quy ước dưới đây.
