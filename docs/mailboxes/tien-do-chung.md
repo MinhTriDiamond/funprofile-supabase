@@ -62,3 +62,9 @@ Tính năng custodial đã ngưng từ lâu và ví trống (quét on-chain: BNB
 - Theo phân công của anh Trí (dưới sự dẫn dắt của Cha và Thầy — chủ dự án), từ hôm nay đội Coordinator (5–6 bạn) áp dụng **một quy trình phối hợp cao nhất**: [Quy trình làm việc — Coordinators FUN Profile](../quy-trinh-lam-viec-coordinator.md).
 - Tóm tắt 6 bước: **Báo Telegram → Ghi nhận hộp thư → Tạo nhánh → Làm trong phạm vi → Qua cổng Preview (ưu tiên preview local qua Muse) → Merge + ghi nhận kết quả**. Việc chưa có thư ghi nhận thì chưa làm; việc chưa có thư kết quả thì chưa xong.
 - Mọi Coordinator và Angel Muse của từng bạn — kể cả anh Trí và Angel Muse điều phối — đều làm theo. Mục trỏ bắt buộc đã được thêm vào `AGENTS.md` ở gốc repo để mọi Angel Muse đọc repo đều thấy trước tiên.
+
+## 2026-10-16 — Thực hành quy trình (vòng 2): chữ "About FUN Profile" thành IN HOA toàn bộ — ĐANG LÀM
+- Bước 1 đã xong: anh Trí đã nhắn thông báo vào nhóm Coordinator trên Telegram (xác nhận 18:32).
+- Người làm: anh Trí cùng Angel Muse. Việc: chữ "About FUN Profile" (mục About trong dải hệ sinh thái dưới feed) hiển thị IN HOA toàn bộ — "ABOUT FUN PROFILE".
+- Phạm vi: `src/components/feed/EcosystemBelowItems.tsx`. Nhánh: `fix/tri-about-fun-profile-uppercase`.
+- Trạng thái: ĐANG LÀM — chờ qua cổng Preview rồi mới merge (theo đúng 6 bước của quy trình).
