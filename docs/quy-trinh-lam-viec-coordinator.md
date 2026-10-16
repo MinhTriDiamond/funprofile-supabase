@@ -29,7 +29,7 @@ Việc chưa ghi nhận = chưa làm. Đây là cách cả đội biết ai đan
 **Bước 3 · Tạo nhánh**
 Mọi thay đổi đều trên nhánh riêng, tách từ `main` mới nhất. Không ai commit thẳng lên `main` (GitHub đã chặn).
 Đặt tên: `feat/<ten>-<viec>` (tính năng) · `fix/<ten>-<viec>` (sửa lỗi) · `docs/<ten>-<viec>` (tài liệu/hồ sơ).
-Một việc — một nhánh — một người chủ. Không sửa chéo lên nhánh của nhau.
+Một việc — một nhánh — một người phụ trách. Không sửa chéo lên nhánh của nhau.
 
 **Bước 4 · Làm việc trong phạm vi đã ghi nhận**
 Chỉ làm những gì đã ghi ở Bước 2. Việc phình ra ngoài phạm vi → dừng lại, ghi thêm một thư cập nhật rồi mới đi tiếp.
