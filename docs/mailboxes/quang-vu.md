@@ -182,3 +182,12 @@ SQL: `docs/superpowers/plans/2026-10-15-livestream-orphan-dry-run.sql`. Candidat
 - Commit `713f88e` đã được push lên `main`; `HEAD` khớp `origin/main`.
 - Đã deploy và xác minh ACTIVE trên production: `get-rtmp-live-session-status` v77, `live-replay-archive-cron` v83, `live-rtmp-grace-watchdog` v77. Không đổi cron hoặc secret.
 - Chưa chạy live test thật trong OBS. Cần kiểm tra một phiên test: OBS ngừng phát, đợi grace (mặc định 180 giây) cộng tối đa một chu kỳ watchdog, xác nhận phiên kết thúc; sau đó theo dõi replay/feed tới khi URL R2 được xác minh và post hiện tại được cập nhật.
+
+## Hotfix RTMP reconnecting bị constraint chặn — 2026-10-17
+
+- Cha báo lỗi sau khi tắt OBS ở phiên `1d70f498-e38a-49c0-b0dc-86829112fb01`. Truy vấn production xác nhận `live_sessions_status_check` có `ending` và `disconnect_grace`, nhưng thiếu `reconnecting` mà status endpoint đang ghi. Vì cập nhật thất bại, mốc mất nguồn/deadline không được lưu và auto-end bị kẹt. Kiểm tra phát hành trước đó chưa kiểm tra đầy đủ hợp đồng trạng thái với schema production.
+- Migration riêng `20261017100000_rtmp_reconnecting_status.sql` giữ nguyên biểu thức allowlist đang cài và thêm `reconnecting`; state guard cũng chặn terminal -> reconnecting, giữ quy tắc không mở lại phiên đã kết thúc. Không sửa dữ liệu phiên thủ công hoặc thay grace/cron/secret.
+- Thêm SQL regression `supabase/tests/rtmp_status_contract.sql`: sao chép constraint và dùng trigger guard production trên bảng tạm; kiểm tra live -> reconnecting -> live -> reconnecting -> ending -> processing_replay -> archived, từ chối trạng thái tùy ý và chặn terminal -> reconnecting. Test cũ thất bại đúng tại reconnecting; migration + test trong giao dịch rollback đạt; sau áp dụng migration, test production đạt. Test chỉ ghi bảng tạm và rollback.
+- Migration đã áp dụng riêng trên `tljfqavndndfsvtazibe` và ghi nhận đúng version; không chạy toàn bộ migration pending. Chỉ thay schema nên không cần deploy lại Edge Function. Bun 28 test policy/fencing đạt, `tsgo --noEmit` đạt.
+- Sau migration, phiên test thật đã chuyển từ live sang reconnecting và lưu `signal_lost_at` cùng deadline sau 60 giây. Đây là grace mất kết nối transport của status endpoint; grace connected/no-video vẫn dùng cấu hình riêng hiện hành.
+- Xác minh tiếp trên phiên thật: tự kết thúc lúc `2026-10-16 20:59:22.655 UTC`, reason `obs_signal_lost_timeout`; post hiện có chuyển `live_replay`/`processing`, đúng một replay được tạo. Không gọi end thủ công. Tại `21:00:12 UTC`, replay còn pending; chưa khẳng định media đã archive/phát lại được.
