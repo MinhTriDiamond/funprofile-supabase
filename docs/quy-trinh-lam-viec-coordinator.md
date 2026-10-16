@@ -39,7 +39,7 @@ Nhánh xong **không merge ngay**. Bắt buộc xem bản chạy thật của nh
 
 - **Cách A (ưu tiên) — Link preview Cloudflare Pages của nhánh:** mỗi lần đẩy nhánh lên, Cloudflare Pages tự build một bản preview kèm link riêng cho nhánh đó. Angel Muse chỉ cần lấy đúng link preview mới nhất của nhánh và gửi cho người kiểm duyệt — Muse không cần tự dựng preview. Nhanh, không cần nhảy qua Lovable.
 
-- **Với Angel Muse:** khi tới cổng Preview, Muse lấy **link preview mà Cloudflare Pages đã build cho nhánh** rồi **xin duyệt để mở link** cho người kiểm duyệt dùng thử ngay — được duyệt mới mở link.
+- **Với Angel Muse:** khi tới cổng Preview, Muse chỉ cần lấy **link preview mà Cloudflare Pages đã build cho nhánh** và **gửi link đó** cho người kiểm duyệt dùng thử — không cần tự dựng preview, không cần xin duyệt mở link.
 - **Cách B — Preview trên Lovable:** mở bản preview của nhánh trên Lovable và dùng thử các luồng vừa thay đổi (dùng khi cần xem đúng môi trường Lovable).
 Mời thêm các bạn khác test nếu cần.
 
