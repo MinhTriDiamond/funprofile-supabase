@@ -215,6 +215,15 @@ Deno.serve(async (req) => {
       if (!requested) return json({ error: 'Live session not found' }, 404);
       if (requested.owner_id !== user.id && requested.host_user_id !== user.id) return json({ error: 'Forbidden' }, 403);
 
+      if (requested.status === 'ending') {
+        return json({
+          error: 'Phiên live đang được kết thúc. Vui lòng đợi trạng thái hoàn tất rồi thử lại.',
+          code: 'SESSION_ENDING',
+          live_session_id: requested.id,
+          status: requested.status,
+        }, 409);
+      }
+
       // Phiên đã kết thúc/đang archive ⇒ KHÔNG resume. FE phải tạo phiên mới.
       // Check ended_at trước status để bắt cả trường hợp status đã bị một flow khác reset.
       if (isRtmpSessionEndedOrFrozen(requested)) {

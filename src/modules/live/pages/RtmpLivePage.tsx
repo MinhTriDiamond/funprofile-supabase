@@ -16,6 +16,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { readFunctionError } from '@/modules/live/rtmpFunctionError';
 import { getRtmpPreviewRetryDelay } from '@/modules/live/rtmpPreviewRetryPolicy';
+import { initializeRtmpSession } from '@/modules/live/rtmpSessionInitialization';
 
 interface ProducerSession {
   live_session_id: string;
@@ -298,6 +299,9 @@ export default function RtmpLivePage() {
           // Gọi lại không kèm sessionId để backend tự tạo session mới.
           return await createOrResumeSession({ persistent: explicitPersistent, forceNew: true, resumeOnly: false });
         }
+        if (info.code === 'SESSION_ENDING') {
+          throw new Error('Phiên live đang được kết thúc. Vui lòng đợi vài giây rồi tải lại Producer.');
+        }
         if (info.code === 'CLOUDFLARE_UPSTREAM_ERROR') {
           const upstreamStatus = info.upstreamStatus ? `HTTP ${info.upstreamStatus}` : 'lỗi upstream';
           const upstreamCode = info.upstreamCode ? `, mã ${info.upstreamCode}` : '';
@@ -349,28 +353,30 @@ export default function RtmpLivePage() {
     const key = sessionId || '__new__';
     if (didInitRef.current === key) return;
     didInitRef.current = key;
-    (async () => {
-      // Fetch user preference BEFORE creating/resuming the session so the
-      // toggle reflects the last chosen mode and the right session is used.
-      try {
+    void initializeRtmpSession(
+      async () => {
+        // Preference lookup is optional. Creation errors must remain separate
+        // so a failed create/resume request cannot trigger a second request.
         const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('preferred_rtmp_stream_mode')
-            .eq('id', user.id)
-            .maybeSingle();
-          const initialPersistent = (profile as { preferred_rtmp_stream_mode?: string } | null)?.preferred_rtmp_stream_mode === 'persistent';
+        if (!user) return undefined;
+
+        const { data: profile, error } = await supabase
+          .from('profiles')
+          .select('preferred_rtmp_stream_mode')
+          .eq('id', user.id)
+          .maybeSingle();
+        if (error) throw error;
+        return (profile as { preferred_rtmp_stream_mode?: string } | null)?.preferred_rtmp_stream_mode === 'persistent';
+      },
+      async (options) => {
+        if (options) {
+          const initialPersistent = options.persistent;
           setPersistentStream(initialPersistent);
           persistentStreamRef.current = initialPersistent;
-          await createOrResumeSession({ persistent: initialPersistent });
-          return;
         }
-      } catch {
-        // fall through to default behavior
-      }
-      await createOrResumeSession();
-    })();
+        return createOrResumeSession(options);
+      },
+    ).catch(() => undefined);
   }, [createOrResumeSession, sessionId]);
 
   const refreshStatus = useCallback(async () => {
@@ -857,11 +863,16 @@ export default function RtmpLivePage() {
     setLockedLiveSessionId(null);
     setPublishedLiveSessionId(null);
     try {
-      const { error } = await supabase.functions.invoke('end-rtmp-live-session', {
+      const { data, error } = await supabase.functions.invoke('end-rtmp-live-session', {
         body: { live_session_id: snapshot.live_session_id },
       });
       if (error) throw error;
-      toast.success('Đã kết thúc live. Replay đang được xử lý.');
+      if ((data as { in_progress?: boolean } | null)?.in_progress) {
+        setCredentials({ ...snapshot, status: 'ending', connection_status: 'ending', source_connected: false, preview_ready: false });
+        toast.info('Phiên live đang được kết thúc. Replay sẽ được xử lý sau đó.');
+      } else {
+        toast.success('Đã kết thúc live. Replay đang được xử lý.');
+      }
     } catch (error) {
       // Khôi phục trạng thái nếu invoke thất bại để user có thể thử lại.
       setCredentials(snapshot);

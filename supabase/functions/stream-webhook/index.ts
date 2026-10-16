@@ -4,6 +4,7 @@ import { detectRtmpLiveConnection, getStreamLiveInput, getStreamPlaybackUrls, ge
 import { markStreamReadyAndArchive } from '../_shared/livestreamProcessingService.ts';
 import { isInputArmingEnabled } from '../_shared/rtmpArmingService.ts';
 import { getObsReconnectTimeoutSeconds } from '../_shared/rtmpEndLiveService.ts';
+import { safeErrorText } from '../_shared/safeErrorText.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -637,15 +638,12 @@ Deno.serve(async (req) => {
     const type = extractEventType(event);
     console.log('[WEBHOOK] event received', {
       type: type || 'unknown',
-      uid,
-      liveInputIdHint: extractLiveInputId(event),
+      uidPresent: !!uid,
+      liveInputIdPresent: !!extractLiveInputId(event),
       typeKeys: {
-        notificationName: event?.notificationName ?? null,
-        notification_name: event?.notification_name ?? null,
-        eventType: event?.eventType ?? null,
-        type: event?.type ?? null,
+        hasNotificationName: typeof event?.notificationName === 'string' || typeof event?.notification_name === 'string',
+        hasEventType: typeof event?.eventType === 'string' || typeof event?.type === 'string',
       },
-      bodySample: rawBody.slice(0, 300),
     });
     const admin = createClient(
       Deno.env.get('SUPABASE_URL')!,
@@ -676,7 +674,7 @@ Deno.serve(async (req) => {
 
     if (state === 'ready') {
       await markStreamReadyAndArchive(admin, { replay, uid, event, video }).catch((error) => {
-        console.error('[WEBHOOK] archive after ready failed; retry cron will handle it', error);
+        console.error('[WEBHOOK] archive after ready failed; retry cron will handle it', safeErrorText(error));
       });
       return json({ ok: true, status: 'ready' });
     }
@@ -706,8 +704,8 @@ Deno.serve(async (req) => {
 
     return json({ ok: true, status: 'processing' });
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unknown error';
-    console.error('stream-webhook error:', error);
+    const message = safeErrorText(error);
+    console.error('stream-webhook error:', message);
     return json({ error: message }, 500);
   }
 });

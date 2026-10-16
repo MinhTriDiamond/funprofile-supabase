@@ -37,15 +37,7 @@ import { LiveVideoPlayer } from '../components/viewer/LiveVideoPlayer';
 import { LiveViewerHeader } from '../components/viewer/LiveViewerHeader';
 import type { LiveSession } from '../types';
 import { toggleLiveLandscapeFullscreen, unlockLiveOrientation } from '../utils/liveFullscreen';
-
-type ViewerLiveState =
-  | 'loading'
-  | 'live'
-  | 'reconnecting'
-  | 'ended'
-  | 'processing_replay'
-  | 'replay_ready'
-  | 'failed';
+import { resolveLiveAudienceState, type LiveAudienceState } from '../liveAudienceState';
 
 export default function LiveAudiencePage() {
   const navigate = useNavigate();
@@ -117,20 +109,18 @@ export default function LiveAudiencePage() {
     : null;
   const replayUrl = replayOverride?.playback_hls || replayOverride?.r2_video_url || sessionReplayUrl;
 
-  const viewerState = useMemo<ViewerLiveState>(() => {
-    if (isLoading || isResolvingFallback || !effectiveSessionId) return 'loading';
-    if (!session) return 'failed';
-    if (session.status === 'failed' || session.archive_status === 'failed') return 'failed';
-    if (replayUrl) return 'replay_ready';
-    if (session.status === 'disconnect_grace' || session.status === 'reconnecting') return 'reconnecting';
-    if (session.status === 'live') {
-      if (!isRtmpLive && !viewerPaused && !hasRemoteVideo) return 'reconnecting';
-      return 'live';
-    }
-    if (['processing', 'processing_replay', 'archiving'].includes(session.status)) return 'processing_replay';
-    if (session.status === 'ended') return 'processing_replay';
-    return 'ended';
-  }, [effectiveSessionId, hasRemoteVideo, isLoading, isResolvingFallback, isRtmpLive, replayUrl, session, viewerPaused]);
+  const viewerState = useMemo<LiveAudienceState>(() => resolveLiveAudienceState({
+    loading: isLoading,
+    resolving: isResolvingFallback,
+    hasSessionId: !!effectiveSessionId,
+    hasSession: !!session,
+    status: session?.status,
+    archiveStatus: session?.archive_status,
+    replayUrl,
+    isRtmp: !!isRtmpLive,
+    paused: viewerPaused,
+    hasRemoteVideo,
+  }), [effectiveSessionId, hasRemoteVideo, isLoading, isResolvingFallback, isRtmpLive, replayUrl, session, viewerPaused]);
 
   const healthLabel = useMemo(() => {
     if (viewerState === 'live') return 'Live đang phát';

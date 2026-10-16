@@ -206,6 +206,11 @@ export async function deleteCloudflareStreamAfterArchive(admin: SupabaseClient, 
     await admin.from('live_sessions').update({
       status: terminal,
       archive_status: terminal,
+      ...(terminal === ArchiveStep.ARCHIVED ? {
+        recording_status: 'ready',
+        recording_ready_at: replay.replay_ready_at || deletedAt,
+        recording_error: null,
+      } : {}),
       stream_deleted_at: deletedAt,
       cloudflare_deleted_at: deletedAt,
       delete_stream_error: null,
@@ -827,6 +832,9 @@ async function runPosting(admin: SupabaseClient, replay: any): Promise<Record<st
   await admin.from('live_sessions').update({
     status: ArchiveStep.R2_READY,
     archive_status: ArchiveStep.R2_READY,
+    recording_status: 'ready',
+    recording_ready_at: now,
+    recording_error: null,
     storage_provider: 'r2',
     playback_provider: 'r2',
     r2_object_key: (fresh || replay).r2_object_key,

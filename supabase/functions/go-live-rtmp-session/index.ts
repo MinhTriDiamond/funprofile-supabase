@@ -8,6 +8,7 @@ import {
 } from '../_shared/cloudflareStreamService.ts';
 import { corsHeaders, createAdminClient, HttpError, json, normalizeError, requireUser } from '../_shared/httpAuth.ts';
 import { isRtmpFrozenStatus } from '../_shared/rtmpSessionStatus.ts';
+import { safeErrorText } from '../_shared/safeErrorText.ts';
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: corsHeaders });
@@ -222,7 +223,8 @@ Deno.serve(async (req) => {
     const info = normalizeError(error);
     const status = error instanceof HttpError ? error.status : (info.status || 500);
     const code = error instanceof HttpError ? error.code : (info.code || (status === 401 ? 'UNAUTHORIZED' : 'INTERNAL'));
-    console.error('[RTMP_GO_LIVE_FAILED]', { status, code, message: info.message, stack: info.stack, details: info.details });
-    return json({ error: info.message, code, status, details: info.details }, status);
+    const message = safeErrorText(info.message);
+    console.error('[RTMP_GO_LIVE_FAILED]', { status, code, message });
+    return json({ error: message, code, status }, status);
   }
 });
