@@ -14,6 +14,7 @@ describe('createOrUpdateReplayPost', () => {
     };
     const existingPost = { user_id: 'owner-id', content: 'Replay', metadata: { replay_status: 'processing' } };
     let updatePayload: Record<string, unknown> | null = null;
+    let updateCount = 0;
     let inserted = false;
 
     const admin = {
@@ -35,7 +36,10 @@ describe('createOrUpdateReplayPost', () => {
             return chain;
           },
           then(resolve: (value: unknown) => unknown) {
-            if (operation === 'update' && table === 'posts') updatePayload = payload;
+            if (operation === 'update' && table === 'posts') {
+              updatePayload = payload;
+              updateCount += 1;
+            }
             return Promise.resolve(resolve({ data: null, error: null }));
           },
         };
@@ -52,9 +56,20 @@ describe('createOrUpdateReplayPost', () => {
       r2_object_key: 'live-replays/session-id/video.mp4',
       r2_bucket: 'replays',
     }, 'https://media.example/video.mp4');
+    const retryPostId = await createOrUpdateReplayPost(admin as any, {
+      id: 'replay-id',
+      live_session_id: 'session-id',
+      user_id: 'owner-id',
+      replay_post_id: existingPostId,
+      replay_status: 'ready_mp4',
+      r2_object_key: 'live-replays/session-id/video.mp4',
+      r2_bucket: 'replays',
+    }, 'https://media.example/video.mp4');
 
     expect(postId).toBe(existingPostId);
+    expect(retryPostId).toBe(existingPostId);
     expect(inserted).toBe(false);
+    expect(updateCount).toBe(2);
     expect(updatePayload).toMatchObject({
       video_url: 'https://media.example/video.mp4',
       replay_ready: true,

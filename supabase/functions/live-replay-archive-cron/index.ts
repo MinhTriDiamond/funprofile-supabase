@@ -3,7 +3,9 @@ import { createClient } from 'npm:@supabase/supabase-js@2';
 import { detectRtmpLiveConnection, getStreamPlaybackUrls, listStreamLiveInputVideos, selectRtmpReplayVideoForSession } from '../_shared/cloudflareStreamService.ts';
 import { createOrUpdateInstantReplayPost } from '../_shared/replayFeedService.ts';
 import { archiveReplay, cleanupArchivedStreamVideos, pollMp4ForReplay } from '../_shared/archiveReplayService.ts';
-import { endRtmpLiveSession, getObsReconnectTimeoutSeconds } from '../_shared/rtmpEndLiveService.ts';
+import { endRtmpLiveSession, getDisconnectGraceSeconds, getObsReconnectTimeoutSeconds } from '../_shared/rtmpEndLiveService.ts';
+import { classifyRtmpVideoSignal } from '../_shared/rtmpDisconnectPolicy.ts';
+import { reconcileRtmpSessionVideoSignal } from '../_shared/rtmpVideoSignalGraceService.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -141,7 +143,7 @@ function logObsSignal(params: {
 
 async function autoEndDisconnectedRtmpSessions(admin: any): Promise<number> {
   const reconnectTimeoutSeconds = getObsReconnectTimeoutSeconds();
-  const { data: sessions } = await admin
+  const { data: candidates, error: candidateError } = await admin
     .from('live_sessions')
     .select('*')
     .eq('mode', 'rtmp_obs')
@@ -149,28 +151,46 @@ async function autoEndDisconnectedRtmpSessions(admin: any): Promise<number> {
     .not('cloudflare_live_input_id', 'is', null)
     .order('updated_at', { ascending: true })
     .limit(30);
+  if (candidateError) throw candidateError;
+  const { data: pendingNoVideo, error: pendingError } = await admin
+    .from('live_sessions')
+    .select('*')
+    .eq('mode', 'rtmp_obs')
+    .in('status', ['live', 'disconnect_grace', 'reconnecting'])
+    .is('ended_at', null)
+    .not('video_signal_lost_at', 'is', null)
+    .order('video_signal_lost_at', { ascending: true })
+    .limit(30);
+  if (pendingError) throw pendingError;
+  const sessions = new Map<string, any>();
+  for (const row of candidates || []) sessions.set(row.id, row);
+  for (const row of pendingNoVideo || []) if (!sessions.has(row.id)) sessions.set(row.id, row);
 
   let ended = 0;
-  for (const session of sessions || []) {
+  for (const session of sessions.values()) {
     let detection: any = null;
     try {
       detection = await detectRtmpLiveConnection(session, { skewSeconds: 60 });
     } catch (error) {
       console.warn('[RTMP_WATCHDOG] skip disconnect check: Cloudflare read failed', {
         live_session_id: session.id,
-        error: error instanceof Error ? error.message : String(error),
+        error_type: error instanceof Error ? error.name : 'unknown',
       });
       continue;
     }
-    const connected = !!detection.connected || !!detection.videoStreaming;
     const now = new Date().toISOString();
-
-    if (connected) {
+    const signalState = classifyRtmpVideoSignal(detection);
+    if (signalState === 'unknown') {
+      const { error: checkError } = await admin.from('live_sessions').update({ last_connection_check_at: now }).eq('id', session.id).is('ended_at', null);
+      if (checkError) throw checkError;
+      continue;
+    }
+    if (signalState === 'current_video') {
       const reconnectingOrLegacy = session.status === 'disconnect_grace' || session.status === 'reconnecting';
       const nextStatus = reconnectingOrLegacy && (session.post_id || session.live_post_id)
         ? 'live'
         : (session.title?.trim() && session.description?.trim() ? 'ready_to_go_live' : 'source_connected');
-      await admin.from('live_sessions').update({
+      const { error: recoveryError } = await admin.from('live_sessions').update({
         status: nextStatus,
         connection_status: 'connected',
         source_connected: true,
@@ -180,9 +200,13 @@ async function autoEndDisconnectedRtmpSessions(admin: any): Promise<number> {
         signal_lost_at: null,
         reconnect_deadline_at: null,
         auto_end_reason: null,
-        live_input_status: detection.videoStreaming ? 'live' : 'input_connected_no_video',
+        video_signal_lost_at: null,
+        live_input_status: 'live',
+        last_source_seen_at: now,
+        last_connection_check_at: now,
         updated_at: now,
-      }).eq('id', session.id);
+      }).eq('id', session.id).is('ended_at', null);
+      if (recoveryError) throw recoveryError;
       logObsSignal({
         sessionId: session.id,
         userId: session.owner_id || session.host_user_id || session.user_id || null,
@@ -194,9 +218,19 @@ async function autoEndDisconnectedRtmpSessions(admin: any): Promise<number> {
       continue;
     }
 
+    if (signalState === 'input_connected_no_video') {
+      const result = await reconcileRtmpSessionVideoSignal(admin, session, detection, {
+        now,
+        graceSeconds: getDisconnectGraceSeconds(),
+      });
+      if (result.action === 'ended' && result.endResult && !result.endResult.idempotent && !result.endResult.in_progress) ended += 1;
+      continue;
+    }
+
     // API lỗi hoặc state không nhận diện được không được khởi động/tiếp tục bộ đếm tự kết thúc.
     if (!detection.confirmedDisconnected || detection.reason === 'cloudflare_soft_fail' || detection.reason === 'unknown_input_state' || detection.errors?.length) {
-      await admin.from('live_sessions').update({ last_connection_check_at: now }).eq('id', session.id);
+      const { error: checkError } = await admin.from('live_sessions').update({ last_connection_check_at: now }).eq('id', session.id).is('ended_at', null);
+      if (checkError) throw checkError;
       continue;
     }
 
@@ -212,11 +246,12 @@ async function autoEndDisconnectedRtmpSessions(admin: any): Promise<number> {
         console.warn('[RTMP_WATCHDOG] skip auto-end: final Cloudflare recheck failed', { live_session_id: session.id });
         continue;
       }
-      if (recheck.inputConnected || recheck.videoStreaming) {
+      const finalState = classifyRtmpVideoSignal(recheck);
+      if (finalState === 'current_video') {
         const nextStatus = (session.post_id || session.live_post_id)
           ? 'live'
           : (session.title?.trim() && session.description?.trim() ? 'ready_to_go_live' : 'source_connected');
-        await admin.from('live_sessions').update({
+        const { error: reconnectError } = await admin.from('live_sessions').update({
           status: nextStatus,
           connection_status: 'connected',
           source_connected: true,
@@ -229,38 +264,51 @@ async function autoEndDisconnectedRtmpSessions(admin: any): Promise<number> {
           live_input_status: recheck.videoStreaming ? 'live' : 'input_connected_no_video',
           last_connection_check_at: now,
           updated_at: now,
-        }).eq('id', session.id);
+        }).eq('id', session.id).is('ended_at', null);
+        if (reconnectError) throw reconnectError;
         continue;
       }
-      if (!recheck.confirmedDisconnected || recheck.errors?.length || recheck.reason === 'cloudflare_soft_fail' || recheck.reason === 'unknown_input_state') {
+      if (finalState === 'input_connected_no_video') {
+        await reconcileRtmpSessionVideoSignal(admin, session, recheck, {
+          now,
+          graceSeconds: getDisconnectGraceSeconds(),
+        });
+        continue;
+      }
+      if (finalState !== 'input_disconnected') {
         console.log('[RTMP_WATCHDOG] skip auto-end: Cloudflare disconnect not confirmed', { live_session_id: session.id, reason: recheck.reason });
         continue;
       }
     }
-    await admin.from('live_sessions').update({
-      status: reconnectExpired ? 'ended' : 'reconnecting',
-      connection_status: reconnectExpired ? 'ended' : 'reconnecting',
-      source_connected: false,
-      last_disconnected_at: lastDisconnectedAt,
-      disconnected_at: lastDisconnectedAt,
-      signal_status: reconnectExpired ? 'timeout_auto_end' : 'lost',
-      signal_lost_at: signalLostAt,
-      reconnect_deadline_at: reconnectExpired ? null : reconnectDeadlineAt,
-      auto_end_reason: reconnectExpired ? 'obs_signal_lost_timeout' : session.auto_end_reason || null,
-      live_input_status: reconnectExpired ? 'ended' : 'waiting_reconnect',
-      updated_at: now,
-    }).eq('id', session.id);
+    if (!reconnectExpired) {
+      const { error: graceUpdateError } = await admin.from('live_sessions').update({
+        status: 'reconnecting',
+        connection_status: 'reconnecting',
+        source_connected: false,
+        last_disconnected_at: lastDisconnectedAt,
+        disconnected_at: lastDisconnectedAt,
+        signal_status: 'lost',
+        signal_lost_at: signalLostAt,
+        reconnect_deadline_at: reconnectDeadlineAt,
+        video_signal_lost_at: null,
+        live_input_status: 'waiting_reconnect',
+        last_connection_check_at: now,
+        updated_at: now,
+      }).eq('id', session.id).is('ended_at', null);
+      if (graceUpdateError) throw graceUpdateError;
+    }
 
-    logObsSignal({
-      sessionId: session.id,
-      userId: session.owner_id || session.host_user_id || session.user_id || null,
-      status: reconnectExpired ? 'timeout_auto_end' : 'lost',
-      signalLostAt,
-      reconnectDeadlineAt: reconnectExpired ? null : reconnectDeadlineAt,
-      reason: reconnectExpired ? 'obs_signal_lost_timeout' : 'obs_signal_lost_detected',
-    });
-
-    if (!reconnectExpired) continue;
+    if (!reconnectExpired) {
+      logObsSignal({
+        sessionId: session.id,
+        userId: session.owner_id || session.host_user_id || session.user_id || null,
+        status: 'lost',
+        signalLostAt,
+        reconnectDeadlineAt,
+        reason: 'obs_signal_lost_detected',
+      });
+      continue;
+    }
 
     // Re-check ngay tru?c khi end: n?u Cloudflare báo còn liveVideo active ? reset, KHÔNG end nh?m.
     let recheck: any = null;
@@ -269,14 +317,15 @@ async function autoEndDisconnectedRtmpSessions(admin: any): Promise<number> {
     } catch (error) {
       console.warn('[RTMP_WATCHDOG] cancel end: final Cloudflare recheck failed', {
         live_session_id: session.id,
-        error: error instanceof Error ? error.message : String(error),
+        error_type: error instanceof Error ? error.name : 'unknown',
       });
       continue;
     }
-    if (recheck.connected || recheck.videoStreaming) {
+    const finalState = classifyRtmpVideoSignal(recheck);
+    if (finalState === 'current_video') {
       console.log('[RTMP_WATCHDOG] cancel end (recheck shows connected)', { live_session_id: session.id, reason: recheck.reason });
       const reconnectedPublicLive = session.status === 'disconnect_grace' || session.status === 'reconnecting';
-      await admin.from('live_sessions').update({
+      const { error: recoveryError } = await admin.from('live_sessions').update({
         status: reconnectedPublicLive && (session.post_id || session.live_post_id)
           ? 'live'
           : (session.title?.trim() && session.description?.trim() ? 'ready_to_go_live' : 'source_connected'),
@@ -288,15 +337,34 @@ async function autoEndDisconnectedRtmpSessions(admin: any): Promise<number> {
         signal_lost_at: null,
         reconnect_deadline_at: null,
         auto_end_reason: null,
-        live_input_status: recheck.videoStreaming ? 'live' : 'input_connected_no_video',
+        live_input_status: 'live',
+        video_signal_lost_at: null,
         updated_at: new Date().toISOString(),
-      }).eq('id', session.id);
+      }).eq('id', session.id).is('ended_at', null);
+      if (recoveryError) throw recoveryError;
       continue;
     }
-    if (!recheck.confirmedDisconnected || recheck.errors?.length || recheck.reason === 'cloudflare_soft_fail' || recheck.reason === 'unknown_input_state') continue;
+    if (finalState === 'input_connected_no_video') {
+      await reconcileRtmpSessionVideoSignal(admin, session, recheck, {
+        now,
+        graceSeconds: getDisconnectGraceSeconds(),
+      });
+      continue;
+    }
+    if (finalState !== 'input_disconnected') continue;
 
-    await endRtmpLiveSession(admin, { ...session, last_disconnected_at: lastDisconnectedAt, signal_lost_at: signalLostAt, reconnect_deadline_at: reconnectDeadlineAt }, 'obs_signal_lost_timeout');
-    ended += 1;
+    const endResult = await endRtmpLiveSession(admin, { ...session, last_disconnected_at: lastDisconnectedAt, signal_lost_at: signalLostAt, reconnect_deadline_at: reconnectDeadlineAt }, 'obs_signal_lost_timeout');
+    if (endResult.ended && !endResult.idempotent && !endResult.in_progress) {
+      ended += 1;
+      logObsSignal({
+        sessionId: session.id,
+        userId: session.owner_id || session.host_user_id || session.user_id || null,
+        status: 'timeout_auto_end',
+        signalLostAt,
+        reconnectDeadlineAt: null,
+        reason: 'obs_signal_lost_timeout',
+      });
+    }
   }
 
   return ended;

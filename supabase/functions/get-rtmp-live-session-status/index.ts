@@ -7,7 +7,8 @@ import {
 import { corsHeaders, createAdminClient, HttpError, json, normalizeError, requireUser } from '../_shared/httpAuth.ts';
 import { endRtmpLiveSession, getDisconnectGraceSeconds, getObsReconnectTimeoutSeconds } from '../_shared/rtmpEndLiveService.ts';
 import { isRtmpSessionEndedOrFrozen, rtmpFrozenStatusSqlList } from '../_shared/rtmpSessionStatus.ts';
-import { mayAutoEndRtmpDisconnect } from '../_shared/rtmpDisconnectPolicy.ts';
+import { classifyRtmpVideoSignal, isEligibleRtmpSessionForNoVideoGrace, mayAutoEndRtmpDisconnect } from '../_shared/rtmpDisconnectPolicy.ts';
+import { persistRtmpVideoSignalLostAt, updateActiveRtmpVideoSignal } from '../_shared/rtmpVideoSignalGraceService.ts';
 import { safeErrorText } from '../_shared/safeErrorText.ts';
 
 function toIsoAfterSeconds(baseIso: string, seconds: number): string | null {
@@ -62,7 +63,7 @@ Deno.serve(async (req) => {
     const admin = createAdminClient() as any;
     const { data: session, error } = await admin
       .from('live_sessions')
-      .select('id, owner_id, host_user_id, mode, status, title, description, source_connected_at, source_connected, connected_at, disconnected_at, connection_status, last_disconnected_at, last_connection_check_at, live_input_status, preview_ready, preview_url, reconnect_count, ended_at, end_reason, auto_end_reason, signal_status, signal_lost_at, reconnect_deadline_at, cloudflare_live_input_id, cloudflare_video_uid, hls_url, playback_url, post_id, live_post_id, archive_status, archive_error, rtmp_config_id, is_persistent_stream, is_input_armed, armed_at, armed_session_token, created_at, updated_at')
+      .select('id, owner_id, host_user_id, mode, status, title, description, source_connected_at, source_connected, connected_at, disconnected_at, connection_status, last_disconnected_at, last_connection_check_at, live_input_status, preview_ready, preview_url, reconnect_count, ended_at, end_reason, auto_end_reason, signal_status, signal_lost_at, reconnect_deadline_at, video_signal_lost_at, cloudflare_live_input_id, cloudflare_video_uid, hls_url, playback_url, post_id, live_post_id, archive_status, archive_error, rtmp_config_id, is_persistent_stream, is_input_armed, armed_at, armed_session_token, created_at, updated_at')
       .eq('id', liveSessionId)
       .maybeSingle();
     if (error) throw error;
@@ -136,17 +137,17 @@ Deno.serve(async (req) => {
     const connectedStatuses = ['source_connected', 'ready_to_go_live', 'live', 'disconnect_grace', 'reconnecting'];
     const reconnectTimeoutSeconds = getObsReconnectTimeoutSeconds();
     const liveInputMissing = detection.liveInputMissing === true;
-    const cloudflareReadFailed = !liveInputMissing && cloudflareErrors.some((item) =>
-      item.startsWith('getStreamLiveInput:') || item.startsWith('listStreamLiveInputVideos:')
-    ) || detection.reason === 'unknown_input_state';
+    const cloudflareReadFailed = detection.errors.length > 0 || detection.reason === 'unknown_input_state';
+    const cloudflareErrorSummaries = cloudflareErrors.map(() => 'cloudflare_read_error');
 
     // Live Input đã bị xoá khỏi Cloudflare → Stream Key hiện tại vô hiệu.
     // Không coi là "chưa kết nối" nữa; báo rõ để user đặt lại Stream Key.
     if (liveInputMissing && !connected) {
-      await admin
+      const { error: missingInputCheckError } = await admin
         .from('live_sessions')
         .update({ last_connection_check_at: now })
         .eq('id', liveSessionId);
+      if (missingInputCheckError) throw missingInputCheckError;
       console.warn('[RTMP_STATUS_LIVE_INPUT_MISSING]', {
         liveSessionId,
         status: session.status,
@@ -189,19 +190,20 @@ Deno.serve(async (req) => {
       });
     }
 
-    if (!connected && cloudflareReadFailed && connectedStatuses.includes(session.status)) {
+    if (cloudflareReadFailed && connectedStatuses.includes(session.status)) {
 
-      await admin
+      const { error: softFailCheckError } = await admin
         .from('live_sessions')
         .update({ last_connection_check_at: now })
         .eq('id', liveSessionId);
+      if (softFailCheckError) throw softFailCheckError;
 
       const titleValid = !!session.title?.trim();
       const descriptionValid = !!session.description?.trim();
       console.warn('[RTMP_STATUS_POLL_SOFT_FAIL]', {
         liveSessionId,
         status: session.status,
-        cloudflareErrors,
+        errorCount: cloudflareErrors.length,
       });
 
       return json({
@@ -233,7 +235,7 @@ Deno.serve(async (req) => {
           selectedVideoUidExists: !!liveVideo,
           previewUrlExists: !!(session.hls_url || session.playback_url),
           reason: detection.reason,
-          errors: cloudflareErrors,
+          errors: cloudflareErrorSummaries,
         },
         live_session: { ...session, last_connection_check_at: now },
         source_connected: !!session.source_connected,
@@ -247,6 +249,17 @@ Deno.serve(async (req) => {
         cloudflare_live_video: liveVideo,
         soft_failed_cloudflare_check: true,
       });
+    }
+    const videoSignalState = classifyRtmpVideoSignal(detection);
+    if (videoSignalState === 'current_video' && session.video_signal_lost_at) {
+      await updateActiveRtmpVideoSignal(admin, session.id, { video_signal_lost_at: null });
+      session.video_signal_lost_at = null;
+    } else if (videoSignalState === 'input_disconnected' && session.video_signal_lost_at) {
+      await updateActiveRtmpVideoSignal(admin, session.id, { video_signal_lost_at: null });
+      session.video_signal_lost_at = null;
+    } else if (videoSignalState === 'input_connected_no_video' && isEligibleRtmpSessionForNoVideoGrace(session)) {
+      const anchor = session.video_signal_lost_at || now;
+      session.video_signal_lost_at = await persistRtmpVideoSignalLostAt(admin, session.id, anchor, now);
     }
     let disconnectedAt = session.last_disconnected_at || null;
     const signalLostAt = session.signal_lost_at || disconnectedAt || now;
@@ -275,7 +288,8 @@ Deno.serve(async (req) => {
       );
       if (!mayEnd) {
         reconnectExpired = false;
-        await admin.from('live_sessions').update({ last_connection_check_at: now }).eq('id', liveSessionId);
+        const { error: finalCheckWriteError } = await admin.from('live_sessions').update({ last_connection_check_at: now }).eq('id', liveSessionId).is('ended_at', null);
+        if (finalCheckWriteError) throw finalCheckWriteError;
         if (finalDetection && (finalDetection.inputConnected || finalDetection.videoStreaming)) {
           const status = session.post_id || session.live_post_id
             ? 'live'
@@ -283,7 +297,11 @@ Deno.serve(async (req) => {
           const currentVideoUid = finalDetection.activeVideoUid || session.cloudflare_video_uid || null;
           const currentVideoUrls = finalDetection.activeVideoUid ? getStreamPlaybackUrls(finalDetection.activeVideoUid) : null;
           const currentHlsUrl = currentVideoUrls?.hls || session.hls_url || session.playback_url || null;
-          const { data: refreshed } = await admin.from('live_sessions').update({
+          const finalHasCurrentVideo = finalDetection.videoStreaming;
+          const finalVideoSignalLostAt = finalHasCurrentVideo
+            ? null
+            : await persistRtmpVideoSignalLostAt(admin, liveSessionId, session.video_signal_lost_at || now, now);
+          const { data: refreshed, error: refreshError } = await admin.from('live_sessions').update({
             status,
             connection_status: 'connected',
             source_connected: true,
@@ -293,7 +311,8 @@ Deno.serve(async (req) => {
             signal_lost_at: null,
             reconnect_deadline_at: null,
             auto_end_reason: null,
-            live_input_status: finalDetection.videoStreaming ? 'live' : 'input_connected_no_video',
+            video_signal_lost_at: finalVideoSignalLostAt,
+            live_input_status: finalHasCurrentVideo ? 'live' : 'input_connected_no_video',
             cloudflare_video_uid: currentVideoUid,
             hls_url: currentHlsUrl,
             playback_url: currentHlsUrl,
@@ -301,7 +320,8 @@ Deno.serve(async (req) => {
             preview_ready: finalDetection.videoStreaming ? !!currentHlsUrl : !!session.preview_ready,
             last_connection_check_at: now,
             updated_at: now,
-          }).eq('id', liveSessionId).select('id, status, title, description, source_connected_at, source_connected, connected_at, disconnected_at, connection_status, last_disconnected_at, last_connection_check_at, live_input_status, preview_ready, preview_url, reconnect_count, ended_at, end_reason, auto_end_reason, signal_status, signal_lost_at, reconnect_deadline_at, cloudflare_video_uid, hls_url, playback_url, post_id, live_post_id, archive_status, archive_error, rtmp_config_id, is_persistent_stream, updated_at').maybeSingle();
+          }).eq('id', liveSessionId).is('ended_at', null).select('id, status, title, description, source_connected_at, source_connected, connected_at, disconnected_at, connection_status, last_disconnected_at, last_connection_check_at, live_input_status, preview_ready, preview_url, reconnect_count, ended_at, end_reason, auto_end_reason, signal_status, signal_lost_at, reconnect_deadline_at, video_signal_lost_at, cloudflare_video_uid, hls_url, playback_url, post_id, live_post_id, archive_status, archive_error, rtmp_config_id, is_persistent_stream, updated_at').maybeSingle();
+          if (refreshError) throw refreshError;
           return json({
             ok: true,
             sessionId: session.id,
@@ -431,11 +451,13 @@ Deno.serve(async (req) => {
     const hlsUrl = playbackUid ? (fallbackUrls?.hls || null) : null;
     const playbackUrlOut = hlsUrl;
     const previewReady = connected && !!hlsUrl;
-    const liveInputStatus = connected
+    const liveInputStatus = connected && videoStreaming
       ? 'live'
+      : (inputConnected
+        ? 'input_connected_no_video'
       : (session.status === 'reconnecting'
         ? 'waiting_reconnect'
-        : (inputConnected ? 'input_only_no_video' : (disconnectedAt ? 'disconnected' : 'waiting')));
+        : (disconnectedAt ? 'disconnected' : 'waiting')));
     // Khi mất kết nối: giữ UID + URL cho các status còn coi là "đang sống" để FE không
     // mất preview ngay lập tức trong cửa sổ reconnect ngắn. Chỉ wipe ở waiting/failed.
     const nextVideoUid = connected
@@ -454,10 +476,11 @@ Deno.serve(async (req) => {
       || reconnectDeadlineAt !== (session.reconnect_deadline_at || null)
       || (!connected && disconnectedAt && disconnectedAt !== session.disconnected_at)
       || connected !== !!session.source_connected
+      || (videoSignalState === 'input_connected_no_video' && session.live_input_status !== 'input_connected_no_video')
     );
 
     if (needsFullUpdate) {
-      const { data: updated } = await admin
+      const { data: updated, error: updateError } = await admin
         .from('live_sessions')
         .update({
           status,
@@ -483,27 +506,30 @@ Deno.serve(async (req) => {
         })
         .eq('id', liveSessionId)
         .not('status', 'in', rtmpFrozenStatusSqlList())
-        .select('id, status, title, description, source_connected_at, source_connected, connected_at, disconnected_at, connection_status, last_disconnected_at, last_connection_check_at, live_input_status, preview_ready, preview_url, reconnect_count, ended_at, end_reason, auto_end_reason, signal_status, signal_lost_at, reconnect_deadline_at, cloudflare_video_uid, hls_url, playback_url, post_id, live_post_id, archive_status, archive_error, rtmp_config_id, is_persistent_stream, updated_at')
+        .select('id, status, title, description, source_connected_at, source_connected, connected_at, disconnected_at, connection_status, last_disconnected_at, last_connection_check_at, live_input_status, preview_ready, preview_url, reconnect_count, ended_at, end_reason, auto_end_reason, signal_status, signal_lost_at, reconnect_deadline_at, video_signal_lost_at, cloudflare_video_uid, hls_url, playback_url, post_id, live_post_id, archive_status, archive_error, rtmp_config_id, is_persistent_stream, updated_at')
         .maybeSingle();
+      if (updateError) throw updateError;
       if (updated) {
         current = { ...session, ...updated };
       } else {
         // Update bị skip vì session đã ở trạng thái terminal — refetch trạng thái mới.
-        const { data: fresh } = await admin
+        const { data: fresh, error: freshError } = await admin
           .from('live_sessions')
-          .select('id, status, title, description, source_connected_at, source_connected, connected_at, disconnected_at, connection_status, last_disconnected_at, last_connection_check_at, live_input_status, preview_ready, preview_url, reconnect_count, ended_at, end_reason, auto_end_reason, signal_status, signal_lost_at, reconnect_deadline_at, cloudflare_video_uid, hls_url, playback_url, post_id, live_post_id, archive_status, archive_error, rtmp_config_id, is_persistent_stream, updated_at')
+          .select('id, status, title, description, source_connected_at, source_connected, connected_at, disconnected_at, connection_status, last_disconnected_at, last_connection_check_at, live_input_status, preview_ready, preview_url, reconnect_count, ended_at, end_reason, auto_end_reason, signal_status, signal_lost_at, reconnect_deadline_at, video_signal_lost_at, cloudflare_video_uid, hls_url, playback_url, post_id, live_post_id, archive_status, archive_error, rtmp_config_id, is_persistent_stream, updated_at')
           .eq('id', liveSessionId)
           .maybeSingle();
+        if (freshError) throw freshError;
         if (fresh) current = { ...session, ...fresh };
         console.log('[RTMP_STATUS_TERMINAL_SKIP]', { liveSessionId, attemptedStatus: status, currentStatus: fresh?.status });
       }
     } else {
       // Heartbeat-only: chỉ update khi session chưa terminal.
-      await admin
+      const { error: heartbeatError } = await admin
         .from('live_sessions')
         .update({ last_connection_check_at: now })
         .eq('id', liveSessionId)
         .not('status', 'in', rtmpFrozenStatusSqlList());
+      if (heartbeatError) throw heartbeatError;
       current = { ...session, last_connection_check_at: now };
     }
 
@@ -523,7 +549,7 @@ Deno.serve(async (req) => {
       videoStreaming,
       connected,
       previewUrlExists: !!hlsUrl,
-      cloudflareErrors,
+      cloudflareErrorCount: cloudflareErrors.length,
     });
     console.log('[RTMP_STATUS]', {
       sessionId: liveSessionId,
@@ -538,7 +564,7 @@ Deno.serve(async (req) => {
       hasPlaybackUid: !!playbackUid,
       newStatus: status,
       previousStatus: session.status,
-      cloudflareErrors,
+      cloudflareErrorCount: cloudflareErrors.length,
       inputStatus: liveInput ? {
         status: (liveInput as any).status,
         state: (liveInput as any).state,
@@ -580,6 +606,7 @@ Deno.serve(async (req) => {
       signalStatus: current.signal_status || null,
       signalLostAt: current.signal_lost_at || null,
       reconnectDeadlineAt: current.reconnect_deadline_at || null,
+      videoSignalLostAt: current.video_signal_lost_at || null,
       disconnectGraceSeconds: getDisconnectGraceSeconds(),
       cloudflareLiveInputState: getLiveInputState(liveInput),
       inputConnected,
@@ -593,7 +620,7 @@ Deno.serve(async (req) => {
         selectedVideoUidExists: !!liveVideo,
         previewUrlExists: !!hlsUrl,
         reason: detection.reason,
-        errors: cloudflareErrors,
+        errors: cloudflareErrorSummaries,
       },
       live_session: current,
       source_connected: connected,

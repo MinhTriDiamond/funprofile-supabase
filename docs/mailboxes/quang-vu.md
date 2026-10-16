@@ -155,3 +155,28 @@ SQL: `docs/superpowers/plans/2026-10-15-livestream-orphan-dry-run.sql`. Candidat
 - Post đã được đồng bộ lại sang URL MP4 xác minh, `replay_ready=true`, `replay_status=ready_mp4`; session `archived`/`recording_status=ready`; replay `archive_phase=done`, `archive_status=replay_posted`, Cloudflare source đã xóa sau khi R2 sẵn sàng.
 - Thêm regression test: `createOrUpdateReplayPost` phải publish trạng thái ready khi replay row cũ vẫn mang `processing`/`stream_ready`. Sửa helper để verified R2 post luôn ghi `ready_mp4`, `r2_ready`, và xóa processing message.
 - Kiểm tra: test replay feed 2/2 đạt; `tsgo --noEmit` đạt; `git diff --check` đạt. Cần deploy `live-replay-archive-cron` để đưa helper đã sửa lên production và commit/push thay đổi code.
+
+## Bắt đầu sửa RTMP no-video auto-end — 2026-10-17
+
+- Cha xác nhận đã thông báo vào nhóm Coordinator trên Telegram trước khi bắt đầu.
+- Bé sẽ điều tra và sửa trường hợp Cloudflare Live Input còn `connected` nhưng không có active video thuộc cửa sổ phiên hiện tại; phạm vi gồm policy dùng chung, RTMP watchdogs, test pipeline replay/feed nếu regression chứng minh lỗi, migration nullable cho mốc no-video grace nếu cần, và kế hoạch phát hành.
+- Nhánh dự kiến: `fix/rtmp-no-video-auto-end`. Không deploy, áp migration production, sửa cron/secret hoặc tạo/kết thúc phiên production trong task này.
+- Preflight: `main` tại `1c83286`, khớp `origin/main`; chỉ có plan RTMP mới và `supabase/.temp/` chưa được theo dõi. Cả hai được giữ nguyên; `.temp/` không thuộc diff.
+
+## Kết quả sửa RTMP no-video auto-end — 2026-10-17
+
+- Root cause trong code đã xác nhận: hai cron từng coi `inputConnected` là nguồn khỏe dù không có video live thuộc cửa sổ phiên; `live-replay-archive-cron` vì thế không bắt đầu grace. `get-rtmp-live-session-status` cũng refresh `last_connection_check_at` trong lúc trang đang mở, có thể làm phiên không lọt vào các truy vấn stale của watchdog còn lại.
+- Thêm policy/helper dùng chung cho ba điểm poll RTMP: phân biệt video phiên hiện tại, input connected/no video, input disconnected và unknown/error. Grace no-video dùng `RTMP_DISCONNECT_GRACE_SECONDS` (mặc định 180 giây), mốc `video_signal_lost_at` chỉ ghi lần đầu, được xóa khi video phiên hiện tại trở lại hoặc input mất kết nối. Sau grace có Cloudflare recheck mới; chỉ no-video/disconnected đã đọc thành công mới gọi end-service có fencing. Query marker pending giúp grace watchdog vẫn quét được khi status poll đang làm mới heartbeat.
+- Sửa cron archive không còn ghi `status='ended'` trực tiếp trước end-service. Log timeout chỉ ghi sau khi fenced end thực sự thành công. API/DB/unknown defer; lỗi DB trong cập nhật marker/recovery làm lượt xử lý thất bại rõ ràng.
+- Thêm migration `20261017090000_rtmp_no_video_grace.sql` cho cột nullable và partial index. Migration chưa được chạy ở local hay production; phải áp dụng trước khi phát hành Edge Functions.
+- Replay/feed: đã xác minh end-transition hiện có chốt session/post/replay cùng giao dịch; archive cron phục hồi replay thiếu bằng `live_session_id`, upsert theo session, và `createOrUpdateReplayPost` cập nhật post hiện tại. Archive service chỉ báo ready sau public R2 media verification. Test feed được mở rộng để retry hai lần vẫn cập nhật cùng post, không insert trùng. Không phát hiện lỗi pipeline cần sửa.
+- Kiểm tra đạt: 5 file Bun / 34 test; `bunx --package @typescript/native-preview tsgo --noEmit`; `deno check` cho `get-rtmp-live-session-status`, `live-replay-archive-cron`, `live-rtmp-grace-watchdog`; `git diff --check`.
+- Chưa deploy, chưa áp migration, không đổi cron/secret/dữ liệu production; không commit/push. Sau migration cần deploy đúng 3 function: `get-rtmp-live-session-status`, `live-replay-archive-cron`, `live-rtmp-grace-watchdog`; lịch cron hiện tại không đổi.
+- Giới hạn: không truy cập production logs/telemetry cho phiên nêu trong yêu cầu ở lượt này, nên root cause của một sự kiện live cụ thể chưa được khẳng định. Policy xác định mất active video theo Cloudflare metadata/current-session window; OBS vẫn encode cảnh đen/trống thì vẫn là video hoạt động và không thể phân biệt nội dung có ý nghĩa chỉ bằng tín hiệu kết nối.
+
+## Phát hành RTMP no-video auto-end — 2026-10-17
+
+- Cha yêu cầu commit, push và deploy sau khi review thay đổi.
+- Trước khi phát hành: 34 test RTMP/replay đạt; `tsgo --noEmit`, `deno check` ba Edge Function và `git diff --check` đạt.
+- Production project `tljfqavndndfsvtazibe` đã được xác nhận qua Supabase CLI. Migration `20261017090000_rtmp_no_video_grace` được áp dụng riêng bằng nội dung migration chính xác; truy vấn chỉ đọc xác nhận cột `video_signal_lost_at` và index `idx_live_sessions_rtmp_video_signal_lost` tồn tại. Migration được ghi nhận riêng trong lịch sử Supabase để không chạy `db push` hàng loạt khi lịch sử production còn lệch nhiều migration cũ.
+- Bước còn lại: commit/push code lên `main`, deploy `get-rtmp-live-session-status`, `live-replay-archive-cron`, `live-rtmp-grace-watchdog`, rồi xác minh phiên bản ACTIVE. Chưa chạy live test thật trong OBS.

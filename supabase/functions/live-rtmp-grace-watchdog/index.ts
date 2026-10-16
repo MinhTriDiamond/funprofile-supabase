@@ -4,6 +4,8 @@ import { endRtmpLiveSession, getDisconnectGraceSeconds, getDisconnectGraceMinute
 import { RTMP_END_CLAIM_LEASE_MS } from '../_shared/rtmpEndTransition.ts';
 import { safeErrorText } from '../_shared/safeErrorText.ts';
 import { detectRtmpLiveConnection } from '../_shared/cloudflareStreamService.ts';
+import { classifyRtmpVideoSignal } from '../_shared/rtmpDisconnectPolicy.ts';
+import { reconcileRtmpSessionVideoSignal } from '../_shared/rtmpVideoSignalGraceService.ts';
 
 
 const corsHeaders = {
@@ -82,7 +84,7 @@ async function notifyAutoEnded(admin: any, session: any, reason: string) {
     reason === 'max_duration_exceeded'
       ? `Buổi live đã vượt quá ${getMaxSessionHours()} giờ nên hệ thống tự kết thúc. Bản ghi sẽ được lưu và đăng lên trang cá nhân sau ít phút.`
       : reason === 'source_disconnected_no_active_video'
-        ? `Cloudflare không còn nhận tín hiệu video từ OBS quá ${Math.max(minutes * 2, 6)} phút nên buổi live đã tự kết thúc. Bản ghi sẽ được lưu và đăng lên trang cá nhân sau ít phút.`
+        ? `Cloudflare không còn nhận tín hiệu video từ OBS quá ${minutes} phút nên buổi live đã tự kết thúc. Bản ghi sẽ được lưu và đăng lên trang cá nhân sau ít phút.`
         : `Nguồn OBS mất kết nối quá ${minutes} phút nên buổi live đã tự kết thúc. Bản ghi sẽ được lưu và đăng lên trang cá nhân sau ít phút.`;
   await admin.from('notifications').insert({
     user_id: userId,
@@ -133,7 +135,7 @@ Deno.serve(async (req) => {
     if (staleEndingError) throw staleEndingError;
 
     // 1) Legacy auto_end_at expired
-    const { data: legacy } = await admin
+    const { data: legacy, error: legacyError } = await admin
       .from('live_sessions')
       .select('*')
       .eq('mode', 'rtmp_obs')
@@ -141,9 +143,10 @@ Deno.serve(async (req) => {
       .not('auto_end_at', 'is', null)
       .lte('auto_end_at', nowIso)
       .limit(50);
+    if (legacyError) throw legacyError;
 
     // 2) disconnect_grace state machine expired
-    const { data: graceExpired } = await admin
+    const { data: graceExpired, error: graceExpiredError } = await admin
       .from('live_sessions')
       .select('*')
       .eq('mode', 'rtmp_obs')
@@ -151,10 +154,11 @@ Deno.serve(async (req) => {
       .not('last_disconnected_at', 'is', null)
       .lte('last_disconnected_at', graceCutoff)
       .limit(50);
+    if (graceExpiredError) throw graceExpiredError;
 
     // 3) Stale live: status='live' nhưng last_source_seen_at/last_connection_check_at quá cũ
     //    (webhook miss disconnect event). Sẽ recheck Cloudflare bên dưới.
-    const { data: stalePublic } = await admin
+    const { data: stalePublic, error: stalePublicError } = await admin
       .from('live_sessions')
       .select('*')
       .eq('mode', 'rtmp_obs')
@@ -163,11 +167,12 @@ Deno.serve(async (req) => {
       .or(`last_source_seen_at.lte.${fallbackCutoff},last_connection_check_at.lte.${fallbackCutoff}`)
       .not('cloudflare_live_input_id', 'is', null)
       .limit(50);
+    if (stalePublicError) throw stalePublicError;
 
     // 3b) Stale-NULL: status='live' nhưng CẢ last_source_seen_at LẪN last_disconnected_at đều NULL
     //     (persistent live input + webhook miss disconnect ngay từ đầu). Threshold = STALE_NULL_MINUTES.
     const staleNullCutoff = new Date(nowMs - getStaleNullMinutes() * 60 * 1000).toISOString();
-    const { data: staleNull } = await admin
+    const { data: staleNull, error: staleNullError } = await admin
       .from('live_sessions')
       .select('*')
       .eq('mode', 'rtmp_obs')
@@ -178,15 +183,28 @@ Deno.serve(async (req) => {
       .lte('started_at', staleNullCutoff)
       .not('cloudflare_live_input_id', 'is', null)
       .limit(50);
+    if (staleNullError) throw staleNullError;
+
+    const { data: pendingNoVideo, error: pendingNoVideoError } = await admin
+      .from('live_sessions')
+      .select('*')
+      .eq('mode', 'rtmp_obs')
+      .in('status', ['live', 'disconnect_grace', 'reconnecting'])
+      .is('ended_at', null)
+      .not('video_signal_lost_at', 'is', null)
+      .order('video_signal_lost_at', { ascending: true })
+      .limit(50);
+    if (pendingNoVideoError) throw pendingNoVideoError;
 
     // 4) Trần thời lượng tuyệt đối: bất kể detection trả gì, đóng cứng
-    const { data: maxDurationExpired } = await admin
+    const { data: maxDurationExpired, error: maxDurationError } = await admin
       .from('live_sessions')
       .select('*')
       .eq('mode', 'rtmp_obs')
       .eq('status', 'live')
       .lte('started_at', maxDurationCutoff)
       .limit(50);
+    if (maxDurationError) throw maxDurationError;
 
     // Verify nhánh stalePublic với Cloudflare API trước khi end:
     // - Coi là CÒN live chỉ khi inputConnected && videoStreaming (cả 2 đều true).
@@ -197,35 +215,58 @@ Deno.serve(async (req) => {
     const stalePool = new Map<string, any>();
     for (const s of stalePublic || []) stalePool.set(s.id, s);
     for (const s of staleNull || []) if (!stalePool.has(s.id)) stalePool.set(s.id, s);
+    for (const s of pendingNoVideo || []) if (!stalePool.has(s.id)) stalePool.set(s.id, s);
+    const resultsForNoVideo: Array<Record<string, unknown>> = [];
     for (const s of stalePool.values()) {
       try {
         const detection = await detectRtmpLiveConnection(s, { skewSeconds: 60 });
-        const reasonStr = (detection as any).reason || '';
-        if (reasonStr === 'cloudflare_soft_fail' || reasonStr === 'unknown_input_state') {
+        const signalState = classifyRtmpVideoSignal(detection);
+        if (signalState === 'unknown') {
           console.log('[grace-watchdog] skip cloudflare_soft_fail', s.id);
+          resultsForNoVideo.push({ session_id: s.id, ok: false, skipped: 'cloudflare_state_unknown' });
           continue;
         }
-        const inputConnected = !!(detection as any).inputConnected;
-        const videoStreaming = !!(detection as any).videoStreaming;
-        if (inputConnected || videoStreaming) {
-          await admin
+        if (signalState === 'current_video') {
+          const { error: recoverError } = await admin
             .from('live_sessions')
             .update({
+              status: s.status === 'live' || ((s.status === 'disconnect_grace' || s.status === 'reconnecting') && (s.post_id || s.live_post_id)) ? 'live' : s.status,
               last_source_seen_at: nowIso,
               last_connection_check_at: nowIso,
               connection_status: 'connected',
               source_connected: true,
+              video_signal_lost_at: null,
+              live_input_status: 'live',
+              signal_lost_at: null,
+              reconnect_deadline_at: null,
+              last_disconnected_at: null,
               updated_at: nowIso,
             })
-            .eq('id', s.id);
-          keptAlive.push({ session_id: s.id, reason: inputConnected ? 'input_connected' : 'current_session_video_active' });
+            .eq('id', s.id)
+            .is('ended_at', null);
+          if (recoverError) throw recoverError;
+          keptAlive.push({ session_id: s.id, reason: 'current_session_video_active' });
           continue;
         }
-        if (!(detection as any).confirmedDisconnected || (detection as any).errors?.length) continue;
-        // input "connected" nhưng KHÔNG có active video — case stuck của persistent input
-        verifiedFallback.push({ session: s, detection });
+        if (signalState === 'input_connected_no_video') {
+          const result = await reconcileRtmpSessionVideoSignal(admin, s, detection, { now: nowIso, graceSeconds });
+          if (result.action === 'ended' && result.endResult && !result.endResult.idempotent && !result.endResult.in_progress) {
+            await notifyAutoEnded(admin, s, 'source_disconnected_no_active_video').catch((e) => console.warn('[grace-watchdog] notify failed', String(e)));
+            resultsForNoVideo.push({ session_id: s.id, reason: 'source_disconnected_no_active_video', ...result.endResult });
+          }
+          continue;
+        }
+        if (signalState === 'input_disconnected') {
+          const { error: disconnectUpdateError } = await admin.from('live_sessions').update({
+            video_signal_lost_at: null,
+            last_connection_check_at: nowIso,
+          }).eq('id', s.id).is('ended_at', null);
+          if (disconnectUpdateError) throw disconnectUpdateError;
+          verifiedFallback.push({ session: { ...s, video_signal_lost_at: null }, detection });
+        }
       } catch (e) {
         console.warn('[grace-watchdog] detect failed', s.id, safeErrorText(e));
+        resultsForNoVideo.push({ session_id: s.id, ok: false, skipped: 'processing_error' });
       }
     }
 
@@ -233,7 +274,7 @@ Deno.serve(async (req) => {
     const toEnd: Array<{ session: any; reason: RtmpEndReason }> = [];
     for (const s of legacy || []) toEnd.push({ session: s, reason: 'disconnect_timeout' });
     for (const s of graceExpired || []) toEnd.push({ session: s, reason: 'disconnect_timeout' });
-    for (const v of verifiedFallback) toEnd.push({ session: v.session, reason: 'source_disconnected_no_active_video' });
+    for (const v of verifiedFallback) toEnd.push({ session: v.session, reason: 'obs_signal_lost_timeout' });
     for (const s of maxDurationExpired || []) {
       if (!toEnd.some((t) => t.session.id === s.id)) toEnd.push({ session: s, reason: 'max_duration_exceeded' });
     }
@@ -247,7 +288,7 @@ Deno.serve(async (req) => {
       toEnd.push({ session: s, reason: persistedReason });
     }
 
-    const results: Array<Record<string, unknown>> = [];
+    const results: Array<Record<string, unknown>> = [...resultsForNoVideo];
     for (const { session, reason } of toEnd) {
       try {
         // Recheck cuối cùng cho nhánh KHÔNG phải max_duration (không bao giờ recheck cho max_duration)
@@ -264,14 +305,9 @@ Deno.serve(async (req) => {
             continue;
           }
 
-          const inputConnected = !!(detection as any).inputConnected;
-          const videoStreaming = !!(detection as any).videoStreaming;
-          const confirmedDisconnected = !!(detection as any).confirmedDisconnected;
-          const hasReadError = (detection as any).errors?.length > 0
-            || detection.reason === 'cloudflare_soft_fail'
-            || detection.reason === 'unknown_input_state';
-          if (inputConnected || videoStreaming) {
-            await admin.from('live_sessions').update({
+          const finalState = classifyRtmpVideoSignal(detection);
+          if (finalState === 'current_video') {
+            const { error: recoverError } = await admin.from('live_sessions').update({
               status: session.post_id || session.live_post_id
                 ? 'live'
                 : (session.title?.trim() && session.description?.trim() ? 'ready_to_go_live' : 'source_connected'),
@@ -282,13 +318,25 @@ Deno.serve(async (req) => {
               last_connection_check_at: nowIso,
               auto_end_at: null,
               live_input_status: 'live',
+              video_signal_lost_at: null,
               updated_at: nowIso,
-            }).eq('id', session.id);
-            keptAlive.push({ session_id: session.id, reason: inputConnected ? 'recheck_input_connected' : 'recheck_current_session_video_active' });
+            }).eq('id', session.id).is('ended_at', null);
+            if (recoverError) throw recoverError;
+            keptAlive.push({ session_id: session.id, reason: 'recheck_current_session_video_active' });
             results.push({ session_id: session.id, ok: true, skipped: 'source_reconnected', detection_reason: detection.reason, reason });
             continue;
           }
-          if (!confirmedDisconnected || hasReadError) {
+          if (finalState === 'input_connected_no_video') {
+            const noVideoResult = await reconcileRtmpSessionVideoSignal(admin, session, detection, { now: nowIso, graceSeconds });
+            if (noVideoResult.action === 'ended' && noVideoResult.endResult && !noVideoResult.endResult.idempotent && !noVideoResult.endResult.in_progress) {
+              await notifyAutoEnded(admin, session, 'source_disconnected_no_active_video').catch((e) => console.warn('[grace-watchdog] notify failed', String(e)));
+              results.push({ session_id: session.id, reason: 'source_disconnected_no_active_video', ...noVideoResult.endResult });
+            } else {
+              results.push({ session_id: session.id, ok: false, skipped: noVideoResult.action === 'grace' ? 'no_video_grace' : noVideoResult.action, reason });
+            }
+            continue;
+          }
+          if (finalState !== 'input_disconnected') {
             results.push({ session_id: session.id, ok: true, skipped: 'cloudflare_disconnect_not_confirmed', reason });
             continue;
           }
@@ -316,6 +364,7 @@ Deno.serve(async (req) => {
         grace_expired: (graceExpired || []).length,
         stale_public: (stalePublic || []).length,
         stale_null: (staleNull || []).length,
+        pending_no_video: (pendingNoVideo || []).length,
         max_duration_expired: (maxDurationExpired || []).length,
         stale_ending_claims: (staleEnding || []).length,
       },
