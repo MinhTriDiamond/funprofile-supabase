@@ -75,9 +75,11 @@ export function EcosystemBelowItems({ onItemClick }: { onItemClick?: () => void 
               )}
               <span
                 className={`font-medium text-sm transition-colors duration-300 ${
-                  item.isSpecial
-                    ? 'text-yellow-400 group-hover:text-yellow-300 font-semibold'
-                    : 'group-hover:text-primary'
+                  item.id === 'about'
+                    ? 'text-red-500'
+                    : item.isSpecial
+                      ? 'text-yellow-400 group-hover:text-yellow-300 font-semibold'
+                      : 'group-hover:text-primary'
                 }`}
               >
                 {item.id === 'about' ? t('aboutFunProfile') : item.name}
