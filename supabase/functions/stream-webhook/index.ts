@@ -339,7 +339,7 @@ async function handleLiveInputEvent(admin: any, event: any, type: string): Promi
     const recheck = await detectRtmpLiveConnection(session, { skewSeconds: 60 });
     if (recheck.connected || recheck.videoStreaming) {
       const recheckUrls = recheck.activeVideoUid ? getStreamPlaybackUrls(recheck.activeVideoUid) : null;
-      const nextStatus = session.status === 'live' || ((session.status === 'disconnect_grace' || session.status === 'reconnecting') && (session.post_id || session.live_post_id))
+      const nextStatus = session.status === 'live' || ((session.status === 'disconnect_grace' || session.status === 'reconnecting' || session.status === 'ready_to_go_live' || session.status === 'source_connected') && (session.post_id || session.live_post_id))
         ? 'live'
         : (detailsComplete ? 'ready_to_go_live' : 'source_connected');
       await admin.from('live_sessions').update({
@@ -425,7 +425,7 @@ async function handleLiveInputEvent(admin: any, event: any, type: string): Promi
   if (isConnected) {
     const wasDisconnected = !!(session.source_disconnected_at || session.last_disconnected_at || session.disconnected_at || session.auto_end_at);
     const wasInGrace = (session.status === 'live' || session.status === 'disconnect_grace' || session.status === 'reconnecting') && wasDisconnected;
-    const nextStatus = session.status === 'live' || ((session.status === 'disconnect_grace' || session.status === 'reconnecting') && (session.post_id || session.live_post_id))
+    const nextStatus = session.status === 'live' || ((session.status === 'disconnect_grace' || session.status === 'reconnecting' || session.status === 'ready_to_go_live' || session.status === 'source_connected') && (session.post_id || session.live_post_id))
       ? 'live' // Public live reconnects during grace, keep it public.
       : (detailsComplete ? 'ready_to_go_live' : 'source_connected');
     await admin.from('live_sessions').update({
