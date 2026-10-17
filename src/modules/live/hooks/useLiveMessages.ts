@@ -75,9 +75,6 @@ async function enrichProfiles(rows: Array<{ user_id: string }>) {
   return profileCache;
 }
 
-// ── Rate limiter: 1 message per second ──
-const lastSendTimes = new Map<string, number>();
-
 export function useLiveMessages(sessionId?: string) {
   const [messages, setMessages] = useState<LiveMessage[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -175,19 +172,10 @@ export function useLiveMessages(sessionId?: string) {
       const value = content.trim();
       if (!sessionId || !value) return;
 
-      // Rate limit: 1 message per second per session
-      const now = Date.now();
-      const lastSend = lastSendTimes.get(sessionId) || 0;
-      if (now - lastSend < 1000) {
-        throw new Error('Bạn đang gửi quá nhanh, vui lòng chờ 1 giây.');
-      }
-
       // Use getSession (local cache) instead of getUser (network call)
       const { data: { session } } = await supabase.auth.getSession();
       const user = session?.user;
       if (!user) return;
-
-      lastSendTimes.set(sessionId, now);
 
       const optimisticMsg: LiveMessage = {
         id: -Date.now(),
