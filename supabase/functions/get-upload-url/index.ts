@@ -8,6 +8,7 @@
  */
 
 import { createClient } from 'npm:@supabase/supabase-js@2';
+import { getChatMediaUploadDenial } from '../_shared/chatMediaRelease.ts';
 import {
   isElevatedMediaAccount,
   isPostUploadKey,
@@ -132,6 +133,14 @@ Deno.serve(async (req) => {
         JSON.stringify({ error: 'Missing key or contentType' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
+    }
+
+    const chatUploadDenial = getChatMediaUploadDenial(key);
+    if (chatUploadDenial) {
+      return new Response(JSON.stringify({ code: chatUploadDenial.code, error: chatUploadDenial.message }), {
+        status: chatUploadDenial.status,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     // ✅ VALIDATE CONTENT TYPE

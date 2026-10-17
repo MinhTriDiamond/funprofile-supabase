@@ -1,8 +1,14 @@
 import { describe, expect, it, vi } from 'vitest';
 import { resolveChatMediaUploads, sendChatMediaMessage } from './chatMedia';
 import { isChatMediaKeyOwnedByUser, validateChatMediaUpload } from '../../../supabase/functions/_shared/mediaLimits';
+import { getChatMediaUploadDenial } from '../../../supabase/functions/_shared/chatMediaRelease';
 
 describe('chat media upload boundary', () => {
+  it('blocks new public chat uploads while preserving other upload paths', () => {
+    expect(getChatMediaUploadDenial('chat-media/me/private.pdf')).toMatchObject({ status: 503, code: 'CHAT_ATTACHMENTS_PAUSED' });
+    expect(getChatMediaUploadDenial('posts/me/image.png')).toBeNull();
+    expect(getChatMediaUploadDenial('avatars/me/image.png')).toBeNull();
+  });
   it('rejects another user key, unsafe paths, unsupported MIME and oversized files', () => {
     expect(isChatMediaKeyOwnedByUser('chat-media/me/file.png', 'me')).toBe(true);
     expect(isChatMediaKeyOwnedByUser('chat-media/other/file.png', 'me')).toBe(false);

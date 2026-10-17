@@ -66,3 +66,11 @@ Ghi lại từng lần thử với build/thiết bị, kết quả và lỗi đ�
 ## Media limitation và phát hành
 
 Chat upload nằm dưới `chat-media/<user-id>/...`, nhưng read URL hiện là public `media.fun.rich`; người biết URL có thể mở file ngoài conversation. Không gọi media chat là riêng tư. Size validator nhận `fileSize` do client gửi trước presigned PUT; chưa có HEAD sau upload ràng buộc kích thước object thật. Nếu sản phẩm yêu cầu file đính kèm riêng tư thì đây là **blocker cho file sharing**: thêm signed-read endpoint kiểm tra active conversation membership rồi chỉ trả URL ngắn hạn. Nếu cần hard size cap chống client giả thì cũng là blocker cho tuyên bố giới hạn cứng: thêm server-side upload completion/HEAD verification trước khi lưu message. Chat text/call không phụ thuộc read URL; có thể tắt tạm composer attachment qua frontend nếu cần phát hành phần còn lại trước.
+
+## Cửa sổ phát hành được Cha ủy quyền — 2026-10-18
+
+- Phát hành chat text/call với upload file mới tạm dừng: shared policy `chatMediaRelease.ts` dùng chung cho frontend và endpoint presigned upload. Menu gửi file disabled, upload helper từ chối, endpoint trả `503 CHAT_ATTACHMENTS_PAUSED` cho prefix chat-media. Upload bài viết/avatar không bị khóa; link file cũ vẫn công khai. Chưa tuyên bố media riêng tư.
+- Xác minh bổ sung production: cả ba call `active` legacy đều có `ended_at` khác NULL, không chỉ có bằng chứng tuổi bản ghi. Có thể sửa trạng thái đúng ba ID về `ended` với điều kiện `status='active' AND ended_at IS NOT NULL`, giữ nguyên timestamp, không đóng call khác hoặc cleanup theo tuổi.
+- Ba migration cùng catalog assertions đã chạy thành công trên schema production trong giao dịch `ROLLBACK`, không giữ lại schema/data changes từ lượt thử. Snapshot catalog quyền/policy/publication trước phát hành được lưu ngoài repository tại `/tmp/funprofile-chat-release-20261018/catalog-before.json`; đây không phải backup đầy đủ database.
+- Sau khi backend sẵn sàng, merge/push main và publish đúng Lovable project `331267a9-893e-47d1-8309-12038b7636f7` (FUN Profile Supabase). Project cũ ghi trong README không phải target phát hành.
+- Hai tài khoản và Safari/iPhone thật vẫn là kiểm chứng operator cần thực hiện; catalog/fixture tests không thay thế RTC/audio/video end-to-end.

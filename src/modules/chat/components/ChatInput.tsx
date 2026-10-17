@@ -6,6 +6,7 @@ import { Paperclip, Send, X, Gift, Wallet, Layers } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { uploadChatMedia, type MediaUploadResult } from '@/utils/mediaUpload';
 import { sendChatMediaMessage } from '../chatMedia';
+import { CHAT_MEDIA_UPLOADS_ENABLED, CHAT_MEDIA_PAUSED_MESSAGE } from '../../../../supabase/functions/_shared/chatMediaRelease';
 import { toast } from 'sonner';
 import { EmojiPicker } from '@/components/feed/EmojiPicker';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -279,11 +280,12 @@ export function ChatInput({
               {/* Đính kèm file */}
               <button
                 onClick={() => { fileInputRef.current?.click(); setShowAttachMenu(false); }}
-                disabled={mediaFiles.length >= 4}
+                disabled={!CHAT_MEDIA_UPLOADS_ENABLED || mediaFiles.length >= 4}
+                title={!CHAT_MEDIA_UPLOADS_ENABLED ? CHAT_MEDIA_PAUSED_MESSAGE : undefined}
                 className="flex items-center gap-3 px-3 py-2.5 rounded-md hover:bg-accent text-sm text-left disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Paperclip className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                Đính kèm file
+                {CHAT_MEDIA_UPLOADS_ENABLED ? 'Đính kèm file' : 'Gửi tệp tạm dừng'}
               </button>
 
               {/* Stickers */}

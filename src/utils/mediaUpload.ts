@@ -10,6 +10,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { compressImage, FILE_LIMITS } from './imageCompression';
+import { CHAT_MEDIA_UPLOADS_ENABLED, CHAT_MEDIA_PAUSED_MESSAGE } from '../../supabase/functions/_shared/chatMediaRelease';
 
 // R2 custom domain (dùng cho Cloudflare Image Resizing)
 const R2_CUSTOM_DOMAIN = 'https://media.fun.rich';
@@ -291,6 +292,7 @@ export async function uploadCommentMedia(file: File): Promise<MediaUploadResult>
 
 /** Chat media uses a user-owned key prefix enforced by get-upload-url. */
 export async function uploadChatMedia(file: File): Promise<MediaUploadResult> {
+  if (!CHAT_MEDIA_UPLOADS_ENABLED) throw new Error(CHAT_MEDIA_PAUSED_MESSAGE);
   return uploadMedia(file, {
     bucket: 'chat-media',
     compress: file.type.startsWith('image/'),
