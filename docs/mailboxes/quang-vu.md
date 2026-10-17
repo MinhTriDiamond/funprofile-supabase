@@ -225,3 +225,10 @@ SQL: `docs/superpowers/plans/2026-10-15-livestream-orphan-dry-run.sql`. Candidat
 - Chạy lại `supabase/tests/chat_security_realtime.sql` trên PostgreSQL tạm, dưới `authenticated` + JWT claims; kết thúc `ROLLBACK`. `bash supabase/tests/chat_call_concurrency.sh` đạt với start, accept/decline, end và terminal fencing đồng thời.
 - `git diff --check` đạt; nhánh vẫn là `fix/quangvu-chat-call-hardening`. `supabase/.temp/` còn nguyên, không đưa vào thay đổi có chủ đích.
 - Không áp migration, deploy function, thay secret, sửa cron hay dữ liệu production; không commit/push. Kết luận phát hành giữ nguyên: đủ để chuyển sang preview/staging có kiểm soát, chưa đủ điều kiện production cho file sharing riêng tư hoặc call ở conversation đang có ba row `active` cũ chưa được operator xác minh.
+
+## Commit/push bản sửa chat/call — 2026-10-18
+
+- Đã commit toàn bộ thay đổi thuộc task trên nhánh `fix/quangvu-chat-call-hardening`: `6a0e102dfab188f654e71b9ee23f94938e583ee2` (`fix(chat): harden messaging and Agora calls`).
+- Đã push nhánh lên `origin/fix/quangvu-chat-call-hardening`; upstream đã thiết lập. Không merge, không push `main`, không force-push. `supabase/.temp/` vẫn ngoài commit.
+- Trước commit: staged diff check và credential-pattern scan không có lỗi/không có kết quả khớp; test/source verification dùng lại kết quả đạt ở lượt trước vì không có thay đổi source từ lần đó. Chỉ bỏ trailing whitespace trong spec mới và cập nhật tài liệu bàn giao.
+- Cổng còn lại trước production: operator xác minh 3 call `active` cũ; chạy preview/staging với hai tài khoản desktop và Safari iPhone; quyết định media public có chấp nhận được không hoặc thêm signed-read/HEAD verification trước khi bật file sharing riêng tư.
