@@ -66,6 +66,7 @@ export const SYSTEM_TYPES = [
   'reward_rejected',
   'claim_reward',
   'account_banned',
+  'impersonation_alert',
   'account_unbanned',
   'link_wallet_reminder',
   'mint_request_rejected',
@@ -260,6 +261,27 @@ export const SYSTEM_NOTIF_TEXT: Record<
     desc: t('sntLinkWalletDesc'),
   }),
 
+  // ─── Giả mạo (cảnh báo cộng đồng) ───
+  impersonation_alert: (m, t, fmt) => {
+    const sim = m?.similar as { username?: unknown } | undefined;
+    const exi = m?.existing as { username?: unknown } | undefined;
+    const suspectName = str(sim?.username) || str(m?.suspect_username);
+    const victimName = str(exi?.username) || str(m?.victim_username);
+    const score = num(m?.overall_score);
+    const avatarScore = num(m?.avatar_similarity);
+    if (!suspectName) {
+      return { tone: 'danger', title: t('sntImpersonationTitle'), desc: t('sntImpersonationDescGeneric') };
+    }
+    const b = avatarScore > 0 ? t('sntImpersonationDescBNameAvatar') : t('sntImpersonationDescBName');
+    return {
+      tone: 'danger',
+      title: t('sntImpersonationTitle'),
+      desc: `${t('sntImpersonationDescA')}${suspectName}${victimName ? `${b}${victimName}` : ''}${t('sntImpersonationDescC')}${
+        score ? `${t('sntImpersonationDescScoreA')}${fmt(score)}${t('sntImpersonationDescScoreB')}` : ''
+      }`,
+    };
+  },
+
   // ─── Vận hành / Admin ───
   treasury_low_gas: (m, t, fmt) => ({
     tone: 'warning',
@@ -298,6 +320,11 @@ export function notificationRoute(n: {
 
   if ((FRAUD_TYPES as readonly string[]).includes(type)) return '/admin?tab=fraud';
   if (type === 'wallet_reconciliation_alert') return '/admin?tab=wallets';
+  if (type === 'impersonation_alert') {
+    const md = (n.metadata ?? {}) as { similar?: { id?: string }; suspect_id?: string };
+    const sid = md.similar?.id || md.suspect_id;
+    return sid ? `/profile/${sid}` : null;
+  }
   if (type === 'btc_address_cleared') return '/profile?tab=edit';
   if (type.startsWith('treasury_')) return '/admin?tab=treasury';
 
