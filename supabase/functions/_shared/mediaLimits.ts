@@ -1,5 +1,27 @@
 const MB = 1024 * 1024;
 
+export function validateChatMediaUpload(input: { key: string; userId: string; contentType: string; fileSize: number }): MediaValidationError | null {
+  const { key, userId, contentType, fileSize } = input;
+  if (!isChatMediaKeyOwnedByUser(key, userId)) {
+    return { code: 'INVALID_CHAT_MEDIA_KEY', message: 'Đường dẫn tệp trò chuyện không hợp lệ.' } as MediaValidationError;
+  }
+  const mime = contentType.toLowerCase();
+  const imageMimes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/avif', 'image/heic'];
+  const videoMimes = ['video/mp4', 'video/webm', 'video/quicktime', 'video/x-m4v'];
+  const documentMimes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'text/plain', 'application/zip', 'application/x-zip-compressed', 'application/x-rar-compressed', 'application/vnd.rar', 'application/x-7z-compressed'];
+  if (![...imageMimes, ...videoMimes, ...documentMimes].includes(mime)) return { code: 'UNSUPPORTED_MEDIA_TYPE', message: MEDIA_LIMIT_MESSAGES.unsupportedType };
+  if (!Number.isSafeInteger(fileSize) || fileSize <= 0) return { code: 'INVALID_FILE_SIZE', message: 'Kích thước tệp không hợp lệ.' };
+  const limit = imageMimes.includes(mime) ? IMAGE_MAX_BYTES : videoMimes.includes(mime) ? VIDEO_MAX_BYTES_USER : 25 * MB;
+  if (fileSize > limit) return { code: 'CHAT_FILE_TOO_LARGE', message: `Tệp vượt quá giới hạn ${Math.floor(limit / MB)} MB.` };
+  return null;
+}
+
+export function isChatMediaKeyOwnedByUser(key: string, userId: string): boolean {
+  const prefix = `chat-media/${userId}/`;
+  const relativePath = key.startsWith(prefix) ? key.slice(prefix.length) : '';
+  return Boolean(relativePath) && !key.includes('..') && !key.includes('\\') && !key.startsWith('/') && !/[\u0000-\u001f]/.test(key);
+}
+
 export const MEDIA_LIMIT_MESSAGES = {
   maxTotal: "Bạn có thể đăng tối đa 30 file media trong một bài viết.",
   imageTooLarge: "Ảnh này vượt quá 20MB. Vui lòng chọn ảnh nhẹ hơn.",
@@ -31,7 +53,10 @@ export type MediaValidationCode =
   | "IMAGE_TOO_LARGE"
   | "VIDEO_TOO_LARGE"
   | "VIDEO_DURATION_TOO_LONG"
-  | "UNSUPPORTED_MEDIA_TYPE";
+  | "UNSUPPORTED_MEDIA_TYPE"
+  | "INVALID_CHAT_MEDIA_KEY"
+  | "INVALID_FILE_SIZE"
+  | "CHAT_FILE_TOO_LARGE";
 
 export interface MediaValidationError {
   code: MediaValidationCode;

@@ -12,11 +12,13 @@ import {
   isElevatedMediaAccount,
   isPostUploadKey,
   validateUploadMedia,
+  validateChatMediaUpload,
 } from '../_shared/mediaLimits.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
 
 // Allowed content types
@@ -125,7 +127,7 @@ Deno.serve(async (req) => {
     // Parse request
     const { key, contentType, fileSize, durationSeconds } = await req.json();
 
-    if (!key || !contentType) {
+    if (typeof key !== 'string' || typeof contentType !== 'string' || !key || !contentType) {
       return new Response(
         JSON.stringify({ error: 'Missing key or contentType' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -134,13 +136,10 @@ Deno.serve(async (req) => {
 
     // ✅ VALIDATE CONTENT TYPE
     const elevatedMediaAccount = await isElevatedMediaAccount(supabaseAdmin as any, user.id).catch(() => false);
-    const mediaValidation = validateUploadMedia({
-      key,
-      contentType,
-      fileSize,
-      durationSeconds,
-      isElevatedMediaAccount: elevatedMediaAccount,
-    });
+    const chatMediaKey = key.startsWith('chat-media/');
+    const mediaValidation = chatMediaKey
+      ? validateChatMediaUpload({ key, userId: user.id, contentType, fileSize })
+      : validateUploadMedia({ key, contentType, fileSize, durationSeconds, isElevatedMediaAccount: elevatedMediaAccount });
     if (mediaValidation) {
       return new Response(
         JSON.stringify({ error: mediaValidation.message, code: mediaValidation.code }),
@@ -246,7 +245,7 @@ Deno.serve(async (req) => {
     const uploadUrl = `https://${host}${canonicalUri}?${queryParams.toString()}`;
     const filePublicUrl = `${publicUrl}/${key}`;
 
-    console.log(`Generated presigned URL for ${key} by user ${user.id}`);
+    console.log('Generated authenticated R2 upload URL');
 
     return new Response(
       JSON.stringify({ 
@@ -260,10 +259,9 @@ Deno.serve(async (req) => {
     );
 
   } catch (error: unknown) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    console.error('Error generating upload URL:', error);
+    console.error('Error generating upload URL');
     return new Response(
-      JSON.stringify({ error: errorMessage }),
+      JSON.stringify({ error: 'Không thể tạo URL tải tệp lúc này.', code: 'UPLOAD_URL_FAILED' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }

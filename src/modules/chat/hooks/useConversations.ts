@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import type { Conversation, ConversationParticipant } from '../types';
+import { chatRpc } from '../chatRpc';
 
 export function useConversations(userId: string | null) {
   const queryClient = useQueryClient();
@@ -50,10 +51,11 @@ export function useConversations(userId: string | null) {
         });
       });
 
-      const { data: profiles } = await supabase
+      const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select('id, username, avatar_url, full_name, public_wallet_address, external_wallet_address, wallet_address')
         .in('id', Array.from(allUserIds));
+      if (profilesError) throw profilesError;
 
       const profileMap = new Map(profiles?.map(p => [p.id, p]) || []);
 
@@ -70,6 +72,8 @@ export function useConversations(userId: string | null) {
           .neq('sender_id', userId)
           .or('is_deleted.is.null,is_deleted.eq.false'),
       ]);
+      if (readResult.error) throw readResult.error;
+      if (unreadResult.error) throw unreadResult.error;
 
       const readMessageIds = new Set(readResult.data?.map(r => r.message_id) || []);
 
@@ -146,89 +150,9 @@ export function useConversations(userId: string | null) {
     mutationFn: async (otherUserId: string) => {
       if (!userId) throw new Error('User not authenticated');
 
-      // Block enforcement (Phase 1): prevent creating DM if you blocked the other user.
-      const { data: myBlock } = await supabase
-        .from('user_blocks')
-        .select('id')
-        .eq('blocker_id', userId)
-        .eq('blocked_id', otherUserId)
-        .maybeSingle();
-      if (myBlock?.id) {
-        throw new Error('Bạn đã tạm ngừng kết nối với người dùng này.');
-      }
-
-      // Also prevent creating DM if the other user has blocked you.
-      const { data: blockedByOther } = await supabase
-        .from('user_blocks')
-        .select('id')
-        .eq('blocker_id', otherUserId)
-        .eq('blocked_id', userId)
-        .maybeSingle();
-      if (blockedByOther?.id) {
-        throw new Error('Người dùng này đã tạm ngừng kết nối với bạn.');
-      }
-
-      // Check if conversation already exists
-      const { data: existingParticipants } = await supabase
-        .from('conversation_participants')
-        .select('conversation_id')
-        .eq('user_id', userId)
-        .is('left_at', null);
-
-      if (existingParticipants?.length) {
-        const { data: otherParticipants } = await supabase
-          .from('conversation_participants')
-          .select('conversation_id')
-          .eq('user_id', otherUserId)
-          .in('conversation_id', existingParticipants.map(p => p.conversation_id))
-          .is('left_at', null);
-
-        if (otherParticipants?.length) {
-          // Check if it's a direct (2-person) conversation
-          for (const op of otherParticipants) {
-            const { data: allParticipants } = await supabase
-              .from('conversation_participants')
-              .select('user_id')
-              .eq('conversation_id', op.conversation_id)
-              .is('left_at', null);
-
-            if (allParticipants?.length === 2) {
-              // Found existing direct conversation
-              const { data: conv } = await supabase
-                .from('conversations')
-                .select('*')
-                .eq('id', op.conversation_id)
-                .eq('type', 'direct')
-                .single();
-
-              if (conv) return conv;
-            }
-          }
-        }
-      }
-
-      // Create new conversation
-      const { data: conversation, error: convError } = await supabase
-        .from('conversations')
-        .insert({
-          type: 'direct',
-          created_by: userId,
-        })
-        .select()
-        .single();
-
-      if (convError) throw convError;
-
-      // Add both participants
-      const { error: partError } = await supabase
-        .from('conversation_participants')
-        .insert([
-          { conversation_id: conversation.id, user_id: userId, role: 'member' },
-          { conversation_id: conversation.id, user_id: otherUserId, role: 'member' },
-        ]);
-
-      if (partError) throw partError;
-
+      const conversationId = await chatRpc.createDirectConversation(otherUserId);
+      const { data: conversation, error } = await supabase.from('conversations').select('*').eq('id', conversationId).single();
+      if (error) throw error;
       return conversation;
     },
     onSuccess: () => {

@@ -11,6 +11,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Search } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { sanitizeProfileSearch } from '../chatSearch';
 
 interface NewConversationDialogProps {
   open: boolean;
@@ -38,14 +39,15 @@ export function NewConversationDialog({
 
   const handleSearch = async (q: string) => {
     setQuery(q);
-    if (q.trim().length < 2) { setResults([]); return; }
+    const safeQuery = sanitizeProfileSearch(q);
+    if (safeQuery.length < 2) { setResults([]); return; }
     setIsSearching(true);
     try {
       const { data } = await supabase
         .from('profiles')
         .select('id, username, full_name, avatar_url')
         .neq('id', currentUserId || '')
-        .or(`username.ilike.%${q.trim()}%,full_name.ilike.%${q.trim()}%`)
+        .or(`username.ilike.%${safeQuery}%,full_name.ilike.%${safeQuery}%`)
         .limit(20);
       setResults(data || []);
     } catch {

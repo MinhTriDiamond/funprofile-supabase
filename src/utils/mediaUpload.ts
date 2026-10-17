@@ -38,7 +38,7 @@ export interface MediaUploadResult {
 }
 
 export interface UploadOptions {
-  bucket: 'posts' | 'avatars' | 'videos' | 'comment-media' | 'covers';
+  bucket: 'posts' | 'avatars' | 'videos' | 'comment-media' | 'chat-media' | 'covers';
   compress?: boolean;
   maxWidth?: number;
   maxHeight?: number;
@@ -156,7 +156,9 @@ export async function uploadMedia(
   const pathSegment = preserveFilename
     ? generateDocumentPath(file.name, user.id)
     : generateCacheBustFilename(processedFile.name, user.id);
-  const key = `${bucket}/${pathSegment}`;
+  const key = bucket === 'chat-media'
+    ? `${bucket}/${user.id}/${pathSegment}`
+    : `${bucket}/${pathSegment}`;
 
   // Get presigned URL từ edge function
   const { data: presignedData, error: presignedError } = await supabase.functions.invoke(
@@ -284,5 +286,17 @@ export async function uploadCommentMedia(file: File): Promise<MediaUploadResult>
     bucket: 'comment-media',
     compress: false,
     preserveFilename: true,
+  });
+}
+
+/** Chat media uses a user-owned key prefix enforced by get-upload-url. */
+export async function uploadChatMedia(file: File): Promise<MediaUploadResult> {
+  return uploadMedia(file, {
+    bucket: 'chat-media',
+    compress: file.type.startsWith('image/'),
+    maxWidth: 1200,
+    maxHeight: 1200,
+    quality: 0.82,
+    preserveFilename: !file.type.startsWith('image/') && !file.type.startsWith('video/'),
   });
 }

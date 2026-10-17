@@ -2,6 +2,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { UserBlock } from '../types';
+import { chatRpc } from '../chatRpc';
 
 export function useBlocks(currentUserId: string | null) {
   const queryClient = useQueryClient();
@@ -10,12 +11,11 @@ export function useBlocks(currentUserId: string | null) {
     queryKey: ['chat-blocks', currentUserId],
     queryFn: async () => {
       if (!currentUserId) return [] as UserBlock[];
-      const { data, error } = await supabase
-        .from('user_blocks')
-        .select('id, blocker_id, blocked_id, created_at')
-        .eq('blocker_id', currentUserId);
-      if (error) throw error;
-      return (data || []) as UserBlock[];
+      const rows = await chatRpc.getMyBlockRelationships();
+      return rows.filter((row) => row.blocker_id === currentUserId).map((row) => ({
+        id: `${row.blocker_id}:${row.blocked_id}`,
+        ...row,
+      })) as UserBlock[];
     },
     enabled: !!currentUserId,
     staleTime: 30 * 1000,
@@ -25,12 +25,11 @@ export function useBlocks(currentUserId: string | null) {
     queryKey: ['chat-blocked-by-others', currentUserId],
     queryFn: async () => {
       if (!currentUserId) return [] as UserBlock[];
-      const { data, error } = await supabase
-        .from('user_blocks')
-        .select('id, blocker_id, blocked_id, created_at')
-        .eq('blocked_id', currentUserId);
-      if (error) throw error;
-      return (data || []) as UserBlock[];
+      const rows = await chatRpc.getMyBlockRelationships();
+      return rows.filter((row) => row.blocked_id === currentUserId).map((row) => ({
+        id: `${row.blocker_id}:${row.blocked_id}`,
+        ...row,
+      })) as UserBlock[];
     },
     enabled: !!currentUserId,
     staleTime: 30 * 1000,

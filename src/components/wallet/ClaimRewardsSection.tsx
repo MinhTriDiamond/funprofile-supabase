@@ -14,6 +14,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useWalletSecurity } from '@/hooks/useWalletSecurity';
 import { usePendingClaims } from '@/hooks/usePendingClaims';
+import { chatRpc } from '@/modules/chat/chatRpc';
 
 const MINIMUM_THRESHOLD = 200000;
 const DAILY_LIMIT = 500000;
@@ -198,46 +199,7 @@ export const ClaimRewardsSection = ({
       }
       const userId = session.user.id;
       const messageContent = `[Hỗ trợ Claim Rewards] ${adminMessage.trim()}`;
-
-      // Find existing conversation with admin
-      const { data: existingConvs } = await supabase
-        .from('conversation_participants')
-        .select('conversation_id')
-        .eq('user_id', userId)
-        .is('left_at', null);
-
-      let conversationId: string | null = null;
-
-      if (existingConvs && existingConvs.length > 0) {
-        const convIds = existingConvs.map(c => c.conversation_id);
-        const { data: adminConv } = await supabase
-          .from('conversation_participants')
-          .select('conversation_id')
-          .eq('user_id', ADMIN_ID)
-          .in('conversation_id', convIds)
-          .is('left_at', null)
-          .limit(1)
-          .single();
-        
-        if (adminConv) conversationId = adminConv.conversation_id;
-      }
-
-      // Create new conversation if none exists
-      if (!conversationId) {
-        const { data: newConv, error: convErr } = await supabase
-          .from('conversations')
-          .insert({ type: 'direct', created_by: userId })
-          .select('id')
-          .single();
-        if (convErr || !newConv) throw convErr;
-        conversationId = newConv.id;
-
-        // Add both participants
-        await supabase.from('conversation_participants').insert([
-          { conversation_id: conversationId, user_id: userId, role: 'member' },
-          { conversation_id: conversationId, user_id: ADMIN_ID, role: 'admin' },
-        ]);
-      }
+      const conversationId = await chatRpc.createDirectConversation(ADMIN_ID);
 
       // Send the message
       const { error: msgErr } = await supabase.from('messages').insert({

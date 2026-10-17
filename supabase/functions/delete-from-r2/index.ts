@@ -1,4 +1,5 @@
 import { createClient } from 'npm:@supabase/supabase-js@2';
+import { isChatMediaKeyOwnedByUser } from '../_shared/mediaLimits.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -123,10 +124,12 @@ Deno.serve(async (req) => {
             (comment.video_url && comment.video_url.includes(key))
           );
         }
+      } else if (bucket === 'chat-media') {
+        hasPermission = isChatMediaKeyOwnedByUser(key, user.id);
       }
 
       if (!hasPermission) {
-        console.error(`User ${user.id} attempted to delete file they don't own: ${key}`);
+        console.error('Authenticated user attempted to delete an unowned R2 object');
         return new Response(
           JSON.stringify({ error: 'Forbidden: You do not have permission to delete this file' }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 403 }
@@ -157,7 +160,7 @@ Deno.serve(async (req) => {
       throw new Error(`R2 delete failed: ${response.statusText}`);
     }
 
-    console.log(`User ${user.id} successfully deleted from R2: ${key}`);
+    console.log('Authenticated R2 object deletion completed');
 
     return new Response(
       JSON.stringify({ success: true }),

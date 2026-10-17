@@ -11,6 +11,7 @@ export function useTypingIndicator(conversationId: string | null, userId: string
   const [typingUsers, setTypingUsers] = useState<TypingUser[]>([]);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+  const cleanupTimeoutsRef = useRef(new Map<string, ReturnType<typeof setTimeout>>());
 
   // Cleanup typing users after timeout
   const cleanupTypingUser = useCallback((userIdToRemove: string) => {
@@ -40,7 +41,12 @@ export function useTypingIndicator(conversationId: string | null, userId: string
           });
 
           // Auto-remove after 3 seconds
-          setTimeout(() => cleanupTypingUser(typingUserId), 3000);
+          const existingTimeout = cleanupTimeoutsRef.current.get(typingUserId);
+          if (existingTimeout) clearTimeout(existingTimeout);
+          cleanupTimeoutsRef.current.set(typingUserId, setTimeout(() => {
+            cleanupTypingUser(typingUserId);
+            cleanupTimeoutsRef.current.delete(typingUserId);
+          }, 3000));
         } else {
           cleanupTypingUser(typingUserId);
         }
@@ -53,6 +59,10 @@ export function useTypingIndicator(conversationId: string | null, userId: string
       if (channelRef.current) {
         supabase.removeChannel(channelRef.current);
       }
+      cleanupTimeoutsRef.current.forEach(clearTimeout);
+      cleanupTimeoutsRef.current.clear();
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+      typingTimeoutRef.current = null;
     };
   }, [conversationId, userId, cleanupTypingUser]);
 

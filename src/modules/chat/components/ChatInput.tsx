@@ -4,7 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Paperclip, Send, X, Gift, Wallet, Layers } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { uploadCommentMedia } from '@/utils/mediaUpload';
+import { uploadChatMedia, type MediaUploadResult } from '@/utils/mediaUpload';
+import { sendChatMediaMessage } from '../chatMedia';
 import { toast } from 'sonner';
 import { EmojiPicker } from '@/components/feed/EmojiPicker';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -86,6 +87,7 @@ export function ChatInput({
 }: ChatInputProps) {
   const [content, setContent] = useState('');
   const [mediaFiles, setMediaFiles] = useState<File[]>([]);
+  const uploadedMediaRef = useRef(new Map<File, MediaUploadResult>());
   const [mediaPreviews, setMediaPreviews] = useState<string[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [showRedEnvelope, setShowRedEnvelope] = useState(false);
@@ -147,6 +149,8 @@ export function ChatInput({
   };
 
   const removeMedia = (index: number) => {
+    const removedFile = mediaFiles[index];
+    if (removedFile) uploadedMediaRef.current.delete(removedFile);
     if (mediaPreviews[index]) {
       URL.revokeObjectURL(mediaPreviews[index]);
     }
@@ -157,13 +161,13 @@ export function ChatInput({
   const handleSendWithMedia = async (captionText: string, filesToUpload: File[]) => {
     try {
       setIsUploading(true);
-      let uploadedUrls: string[] = [];
       if (filesToUpload.length > 0) {
-        const uploadPromises = filesToUpload.map((file) => uploadCommentMedia(file));
-        const results = await Promise.all(uploadPromises);
-        uploadedUrls = results.map((r) => r.url);
+        await sendChatMediaMessage(filesToUpload, uploadedMediaRef.current, uploadChatMedia,
+          (uploadedUrls) => onSend(captionText, uploadedUrls));
+      } else {
+        await onSend(captionText);
       }
-      await onSend(captionText, uploadedUrls.length > 0 ? uploadedUrls : undefined);
+      filesToUpload.forEach((file) => uploadedMediaRef.current.delete(file));
       // Clear
       setContent('');
       setMediaFiles([]);
@@ -235,6 +239,7 @@ export function ChatInput({
         files={mediaFiles}
         onClose={() => {
           setShowAttachPreview(false);
+          mediaFiles.forEach((file) => uploadedMediaRef.current.delete(file));
           setMediaFiles([]);
           mediaPreviews.forEach((url) => URL.revokeObjectURL(url));
           setMediaPreviews([]);

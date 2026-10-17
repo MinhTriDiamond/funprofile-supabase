@@ -2,6 +2,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { chatRpc } from '../chatRpc';
 
 export function useGroupConversations(userId: string | null) {
   const queryClient = useQueryClient();
@@ -18,35 +19,9 @@ export function useGroupConversations(userId: string | null) {
       if (!userId) throw new Error('User not authenticated');
       if (memberIds.length < 1) throw new Error('At least 1 member required');
 
-      // Create conversation
-      const { data: conversation, error: convError } = await supabase
-        .from('conversations')
-        .insert({
-          type: 'group',
-          name,
-          created_by: userId,
-        })
-        .select()
-        .single();
-
-      if (convError) throw convError;
-
-      // Add all participants (including creator as admin)
-      const participants = [
-        { conversation_id: conversation.id, user_id: userId, role: 'admin' },
-        ...memberIds.map((id) => ({
-          conversation_id: conversation.id,
-          user_id: id,
-          role: 'member',
-        })),
-      ];
-
-      const { error: partError } = await supabase
-        .from('conversation_participants')
-        .insert(participants);
-
-      if (partError) throw partError;
-
+      const conversationId = await chatRpc.createGroupConversation(name, memberIds);
+      const { data: conversation, error } = await supabase.from('conversations').select('*').eq('id', conversationId).single();
+      if (error) throw error;
       return conversation;
     },
     onSuccess: () => {
@@ -68,13 +43,7 @@ export function useGroupConversations(userId: string | null) {
       conversationId: string;
       memberId: string;
     }) => {
-      const { error } = await supabase.from('conversation_participants').insert({
-        conversation_id: conversationId,
-        user_id: memberId,
-        role: 'member',
-      });
-
-      if (error) throw error;
+      await chatRpc.manageConversationMember(conversationId, memberId, 'add');
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
@@ -93,13 +62,7 @@ export function useGroupConversations(userId: string | null) {
       conversationId: string;
       memberId: string;
     }) => {
-      const { error } = await supabase
-        .from('conversation_participants')
-        .update({ left_at: new Date().toISOString() })
-        .eq('conversation_id', conversationId)
-        .eq('user_id', memberId);
-
-      if (error) throw error;
+      await chatRpc.manageConversationMember(conversationId, memberId, 'remove');
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
@@ -139,13 +102,7 @@ export function useGroupConversations(userId: string | null) {
     mutationFn: async (conversationId: string) => {
       if (!userId) throw new Error('User not authenticated');
 
-      const { error } = await supabase
-        .from('conversation_participants')
-        .update({ left_at: new Date().toISOString() })
-        .eq('conversation_id', conversationId)
-        .eq('user_id', userId);
-
-      if (error) throw error;
+      await chatRpc.leaveConversation(conversationId);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['conversations', userId] });

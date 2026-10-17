@@ -9,7 +9,10 @@ import AgoraRTC, {
 } from 'agora-rtc-sdk-ng';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { createAgoraRtcClient, getAgoraRtcToken } from '@/lib/agoraRtc';
+import { createAgoraRtcClient } from '@/lib/agoraRtc';
+import { getAgoraCallToken } from '../agoraCallToken';
+import { chatRpc } from '../chatRpc';
+import { canBeginCall, cleanupCallAttempt, isCurrentCallAttempt, isRecentRingingCall, type CallAttempt } from '../callLifecycle';
 import logger from '@/lib/logger';
 import type { CallSessionRow } from '@/types/realtimeRows';
 
@@ -58,6 +61,7 @@ export function useAgoraCall({ conversationId, userId }: UseAgoraCallOptions) {
   const [incomingCall, setIncomingCall] = useState<CallSession | null>(null);
   const [callDuration, setCallDuration] = useState(0);
   const [isAutoAnswering, setIsAutoAnswering] = useState(false);
+  const [needsAudioGesture, setNeedsAudioGesture] = useState(false);
 
   // Refs
   const clientRef = useRef<IAgoraRTCClient | null>(null);
@@ -69,6 +73,9 @@ export function useAgoraCall({ conversationId, userId }: UseAgoraCallOptions) {
   const durationIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const callTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const autoAnswerProcessedRef = useRef<string | null>(null);
+  const callGenerationRef = useRef(0);
+  const activeAttemptRef = useRef<CallAttempt | null>(null);
+  const remoteAudioTracksRef = useRef(new Map<UID, { play: () => void }>());
   
   // Refs to avoid closure issues in event handlers
   const callStateRef = useRef<CallState>('idle');
@@ -77,24 +84,18 @@ export function useAgoraCall({ conversationId, userId }: UseAgoraCallOptions) {
   const incomingCallRef = useRef<CallSession | null>(null);
   const callDurationRef = useRef(0);
 
-  // Generate unique channel name
-  const generateChannelName = useCallback(() => {
-    return `call_${conversationId}_${Date.now()}`;
-  }, [conversationId]);
-
-  // Get Agora token from Cloudflare Worker
-  const getToken = useCallback(async (channelName: string) => {
-    return getAgoraRtcToken(channelName, 'host');
-  }, []);
+  const getToken = useCallback((callSessionId: string) => getAgoraCallToken(callSessionId), []);
 
   // Initialize Agora client
-  const initClient = useCallback(() => {
+  const initClient = useCallback((generation: number) => {
     if (!clientRef.current) {
       clientRef.current = createAgoraRtcClient('rtc');
       
       // Event handlers
       clientRef.current.on('user-published', async (user, mediaType) => {
+        if (!activeAttemptRef.current || activeAttemptRef.current.generation !== generation) return;
         await clientRef.current?.subscribe(user, mediaType);
+        if (!activeAttemptRef.current || activeAttemptRef.current.generation !== generation) return;
         
         setRemoteUsers(prev => {
           const existing = prev.find(u => u.uid === user.uid);
@@ -120,11 +121,19 @@ export function useAgoraCall({ conversationId, userId }: UseAgoraCallOptions) {
 
         // Play audio track
         if (mediaType === 'audio' && user.audioTrack) {
-          user.audioTrack.play();
+          remoteAudioTracksRef.current.set(user.uid, user.audioTrack);
+          try {
+            user.audioTrack.play();
+            setNeedsAudioGesture(false);
+          } catch {
+            setNeedsAudioGesture(true);
+          }
         }
       });
 
       clientRef.current.on('user-unpublished', (user, mediaType) => {
+        if (!activeAttemptRef.current || activeAttemptRef.current.generation !== generation) return;
+        if (mediaType === 'audio') remoteAudioTracksRef.current.delete(user.uid);
         setRemoteUsers(prev => 
           prev.map(u => 
             u.uid === user.uid 
@@ -139,6 +148,8 @@ export function useAgoraCall({ conversationId, userId }: UseAgoraCallOptions) {
       });
 
       clientRef.current.on('user-left', (user, reason) => {
+        if (!activeAttemptRef.current || activeAttemptRef.current.generation !== generation) return;
+        remoteAudioTracksRef.current.delete(user.uid);
         logger.debug('[Agora] Remote user left:', user.uid, 'reason:', reason);
         
         setRemoteUsers(prev => {
@@ -148,7 +159,7 @@ export function useAgoraCall({ conversationId, userId }: UseAgoraCallOptions) {
           if (newUsers.length === 0) {
             // Use setTimeout to avoid state update during render
             setTimeout(() => {
-              if (callStateRef.current === 'connected') {
+              if (activeAttemptRef.current?.generation === generation && callStateRef.current === 'connected') {
                 logger.debug('[Agora] All remote users left, auto-ending call');
                 endCallRef.current?.();
               }
@@ -161,6 +172,7 @@ export function useAgoraCall({ conversationId, userId }: UseAgoraCallOptions) {
 
       // Listen for connection state changes
       clientRef.current.on('connection-state-change', (curState, prevState, reason) => {
+        if (generation !== callGenerationRef.current) return;
         logger.debug('[Agora] Connection state:', prevState, '->', curState, 'reason:', reason);
         
         if (curState === 'DISCONNECTED' && reason === 'LEAVE') {
@@ -171,27 +183,61 @@ export function useAgoraCall({ conversationId, userId }: UseAgoraCallOptions) {
           }
         }
       });
+
+      clientRef.current.on('token-privilege-will-expire', async () => {
+        const session = currentSessionRef.current;
+        if (!session || generation !== callGenerationRef.current || !['ringing', 'connected'].includes(callStateRef.current)) return;
+        try {
+          const renewed = await getAgoraCallToken(session.id);
+          if (generation !== callGenerationRef.current || currentSessionRef.current?.id !== session.id) return;
+          await clientRef.current?.renewToken(renewed.token);
+        } catch {
+          if (generation === callGenerationRef.current) {
+            toast({ title: 'Kết nối sắp hết hạn', description: 'Không thể gia hạn quyền cuộc gọi. Vui lòng kết thúc và gọi lại.', variant: 'destructive' });
+            void endCallRef.current?.();
+          }
+        }
+      });
     }
     return clientRef.current;
-  }, []);
+  }, [toast]);
 
   // Start a call
   const startCall = useCallback(async (type: CallType) => {
     if (!conversationId || !userId) return;
-    if (callInProgressRef.current) return;
+    if (!canBeginCall(callStateRef.current, callInProgressRef.current)) return;
     callInProgressRef.current = true;
+    const generation = ++callGenerationRef.current;
+    activeAttemptRef.current = null;
+    currentSessionRef.current = null;
+    setCurrentSession(null);
 
     try {
       // Check DB for existing ringing/active call from the other user
-      const { data: existingCall } = await supabase
+      const { data: existingCalls, error: existingCallError } = await supabase
         .from('call_sessions')
         .select('*')
         .eq('conversation_id', conversationId)
         .in('status', ['ringing', 'active'])
-        .neq('initiator_id', userId)
-        .maybeSingle();
+        .order('created_at', { ascending: false })
+        .limit(100);
+      if (existingCallError) throw existingCallError;
+
+      const nowMs = Date.now();
+      const activeCall = (existingCalls || []).find((call) => call.status === 'active');
+      if (activeCall) {
+        toast({ title: 'Cuộc gọi đang hoạt động', description: 'Hãy kết thúc cuộc gọi hiện tại trước khi bắt đầu cuộc gọi mới.' });
+        callInProgressRef.current = false;
+        return;
+      }
+      const existingCall = (existingCalls || []).find((call) => isRecentRingingCall(call.status, call.created_at, nowMs, CALL_TIMEOUT_MS));
 
       if (existingCall) {
+        if (existingCall.initiator_id === userId) {
+          toast({ title: 'Cuộc gọi đang đổ chuông', description: 'Hãy chờ người nhận hoặc kết thúc yêu cầu hiện tại.' });
+          callInProgressRef.current = false;
+          return;
+        }
         // The other person already called us - answer their call instead
         const typedSession: CallSession = { ...existingCall, call_type: existingCall.call_type as CallType };
         setIncomingCall(typedSession);
@@ -235,48 +281,52 @@ export function useAgoraCall({ conversationId, userId }: UseAgoraCallOptions) {
       localAudioTrackRef.current = audioTrack;
       localVideoTrackRef.current = videoTrack;
 
-      const channelName = generateChannelName();
+      if (callGenerationRef.current !== generation) {
+        audioTrack.close();
+        videoTrack?.close();
+        return;
+      }
 
-      // Create call session in database
-      const { data: session, error: sessionError } = await supabase
-        .from('call_sessions')
-        .insert({
-          conversation_id: conversationId,
-          initiator_id: userId,
-          call_type: type,
-          status: 'ringing',
-          channel_name: channelName,
-        })
-        .select()
-        .single();
-
-      if (sessionError) throw sessionError;
+      const session = await chatRpc.startCallSession(conversationId, type) as unknown as CallSession;
+      if (callGenerationRef.current !== generation) {
+        audioTrack.close();
+        videoTrack?.close();
+        try { await chatRpc.endCallSession(session.id, 0); } catch { /* session-specific stale cleanup */ }
+        return;
+      }
+      activeAttemptRef.current = { sessionId: session.id, generation };
       
       // Type assertion for the session
       const typedSession: CallSession = {
         ...session,
         call_type: session.call_type as CallType,
       };
+      currentSessionRef.current = typedSession;
       setCurrentSession(typedSession);
 
-      // Add self as participant
-      await supabase.from('call_participants').insert({
-        call_session_id: session.id,
-        user_id: userId,
-        joined_at: new Date().toISOString(),
-        is_video_off: type === 'voice',
-      });
-
-      // Get token and join channel
-      const tokenData = await getToken(channelName);
+      // Get a token bound to the server-owned call row and join tuple.
+      const tokenData = await getToken(session.id);
+      if (!activeAttemptRef.current || activeAttemptRef.current.generation !== generation) {
+        audioTrack.close();
+        videoTrack?.close();
+        try { await chatRpc.endCallSession(session.id, 0); } catch { /* stale session cleanup */ }
+        return;
+      }
       
       // Cleanup existing client before joining
       if (clientRef.current) {
         try { await clientRef.current.leave(); } catch { /* cleanup — leave failure is non-critical */ }
         clientRef.current = null;
       }
-      const client = initClient();
-      await client.join(tokenData.appId, channelName, tokenData.token, tokenData.userAccount);
+      const client = initClient(generation);
+      await client.join(tokenData.appId, tokenData.channel, tokenData.token, tokenData.uid);
+      if (!activeAttemptRef.current || activeAttemptRef.current.generation !== generation) {
+        audioTrack.close();
+        videoTrack?.close();
+        try { await client.leave(); } catch { /* stale client cleanup */ }
+        try { await chatRpc.endCallSession(session.id, 0); } catch { /* session-specific stale cleanup */ }
+        return;
+      }
 
       // Publish pre-created tracks
       if (videoTrack) {
@@ -284,17 +334,23 @@ export function useAgoraCall({ conversationId, userId }: UseAgoraCallOptions) {
       } else {
         await client.publish(audioTrack);
       }
+      if (!activeAttemptRef.current || activeAttemptRef.current.generation !== generation) {
+        audioTrack.close();
+        videoTrack?.close();
+        try { await client.leave(); } catch { /* stale client cleanup */ }
+        try { await chatRpc.endCallSession(session.id, 0); } catch { /* stale session cleanup */ }
+        return;
+      }
 
       setCallState('ringing');
 
       // Set auto-timeout for missed call
       callTimeoutRef.current = setTimeout(async () => {
+        if (activeAttemptRef.current?.sessionId !== session.id || activeAttemptRef.current.generation !== generation) return;
         logger.debug('[Agora] Call timeout - marking as missed');
         try {
-          await supabase
-            .from('call_sessions')
-            .update({ status: 'missed', ended_at: new Date().toISOString() })
-            .eq('id', session.id);
+          const missed = await chatRpc.markCallMissed(session.id);
+          if (!missed || activeAttemptRef.current?.sessionId !== session.id || activeAttemptRef.current.generation !== generation) return;
           
           toast({
             title: 'Không có phản hồi',
@@ -306,6 +362,9 @@ export function useAgoraCall({ conversationId, userId }: UseAgoraCallOptions) {
           localVideoTrackRef.current?.close();
           localAudioTrackRef.current = null;
           localVideoTrackRef.current = null;
+          activeAttemptRef.current = null;
+          currentSessionRef.current = null;
+          callGenerationRef.current += 1;
           await clientRef.current?.leave();
           clientRef.current = null;
           
@@ -317,6 +376,7 @@ export function useAgoraCall({ conversationId, userId }: UseAgoraCallOptions) {
       }, CALL_TIMEOUT_MS);
 
     } catch (error: any) {
+      if (callGenerationRef.current !== generation) return;
       console.error('Failed to start call:', error);
       toast({
         title: 'Lỗi',
@@ -328,105 +388,147 @@ export function useAgoraCall({ conversationId, userId }: UseAgoraCallOptions) {
       localVideoTrackRef.current?.close();
       localAudioTrackRef.current = null;
       localVideoTrackRef.current = null;
+      screenTrackRef.current?.close?.();
+      screenTrackRef.current = null;
+      if (callTimeoutRef.current) clearTimeout(callTimeoutRef.current);
+      if (durationIntervalRef.current) clearInterval(durationIntervalRef.current);
+      try { await clientRef.current?.leave(); } catch { /* cleanup continues */ }
+      clientRef.current = null;
+      const failedSession = currentSessionRef.current;
+      let failedSessionEnded = !failedSession;
+      if (failedSession) {
+        try { failedSessionEnded = await chatRpc.endCallSession(failedSession.id, callDurationRef.current); } catch { failedSessionEnded = false; }
+        if (!failedSessionEnded) toast({ title: 'Thiết bị đã được dọn dẹp', description: 'Máy chủ chưa xác nhận kết thúc phiên gọi.', variant: 'destructive' });
+      }
+      setCurrentSession(null);
+      currentSessionRef.current = null;
+      currentSessionRef.current = null;
+      activeAttemptRef.current = null;
+      setRemoteUsers([]);
+      setIncomingCall(null);
+      setCallDuration(0);
       setCallState('idle');
     } finally {
-      callInProgressRef.current = false;
+      if (callGenerationRef.current === generation) callInProgressRef.current = false;
     }
-  }, [conversationId, userId, generateChannelName, getToken, initClient, toast]);
+  }, [conversationId, userId, getToken, initClient, toast]);
 
-  // Answer incoming call
-  const answerCall = useCallback(async () => {
-    if (!incomingCall || !userId) return;
+  const answerSession = useCallback(async (session: CallSession) => {
+    if (!userId || callInProgressRef.current || !['idle', 'ringing'].includes(callStateRef.current)) return;
+    callInProgressRef.current = true;
+    const generation = ++callGenerationRef.current;
+    const attempt = { sessionId: session.id, generation };
+    activeAttemptRef.current = attempt;
 
     try {
       setCallState('connecting');
-      setCallType(incomingCall.call_type);
-      setCurrentSession(incomingCall);
-
-      // CRITICAL: Request media FIRST - must be in direct user gesture context
-      // Browser security requires getUserMedia to be called immediately on user interaction
+      setCallType(session.call_type);
+      currentSessionRef.current = session;
+      setCurrentSession(session);
       let audioTrack: IMicrophoneAudioTrack;
       let videoTrack: ICameraVideoTrack | null = null;
-      
-      if (incomingCall.call_type === 'video') {
+      if (session.call_type === 'video') {
         const tracks = await AgoraRTC.createMicrophoneAndCameraTracks();
         audioTrack = tracks[0];
         videoTrack = tracks[1];
       } else {
         audioTrack = await AgoraRTC.createMicrophoneAudioTrack();
       }
-      
+      if (!isCurrentCallAttempt(activeAttemptRef.current, attempt)) {
+        audioTrack.close();
+        videoTrack?.close();
+        return;
+      }
       localAudioTrackRef.current = audioTrack;
       localVideoTrackRef.current = videoTrack;
 
-      // Now perform async operations (token fetch, join channel)
-      const tokenData = await getToken(incomingCall.channel_name);
-      
-      // Cleanup existing client before joining
+      const accepted = await chatRpc.acceptCallSession(session.id);
+      if (!accepted) throw new Error('Cuộc gọi đã được kết thúc hoặc người khác đã trả lời.');
+      if (!isCurrentCallAttempt(activeAttemptRef.current, attempt)) {
+        audioTrack.close();
+        videoTrack?.close();
+        try { await chatRpc.endCallSession(session.id, 0); } catch { /* stale session cleanup */ }
+        return;
+      }
+      const tokenData = await getToken(session.id);
+      if (!isCurrentCallAttempt(activeAttemptRef.current, attempt)) {
+        audioTrack.close();
+        videoTrack?.close();
+        try { await chatRpc.endCallSession(session.id, 0); } catch { /* stale session cleanup */ }
+        return;
+      }
+
       if (clientRef.current) {
-        try { await clientRef.current.leave(); } catch { /* cleanup — leave failure is non-critical */ }
+        try { await clientRef.current.leave(); } catch { /* cleanup continues */ }
         clientRef.current = null;
       }
-      const client = initClient();
-      await client.join(tokenData.appId, incomingCall.channel_name, tokenData.token, tokenData.userAccount);
-
-      // Publish pre-created tracks
-      if (videoTrack) {
-        await client.publish([audioTrack, videoTrack]);
-      } else {
-        await client.publish(audioTrack);
+      const client = initClient(generation);
+      await client.join(tokenData.appId, tokenData.channel, tokenData.token, tokenData.uid);
+      if (!isCurrentCallAttempt(activeAttemptRef.current, attempt)) {
+        audioTrack.close();
+        videoTrack?.close();
+        try { await client.leave(); } catch { /* stale client cleanup */ }
+        try { await chatRpc.endCallSession(session.id, 0); } catch { /* stale session cleanup */ }
+        return;
       }
-
-      // Add self as participant
-      await supabase.from('call_participants').insert({
-        call_session_id: incomingCall.id,
-        user_id: userId,
-        joined_at: new Date().toISOString(),
-        is_video_off: incomingCall.call_type === 'voice',
-      });
-
-      // Update session status
-      await supabase
-        .from('call_sessions')
-        .update({ 
-          status: 'active',
-          started_at: new Date().toISOString()
-        })
-        .eq('id', incomingCall.id);
+      await client.publish(videoTrack ? [audioTrack, videoTrack] : audioTrack);
+      if (!isCurrentCallAttempt(activeAttemptRef.current, attempt)) {
+        audioTrack.close();
+        videoTrack?.close();
+        try { await client.leave(); } catch { /* stale client cleanup */ }
+        try { await chatRpc.endCallSession(session.id, 0); } catch { /* stale session cleanup */ }
+        return;
+      }
 
       setCallState('connected');
       setIncomingCall(null);
-
-      // Start duration timer
-      durationIntervalRef.current = setInterval(() => {
-        setCallDuration(prev => prev + 1);
-      }, 1000);
-
-    } catch (error: any) {
+      setIsAutoAnswering(false);
+      setCallDuration(0);
+      durationIntervalRef.current = setInterval(() => setCallDuration((value) => value + 1), 1000);
+    } catch (error) {
+      if (!isCurrentCallAttempt(activeAttemptRef.current, attempt)) return;
       console.error('Failed to answer call:', error);
-      toast({
-        title: 'Lỗi',
-        description: error.message || 'Không thể trả lời cuộc gọi',
-        variant: 'destructive',
+      toast({ title: 'Lỗi', description: error instanceof Error ? error.message : 'Không thể trả lời cuộc gọi', variant: 'destructive' });
+      const endRecorded = await cleanupCallAttempt(attempt, {
+        closeTracks: () => {
+          localAudioTrackRef.current?.close();
+          localVideoTrackRef.current?.close();
+          screenTrackRef.current?.close?.();
+          localAudioTrackRef.current = null;
+          localVideoTrackRef.current = null;
+          screenTrackRef.current = null;
+        },
+        leaveRtc: async () => { try { await clientRef.current?.leave(); } finally { clientRef.current = null; } },
+        clearTimers: () => {
+          if (durationIntervalRef.current) clearInterval(durationIntervalRef.current);
+          if (callTimeoutRef.current) clearTimeout(callTimeoutRef.current);
+          durationIntervalRef.current = null;
+          callTimeoutRef.current = null;
+        },
+        markEnded: (sessionId) => chatRpc.endCallSession(sessionId, 0),
       });
-      // Clean up any created tracks on error
-      localAudioTrackRef.current?.close();
-      localVideoTrackRef.current?.close();
-      localAudioTrackRef.current = null;
-      localVideoTrackRef.current = null;
+      if (!endRecorded) toast({ title: 'Cuộc gọi đã đóng trên thiết bị', description: 'Máy chủ chưa xác nhận trạng thái kết thúc. Hãy kiểm tra lại trong cuộc trò chuyện.', variant: 'destructive' });
+      setCurrentSession(null);
+      currentSessionRef.current = null;
+      setIncomingCall(null);
       setCallState('idle');
+      activeAttemptRef.current = null;
+    } finally {
+      if (isCurrentCallAttempt(activeAttemptRef.current, attempt)) callInProgressRef.current = false;
     }
-  }, [incomingCall, userId, getToken, initClient, toast]);
+  }, [userId, getToken, initClient, toast]);
+
+  const answerCall = useCallback(() => {
+    if (incomingCall) void answerSession(incomingCall);
+  }, [incomingCall, answerSession]);
 
   // Decline incoming call
   const declineCall = useCallback(async () => {
     if (!incomingCall) return;
 
     try {
-      await supabase
-        .from('call_sessions')
-        .update({ status: 'declined', ended_at: new Date().toISOString() })
-        .eq('id', incomingCall.id);
+      const declined = await chatRpc.declineCallSession(incomingCall.id);
+      if (!declined) throw new Error('Cuộc gọi đã thay đổi trạng thái.');
 
       setIncomingCall(null);
     } catch (error) {
@@ -439,58 +541,49 @@ export function useAgoraCall({ conversationId, userId }: UseAgoraCallOptions) {
     try {
       const session = currentSessionRef.current;
       const duration = callDurationRef.current;
-
-      // Clear call timeout if exists
-      if (callTimeoutRef.current) {
-        clearTimeout(callTimeoutRef.current);
-        callTimeoutRef.current = null;
+      const endAttempt = session ? { sessionId: session.id, generation: callGenerationRef.current } : null;
+      callGenerationRef.current += 1;
+      activeAttemptRef.current = null;
+      const cleanup = {
+        closeTracks: () => {
+          localAudioTrackRef.current?.close();
+          localVideoTrackRef.current?.close();
+          screenTrackRef.current?.close();
+          localAudioTrackRef.current = null;
+          localVideoTrackRef.current = null;
+          screenTrackRef.current = null;
+          setIsScreenSharing(false);
+        },
+        leaveRtc: async () => { try { await clientRef.current?.leave(); } finally { clientRef.current = null; } },
+        clearTimers: () => {
+          if (callTimeoutRef.current) clearTimeout(callTimeoutRef.current);
+          if (durationIntervalRef.current) clearInterval(durationIntervalRef.current);
+          callTimeoutRef.current = null;
+          durationIntervalRef.current = null;
+        },
+        markEnded: session ? (sessionId: string) => chatRpc.endCallSession(sessionId, duration) : undefined,
+      };
+      const endRecorded = endAttempt ? await cleanupCallAttempt(endAttempt, cleanup) : await cleanupCallAttempt({ sessionId: '', generation: callGenerationRef.current }, cleanup);
+      let databaseEnded = endRecorded;
+      if (session && !endRecorded) {
+        try {
+          const { data, error } = await supabase.from('call_sessions').select('status').eq('id', session.id).maybeSingle();
+          databaseEnded = !error && Boolean(data && ['ended', 'missed', 'declined'].includes(data.status));
+        } catch { databaseEnded = false; }
       }
-
-      // Stop tracks
-      localAudioTrackRef.current?.close();
-      localVideoTrackRef.current?.close();
-      screenTrackRef.current?.close();
-      localAudioTrackRef.current = null;
-      localVideoTrackRef.current = null;
-      screenTrackRef.current = null;
-      setIsScreenSharing(false);
-
-      // Leave channel
-      await clientRef.current?.leave();
-      clientRef.current = null;
-
-      // Update database
-      if (session) {
-        const endTime = new Date().toISOString();
-        await supabase
-          .from('call_sessions')
-          .update({ 
-            status: 'ended',
-            ended_at: endTime,
-            duration_seconds: duration
-          })
-          .eq('id', session.id);
-
-        await supabase
-          .from('call_participants')
-          .update({ left_at: endTime })
-          .eq('call_session_id', session.id)
-          .eq('user_id', userId);
-      }
-
-      // Clear timer
-      if (durationIntervalRef.current) {
-        clearInterval(durationIntervalRef.current);
-        durationIntervalRef.current = null;
-      }
+      if (!databaseEnded) toast({ title: 'Đã đóng cuộc gọi trên thiết bị', description: 'Chưa xác nhận được trạng thái trên máy chủ. Vui lòng mở lại cuộc trò chuyện khi có mạng.', variant: 'destructive' });
 
       // Reset state
       setCallState('idle');
       setCurrentSession(null);
+      currentSessionRef.current = null;
       setRemoteUsers([]);
+      remoteAudioTracksRef.current.clear();
+      setNeedsAudioGesture(false);
       setCallDuration(0);
       setIsMuted(false);
       setIsCameraOff(false);
+      callInProgressRef.current = false;
 
     } catch (error) {
       console.error('Failed to end call:', error);
@@ -527,37 +620,46 @@ export function useAgoraCall({ conversationId, userId }: UseAgoraCallOptions) {
   const toggleMute = useCallback(async () => {
     if (localAudioTrackRef.current) {
       const newMuted = !isMuted;
-      await localAudioTrackRef.current.setEnabled(!newMuted);
-      setIsMuted(newMuted);
-
-      // Update participant status
-      if (currentSession && userId) {
-        await supabase
-          .from('call_participants')
-          .update({ is_muted: newMuted })
-          .eq('call_session_id', currentSession.id)
-          .eq('user_id', userId);
+      try {
+        await localAudioTrackRef.current.setEnabled(!newMuted);
+        if (currentSession && userId) {
+          const updated = await chatRpc.updateCallParticipant(currentSession.id, newMuted, isCameraOff);
+          if (!updated) throw new Error('Trạng thái cuộc gọi đã thay đổi.');
+        }
+        setIsMuted(newMuted);
+      } catch (error) {
+        await localAudioTrackRef.current.setEnabled(isMuted);
+        toast({ title: 'Không thể đổi microphone', description: error instanceof Error ? error.message : 'Vui lòng thử lại.', variant: 'destructive' });
       }
     }
-  }, [isMuted, currentSession, userId]);
+  }, [isMuted, currentSession, userId, isCameraOff, toast]);
+
+  const resumeRemoteAudio = useCallback(() => {
+    try {
+      remoteAudioTracksRef.current.forEach((track) => track.play());
+      setNeedsAudioGesture(false);
+    } catch {
+      setNeedsAudioGesture(true);
+    }
+  }, []);
 
   // Toggle camera
   const toggleCamera = useCallback(async () => {
     if (localVideoTrackRef.current) {
       const newOff = !isCameraOff;
-      await localVideoTrackRef.current.setEnabled(!newOff);
-      setIsCameraOff(newOff);
-
-      // Update participant status
-      if (currentSession && userId) {
-        await supabase
-          .from('call_participants')
-          .update({ is_video_off: newOff })
-          .eq('call_session_id', currentSession.id)
-          .eq('user_id', userId);
+      try {
+        await localVideoTrackRef.current.setEnabled(!newOff);
+        if (currentSession && userId) {
+          const updated = await chatRpc.updateCallParticipant(currentSession.id, isMuted, newOff);
+          if (!updated) throw new Error('Trạng thái cuộc gọi đã thay đổi.');
+        }
+        setIsCameraOff(newOff);
+      } catch (error) {
+        await localVideoTrackRef.current.setEnabled(!isCameraOff);
+        toast({ title: 'Không thể đổi camera', description: error instanceof Error ? error.message : 'Vui lòng thử lại.', variant: 'destructive' });
       }
     }
-  }, [isCameraOff, currentSession, userId]);
+  }, [isCameraOff, currentSession, userId, isMuted, toast]);
 
   // Switch to video (during voice call)
   const switchToVideo = useCallback(async () => {
@@ -627,88 +729,8 @@ export function useAgoraCall({ conversationId, userId }: UseAgoraCallOptions) {
         setSearchParams({}, { replace: true });
         
         // Small delay to ensure state is updated, then answer
-        setTimeout(async () => {
-          // Now manually trigger the answer logic since we have the session
-          try {
-            setCallState('connecting');
-            setCallType(typedSession.call_type);
-            setCurrentSession(typedSession);
-
-            // Request media
-            let audioTrack: IMicrophoneAudioTrack;
-            let videoTrack: ICameraVideoTrack | null = null;
-            
-            if (typedSession.call_type === 'video') {
-              const tracks = await AgoraRTC.createMicrophoneAndCameraTracks();
-              audioTrack = tracks[0];
-              videoTrack = tracks[1];
-            } else {
-              audioTrack = await AgoraRTC.createMicrophoneAudioTrack();
-            }
-            
-            localAudioTrackRef.current = audioTrack;
-            localVideoTrackRef.current = videoTrack;
-
-            // Get token and join
-            const tokenData = await getToken(typedSession.channel_name);
-            // Cleanup existing client before joining
-            if (clientRef.current) {
-              try { await clientRef.current.leave(); } catch { /* cleanup — leave failure is non-critical */ }
-              clientRef.current = null;
-            }
-            const client = initClient();
-            await client.join(tokenData.appId, typedSession.channel_name, tokenData.token, tokenData.userAccount);
-
-            // Publish tracks
-            if (videoTrack) {
-              await client.publish([audioTrack, videoTrack]);
-            } else {
-              await client.publish(audioTrack);
-            }
-
-            // Add self as participant
-            await supabase.from('call_participants').insert({
-              call_session_id: typedSession.id,
-              user_id: userId,
-              joined_at: new Date().toISOString(),
-              is_video_off: typedSession.call_type === 'voice',
-            });
-
-            // Update session status
-            await supabase
-              .from('call_sessions')
-              .update({ 
-                status: 'active',
-                started_at: new Date().toISOString()
-              })
-              .eq('id', typedSession.id);
-
-            setCallState('connected');
-            setIncomingCall(null);
-            setIsAutoAnswering(false);
-
-            // Start duration timer
-            durationIntervalRef.current = setInterval(() => {
-              setCallDuration(prev => prev + 1);
-            }, 1000);
-
-            logger.debug('[Agora] Auto-answer successful, connected!');
-          } catch (err: unknown) {
-            console.error('[Agora] Auto-answer failed:', err);
-            toast({
-              title: 'Lỗi',
-              description: err instanceof Error ? err.message : 'Không thể trả lời cuộc gọi',
-              variant: 'destructive',
-            });
-            // Cleanup
-            localAudioTrackRef.current?.close();
-            localVideoTrackRef.current?.close();
-            localAudioTrackRef.current = null;
-            localVideoTrackRef.current = null;
-            setCallState('idle');
-            setIsAutoAnswering(false);
-          }
-        }, 100);
+        // Use the same guarded path as the visible Answer action.
+        setTimeout(() => { void answerSession(typedSession); }, 0);
         
       } catch (err) {
         console.error('[Agora] Auto-answer error:', err);
@@ -718,22 +740,27 @@ export function useAgoraCall({ conversationId, userId }: UseAgoraCallOptions) {
     };
 
     autoAnswerCall();
-  }, [searchParams, userId, conversationId, callState, isAutoAnswering, getToken, initClient, toast, setSearchParams]);
+  }, [searchParams, userId, conversationId, callState, isAutoAnswering, answerSession, toast, setSearchParams]);
 
   // Cleanup stale ringing sessions on mount
   useEffect(() => {
-    if (!conversationId) return;
+    if (!conversationId || !userId) return;
     const twoMinutesAgo = new Date(Date.now() - 2 * 60 * 1000).toISOString();
     supabase
       .from('call_sessions')
-      .update({ status: 'missed', ended_at: new Date().toISOString() })
+      .select('id')
       .eq('conversation_id', conversationId)
+      .eq('initiator_id', userId)
       .eq('status', 'ringing')
       .lt('created_at', twoMinutesAgo)
-      .then(({ error }) => {
-        if (error) console.error('[Agora] Error cleaning up stale sessions:', error);
+      .then(async ({ data, error }) => {
+        if (error) { console.error('[Agora] Error loading stale sessions:', error); return; }
+        for (const row of data || []) {
+          try { await chatRpc.markCallMissed(row.id); }
+          catch (markError) { console.error('[Agora] Error marking stale call:', markError); }
+        }
       });
-  }, [conversationId]);
+  }, [conversationId, userId]);
 
   // Subscribe to incoming calls via realtime - STABLE dependencies only
   useEffect(() => {
@@ -811,6 +838,7 @@ export function useAgoraCall({ conversationId, userId }: UseAgoraCallOptions) {
           if (curIncoming?.id === session.id && ['ended', 'declined', 'missed'].includes(session.status)) {
             setIncomingCall(null);
           }
+          if (curIncoming?.id === session.id && session.status === 'active') setIncomingCall(null);
         }
       )
       .subscribe();
@@ -824,15 +852,30 @@ export function useAgoraCall({ conversationId, userId }: UseAgoraCallOptions) {
   // Cleanup on unmount
   useEffect(() => {
     return () => {
-      localAudioTrackRef.current?.close();
-      localVideoTrackRef.current?.close();
-      clientRef.current?.leave();
-      if (durationIntervalRef.current) {
-        clearInterval(durationIntervalRef.current);
-      }
-      if (callTimeoutRef.current) {
-        clearTimeout(callTimeoutRef.current);
-      }
+      const session = currentSessionRef.current;
+      const attempt = session ? { sessionId: session.id, generation: callGenerationRef.current } : null;
+      callGenerationRef.current += 1;
+      activeAttemptRef.current = null;
+      const cleanup = {
+        closeTracks: () => {
+          localAudioTrackRef.current?.close();
+          localVideoTrackRef.current?.close();
+          screenTrackRef.current?.close?.();
+          localAudioTrackRef.current = null;
+          localVideoTrackRef.current = null;
+          screenTrackRef.current = null;
+          remoteAudioTracksRef.current.clear();
+        },
+        leaveRtc: async () => { try { await clientRef.current?.leave(); } finally { clientRef.current = null; } },
+        clearTimers: () => {
+          if (durationIntervalRef.current) clearInterval(durationIntervalRef.current);
+          if (callTimeoutRef.current) clearTimeout(callTimeoutRef.current);
+        },
+        markEnded: session ? (sessionId: string) => chatRpc.endCallSession(sessionId, callDurationRef.current) : undefined,
+      };
+      void cleanupCallAttempt(attempt || { sessionId: '', generation: callGenerationRef.current }, cleanup).then((ended) => {
+        if (!ended && session) console.warn('[Agora] Call end cleanup is pending');
+      });
     };
   }, []);
 
@@ -929,6 +972,7 @@ export function useAgoraCall({ conversationId, userId }: UseAgoraCallOptions) {
     isScreenSharing,
     incomingCall,
     callDuration,
+    needsAudioGesture,
     localVideoTrack: localVideoTrackRef.current,
     localAudioTrack: localAudioTrackRef.current,
     screenTrack: screenTrackRef.current,
@@ -938,6 +982,7 @@ export function useAgoraCall({ conversationId, userId }: UseAgoraCallOptions) {
     answerCall,
     declineCall,
     endCall,
+    resumeRemoteAudio,
     toggleMute,
     toggleCamera,
     switchToVideo,

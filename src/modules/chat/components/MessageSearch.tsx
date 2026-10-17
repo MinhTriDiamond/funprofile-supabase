@@ -39,6 +39,7 @@ export function MessageSearch({
   const dateLocale = useDateLocale();
   const [results, setResults] = useState<SearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [searchError, setSearchError] = useState(false);
   const [selectedSenderId, setSelectedSenderId] = useState<string | null>(null);
 
   const participantMap = new Map(participants.map(p => [p.id, p.username]));
@@ -46,6 +47,7 @@ export function MessageSearch({
   const handleSearch = async () => {
     if (!query.trim()) return;
     setIsSearching(true);
+    setSearchError(false);
     try {
       let q = supabase
         .from('messages')
@@ -70,6 +72,7 @@ export function MessageSearch({
       })));
     } catch {
       setResults([]);
+      setSearchError(true);
     } finally {
       setIsSearching(false);
     }
@@ -92,7 +95,7 @@ export function MessageSearch({
             autoFocus
           />
           {query && (
-            <Button variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-6 w-6" onClick={() => { setQuery(''); setResults([]); }}>
+            <Button variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-6 w-6" onClick={() => { setQuery(''); setResults([]); setSearchError(false); }}>
               <X className="h-3 w-3" />
             </Button>
           )}
@@ -127,6 +130,8 @@ export function MessageSearch({
       <ScrollArea className="flex-1">
         {isSearching ? (
           <div className="p-4 text-center text-muted-foreground">Đang tìm...</div>
+        ) : searchError ? (
+          <div className="p-4 text-center text-destructive">Không thể tìm kiếm lúc này. Vui lòng thử lại.</div>
         ) : results.length === 0 && query ? (
           <div className="p-4 text-center text-muted-foreground">Không tìm thấy</div>
         ) : (

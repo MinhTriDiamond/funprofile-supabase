@@ -286,3 +286,6 @@ verify_jwt = false
     verify_jwt = false
   [functions.scanner-backfill-window]
     verify_jwt = false
+
+[functions.agora-call-token]
+verify_jwt = false

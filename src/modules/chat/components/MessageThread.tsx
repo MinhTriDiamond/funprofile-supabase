@@ -108,6 +108,7 @@ export function MessageThread({ conversationId, userId, username, onBack }: Mess
     isCameraOff,
     isScreenSharing,
     callDuration,
+    needsAudioGesture,
     localVideoTrack,
     screenTrack,
     incomingCall,
@@ -115,6 +116,7 @@ export function MessageThread({ conversationId, userId, username, onBack }: Mess
     answerCall,
     declineCall,
     endCall,
+    resumeRemoteAudio,
     toggleMute,
     toggleCamera,
     switchToVideo,
@@ -780,6 +782,7 @@ export function MessageThread({ conversationId, userId, username, onBack }: Mess
           callState={callState}
           callType={callType}
           callDuration={callDuration}
+          needsAudioGesture={needsAudioGesture}
           localVideoTrack={localVideoTrack}
           screenTrack={screenTrack}
           remoteUsers={remoteUsers}
@@ -799,6 +802,7 @@ export function MessageThread({ conversationId, userId, username, onBack }: Mess
           onSwitchToVideo={switchToVideo}
           onFlipCamera={flipCamera}
           onEndCall={endCall}
+          onResumeAudio={resumeRemoteAudio}
         />
       )}
 

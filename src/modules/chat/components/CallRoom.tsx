@@ -6,6 +6,7 @@ import { VideoGrid } from './VideoGrid';
 import { ICameraVideoTrack, ILocalVideoTrack } from 'agora-rtc-sdk-ng';
 import { Phone, Video, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 import type { CallState, CallType, RemoteUser } from '../types';
 
 interface CallRoomProps {
@@ -13,6 +14,7 @@ interface CallRoomProps {
   callState: CallState;
   callType: CallType;
   callDuration: number;
+  needsAudioGesture: boolean;
   localVideoTrack: ICameraVideoTrack | null;
   screenTrack?: ILocalVideoTrack | null;
   remoteUsers: RemoteUser[];
@@ -35,6 +37,7 @@ interface CallRoomProps {
   onFlipCamera?: () => void;
   onOpenSettings?: () => void;
   onEndCall: () => void;
+  onResumeAudio: () => void;
 }
 
 function formatDuration(seconds: number): string {
@@ -48,6 +51,7 @@ export function CallRoom({
   callState,
   callType,
   callDuration,
+  needsAudioGesture,
   localVideoTrack,
   screenTrack,
   remoteUsers,
@@ -64,6 +68,7 @@ export function CallRoom({
   onFlipCamera,
   onOpenSettings,
   onEndCall,
+  onResumeAudio,
 }: CallRoomProps) {
   const isConnected = callState === 'connected';
   const isConnecting = callState === 'connecting' || callState === 'calling' || callState === 'ringing';
@@ -77,6 +82,11 @@ export function CallRoom({
         onEscapeKeyDown={(e) => e.preventDefault()}
       >
         <div className="relative w-full h-full flex flex-col">
+          {needsAudioGesture && (
+            <div className="absolute top-16 left-1/2 z-20 -translate-x-1/2">
+              <Button onClick={onResumeAudio}>Bật âm thanh cuộc gọi</Button>
+            </div>
+          )}
           {/* Top bar with call info */}
           <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between p-4 bg-gradient-to-b from-background/70 to-transparent">
             <div className="flex items-center gap-3">

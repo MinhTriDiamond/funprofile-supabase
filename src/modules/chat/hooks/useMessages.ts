@@ -70,10 +70,11 @@ export function useMessages(conversationId: string | null, userId: string | null
 
       // Fetch sender profiles
       const senderIds = new Set(messages?.map(m => m.sender_id) || []);
-      const { data: profiles } = await supabase
+      const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select('id, username, avatar_url, full_name')
         .in('id', Array.from(senderIds));
+      if (profilesError) throw profilesError;
 
       const profileMap = new Map(profiles?.map(p => [p.id, p]) || []);
 
@@ -81,10 +82,11 @@ export function useMessages(conversationId: string | null, userId: string | null
       const replyIds = messages?.filter(m => m.reply_to_id).map(m => m.reply_to_id) || [];
       let replyMap = new Map();
       if (replyIds.length > 0) {
-        const { data: replies } = await supabase
+        const { data: replies, error: repliesError } = await supabase
           .from('messages')
           .select('id, content, sender_id')
           .in('id', replyIds);
+        if (repliesError) throw repliesError;
 
         replies?.forEach(r => {
           replyMap.set(r.id, { ...r, sender: profileMap.get(r.sender_id) });
@@ -93,10 +95,11 @@ export function useMessages(conversationId: string | null, userId: string | null
 
       // Fetch read receipts
       const messageIds = messages?.map(m => m.id) || [];
-      const { data: reads } = await supabase
+      const { data: reads, error: readsError } = await supabase
         .from('message_reads')
         .select('message_id, user_id')
         .in('message_id', messageIds);
+      if (readsError) throw readsError;
 
       const readMap = new Map<string, string[]>();
       reads?.forEach(r => {
@@ -141,11 +144,15 @@ export function useMessages(conversationId: string | null, userId: string | null
         },
         async (payload) => {
           // Fetch sender profile
-          const { data: profile } = await supabase
+          const { data: profile, error: profileError } = await supabase
             .from('profiles')
             .select('id, username, avatar_url, full_name')
             .eq('id', payload.new.sender_id)
             .single();
+          if (profileError) {
+            queryClient.invalidateQueries({ queryKey: messagesQueryKey });
+            return;
+          }
 
           const newMessage: any = {
             ...payload.new,
@@ -380,12 +387,14 @@ export function useMessages(conversationId: string | null, userId: string | null
         };
       });
 
-      return { previousMessages };
+      return { previousMessages, hadSnapshot: previousMessages !== undefined };
     },
     onError: (err, variables, context) => {
       // Rollback on error
-      if (context?.previousMessages) {
+      if (context?.hadSnapshot) {
         queryClient.setQueryData(messagesQueryKey, context.previousMessages);
+      } else {
+        queryClient.removeQueries({ queryKey: messagesQueryKey, exact: true });
       }
       console.error('Failed to send message:', err);
     },
@@ -403,10 +412,11 @@ export function useMessages(conversationId: string | null, userId: string | null
       const uniqueIds = Array.from(new Set(ids.filter(Boolean)));
       if (!uniqueIds.length) return;
 
-      await supabase.from('message_reads').upsert(
+      const { error } = await supabase.from('message_reads').upsert(
         uniqueIds.map((messageId) => ({ message_id: messageId, user_id: userId })),
         { onConflict: 'message_id,user_id' }
       );
+      if (error) throw error;
     },
     [userId]
   );

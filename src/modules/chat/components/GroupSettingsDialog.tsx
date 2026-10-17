@@ -35,6 +35,8 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import type { Conversation, ConversationParticipant } from '../types';
+import { chatRpc } from '../chatRpc';
+import { AddGroupMemberDialog } from './AddGroupMemberDialog';
 
 interface GroupSettingsDialogProps {
   open: boolean;
@@ -56,6 +58,7 @@ export function GroupSettingsDialog({
   const [groupName, setGroupName] = useState(conversation.name || '');
   const [isUpdating, setIsUpdating] = useState(false);
   const [isLeaving, setIsLeaving] = useState(false);
+  const [addMemberOpen, setAddMemberOpen] = useState(false);
 
   const participants = conversation.participants?.filter((p) => !p.left_at) || [];
   const currentParticipant = participants.find((p) => p.user_id === currentUserId);
@@ -84,13 +87,7 @@ export function GroupSettingsDialog({
 
   const handleRemoveMember = async (userId: string) => {
     try {
-      const { error } = await supabase
-        .from('conversation_participants')
-        .update({ left_at: new Date().toISOString() })
-        .eq('conversation_id', conversation.id)
-        .eq('user_id', userId);
-
-      if (error) throw error;
+      await chatRpc.manageConversationMember(conversation.id, userId, 'remove');
       toast.success('Đã xóa thành viên');
       onUpdate();
     } catch (error) {
@@ -102,13 +99,7 @@ export function GroupSettingsDialog({
   const handleLeaveGroup = async () => {
     setIsLeaving(true);
     try {
-      const { error } = await supabase
-        .from('conversation_participants')
-        .update({ left_at: new Date().toISOString() })
-        .eq('conversation_id', conversation.id)
-        .eq('user_id', currentUserId);
-
-      if (error) throw error;
+      await chatRpc.leaveConversation(conversation.id);
       toast.success('Đã rời nhóm');
       onLeave();
       onOpenChange(false);
@@ -175,7 +166,7 @@ export function GroupSettingsDialog({
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium">Thành viên ({participants.length})</span>
               {isAdmin && (
-                <Button variant="ghost" size="sm">
+                <Button variant="ghost" size="sm" onClick={() => setAddMemberOpen(true)}>
                   <UserPlus className="h-4 w-4 mr-2" />
                   Thêm
                 </Button>
@@ -262,6 +253,13 @@ export function GroupSettingsDialog({
           </AlertDialog>
         </div>
       </DialogContent>
+      <AddGroupMemberDialog
+        open={addMemberOpen}
+        onOpenChange={setAddMemberOpen}
+        conversationId={conversation.id}
+        existingUserIds={participants.map((participant) => participant.user_id)}
+        onAdded={onUpdate}
+      />
     </Dialog>
   );
 }

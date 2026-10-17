@@ -12,6 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import logger from '@/lib/logger';
+import { chatRpc } from '@/modules/chat/chatRpc';
 
 /** Shape of a call_sessions row from Supabase realtime payload */
 interface CallSessionPayload {
@@ -77,16 +78,14 @@ export function CallProvider({ children, renderIncomingDialog = true }: CallProv
     if (!incomingCall) return;
 
     try {
-      await supabase
-        .from('call_sessions')
-        .update({ status: 'declined', ended_at: new Date().toISOString() })
-        .eq('id', incomingCall.id);
-
+      const declined = await chatRpc.declineCallSession(incomingCall.id);
+      if (!declined) throw new Error('Cuộc gọi đã thay đổi trạng thái.');
       setIncomingCall(null);
     } catch (error) {
       logger.error('[CallContext] Failed to decline call:', error);
+      toast({ title: 'Không thể từ chối cuộc gọi', description: 'Trạng thái cuộc gọi có thể đã thay đổi. Vui lòng thử lại.' });
     }
-  }, [incomingCall]);
+  }, [incomingCall, toast]);
 
   // Mark call active globally so AuthSessionKeeper / ChunkLoadRecovery skip disruptive reloads
   useEffect(() => {
@@ -153,8 +152,8 @@ export function CallProvider({ children, renderIncomingDialog = true }: CallProv
           (payload) => {
             const session = payload.new as CallSessionPayload;
 
-            // If the incoming call was cancelled/ended by caller
-            if (incomingCall?.id === session.id && ['ended', 'declined', 'missed'].includes(session.status)) {
+            // A call accepted on another device or ended by either side is no longer incoming here.
+            if (incomingCall?.id === session.id && ['active', 'ended', 'declined', 'missed'].includes(session.status)) {
               logger.debug('[CallContext] Incoming call cancelled:', session.status);
               setIncomingCall(null);
 
