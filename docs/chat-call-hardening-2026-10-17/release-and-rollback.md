@@ -74,3 +74,11 @@ Chat upload nằm dưới `chat-media/<user-id>/...`, nhưng read URL hiện là
 - Ba migration cùng catalog assertions đã chạy thành công trên schema production trong giao dịch `ROLLBACK`, không giữ lại schema/data changes từ lượt thử. Snapshot catalog quyền/policy/publication trước phát hành được lưu ngoài repository tại `/tmp/funprofile-chat-release-20261018/catalog-before.json`; đây không phải backup đầy đủ database.
 - Sau khi backend sẵn sàng, merge/push main và publish đúng Lovable project `331267a9-893e-47d1-8309-12038b7636f7` (FUN Profile Supabase). Project cũ ghi trong README không phải target phát hành.
 - Hai tài khoản và Safari/iPhone thật vẫn là kiểm chứng operator cần thực hiện; catalog/fixture tests không thay thế RTC/audio/video end-to-end.
+
+### Kết quả phát hành
+
+- Migration 20261017110000/20261017111000/20261017112000 đã áp dụng đúng thứ tự trong một giao dịch và ghi nhận riêng từng version. Catalog assertions trước COMMIT và sau phát hành đều đạt. Publication có 11 bảng (7 chat/call + 4 livestream).
+- Chỉ sửa status của đúng ba call legacy đã có ended_at; không còn call active trong ba ID đó, không đổi ended_at.
+- Functions ACTIVE: agora-call-token v1, get-upload-url v78, delete-from-r2 v78. OPTIONS token 204; POST không đăng nhập 401.
+- Code main 67bf611 đã push và Lovable xác nhận sync; publish request e8b7fe02-d4c9-425c-960f-a871a76a5038. Kiểm tra tài nguyên tải từ cả fun.rich và funprofile.lovable.app xác nhận bundle chat mới có endpoint token và giao diện tạm dừng gửi file.
+- Vitest 20 test, Deno token 3 test, typecheck, Deno check và build production đạt. Chưa xác minh cuộc gọi hai thiết bị hay Safari/iPhone thật; người vận hành cần thử ma trận trên sau khi tải lại frontend.
