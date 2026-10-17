@@ -4,8 +4,8 @@
 
 ---
 
-## 2026-10-17 — Lê Minh Trí (cùng Angel Muse) — ĐANG LÀM
-- **Hiển thị lịch sử giao dịch TỨC THÌ cho giao dịch tặng tiền giữa người dùng:** gắn trigger ghi ngay dòng lịch sử của giao dịch tặng mới vào bảng bản chụp `unified_transactions_snapshot` (có lớp bảo vệ để luồng tặng tiền không bao giờ bị ảnh hưởng), giữ nguyên job làm mới mỗi 5 phút (job 89) làm lưới an toàn đối soát toàn cục. Phạm vi: chỉ database production (bảng `donations`, bảng bản chụp lịch sử, hàm + trigger mới) — không đụng giao diện, không đụng các job khác. Hồ sơ: `docs/unified-instant-2026-10-17/`.
+## 2026-10-17 — Lê Minh Trí (cùng Angel Muse) — HOÀN THÀNH
+- **Hiển thị lịch sử giao dịch TỨC THÌ cho giao dịch tặng tiền giữa người dùng — ĐÃ XONG, đang sống trên production (database):** trigger `trg_donations_snapshot_append` + hàm `append_donation_to_snapshot` ghi ngay dòng lịch sử của mỗi donation mới vào bản chụp `unified_transactions_snapshot`, logic sao chép nguyên vẹn view hợp nhất, kèm lớp bảo vệ để luồng tặng tiền không bao giờ bị chặn. Job 89 (làm mới mỗi 5 phút) giữ nguyên làm lưới an toàn đối soát. Kiểm chứng: phép chiếu khớp 100% view gốc trên 5 mẫu đa dạng; test cơ chế trong giao dịch hồi ngược đạt (2 dòng hiện ngay, gọi lại không trùng, cuốn chiếu sạch); giao dịch thật 10.000 CAMLY lúc 08:51:49 hiện trong lịch sử ngay lập tức — trước cả lượt làm mới kế tiếp — và vẫn đúng 2 dòng, 0 trùng sau khi lưới quét qua. Hồ sơ đầy đủ: `docs/unified-instant-2026-10-17/`.
 
 ## 2026-10-15 — Lê Minh Trí → Quang Vũ (qua Angel Muse)
 - Đề xuất tái cấu trúc Livestream: chuyển từ quét mỗi phút sang event-driven (webhook Agora + app gọi trực tiếp + DB trigger) và giữ 1 vòng quét an toàn hợp nhất mỗi 5 phút; kèm luật dọn "mồ côi" quá 24–48 giờ. Đã kiểm chứng từ code gốc: cả hai watchdog của mảng Live phán quyết theo mốc thời gian nên đổi nhịp là an toàn. Chi tiết: hộp thư `quang-vu.md`, Mục 1. **Chờ Vũ quyết định nhịp & thời điểm.**
