@@ -226,6 +226,68 @@ async function updateProcessing(admin: any, session: any, reason: string, nextDe
   await logEvent(admin, session, 'replay_processing', { reason });
 }
 
+// ---------------------------------------------------------------------------
+// Terminal branch for recordings that can never produce a replay.
+//
+// Agora answers stop/query for a dead recorder with HTTP 404
+// ("failed to find worker"): the worker is gone, its file manifest is empty
+// and nothing will ever be uploaded to the temp bucket. The same is true when
+// the temp bucket is still empty long after the live ended. Before this
+// branch existed, such sessions were rescheduled forever: this processor kept
+// them in "processing" and the cleanup workers kept force-ending them,
+// generating hundreds of events and a feed post stuck on "processing".
+// After a grace window we close the session with the same failure shape the
+// rest of the system already uses for missing recordings.
+const WORKER_GONE_GRACE_MS = 5 * 60_000;
+const EMPTY_TEMP_GRACE_MS = 30 * 60_000;
+const NO_RECORDING_ERROR = 'Khong luu duoc video replay cho phien live nay.';
+
+function agoraWorkerGone(session: any): boolean {
+  const resp = session?.last_worker_response;
+  if (!resp || typeof resp !== 'object') return false;
+  const reason = String((resp as any).reason || '').toLowerCase();
+  return Number((resp as any).code) === 404 || reason.includes('failed to find worker');
+}
+
+async function markReplayUnrecoverable(
+  admin: any,
+  session: any,
+  diagnostics: Record<string, unknown>,
+) {
+  const now = new Date().toISOString();
+
+  await admin.from('live_replays').update({
+    status: 'failed',
+    replay_status: 'failed_no_recording',
+    archive_status: 'failed',
+    error_message: NO_RECORDING_ERROR,
+    last_error_at: now,
+    updated_at: now,
+  }).eq('live_session_id', session.id).not('status', 'in', '(ready)')
+    .then(undefined, () => undefined);
+
+  await admin.from('live_sessions').update({
+    status: 'ended',
+    recording_status: 'failed',
+    archive_status: 'unrecoverable',
+    archive_next_retry_at: null,
+    archive_error: NO_RECORDING_ERROR,
+    updated_at: now,
+  }).eq('id', session.id);
+
+  const postId = session.post_id || session.live_post_id || null;
+  if (postId) {
+    await admin.from('posts').update({
+      replay_status: 'failed_no_recording',
+      replay_ready: false,
+      processing_message: NO_RECORDING_ERROR,
+      updated_at: now,
+    }).eq('id', postId).then(undefined, () => undefined);
+  }
+
+  await logEvent(admin, session, 'replay_failed_no_recording', diagnostics);
+}
+
 async function upsertReplay(admin: any, session: any, payload: Record<string, unknown>) {
   const userId = userIdOf(session);
   if (!userId) throw new Error('Missing user id');
@@ -738,6 +800,29 @@ async function processSession(admin: any, session: any): Promise<Record<string, 
 
   if (!mp4) {
     const reason = sawAgoraFallbackFiles ? 'agora_filelist_unverified' : (tempObjects.length ? 'mp4_not_ready' : 'temp_empty');
+
+    // Terminal branch: the live is over, no media exists in the temp bucket
+    // and none can still arrive (Agora worker gone, or the bucket stayed
+    // empty far beyond the normal processing window). Close the session as
+    // failed_no_recording instead of rescheduling it forever.
+    const endedAtMs = session.ended_at ? Date.parse(session.ended_at) : NaN;
+    const endedAgoMs = Number.isFinite(endedAtMs) ? Date.now() - endedAtMs : 0;
+    const workerGone = agoraWorkerGone(session);
+    const noMediaAtAll = !hls && tempObjects.length === 0 && !sawAgoraFallbackFiles;
+    if (
+      liveEnded && recordingStopped && noMediaAtAll
+      && ((workerGone && endedAgoMs > WORKER_GONE_GRACE_MS) || endedAgoMs > EMPTY_TEMP_GRACE_MS)
+    ) {
+      await markReplayUnrecoverable(admin, session, {
+        reason,
+        worker_gone: workerGone,
+        ended_ago_ms: endedAgoMs,
+        temp_bucket: tempBucket,
+        temp_prefix: tempPrefix,
+      });
+      return { id: session.id, status: 'failed_no_recording', reason, worker_gone: workerGone };
+    }
+
     await updateProcessing(admin, session, reason, HLS_RETRY_MS);
     return { id: session.id, status: 'processing', seen: tempObjects.length, list_error: listError, reason };
   }
