@@ -15,7 +15,7 @@ import funLogo from '@/assets/fun-profile-logo.png';
 import { useLanguage } from '@/i18n/LanguageContext';
 
 const FRAUD_TYPES = ['admin_shared_device', 'admin_email_farm', 'admin_blacklisted_ip', 'admin_fraud_daily'];
-const SYSTEM_TYPES = ['epoch_claim_ready', 'epoch_reset_info', 'reward_adjustment', 'reward_approved', 'reward_rejected', 'claim_reward', 'account_banned', 'mint_request_rejected', 'fun_mint_signed', 'fun_mint_confirmed'];
+const SYSTEM_TYPES = ['epoch_claim_ready', 'epoch_reset_info', 'reward_adjustment', 'reward_approved', 'reward_rejected', 'claim_reward', 'account_banned', 'mint_request_rejected', 'fun_mint_signed', 'fun_mint_confirmed', 'impersonation_alert'];
 
 /** Render detailed fraud info when expanded */
 function FraudDetails({ notification }: { notification: NotificationWithDetails }) {
