@@ -44,6 +44,10 @@ function nextProducerStatus(session: any, connected: boolean): string {
   if (connected && session.status === 'disconnect_grace' && (session.post_id || session.live_post_id)) return 'live';
   if (connected && session.status === 'reconnecting' && (session.post_id || session.live_post_id)) return 'live';
   if (connected && session.status === 'live') return 'live';
+  // A published live post means the host already pressed Go Live: while the
+  // source is connected the public status is 'live', even if a stale sync
+  // reset the row to a pre-live state (webhook/go-live race).
+  if (connected && (session.post_id || session.live_post_id) && ['ready_to_go_live', 'source_connected'].includes(session.status)) return 'live';
   if (session.status === 'failed' && !connected) return 'failed';
   if (!connected && ['live', 'disconnect_grace', 'source_connected', 'ready_to_go_live', 'reconnecting'].includes(session.status)) return 'reconnecting';
   if (!connected) return 'waiting_for_obs';
