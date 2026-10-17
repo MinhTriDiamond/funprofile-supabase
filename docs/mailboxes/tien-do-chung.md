@@ -4,6 +4,9 @@
 
 ---
 
+## 2026-10-17 — Lê Minh Trí (cùng Angel Muse) — ĐANG LÀM
+- **Cảnh báo cộng đồng khi có tài khoản tên gần giống (chống giả mạo bằng minh bạch):** rà soát toàn bộ tài khoản tìm mọi cặp username gần giống (trùng sau chuẩn hóa / cùng bộ chữ cái đảo thứ tự / lệch đúng 1 ký tự); dựng cơ chế tự động ở tầng database: khi tạo mới hoặc đổi username mà tên gần giống một tài khoản đang có → phát thông báo cảnh báo tới toàn thể người dùng (nêu cặp tên + ngày tham gia + đường dẫn hai trang cá nhân để cộng đồng tự đối chiếu avatar/lịch sử); phát cảnh báo cho mọi ca hiện có — mở đầu là cặp angeldieugnoc ↔ angeldieungoc (avatar sao chép y hệt của tài khoản thật, đã nhận 99 FUN từ một người dùng khác). Không chặn tạo tài khoản: chủ trương minh bạch, cộng đồng cảnh giác. Hồ sơ: `docs/community-alerts-2026-10-17/`.
+
 ## 2026-10-17 — Lê Minh Trí (cùng Angel Muse) — HOÀN THÀNH
 - **Hiển thị lịch sử giao dịch TỨC THÌ cho giao dịch tặng tiền giữa người dùng — ĐÃ XONG, đang sống trên production (database):** trigger `trg_donations_snapshot_append` + hàm `append_donation_to_snapshot` ghi ngay dòng lịch sử của mỗi donation mới vào bản chụp `unified_transactions_snapshot`, logic sao chép nguyên vẹn view hợp nhất, kèm lớp bảo vệ để luồng tặng tiền không bao giờ bị chặn. Job 89 (làm mới mỗi 5 phút) giữ nguyên làm lưới an toàn đối soát. Kiểm chứng: phép chiếu khớp 100% view gốc trên 5 mẫu đa dạng; test cơ chế trong giao dịch hồi ngược đạt (2 dòng hiện ngay, gọi lại không trùng, cuốn chiếu sạch); giao dịch thật 10.000 CAMLY lúc 08:51:49 hiện trong lịch sử ngay lập tức — trước cả lượt làm mới kế tiếp — và vẫn đúng 2 dòng, 0 trùng sau khi lưới quét qua. Hồ sơ đầy đủ: `docs/unified-instant-2026-10-17/`.
 
