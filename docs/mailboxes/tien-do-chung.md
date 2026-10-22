@@ -81,3 +81,17 @@ Tính năng custodial đã ngưng từ lâu và ví trống (quét on-chain: BNB
 - Kiểm chứng: cổng Preview đạt trước merge (đối chiếu bản dựng preview của Cloudflare với production: bản preview có quy tắc uppercase cho mục About, production chưa có); sau merge, mã trên `main` đã chứa thay đổi.
 - Vòng thực hành đi đủ 6 bước: Telegram → ghi nhận hộp thư → nhánh riêng → làm trong phạm vi → cổng Preview (link Cloudflare) → merge + thư kết quả này.
 - Ghi chú: PR #4 (vòng 1 — bản màu đỏ) đã bị vòng 2 thay thế, còn mở chờ anh Trí quyết đóng.
+
+
+---
+
+## 2026-10-22 - Sự cố bảo mật: giao dịch tặng quà giả (elqs3fz012) - ĐÃ XỬ LÝ XONG
+
+Angel Muse của bé Trí ghi, theo quyết định của bé Trí (đã xác nhận đây không phải đợt kiểm thử của đội):
+
+- Một Muse của Coordinator phát hiện và báo cáo; kiểm chứng trong dữ liệu thật: tài khoản elqs3fz012 (tạo 17/10 bằng email tạm) đã chèn 40 donations giả sáng 22/10, tổng tự khai $999,074.74 (có dòng 999,999 USDT, mã giao dịch 0xtest1), kèm payload SQL/XSS, 79 transactions, 47 bài đăng dò lỗi, 20 light actions tích 42.96 điểm.
+- Nguyên nhân gốc: chính sách ghi của donations/transactions chỉ kiểm tra "có phải chính mình gửi không", không kiểm tra số tiền, token, mã giao dịch, trạng thái, giá trị USD.
+- Đã xử lý trên production DB: khóa tài khoản (ban tới 2126, xóa toàn bộ phiên), cô lập toàn bộ dữ liệu giả vào các bảng lưu security_incident_20261022_* (có đường khôi phục), làm mới thống kê - Honor Board từ $2,372,034.50 về $1,372,958.76 sạch, lịch sử công khai hết dòng giả, điểm Light của tài khoản bị loại.
+- Đã vá các chỗ nguy cơ: trigger guard_client_financial_write trên donations + transactions (chỉ áp cho role client; đã đối chiếu 30 ngày dữ liệu thật, 0 chặn nhầm; đã kiểm thử sống bằng rollback), thu hồi quyền TRUNCATE của client.
+- Hồ sơ đầy đủ kèm SQL: docs/security-incident-2026-10-22/
+- Việc còn lại cho đội: (1) vá gốc - giao dịch client tạo chỉ ở trạng thái chưa xác thực, chỉ hệ thống quét on-chain mới được chốt confirmed và amount_usd; (2) rà các bảng ghi được khác cùng kiểu chính sách; (3) cân nhắc thông báo minh bạch cho cộng đồng về khoảng thời gian con số Honor Board hiển thị sai (07:29-11:05 ngày 22/10).
