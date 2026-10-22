@@ -2,6 +2,27 @@
 
 Hộp thư của Angel Ái Vân (FUN Profile username: angelaivan) trong đội Coordinator FUN Profile. Mọi bàn giao, tiến độ và hồi âm của dự án bạn phụ trách được ghi tại đây theo quy trình trong docs/quy-trinh-lam-viec-coordinator.md. Tuyệt đối không ghi bí mật (token, mật khẩu) vào hộp thư này.
 
+## Mục 5 - 2026-10-22 - Angel Ái Vân (cùng Angel Muse) - ĐÃ THI CÔNG TRONG REPO + BACKTEST ĐỢT 1 ĐẠT 0 FALSE POSITIVE
+
+→ Trạng thái: CODE ĐÃ VÀO BRANCH — chờ thi hành production theo quyết định 5 (chạy SQL + deploy ở chế độ shadow)
+
+**Đã nộp trên branch `feat/tri-donation-verification-flow`:**
+- `docs/donation-verification-flow-2026-10-22/sql/00-backup-guard-current.sql` — định nghĩa guard đang sống (bản sao lưu/khôi phục).
+- `.../sql/01-guard-v2-donation-verification.sql` — guard v2: client INSERT bị ép về `pending_verification` + gạt `amount_usd`/giá do client khai + siết định dạng tx_hash EVM; client UPDATE bị đóng băng các trường kết luận. Giữ nguyên mọi luật vá nóng cũ; service_role không bị ảnh hưởng; dòng `failed` hợp lệ và nhóm BTC manual không bị đụng.
+- `.../sql/02-guard-v2-test-rollback.sql` — bộ test 4 ca trong giao dịch rollback (ép trạng thái / chặn hash sai / đóng băng khi UPDATE / dòng failed vẫn ghi được).
+- `.../sql/03-verification-log-table.sql` — bảng `donation_verification_log` (RLS bật, không cấp quyền API).
+- `supabase/functions/verify-pending-donations/index.ts` — bộ xác thực phía server: đối chiếu bằng tx_hash trên đúng chain (Moralis), lấy địa chỉ từ chính giao dịch chuỗi, ví chưa biết thì hạ verdict chứ không reject oan; mặc định **SHADOW** (chỉ ghi log), enforce chỉ khi bật biến môi trường `DONATION_VERIFY_ENFORCE=true`.
+- `src/components/transactions/TransactionRow.tsx` — lịch sử giao dịch hiện nhãn **"⏳ Đang xác thực"** cho `pending_verification` và "Không xác thực được" cho `rejected_unverified`.
+- `docs/donation-verification-flow-2026-10-22/BACKTEST-2026-10-22.md` — báo cáo backtest đợt 1.
+
+**Backtest đợt 1 (chỉ đọc, dữ liệu thật 30 ngày, 1.189 dòng): ĐẠT — 0 dòng vi phạm các luật chặn cứng mới** (hash, amount, token đều sạch); 1.189 dòng sẽ chỉ đổi trạng thái khởi đầu sang chờ xác thực (ép trạng thái, không báo lỗi, không gãy app). Người nhận có ví để đối chiếu: 127/130 (~98%).
+
+**Thứ tự thi hành đề xuất cho Angel Muse của bé Trí:** chạy sql/03 → sql/01 → sql/02 (test rollback, đạt cả 4 PASS) → deploy `verify-pending-donations` ở shadow + nối nhịp quét → theo dõi log 1 tuần theo tiêu chí Mục 6 của THIET-KE → báo cáo shadow vào hộp thư này trước khi bàn bật enforce. Phần frontend đi qua cổng Preview khi mở PR của branch.
+
+- Angel Ái Vân (cùng Angel Muse), 2026-10-22
+
+---
+
 ## Mục 4 - 2026-10-22 - Angel Ái Vân (cùng Angel Muse) - ĐÃ CHỐT 5 QUYẾT ĐỊNH THIẾT KẾ
 
 → Trạng thái: THIẾT KẾ ĐÃ CHỐT — đang thi công trong repo; production chờ các cổng an toàn (backtest + shadow)

@@ -47,13 +47,22 @@ function directionBadge(row: UnifiedTransactionRow) {
 function statusBadge(status?: string | null) {
   const s = (status ?? '').toLowerCase();
   const ok = s === 'confirmed' || s === 'success' || s === 'completed';
+  // Luồng xác thực quà tặng (2026-10-22): dòng chờ server đối chiếu on-chain.
+  const verifying = s === 'pending_verification';
+  const rejected = s === 'rejected_unverified';
   const pending = s === 'pending' || s === 'processing';
   const failed = s === 'failed' || s === 'error';
   const cls = ok ? 'border-emerald-300 text-emerald-600'
+    : verifying ? 'border-sky-300 text-sky-600'
     : pending ? 'border-amber-300 text-amber-600'
-    : failed ? 'border-rose-300 text-rose-600'
+    : (failed || rejected) ? 'border-rose-300 text-rose-600'
     : 'text-muted-foreground';
-  const label = ok ? '✅ Thành công' : pending ? 'Đang xử lý' : failed ? 'Thất bại' : (status ?? '—');
+  const label = ok ? '✅ Thành công'
+    : verifying ? '⏳ Đang xác thực'
+    : rejected ? 'Không xác thực được'
+    : pending ? 'Đang xử lý'
+    : failed ? 'Thất bại'
+    : (status ?? '—');
   return { label, cls };
 }
 
