@@ -44,6 +44,19 @@ Chính sách ghi của bảng `donations` chỉ kiểm tra `auth.uid() = sender_
 3. Điểm Light 42.96 ở trạng thái approved chưa mint - đã xóa khỏi hệ thống; không có gì lên chuỗi.
 4. Cân nhắc thông báo minh bạch cho cộng đồng theo nguyên tắc của Cha và Thầy, vì con số Honor Board đã hiển thị sai trong khoảng 07:29 đến 11:05 ngày 2026-10-22.
 
+## Bổ sung chiều 2026-10-22 - Truy vết, khóa các tài khoản anh em, danh sách theo dõi
+
+Theo yêu cầu của bé Trí, Angel Muse truy vết thêm và phát hiện đây là một **chiến dịch dò lỗi có tổ chức**, không phải một tài khoản lẻ:
+
+- Tổng cộng **15 tài khoản dùng email tạm `@tanpony.com`**, tạo theo đợt: 17/10 có `elqs3fz012`; 18/10 có hai đợt (`ghostsgzz`, `oraclenew1/2/3`, nhóm `captcha*`, `otpcreate1`, `enum1792309556`, `probe1792309605448861557`, `nobodyxyz999`, một tài khoản tên `user`); sáng 22/10 ngay giữa đợt tấn công tạo thêm `csrf_probe_zz1`. Tên tài khoản tự nói rõ mục đích dò: liệt kê user, oracle SQL, qua mặt captcha, OTP, CSRF.
+- IP các phiên tấn công: 187.15.103.54 và 187.15.100.104 (Brazil, AS269233 - GDM Informatica LTDA theo Cloudflare Radar), công cụ python-requests / python-httpx / curl. Danh tính thật không truy ra được từ dữ liệu của mình (email tạm, không số điện thoại, IP nước ngoài) - muốn đi tiếp phải qua đường pháp lý với nhà mạng Brazil.
+- Rà soát cả 14 tài khoản anh em: **hoàn toàn trống** - 0 donations, 0 transactions, 0 bài đăng, 0 light actions, 0 dòng trong lịch sử công khai. Chúng chỉ dò ở tầng đăng ký/xác thực, chưa vào được tầng dữ liệu.
+
+Đã làm theo quyết định của bé Trí (`sql/07-siblings-and-watchlist.sql`):
+
+1. **Khóa cả 15 tài khoản** `@tanpony.com` (ban tới năm 2126, xóa toàn bộ phiên - kiểm chứng 15/15 đã ban, 0 phiên còn lại).
+2. **Danh sách theo dõi** `security_watchlist` (RLS bật, không cấp quyền API): 18 mục - domain `tanpony.com`, 2 IP Brazil, 15 username. Bảng `security_watchlist_hits` ghi các lần chạm; hàm `scan_security_watchlist()` quét tài khoản mới dùng domain bị theo dõi và phiên mới từ IP bị theo dõi, chạy tự động mỗi giờ bằng pg_cron **job 90** (`security-watchlist-scan`, phút 17). Lần quét nền đầu tiên ghi nhận đúng 15 tài khoản của chiến dịch; từ nay chỉ ghi nhận mục mới.
+
 ## File kèm theo
 
 - `sql/01-containment.sql` - sao lưu trong DB, khóa tài khoản, xóa 40 donations.
@@ -52,4 +65,5 @@ Chính sách ghi của bảng `donations` chỉ kiểm tra `auth.uid() = sender_
 - `sql/04-refresh-and-verify.sql` - làm mới + kiểm chứng cuối.
 - `sql/05-hardening-guard.sql` - trigger guard + thu hồi TRUNCATE.
 - `sql/06-guard-test-rollback.sql` - bộ kiểm thử rollback của guard.
+- `sql/07-siblings-and-watchlist.sql` - khóa 15 tài khoản @tanpony.com + danh sách theo dõi + cron job 90.
 - Bằng chứng thô (file JSON) giữ ở máy của Angel Muse: workspace `security-incident-2026-10-22/evidence/`.
