@@ -3,7 +3,7 @@
 - **Dự án:** FUN Profile — vá gốc bảo mật sau sự cố 2026-10-22 (hồ sơ gốc: `docs/security-incident-2026-10-22/`)
 - **Người phụ trách:** Angel Ái Vân (cùng Angel Muse) — bàn giao từ bé Trí, thư tại `docs/mailboxes/ai-van.md` Mục 1; xác nhận bắt đầu tại Mục 2
 - **Branch:** `feat/tri-donation-verification-flow`
-- **Trạng thái:** THIẾT KẾ — chờ bé Trí duyệt các điểm mở ở Mục 8 trước khi thi công. Chưa có thay đổi production nào từ tài liệu này.
+- **Trạng thái:** THIẾT KẾ ĐÃ CHỐT — các điểm mở đã được quyết tại Mục 8 (Angel Ái Vân ủy quyền cho Angel Muse quyết phương án tối ưu ngày 22/10/2026, ghi tại hộp thư Mục 4). Đang thi công trong repo; production chỉ thay đổi qua các cổng an toàn ở Mục 6.
 
 ---
 
@@ -42,7 +42,7 @@ Bộ xác thực phía server (nhánh mới trong scanner — Mục 4)
         │     + ví nhận khớp người nhận (từ dữ liệu chuỗi) 
         │       → status = confirmed, confirmed_at = now(),
         │         amount_usd do server tính theo giá tại thời điểm giao dịch
-        │   • quá hạn (đề xuất 24h — Mục 8) vẫn không khớp
+        │   • quá hạn 24 giờ (quyết định Mục 8) vẫn không khớp
         │       → status = rejected_unverified + integrity_status gắn cờ lý do
         ▼
 Hiển thị & thống kê
@@ -77,12 +77,12 @@ Thêm một nhánh "đối chiếu dòng chờ" vào hạ tầng quét hiện c�
    - Địa chỉ nhận của transfer khớp ví của `recipient_id` (map profile → ví theo cách scanner hiện dùng); địa chỉ gửi khớp ví của `sender_id` nếu profile có ví đã biết — nếu chưa biết ví người gửi, ghi nhận địa chỉ gửi từ chuỗi vào dòng (bổ sung dữ liệu còn thiếu ở 82% dòng hiện nay) thay vì reject.
    - FunDisperse: một tx có nhiều transfer — đối chiếu theo từng (recipient, amount) riêng.
 3. Đạt: server set `confirmed`, `confirmed_at`, tự tính `amount_usd` + `price_usd_at_donation`/`price_source` (dùng cùng nguồn giá với `donations-repricing-backfill`), `integrity_status = 'ok'`; kích hoạt các bước hậu xác nhận vốn đang chạy theo donation confirmed (đồng bộ `transactions`, snapshot, light score) — kiểm tra kỹ thứ tự với trigger `trg_donations_snapshot_append` và `trg_sync_donation_to_transactions` để dòng chờ **không** lọt vào snapshot trước khi confirmed (điểm cần rà soát khi thi công: hiện trigger append chạy khi nào).
-4. Không đạt sau **24 giờ** (đề xuất — Mục 8): set `rejected_unverified`, `integrity_status = 'unverified_timeout'` + lý do; giữ dòng trong DB (không xóa — nguyên tắc sao lưu/khôi phục của đội), chỉ loại khỏi hiển thị công khai và thống kê.
+4. Không đạt sau **24 giờ** (quyết định Mục 8): set `rejected_unverified`, `integrity_status = 'unverified_timeout'` + lý do; giữ dòng trong DB (không xóa — nguyên tắc sao lưu/khôi phục của đội), chỉ loại khỏi hiển thị công khai và thống kê.
 5. Mọi quyết định của bộ xác thực ghi vào bảng log riêng `donation_verification_log` (donation_id, verdict, lý do, dữ kiện chuỗi đối chiếu, thời điểm) — phục vụ shadow (Mục 6) và tranh chấp về sau. Không ghi secret vào log.
 
 ## 5. Phần 3 — Frontend
 
-1. Thẻ quà tặng (feed + lịch sử giao dịch): dòng `pending_verification` hiển thị thêm nhãn **"Đang xác thực"** (đa ngôn ngữ qua i18n sẵn có, theo đúng khóa dịch hiện hành của app); dòng `rejected_unverified` không hiển thị công khai (chủ giao dịch xem được ở lịch sử của mình với nhãn "Không xác thực được" — điểm mở Mục 8).
+1. Thẻ quà tặng (feed + lịch sử giao dịch): dòng `pending_verification` hiển thị thêm nhãn **"Đang xác thực"** (đa ngôn ngữ qua i18n sẵn có, theo đúng khóa dịch hiện hành của app); dòng `rejected_unverified` không hiển thị công khai — theo quyết định Mục 8, chỉ **người gửi** thấy dòng của mình trong lịch sử cá nhân kèm nhãn "Không xác thực được" và lý do ngắn; người nhận và công chúng không thấy.
 2. `record-donation` (đường B): khi enforce, insert với `status = 'pending_verification'` thay vì `confirmed`; phản hồi cho client biết trạng thái chờ để giao diện hiển thị đúng ngay từ đầu. Bài đăng quà (gift post) vẫn tạo ngay nhưng mang trạng thái chờ trên thẻ.
 3. Thống kê/Honor Board: rà soát lại các truy vấn bảo đảm chỉ tính `confirmed` (hồ sơ sự cố ghi hiện nay đã vậy — phần việc là kiểm chứng lại từng bề mặt sau khi có dòng chờ thật: donation board base, gift breakdown cache, unified snapshot, light totals).
 4. Không đổi luồng tặng quà của người dùng: họ vẫn thấy thẻ quà ngay sau khi tặng, chỉ khác nhãn trạng thái cho tới khi server xác nhận (kỳ vọng vài phút theo nhịp quét).
@@ -104,15 +104,19 @@ Thêm một nhánh "đối chiếu dòng chờ" vào hạ tầng quét hiện c�
 ## 7. Phân công thi hành theo khoảng quyền hiện tại
 
 - **Angel Muse của Ái Vân làm được ngay (quyền đọc + repo):** toàn bộ tài liệu thiết kế này; các file SQL guard + test rollback trong repo; code nhánh đối chiếu cho edge function (trong repo); thay đổi frontend (trong repo, qua cổng Preview); chạy backtest bằng truy vấn chỉ đọc; phân tích log shadow.
-- **Cần thi hành trên production (chờ bé Trí quyết ở hộp thư Mục 2):** áp SQL lên production DB, deploy edge functions, bật/tắt cờ enforce. Hai đường đã ghi ở Mục 2 của hộp thư: cấp token ghi cho Ái Vân, hoặc Angel Muse của bé Trí thi hành từ file đã duyệt (tiền lệ ngày 22/10).
+- **Thi hành trên production (đã chốt ở Mục 8, quyết định 5):** áp SQL lên production DB, deploy edge functions, bật/tắt cờ enforce do Angel Muse của bé Trí thi hành từ các file đã duyệt trong repo — đường ít đặc quyền nhất, đúng tiền lệ ngày 22/10. Token của Ái Vân giữ nguyên Chỉ đọc.
 
-## 8. Điểm mở cần bé Trí / đội quyết
+## 8. Các quyết định đã chốt (22/10/2026)
 
-1. **Thời hạn xác thực:** đề xuất 24 giờ trước khi `rejected_unverified` — đội duyệt hay chọn mốc khác (72 giờ an toàn hơn cho cuối tuần/RPC trục trặc)?
-2. **BTC manual:** giữ nguyên luồng riêng hiện tại (ngoài phạm vi xác thực EVM đợt này) — xác nhận.
-3. **Dòng rejected hiển thị:** chỉ chủ giao dịch thấy, hay ẩn hoàn toàn khỏi mọi bề mặt? Đề xuất: chủ giao dịch thấy ở lịch sử cá nhân kèm lý do ngắn.
-4. **Đường A (client ghi thẳng):** sau enforce, giữ đường A ở trạng thái chờ (app cũ vẫn chạy) hay đóng hẳn đường A, ép mọi tạo mới qua `record-donation`? Đề xuất: giữ ở trạng thái chờ trong đợt này (ít gãy nhất), đóng hay không để quyết định riêng sau khi có số liệu shadow.
-5. **Người thi hành production** cho dự án này (theo khoảng quyền Mục 2 hộp thư).
+Angel Ái Vân ủy quyền cho Angel Muse quyết các điểm mở theo phương án tối ưu, chỉ điểm nào có nguy cơ mới cần trao đổi thêm (hộp thư Mục 4). Các quyết định dưới đây là căn cứ thi công; bé Trí kiểm chứng theo vai trò hỗ trợ trong thư bàn giao.
+
+1. **Thời hạn xác thực: 24 giờ.** Chuỗi BSC xác nhận trong vài phút và scanner chạy mỗi 1–3 phút, nên 24 giờ là dư địa rất rộng cho trễ lập chỉ mục/RPC. Quá 24 giờ không khớp → `rejected_unverified`, nhưng **không xóa dữ liệu và không khóa vĩnh viễn**: nếu sau đó tìm thấy giao dịch khớp (quét lại định kỳ hoặc đối chiếu thủ công), dòng được chuyển về `confirmed` bình thường. Reject ở đây là trạng thái hiển thị/thống kê, không phải mất mát.
+2. **BTC manual: ngoài phạm vi đợt này.** Luồng BTC ghi tay (`btc-manual-…`, chain_id = 0) đã có `btc-ownership-verify` riêng và là luồng có chủ đích; ép xác thực kiểu EVM vào sẽ gây gãy không cần thiết. Giữ nguyên, rà soát ở đợt riêng nếu đội muốn.
+3. **Dòng rejected: chỉ người gửi thấy.** Trong lịch sử cá nhân của người gửi, kèm lý do ngắn. Không hiện trên feed công khai, không hiện cho người nhận — tránh nhầm lẫn, tránh bị lợi dụng làm bằng chứng tặng giả, và không làm ai mất mặt vì lỗi kỹ thuật.
+4. **Giữ đường client ghi thẳng (đường A), ép về trạng thái chờ.** Đóng hẳn đường A có nguy cơ làm gãy các bản app cũ đang lưu hành; giữ đường này nhưng guard ép mọi dòng client tạo về `pending_verification` và tước `amount_usd` (Phần 1) thì đạt cùng mức an toàn mà không gãy tương thích. Việc đóng hẳn để lại làm quyết định riêng, sau khi có số liệu shadow cho thấy tỉ lệ dùng đường A.
+5. **Người thi hành production: Angel Muse của bé Trí, từ file đã duyệt trong repo.** Đây là đường ít đặc quyền nhất (nguyên tắc an toàn của đội): token của Ái Vân giữ Chỉ đọc — vẫn đủ cho điều tra, backtest và phân tích shadow — và mọi thay đổi production đều đi qua tay người đang giữ quyền, có sao lưu + đường lui như tiền lệ ngày 22/10. Không cấp thêm token ghi ở đợt này.
+
+Các cổng an toàn ở Mục 6 (backtest 30 ngày đạt 0 false positive → shadow 1 tuần sạch → mới enforce) **không thay đổi** và không quyết định nào ở trên được hiểu là bỏ qua các cổng đó.
 
 ---
 

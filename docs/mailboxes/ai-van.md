@@ -2,6 +2,24 @@
 
 Hộp thư của Angel Ái Vân (FUN Profile username: angelaivan) trong đội Coordinator FUN Profile. Mọi bàn giao, tiến độ và hồi âm của dự án bạn phụ trách được ghi tại đây theo quy trình trong docs/quy-trinh-lam-viec-coordinator.md. Tuyệt đối không ghi bí mật (token, mật khẩu) vào hộp thư này.
 
+## Mục 4 - 2026-10-22 - Angel Ái Vân (cùng Angel Muse) - ĐÃ CHỐT 5 QUYẾT ĐỊNH THIẾT KẾ
+
+→ Trạng thái: THIẾT KẾ ĐÃ CHỐT — đang thi công trong repo; production chờ các cổng an toàn (backtest + shadow)
+
+Ngày 22/10/2026, Angel Ái Vân ủy quyền cho Angel Muse tự quyết các điểm mở của thiết kế theo phương án tối ưu ("Muse cứ quyết định nha, cái nào có nguy cơ thì mới cần trao đổi"). Angel Muse đã chốt 5 quyết định sau (chi tiết + lý do tại Mục 8 của `docs/donation-verification-flow-2026-10-22/THIET-KE.md`):
+
+1. **Thời hạn xác thực: 24 giờ** — quá hạn không khớp thì `rejected_unverified` nhưng không xóa dữ liệu; tìm thấy giao dịch khớp về sau (quét lại/đối chiếu thủ công) thì chuyển về `confirmed` bình thường.
+2. **BTC manual ngoài phạm vi đợt này** — giữ nguyên luồng riêng hiện có (`btc-ownership-verify`), không ép xác thực EVM.
+3. **Dòng rejected chỉ người gửi thấy** trong lịch sử cá nhân kèm lý do ngắn — không hiện feed công khai, không hiện cho người nhận.
+4. **Giữ đường client ghi thẳng ở trạng thái chờ** (guard ép `pending_verification` + tước `amount_usd`) thay vì đóng hẳn — cùng mức an toàn, không gãy các bản app cũ.
+5. **Thi hành production qua Angel Muse của bé Trí** từ các file đã duyệt trong repo (đường ít đặc quyền nhất, đúng tiền lệ 22/10); token của Ái Vân giữ nguyên Chỉ đọc, không cấp thêm token ghi ở đợt này. — Mục này thay cho việc chờ quyết ở Mục 2: khoảng quyền đã có phương án xử lý, việc không còn chờ ở điểm này.
+
+Không đổi: các cổng an toàn — backtest trên ít nhất 30 ngày traffic thật đạt 0 false positive, rồi shadow 1 tuần chỉ ghi nhận, sạch mới đề xuất enforce. Việc tiếp theo của Angel Muse của Ái Vân trong repo: soạn SQL guard + bộ test rollback, code nhánh đối chiếu cho edge scanner, thay đổi frontend nhãn "Đang xác thực" (qua cổng Preview), và chạy backtest chỉ đọc.
+
+- Angel Ái Vân (cùng Angel Muse), 2026-10-22
+
+---
+
 ## Mục 3 - 2026-10-22 - Angel Ái Vân (cùng Angel Muse) - ĐÃ NỘP BẢN THIẾT KẾ VÁ GỐC
 
 → Trạng thái: CHỜ DUYỆT THIẾT KẾ (chưa thi công, chưa đụng production)
