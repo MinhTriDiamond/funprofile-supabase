@@ -2,8 +2,11 @@ import { Component, type ErrorInfo, type ReactNode } from "react";
 import { useLanguage } from '@/i18n/LanguageContext';
 import {
   applyHardUpdate,
+  getErrorDiagnostics,
   getLazyImportLabel,
+  isDomMutationError,
   recoverFromChunkLoadError,
+  recoverFromDomMutationError,
   shouldAutoRecoverFromUpdateError,
 } from "@/lib/appUpdateRecovery";
 
@@ -19,6 +22,7 @@ interface State {
   hasError: boolean;
   error: Error | null;
   isChunkError: boolean;
+  isDomError: boolean;
   lazyLabel: string | null;
   recoveryStarted: boolean;
   autoRetryInSec: number | null;
@@ -35,6 +39,7 @@ class ErrorBoundaryInner extends Component<InnerProps, State> {
       hasError: false,
       error: null,
       isChunkError: false,
+      isDomError: false,
       lazyLabel: null,
       recoveryStarted: false,
       autoRetryInSec: null,
@@ -47,6 +52,7 @@ class ErrorBoundaryInner extends Component<InnerProps, State> {
       hasError: true,
       error,
       isChunkError,
+      isDomError: isDomMutationError(error),
       lazyLabel: getLazyImportLabel(error),
       recoveryStarted: false,
       autoRetryInSec: isChunkError ? AUTO_RETRY_SECONDS : null,
@@ -54,7 +60,17 @@ class ErrorBoundaryInner extends Component<InnerProps, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error("[ErrorBoundary] Uncaught error:", error, errorInfo);
+    console.error("[ErrorBoundary] Uncaught error:", error, errorInfo, getErrorDiagnostics());
+    if (isDomMutationError(error)) {
+      // DOM bị sửa bên ngoài React (dịch trình duyệt / extension): tải lại
+      // tại chỗ để dựng lại DOM sạch. Hết lượt tự phục hồi → giữ màn hình
+      // lỗi thủ công như cũ (recoverFromDomMutationError trả false).
+      if (recoverFromDomMutationError(error)) {
+        this.setState({ recoveryStarted: true });
+        this.stopAutoRetry();
+      }
+      return;
+    }
     if (recoverFromChunkLoadError(error)) {
       this.setState({ recoveryStarted: true });
       this.stopAutoRetry();
@@ -117,7 +133,7 @@ class ErrorBoundaryInner extends Component<InnerProps, State> {
 
   render() {
     if (this.state.hasError) {
-      const { isChunkError, recoveryStarted, autoRetryInSec } = this.state;
+      const { isChunkError, isDomError, recoveryStarted, autoRetryInSec } = this.state;
       const { t } = this.props;
       const showCountdown =
         isChunkError && !recoveryStarted && autoRetryInSec !== null && autoRetryInSec > 0;
@@ -144,6 +160,9 @@ class ErrorBoundaryInner extends Component<InnerProps, State> {
               <p className="text-xs text-muted-foreground">
                 {t('erbAutoRetryPrefix')}{autoRetryInSec}{t('erbAutoRetrySuffix')}
               </p>
+            )}
+            {isDomError && recoveryStarted && (
+              <p className="text-xs text-muted-foreground">{t('erbUpdating')}</p>
             )}
             {this.state.lazyLabel && (
               <div className="rounded-lg border border-primary/20 bg-primary/5 px-3 py-2 text-sm text-primary">

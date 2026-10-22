@@ -123,6 +123,148 @@ export function shouldAutoRecoverFromUpdateError(reason: unknown) {
   return group === "chunk-load-error" || group === "mime-html" || group === "missing-default";
 }
 
+// ────────────────────────────────────────────────────────────────────
+// DOM mutation recovery — lỗi insertBefore / removeChild NotFoundError.
+//
+// Dịch trang của trình duyệt (Google Translate) hoặc extension có thể bọc /
+// thay các text node trong DOM bên ngoài React. Khi React chèn hoặc gỡ node
+// (ví dụ: chèn "bài đăng tạm" optimistic lên đầu feed lúc người dùng đăng
+// bài kèm ảnh), node tham chiếu không còn là con của node cha nữa →
+// NotFoundError làm sập toàn app qua ErrorBoundary (ghi nhận 2026-10-22:
+// người dùng đăng bài kèm ảnh 2.34MB trên laptop thì trang break).
+//
+// Khác chunk-load-error, code của app KHÔNG stale trong trường hợp này —
+// DOM bị sửa từ bên ngoài — nên cách phục hồi đúng là tải lại tại chỗ để
+// dựng lại DOM sạch: tối đa 1 lần trong cửa sổ 60 giây (state riêng trong
+// sessionStorage) và vẫn tôn trọng ngân sách reload toàn cục của
+// reloadWithCacheBust. Quá giới hạn thì trả false để ErrorBoundary hiện
+// màn hình lỗi thủ công như cũ, tránh vòng lặp reload.
+// ────────────────────────────────────────────────────────────────────
+const DOM_RECOVERY_KEY = "fun_profile_dom_recovery";
+const DOM_RECOVERY_WINDOW_MS = 60_000;
+const DOM_RECOVERY_MAX_AUTO_RELOADS = 1;
+
+export function isDomMutationError(reason: unknown): boolean {
+  const message = getChunkErrorMessage(reason);
+  const name = reason instanceof Error ? reason.name : "";
+  const normalized = `${name}: ${message}`.toLowerCase();
+  const mentionsDomOp =
+    normalized.includes("insertbefore") || normalized.includes("removechild");
+  const notAChild = normalized.includes("not a child of this node");
+  if (!mentionsDomOp && !notAChild) return false;
+  // Dạng đầy đủ của Chrome/Safari/Firefox luôn chứa cả tên thao tác DOM và
+  // cụm "not a child of this node"; riêng tên lỗi NotFoundError đi cùng một
+  // trong hai dấu hiệu cũng đủ kết luận (thông điệp rút gọn ở một số bản).
+  return (mentionsDomOp && notAChild) || name === "NotFoundError";
+}
+
+export interface ErrorDiagnostics {
+  userAgent: string | null;
+  pageLanguage: string | null;
+  pageTranslated: boolean;
+  path: string | null;
+}
+
+/**
+ * Thông tin chẩn đoán nhẹ đi kèm log lỗi: giúp phân biệt lỗi do trang đang
+ * bị dịch (Chrome gắn class `translated-ltr`/`translated-rtl` lên <html>)
+ * với lỗi nội tại của app. Chỉ gồm thông tin môi trường trình duyệt, không
+ * chứa nội dung người dùng. An toàn khi chạy ngoài trình duyệt (test/SSR).
+ */
+export function getErrorDiagnostics(): ErrorDiagnostics {
+  let userAgent: string | null = null;
+  let pageLanguage: string | null = null;
+  let pageTranslated = false;
+  let path: string | null = null;
+  try {
+    if (typeof navigator !== "undefined") userAgent = navigator.userAgent || null;
+  } catch {
+    // Best effort only.
+  }
+  try {
+    if (typeof document !== "undefined") {
+      pageLanguage = document.documentElement?.lang || null;
+      const classes = document.documentElement?.classList;
+      pageTranslated = Boolean(
+        classes && (classes.contains("translated-ltr") || classes.contains("translated-rtl")),
+      );
+    }
+  } catch {
+    // Best effort only.
+  }
+  try {
+    if (typeof window !== "undefined") path = window.location?.pathname || null;
+  } catch {
+    // Best effort only.
+  }
+  return { userAgent, pageLanguage, pageTranslated, path };
+}
+
+type DomRecoveryState = {
+  count: number;
+  firstAt: number;
+};
+
+function readDomRecoveryState(): DomRecoveryState {
+  try {
+    const raw = sessionStorage.getItem(DOM_RECOVERY_KEY);
+    if (!raw) return { count: 0, firstAt: Date.now() };
+    const parsed = JSON.parse(raw) as Partial<DomRecoveryState>;
+    if (
+      typeof parsed.count !== "number" ||
+      typeof parsed.firstAt !== "number" ||
+      Date.now() - parsed.firstAt > DOM_RECOVERY_WINDOW_MS
+    ) {
+      return { count: 0, firstAt: Date.now() };
+    }
+    return { count: parsed.count, firstAt: parsed.firstAt };
+  } catch {
+    return { count: 0, firstAt: Date.now() };
+  }
+}
+
+function writeDomRecoveryState(state: DomRecoveryState) {
+  try {
+    sessionStorage.setItem(DOM_RECOVERY_KEY, JSON.stringify(state));
+  } catch {
+    // Best effort only.
+  }
+}
+
+function clearDomRecoveryState() {
+  try {
+    sessionStorage.removeItem(DOM_RECOVERY_KEY);
+  } catch {
+    // Best effort only.
+  }
+}
+
+/**
+ * Tự phục hồi cho nhóm lỗi DOM bị sửa bên ngoài: tải lại trang tại chỗ một
+ * lần (không đá về trang chủ, không xoá recovery state của nhóm chunk).
+ * Trả true khi đã kích hoạt reload; false khi không phải nhóm lỗi này hoặc
+ * đã hết lượt tự phục hồi trong cửa sổ → caller giữ màn hình lỗi thủ công.
+ */
+export function recoverFromDomMutationError(reason: unknown): boolean {
+  if (!isDomMutationError(reason)) return false;
+  const state = readDomRecoveryState();
+  if (state.count >= DOM_RECOVERY_MAX_AUTO_RELOADS) {
+    console.warn("[appUpdateRecovery] dom-mutation auto recovery limit reached; staying on error screen", {
+      count: state.count,
+      message: getChunkErrorMessage(reason),
+      diagnostics: getErrorDiagnostics(),
+    });
+    return false;
+  }
+  writeDomRecoveryState({ count: state.count + 1, firstAt: state.firstAt });
+  console.warn("[appUpdateRecovery] dom-mutation-error → soft reload in place", {
+    message: getChunkErrorMessage(reason),
+    diagnostics: getErrorDiagnostics(),
+  });
+  reloadWithCacheBust({});
+  return true;
+}
+
 
 function readRecoveryState(): ChunkRecoveryState {
   try {
@@ -719,6 +861,8 @@ export function resetChunkRecoveryAfterHealthyLoad(delayMs = RECOVERY_HEALTHY_RE
     } catch {
       // best effort
     }
+    // DOM-mutation state cũng reset khi app đã boot healthy đủ lâu.
+    clearDomRecoveryState();
 
   }, delayMs);
 }
