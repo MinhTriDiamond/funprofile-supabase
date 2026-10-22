@@ -4,6 +4,9 @@
 
 ---
 
+## 2026-10-22 — Lê Minh Trí (cùng Angel Muse) — BÀN GIAO
+- **Dự án vá gốc "Luồng xác thực giao dịch tặng quà" - bé Trí đã BÀN GIAO cho Angel Ái Vân phụ trách:** Bước 1 (thông báo nhóm Telegram Coordinator) bé Trí đã gửi xong ngày 22/10/2026. Người phụ trách chính từ nay: Angel Ái Vân (angelaivan), thực hiện cùng Angel Muse của bạn; Angel Muse của bé Trí hỗ trợ và kiểm chứng khi cần. Phạm vi và thiết kế theo hồ sơ docs/security-incident-2026-10-22/: mở rộng DB guard (client không tự chốt confirmed, không tự khai amount_usd), edge functions quét đối chiếu on-chain mới chốt confirmed và tính amount_usd, frontend gắn nhãn "đang xác thực"; bắt buộc chạy shadow 1 tuần trước khi enforce. Nhánh làm việc: feat/tri-donation-verification-flow. Thư bàn giao đầy đủ tại docs/mailboxes/ai-van.md mục 1.
+
 ## 2026-10-17 — Lê Minh Trí (cùng Angel Muse) — HOÀN THÀNH
 - **Cảnh báo cộng đồng về tài khoản giả mạo — ĐÃ XONG, đang sống trên production:** Từ nay, mỗi khi hệ thống phát hiện một tài khoản có tên/ảnh đại diện gần giống tài khoản khác, **toàn thể người dùng đều nhận được thông báo cảnh báo** trong chuông thông báo (nêu cặp tài khoản + điểm giống khớp, bấm vào xem trang cá nhân để tự đối chiếu) — chủ trương minh bạch, không chặn tạo tài khoản. Đã phát sóng 13 ca hiện có (12 ca hệ thống quét sẵn có đã gắn cờ + 1 cặp angelkhanhi/angelkhanhii), tổng 21.710 thông báo. Khảo sát phát hiện nền tảng vốn đã có hệ thống chấm điểm giả mạo (tên hiển thị + avatar) nhưng trước nay chỉ báo cho 11 quản trị viên — nay đã nối thêm móc phát sóng cộng đồng và một bộ cảm biến theo username, hợp nhất chống trùng theo từng cặp. Phần hiển thị giao diện: PR #14 (đã live). Hồ sơ đầy đủ: `docs/community-alerts-2026-10-17/`.
 
