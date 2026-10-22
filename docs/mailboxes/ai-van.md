@@ -2,6 +2,33 @@
 
 Hộp thư của Angel Ái Vân (FUN Profile username: angelaivan) trong đội Coordinator FUN Profile. Mọi bàn giao, tiến độ và hồi âm của dự án bạn phụ trách được ghi tại đây theo quy trình trong docs/quy-trinh-lam-viec-coordinator.md. Tuyệt đối không ghi bí mật (token, mật khẩu) vào hộp thư này.
 
+## Mục 2 - 2026-10-22 - Angel Ái Vân (cùng Angel Muse) - ĐÃ NHẬN BÀN GIAO: xác nhận kết nối Supabase OK, ghi rõ các khoảng quyền còn thiếu
+
+→ Trạng thái: ĐÃ NHẬN / ĐANG LÀM (bước đầu tiên theo thư bàn giao ở Mục 1)
+
+**1. Xác nhận kết nối - ĐẠT.** Angel Muse của Ái Vân đã kết nối tới Supabase project `tljfqavndndfsvtazibe` (FUN Profile Supabase) bằng token cá nhân của chính Ái Vân ("Angel Muse - Ai Van", tạo theo hướng dẫn của bé Trí ngày 21/10/2026, chỉ nhập qua cổng kết nối bảo mật, không qua chat/repo/hộp thư). Test đọc chạy lại ngày 22/10/2026:
+- Đọc thông tin project: `ACTIVE_HEALTHY`, region ap-southeast-1, Postgres 17.11.
+- Đếm dữ liệu thật: `profiles` = 1.736 dòng.
+
+**2. Đối chiếu trạng thái xử lý sự cố (chỉ đọc) - khớp hồ sơ `docs/security-incident-2026-10-22/`:**
+- 40 donations giả của `elqs3fz012`: còn **0** dòng trong bảng chính; các dòng liên quan trong `unified_transactions_snapshot`: **0**.
+- Tài khoản `elqs3fz012`: `auth.users.banned_until` = năm 2126 (khóa ở tầng auth, đúng hồ sơ; cột `profiles.is_banned` là cờ riêng, không dùng trong vụ này).
+- Trigger vá nóng đang sống: `trg_donations_client_guard` + `trg_transactions_client_guard` (hàm `guard_client_financial_write`).
+- `security_watchlist`: 18 mục, khớp hồ sơ.
+
+**3. Các khoảng quyền còn thiếu - nhờ bé Trí cấp/quyết giúp (theo đúng lời dặn trong thư bàn giao, việc không đứng yên mà không ghi lại):**
+- **(a) Quyền GHI trên Supabase production: CHƯA CÓ.** Token hiện tại của Ái Vân được giới hạn ở preset Chỉ đọc (Read trên 42 capabilities, không có quyền ghi ở bất kỳ đâu). Hệ quả: Angel Muse của Ái Vân làm được toàn bộ phần đọc - điều tra, thiết kế, soạn SQL/migration trong repo, backtest guard trên dữ liệu thật 30 ngày, phân tích shadow - nhưng **không tự áp được thay đổi lên production DB** (trigger/policy/migration) và **không deploy được edge functions**. Nhờ bé Trí quyết một trong hai đường: (i) cấp token có quyền ghi cho project này (Ái Vân chỉ nhập qua cổng bảo mật như lần trước), hoặc (ii) giữ nguyên quyền đọc, phần thi hành trên production do Angel Muse của bé Trí áp từ các file SQL/migration đã duyệt trong repo - đúng tiền lệ hồ sơ sự cố ngày 22/10 (thay đổi ghi rõ ở production DB, có sao lưu và đường lui).
+- **(b) Quyền Cloudflare Pages: CHƯA CÓ.** Ái Vân/Angel Muse chưa vào được dashboard Cloudflare của dự án để lấy link preview theo quy trình. Thực tế vẫn đi tiếp được vì link preview lấy qua GitHub check của Cloudflare trên PR (đã áp dụng thành công ở PR #16 sáng nay), nhưng nếu đội muốn đúng bài bản thì nhờ cấp quyền xem.
+- **(c) GitHub: ĐÃ CÓ và kiểm chứng.** Tạo branch, commit, mở PR, merge qua tài khoản Van103 đều chạy (PR #16 là bằng chứng trong ngày).
+
+**4. Việc tiếp theo của dự án (sau khi khoảng quyền (a) được quyết):** Angel Muse của Ái Vân soạn thiết kế chi tiết 3 phần theo hồ sơ sự cố - (1) mở rộng DB guard: donation client tạo bắt đầu ở trạng thái chưa xác thực, client không tự chốt `amount_usd`; (2) nhánh đối chiếu trong các edge function quét (fast-scan/auto-scan): khớp tx_hash + địa chỉ ví on-chain thì server mới chuyển `confirmed` và tự tính `amount_usd`, quá hạn không khớp thì `rejected` + gắn cờ integrity; (3) frontend: nhãn "đang xác thực", thống kê/bảng xếp hạng chỉ tính `confirmed`. Kèm kế hoạch **shadow 1 tuần** (chỉ ghi nhận, không chặn) và **backtest trên ít nhất 30 ngày traffic thật, đạt 0 false positive** trước khi đề xuất enforce. Mọi thay đổi production đều có sao lưu + đường lui và ghi rõ nơi thay đổi (production DB hay repo + commit).
+
+**5. Ghi chú phối hợp:** branch của dự án này là `feat/tri-donation-verification-flow` (bé Trí đã thông báo ở bước 1). Thư này ghi trên chính branch đó. Riêng PR #16 (vá lỗi sập trang insertBefore, một việc khác của Ái Vân) có file `docs/mailboxes/ai-van.md` do Angel Muse tạo trước khi thư bàn giao của bé Trí về - khi merge PR #16 sẽ cần hợp nhất hai nội dung hộp thư; Angel Muse của Ái Vân sẽ xử lý lúc merge và ghi lại tại đây, không để mất mục nào của đội.
+
+- Angel Ái Vân (cùng Angel Muse), 2026-10-22
+
+---
+
 ## Mục 1 - 2026-10-22 - Bàn giao dự án: Luồng xác thực giao dịch tặng quà (vá gốc bảo mật)
 
 Viết bởi Angel Muse của bé Minh Trí, chuyển lời của bé Trí tới bạn Ái Vân và Angel Muse của bạn.

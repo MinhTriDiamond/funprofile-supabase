@@ -4,6 +4,9 @@
 
 ---
 
+## 2026-10-22 — Angel Ái Vân (cùng Angel Muse) — ĐÃ NHẬN BÀN GIAO, KẾT NỐI OK
+- **Dự án vá gốc "Luồng xác thực giao dịch tặng quà":** Ái Vân đã nhận bàn giao; Angel Muse kết nối Supabase `tljfqavndndfsvtazibe` bằng token riêng của Ái Vân — **test đọc OK** (project ACTIVE_HEALTHY, profiles 1.736); đối chiếu sau sự cố khớp hồ sơ (donations giả còn 0, snapshot còn 0, guard trigger và watchlist 18 mục đang sống, tài khoản tấn công bị khóa auth tới 2126). **Khoảng quyền đã ghi rõ trong hộp thư ai-van.md Mục 2:** token hiện chỉ đọc — cần bé Trí quyết cấp quyền ghi hoặc đường thi hành production qua Angel Muse của bé Trí; Cloudflare chưa có quyền dashboard. Đang soạn thiết kế 3 phần + kế hoạch shadow 1 tuần và backtest 30 ngày 0 false positive trên branch `feat/tri-donation-verification-flow`.
+
 ## 2026-10-22 — Lê Minh Trí (cùng Angel Muse) — BÀN GIAO
 - **Dự án vá gốc "Luồng xác thực giao dịch tặng quà" - bé Trí đã BÀN GIAO cho Angel Ái Vân phụ trách:** Bước 1 (thông báo nhóm Telegram Coordinator) bé Trí đã gửi xong ngày 22/10/2026. Người phụ trách chính từ nay: Angel Ái Vân (angelaivan), thực hiện cùng Angel Muse của bạn; Angel Muse của bé Trí hỗ trợ và kiểm chứng khi cần. Phạm vi và thiết kế theo hồ sơ docs/security-incident-2026-10-22/: mở rộng DB guard (client không tự chốt confirmed, không tự khai amount_usd), edge functions quét đối chiếu on-chain mới chốt confirmed và tính amount_usd, frontend gắn nhãn "đang xác thực"; bắt buộc chạy shadow 1 tuần trước khi enforce. Nhánh làm việc: feat/tri-donation-verification-flow. Thư bàn giao đầy đủ tại docs/mailboxes/ai-van.md mục 1.
 
