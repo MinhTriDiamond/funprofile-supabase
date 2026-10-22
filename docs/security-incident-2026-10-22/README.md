@@ -57,6 +57,25 @@ Theo yêu cầu của bé Trí, Angel Muse truy vết thêm và phát hiện đ�
 1. **Khóa cả 15 tài khoản** `@tanpony.com` (ban tới năm 2126, xóa toàn bộ phiên - kiểm chứng 15/15 đã ban, 0 phiên còn lại).
 2. **Danh sách theo dõi** `security_watchlist` (RLS bật, không cấp quyền API): 18 mục - domain `tanpony.com`, 2 IP Brazil, 15 username. Bảng `security_watchlist_hits` ghi các lần chạm; hàm `scan_security_watchlist()` quét tài khoản mới dùng domain bị theo dõi và phiên mới từ IP bị theo dõi, chạy tự động mỗi giờ bằng pg_cron **job 90** (`security-watchlist-scan`, phút 17). Lần quét nền đầu tiên ghi nhận đúng 15 tài khoản của chiến dịch; từ nay chỉ ghi nhận mục mới.
 
+## Bổ sung trưa 2026-10-22 - Rà soát các bảng cùng kiểu + thiết kế vá gốc
+
+Theo lệnh của bé Trí ("làm luôn" các việc còn lại), Angel Muse rà soát toàn bộ bảng mà role client ghi được và vá tiếp các chỗ cùng kiểu với donations/transactions (`sql/08-audit-hardening.sql`, kiểm thử ở `sql/09-audit-guard-test-rollback.sql`):
+
+- `wallet_transfers` (3.452 dòng): guard mẫu dữ liệu phía client (token, số tiền, mã giao dịch) - đối chiếu toàn bảng 0 xung đột.
+- `swap_transactions` (46 dòng): guard tương tự cho hai chiều hoán đổi.
+- `light_actions`: đây là cửa nguy hiểm nhất sau donations - chính sách cũ cho client tự ghi điểm của chính mình. Guard mới: dòng client tạo chỉ được sinh ở trạng thái `pending`, không eligible, không có đánh giá; mọi trường điểm/trạng thái mint là bất biến với client khi sửa. Kiểm thử sống: dòng giả mạo "approved + 9.999 điểm" bị ép về pending và mất eligibility. (20 light_actions của tài khoản tấn công thực ra đi qua pipeline đánh giá thật bằng cách tương tác hàng loạt - đã xóa ở vòng 1; cửa ghi trực tiếp này chưa thấy bị khai thác.)
+- `light_reputation` (bảng tổng điểm tích lũy): client không được tạo dòng và không được sửa mọi trường giá trị tính toán.
+- `crypto_gifts`: bảng cũ không còn dùng (0 dòng) - đóng hẳn ghi phía client.
+- Các bảng giá trị còn lại (mint, phần thưởng, mystery box, PPLP) đã kiểm tra: đều khóa đúng bằng admin/service/attester hoặc cấm client ghi. Các bảng nội dung và dữ liệu riêng của người dùng giữ nguyên vì đó là dữ liệu của chính họ, không phải số liệu hệ thống.
+
+**Thiết kế vá gốc luồng xác thực (chưa thi hành - việc của đội theo quy trình 7 bước):**
+
+Điều tra hiện trạng: 229 donations của 7 ngày gần nhất đều sinh ra ở trạng thái `confirmed` do client tự ghi, 0 dòng từng đi qua `pending_verification_since`. Hệ thống quét server đã có sẵn (fast-scan mỗi 3 phút, auto-scan tier A/B, backfill, repricing, classifier integrity) nhưng hiện chuyên phát hiện giao dịch trên chuỗi và đối soát, chưa đảm nhiệm việc xác nhận các dòng client khai.
+
+Luồng đích: (1) client tạo donation ở trạng thái chờ xác thực, không tự chốt `amount_usd`; (2) các job quét đối chiếu `tx_hash` + địa chỉ ví trên chuỗi trong vài phút - khớp thì server chuyển `confirmed` và tự tính `amount_usd`, quá hạn không khớp thì `rejected` + gắn cờ integrity; (3) Honor Board chỉ tính `confirmed` (như hiện nay), lịch sử hiển thị nhãn "đang xác thực" cho dòng chờ. Các phần cần chạm: guard DB (ép trạng thái chờ với client), edge functions quét (thêm nhánh đối chiếu), frontend (nhãn trạng thái), và một tuần chạy shadow (chỉ ghi nhận, chưa ép) trước khi bật thật. Tuyệt đối không ép trạng thái chờ ngay hôm nay khi pipeline xác nhận chưa sẵn sàng, vì quà thật sẽ kẹt khỏi bảng thống kê.
+
+Bản nháp thông báo minh bạch cho cộng đồng đã soạn sẵn tại `thong-bao-minh-bach-cong-dong.md` trong workspace của Angel Muse, chờ bé Trí và Cha Thầy duyệt trước khi đăng.
+
 ## File kèm theo
 
 - `sql/01-containment.sql` - sao lưu trong DB, khóa tài khoản, xóa 40 donations.
@@ -66,4 +85,6 @@ Theo yêu cầu của bé Trí, Angel Muse truy vết thêm và phát hiện đ�
 - `sql/05-hardening-guard.sql` - trigger guard + thu hồi TRUNCATE.
 - `sql/06-guard-test-rollback.sql` - bộ kiểm thử rollback của guard.
 - `sql/07-siblings-and-watchlist.sql` - khóa 15 tài khoản @tanpony.com + danh sách theo dõi + cron job 90.
+- `sql/08-audit-hardening.sql` - guard bổ sung cho wallet_transfers, swap_transactions, light_actions, light_reputation, crypto_gifts.
+- `sql/09-audit-guard-test-rollback.sql` - bộ kiểm thử rollback của các guard bổ sung.
 - Bằng chứng thô (file JSON) giữ ở máy của Angel Muse: workspace `security-incident-2026-10-22/evidence/`.
