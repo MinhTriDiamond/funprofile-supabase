@@ -95,3 +95,10 @@ Angel Muse của bé Trí ghi, theo quyết định của bé Trí (đã xác nh
 - Đã vá các chỗ nguy cơ: trigger guard_client_financial_write trên donations + transactions (chỉ áp cho role client; đã đối chiếu 30 ngày dữ liệu thật, 0 chặn nhầm; đã kiểm thử sống bằng rollback), thu hồi quyền TRUNCATE của client.
 - Hồ sơ đầy đủ kèm SQL: docs/security-incident-2026-10-22/
 - Việc còn lại cho đội: (1) vá gốc - giao dịch client tạo chỉ ở trạng thái chưa xác thực, chỉ hệ thống quét on-chain mới được chốt confirmed và amount_usd; (2) rà các bảng ghi được khác cùng kiểu chính sách; (3) cân nhắc thông báo minh bạch cho cộng đồng về khoảng thời gian con số Honor Board hiển thị sai (07:29-11:05 ngày 22/10).
+
+
+### Bổ sung chiều 2026-10-22 (vụ elqs3fz012)
+
+- Truy vết: đây là một chiến dịch dò lỗi gồm 15 tài khoản email tạm @tanpony.com (tạo theo đợt 17-18/10 và sáng 22/10), IP Brazil, công cụ python. 14 tài khoản anh em hoàn toàn trống dữ liệu.
+- Theo quyết định của bé Trí: đã khóa cả 15 tài khoản; lập danh sách theo dõi (bảng security_watchlist: domain tanpony.com + 2 IP + 15 username) với pg_cron job 90 quét tự động mỗi giờ vào bảng security_watchlist_hits.
+- Chi tiết trong docs/security-incident-2026-10-22/ (mục "Bổ sung chiều 2026-10-22") và sql/07-siblings-and-watchlist.sql.
