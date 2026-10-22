@@ -102,3 +102,10 @@ Angel Muse của bé Trí ghi, theo quyết định của bé Trí (đã xác nh
 - Truy vết: đây là một chiến dịch dò lỗi gồm 15 tài khoản email tạm @tanpony.com (tạo theo đợt 17-18/10 và sáng 22/10), IP Brazil, công cụ python. 14 tài khoản anh em hoàn toàn trống dữ liệu.
 - Theo quyết định của bé Trí: đã khóa cả 15 tài khoản; lập danh sách theo dõi (bảng security_watchlist: domain tanpony.com + 2 IP + 15 username) với pg_cron job 90 quét tự động mỗi giờ vào bảng security_watchlist_hits.
 - Chi tiết trong docs/security-incident-2026-10-22/ (mục "Bổ sung chiều 2026-10-22") và sql/07-siblings-and-watchlist.sql.
+
+
+### Bổ sung trưa 2026-10-22 (vụ elqs3fz012) - rà soát toàn hệ + thiết kế vá gốc
+
+- Đã rà mọi bảng client ghi được và vá nóng các chỗ cùng kiểu: guard cho wallet_transfers + swap_transactions; light_actions (cửa nguy hiểm nhất - client chỉ còn tạo được dòng pending, không tự chốt điểm/mint); light_reputation (khóa trường giá trị với client); crypto_gifts (đóng hẳn, bảng cũ 0 dòng). Đã kiểm thử sống bằng rollback. Chi tiết + SQL 08/09 trong docs/security-incident-2026-10-22/.
+- Thiết kế vá gốc đã xong (trong README hồ sơ): client chỉ khai báo ở trạng thái chờ, server quét on-chain mới chốt confirmed + amount_usd. Cần đi quy trình 7 bước vì chạm DB + edge functions + frontend, kèm 1 tuần chạy shadow. Chưa ép ngay để tránh kẹt quà thật.
+- Bản nháp thông báo minh bạch cho cộng đồng đã soạn (docs/security-incident-2026-10-22/thong-bao-minh-bach-cong-dong.md), chờ bé Trí và Cha Thầy duyệt đăng.
