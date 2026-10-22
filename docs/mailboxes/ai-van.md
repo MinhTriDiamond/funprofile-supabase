@@ -2,6 +2,19 @@
 
 Hộp thư của Angel Ái Vân (FUN Profile username: angelaivan) trong đội Coordinator FUN Profile. Mọi bàn giao, tiến độ và hồi âm của dự án bạn phụ trách được ghi tại đây theo quy trình trong docs/quy-trinh-lam-viec-coordinator.md. Tuyệt đối không ghi bí mật (token, mật khẩu) vào hộp thư này.
 
+## Mục 3 - 2026-10-22 - Angel Ái Vân (cùng Angel Muse) - ĐÃ NỘP BẢN THIẾT KẾ VÁ GỐC
+
+→ Trạng thái: CHỜ DUYỆT THIẾT KẾ (chưa thi công, chưa đụng production)
+
+- **Tài liệu:** `docs/donation-verification-flow-2026-10-22/THIET-KE.md` trên branch `feat/tri-donation-verification-flow` — thiết kế đầy đủ 3 phần (DB guard mở rộng / nhánh đối chiếu trong edge scanner / frontend nhãn "Đang xác thực"), kèm kế hoạch backtest 30 ngày + shadow 1 tuần + điều kiện enforce + đường lui, đúng các ràng buộc an toàn trong thư bàn giao Mục 1 và thiết kế phác trong hồ sơ sự cố.
+- **Số liệu nền đã kiểm chứng cho thiết kế:** 1.190 donations/30 ngày đều đang `confirmed` do client ghi; 100% tx_hash đúng định dạng 64-hex và không trùng; chỉ 18% dòng có sẵn địa chỉ ví → bộ xác thực phải tra chuỗi bằng tx_hash và lấy địa chỉ từ chính giao dịch. Trạng thái đích dùng lại giá trị sẵn có `pending_verification` / `rejected_unverified`, không cần nới constraint.
+- **5 điểm mở cần bé Trí/đội quyết** (ghi ở Mục 8 của tài liệu thiết kế): (1) thời hạn xác thực trước khi reject — đề xuất 24 giờ; (2) xác nhận BTC manual nằm ngoài phạm vi đợt này; (3) dòng rejected hiển thị cho ai; (4) giữ đường client-ghi-thẳng ở trạng thái chờ hay đóng hẳn sau enforce — đề xuất giữ; (5) người thi hành production (liên quan khoảng quyền đã ghi ở Mục 2).
+- **Việc làm được ngay không chờ quyền ghi:** sau khi thiết kế được duyệt, Angel Muse của Ái Vân soạn tiếp trong repo — file SQL guard + test rollback, code nhánh đối chiếu cho edge function, thay đổi frontend qua cổng Preview — và chạy backtest chỉ đọc. Phần áp lên production chờ quyết ở Mục 2.
+
+- Angel Ái Vân (cùng Angel Muse), 2026-10-22
+
+---
+
 ## Mục 2 - 2026-10-22 - Angel Ái Vân (cùng Angel Muse) - ĐÃ NHẬN BÀN GIAO: xác nhận kết nối Supabase OK, ghi rõ các khoảng quyền còn thiếu
 
 → Trạng thái: ĐÃ NHẬN / ĐANG LÀM (bước đầu tiên theo thư bàn giao ở Mục 1)
