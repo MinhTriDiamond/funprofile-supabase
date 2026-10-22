@@ -4,6 +4,9 @@
 
 ---
 
+## 2026-10-22 — Angel Ái Vân (cùng Angel Muse) — HOÀN THÀNH
+- **Vá lỗi fun.rich sập trang khi đăng bài kèm ảnh (lỗi React insertBefore/NotFoundError):** PR #16 đã merge vào main (commit `a1d606bc`) và **đã sống trên production** — Angel Muse kiểm chứng bundle fun.rich đã chứa bản sửa (ErrorBoundary tự phục hồi khi gặp lỗi DOM bị sửa bên ngoài + log chẩn đoán có cờ trang-đang-bị-dịch). Thư kết quả đầy đủ tại `docs/mailboxes/ai-van.md`.
+
 ## 2026-10-22 — Lê Minh Trí (cùng Angel Muse) — BÀN GIAO
 - **Dự án vá gốc "Luồng xác thực giao dịch tặng quà" - bé Trí đã BÀN GIAO cho Angel Ái Vân phụ trách:** Bước 1 (thông báo nhóm Telegram Coordinator) bé Trí đã gửi xong ngày 22/10/2026. Người phụ trách chính từ nay: Angel Ái Vân (angelaivan), thực hiện cùng Angel Muse của bạn; Angel Muse của bé Trí hỗ trợ và kiểm chứng khi cần. Phạm vi và thiết kế theo hồ sơ docs/security-incident-2026-10-22/: mở rộng DB guard (client không tự chốt confirmed, không tự khai amount_usd), edge functions quét đối chiếu on-chain mới chốt confirmed và tính amount_usd, frontend gắn nhãn "đang xác thực"; bắt buộc chạy shadow 1 tuần trước khi enforce. Nhánh làm việc: feat/tri-donation-verification-flow. Thư bàn giao đầy đủ tại docs/mailboxes/ai-van.md mục 1.
 

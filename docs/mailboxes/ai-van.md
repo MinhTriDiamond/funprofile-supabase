@@ -2,6 +2,20 @@
 
 Hộp thư của Angel Ái Vân (FUN Profile username: angelaivan) trong đội Coordinator FUN Profile. Mọi bàn giao, tiến độ và hồi âm của dự án bạn phụ trách được ghi tại đây theo quy trình trong docs/quy-trinh-lam-viec-coordinator.md. Tuyệt đối không ghi bí mật (token, mật khẩu) vào hộp thư này.
 
+## 2026-10-22 - Angel Ái Vân (cùng Angel Muse) - HOÀN THÀNH: vá lỗi sập trang khi đăng bài kèm ảnh (PR #16 đã merge, đã lên production)
+
+→ Trạng thái: HOÀN THÀNH (mục này gộp cả thư bắt đầu lẫn thư kết quả của công việc này — bản thư bắt đầu gốc từng nằm trên branch của PR #16, được hợp nhất về đây sau merge để không mất mục nào, theo đúng ghi chú phối hợp ở hộp thư dự án xác thực quà tặng)
+
+- **Việc:** fun.rich sập toàn trang khi người dùng đăng bài kèm ảnh trên laptop (lỗi React `Failed to execute 'insertBefore' on 'Node' — NotFoundError` ở màn hình ErrorBoundary toàn cục). Điều tra đã kiểm chứng: KHÔNG phải lỗi dung lượng (giới hạn 20MB client / 100MB server, ảnh được nén phía client rồi tải thẳng lên R2); giả thuyết chính là Chrome Translate / extension sửa DOM bên ngoài React chạm đúng lúc đăng bài (app chèn bài tạm optimistic lên đầu feed rồi thay bằng bài thật).
+- **Phạm vi đã làm (đúng thư bắt đầu):** `src/lib/appUpdateRecovery.ts` (nhận diện nhóm lỗi DOM bị sửa bên ngoài + tự phục hồi bằng reload tại chỗ tối đa 1 lần/60 giây dùng chung ngân sách reload toàn cục + gom chẩn đoán nhẹ: user agent, ngôn ngữ trang, cờ trang-đang-bị-dịch), `src/components/ErrorBoundary.tsx` (gặp nhóm lỗi DOM thì tự phục hồi thay vì đứng ở màn hình chết), test mới `src/lib/appUpdateRecovery.domRecovery.test.ts`. Không đụng luồng upload, không chặn dịch toàn trang (thành viên nước ngoài cần dịch để đọc bài tiếng Việt), không đụng database/edge functions.
+- **Quy trình:** Bước 1 Telegram do Ái Vân gửi (xác nhận 09:38 ngày 22/10) → ghi hộp thư trước khi sửa → branch `fix/aivan-upload-insertbefore-crash` từ main → cổng Preview: Cloudflare check đạt, Angel Muse kiểm chứng bản preview chứa đúng code sửa (marker `fun_profile_dom_recovery`); Ái Vân duyệt merge theo kiểm chứng của Angel Muse ngày 22/10.
+- **Kết quả:** **PR #16 đã merge** (merge commit `a1d606bc`) — https://github.com/MinhTriDiamond/funprofile-supabase/pull/16. Kiểm chứng production sau merge: bundle đang sống trên fun.rich **đã chứa** marker của bản sửa. Test tự động phần nhận diện lỗi đạt 10/10.
+- **Còn mở (không thuộc phạm vi đợt này):** xác nhận cuối cùng từ người báo lỗi bằng test A/B trên chính Chrome của anh ấy (tắt dịch / tab ẩn danh); dữ kiện chẩn đoán mới trong log sẽ tự cho biết nếu lỗi còn xuất hiện. Branch `fix/aivan-upload-insertbefore-crash` chưa xóa được bằng công cụ API hiện có — nhờ người có quyền GitHub xóa giúp (branch đã merge xong, xóa an toàn).
+
+- Angel Ái Vân (cùng Angel Muse), 2026-10-22
+
+---
+
 ## Mục 1 - 2026-10-22 - Bàn giao dự án: Luồng xác thực giao dịch tặng quà (vá gốc bảo mật)
 
 Viết bởi Angel Muse của bé Minh Trí, chuyển lời của bé Trí tới bạn Ái Vân và Angel Muse của bạn.
