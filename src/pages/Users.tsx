@@ -33,7 +33,6 @@ import { describeBackendError } from '@/lib/errors';
 
 import { useToast } from '@/hooks/use-toast';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
-import { useAdminUserServerSearch } from '@/hooks/useAdminUserServerSearch';
 
 const Users = () => {
   const { t, language } = useLanguage();
@@ -43,15 +42,8 @@ const Users = () => {
   const { toast } = useToast();
   const { userId: authUserId } = useCurrentUser();
   const {
-    users, isLoading, stats, search, setSearch, page, setPage, totalPages, exportCSV, allUsers, filters, setFilters, isAdmin, emailsMap, sortBy, setSortBy,
+    users, isLoading, isSearchingServer, stats, search, setSearch, page, setPage, totalPages, exportCSV, allUsers, filters, setFilters, isAdmin, emailsMap, sortBy, setSortBy,
   } = useUserDirectory();
-
-  // Fallback: tìm trực tiếp trên hệ thống khi danh sách đã tải không có kết quả
-  const { data: serverSearch, isFetching: isSearchingServer } = useAdminUserServerSearch(
-    search,
-    users.length === 0 && search.trim().length >= 2,
-  );
-  const serverResults = serverSearch ?? [];
 
   const [emailFilter, setEmailFilter] = useState('');
   const [emailPopoverOpen, setEmailPopoverOpen] = useState(false);
@@ -88,6 +80,7 @@ const Users = () => {
       toast({ title: t('usrDeletedTitle'), description: `@${deleteTarget.username}${t('usrDeletedDescSuffix')}` });
       queryClient.invalidateQueries({ queryKey: ['user-directory'] });
       queryClient.invalidateQueries({ queryKey: ['user-directory-admin-check'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-user-server-search'] });
     } catch (err: unknown) {
       console.error('[Users] admin-delete-user failed', { userId: deleteTarget?.id, err });
       toast({ title: t('usrErrorTitle'), description: describeBackendError(err, t('usrDeleteFail')), variant: 'destructive' });
@@ -146,6 +139,7 @@ const Users = () => {
 
       // Refetch để đồng bộ chính xác từ DB
       await queryClient.refetchQueries({ queryKey: ['user-directory'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-user-server-search'] });
     } catch (err: unknown) {
       console.error('[Users] status action failed', {
         type: actionTarget?.type, userId: actionTarget?.id, username: actionTarget?.username, err,
@@ -222,8 +216,9 @@ const Users = () => {
           )}
         </p>
 
-        {/* Table */}
-        {isLoading ? (
+        {/* Table — khi đang tìm phía server thì không để skeleton của
+            lượt tải directory nền che mất kết quả tìm đã/đang về */}
+        {isLoading && users.length === 0 && !isSearchingServer ? (
           <div className="space-y-3">
             {[...Array(8)].map((_, i) => <Skeleton key={i} className="h-14 rounded-lg" />)}
           </div>
@@ -315,24 +310,7 @@ const Users = () => {
                   <TableRow>
                     <TableCell colSpan={isAdmin ? 15 : 13} className="text-center py-12 text-muted-foreground">
                       <UsersIcon className="w-10 h-10 mx-auto mb-3 opacity-40" />
-                      {serverResults.length > 0 ? (
-                        <div className="space-y-2">
-                          <p>{t('usrNotInList')}</p>
-                          <div className="flex flex-col items-center gap-1">
-                            {serverResults.map((u) => (
-                              <button
-                                key={u.id}
-                                className="text-sm text-primary hover:underline"
-                                onClick={() => navigate(`/profile/${u.id}`)}
-                              >
-                                @{u.username} {u.full_name ? `— ${u.full_name}` : ''}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      ) : (
-                        <p>{isSearchingServer ? t('usrSearching') : t('usrNoMembers')}</p>
-                      )}
+                      <p>{isSearchingServer ? t('usrSearching') : t('usrNoMembers')}</p>
                     </TableCell>
                   </TableRow>
                 ) : (
