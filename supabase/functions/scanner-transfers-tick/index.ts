@@ -16,6 +16,17 @@
 //
 // Watermark RIÊNG theo ví ở bảng `scanner_transfers_watermarks`
 // (scanner_watermarks của chân chính khóa theo token, không theo ví).
+//
+// v2 (23/10/2026) - xem docs/scanner-route-b-tiers-2026-10-23/:
+// 1) Quét theo 3 TẦNG HOẠT ĐỘNG thay vì vòng tròn đều mọi ví: ví có giao
+//    dịch 30 ngày qua (nóng) ghé mỗi 2 giờ, 31-90 ngày (ấm) mỗi 24 giờ,
+//    còn lại (lạnh) mỗi 96 giờ. Lý do: bản v1 đốt hết 30M CU free của
+//    Alchemy trong ~4 ngày (chân B im từ 19/10/2026 vì "Monthly capacity
+//    limit exceeded") trong khi cả đời chỉ ghi được 27 donations mới -
+//    85%+ ví hoàn toàn im lìm. Mô phỏng trên dữ liệu thật: ~7,8M CU/tháng.
+// 2) Nhiều endpoint Alchemy luân phiên (ALCHEMY_BSC_RPC_URLS): endpoint
+//    nào hết hạn mức tháng thì tự chuyển sang endpoint kế tiếp.
+// 3) Đọc watermark theo trang - sửa lỗi trần 1.000 dòng của PostgREST.
 
 import { corsHeaders, handleCors } from "../_shared/cors.ts";
 import { createAdminClient } from "../_shared/supabase.ts";
@@ -66,9 +77,22 @@ function cronAuthorized(req: Request): boolean {
   return !!(pub && token && token === pub);
 }
 
-function alchemyUrl(): string | null {
-  const u = (Deno.env.get("ALCHEMY_BSC_RPC_URL") ?? "").trim();
-  return u.startsWith("https://") ? u : null;
+/**
+ * Danh sách endpoint Alchemy: ưu tiên biến ALCHEMY_BSC_RPC_URLS (nhiều URL
+ * cách nhau bằng dấu phẩy - mỗi URL thuộc một tài khoản Alchemy riêng thì có
+ * hạn mức free riêng), không có thì dùng biến đơn ALCHEMY_BSC_RPC_URL cũ.
+ * LƯU Ý: nhiều app/key trong CÙNG một tài khoản Alchemy vẫn dùng chung một
+ * hạn mức tháng của tài khoản đó - muốn cộng dồn hạn mức free thì các URL
+ * phải thuộc các tài khoản khác nhau.
+ */
+function alchemyUrls(): string[] {
+  const multi = (Deno.env.get("ALCHEMY_BSC_RPC_URLS") ?? "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter((s) => s.startsWith("https://"));
+  if (multi.length > 0) return [...new Set(multi)];
+  const single = (Deno.env.get("ALCHEMY_BSC_RPC_URL") ?? "").trim();
+  return single.startsWith("https://") ? [single] : [];
 }
 
 function hex(n: number): string {
@@ -93,22 +117,68 @@ interface AlchemyTransfer {
   rawContract?: { value?: string; address?: string | null; decimals?: string | number };
 }
 
+interface EndpointStat {
+  attempts: number;
+  failures: number;
+  quotaDead: boolean;
+}
+
+/** Nhóm endpoint Alchemy dùng chung cho cả một lượt quét. */
+interface RpcPool {
+  urls: string[];
+  dead: Set<number>;
+  stats: EndpointStat[];
+  cursor: number;
+}
+
+function makePool(urls: string[]): RpcPool {
+  return {
+    urls,
+    dead: new Set(),
+    stats: urls.map(() => ({ attempts: 0, failures: 0, quotaDead: false })),
+    cursor: 0,
+  };
+}
+
+/** Chọn endpoint còn sống kế tiếp theo vòng tròn; -1 nếu tất cả đã chết hạn mức. */
+function nextEndpoint(pool: RpcPool): number {
+  for (let i = 0; i < pool.urls.length; i++) {
+    const idx = (pool.cursor + i) % pool.urls.length;
+    if (!pool.dead.has(idx)) {
+      pool.cursor = idx + 1;
+      return idx;
+    }
+  }
+  return -1;
+}
+
 async function alchemyRpc(
-  url: string,
+  pool: RpcPool,
   method: string,
   // deno-lint-ignore no-explicit-any
   params: any[],
   // deno-lint-ignore no-explicit-any
 ): Promise<any> {
-  // Gói free có trần tốc độ (compute units/giây) — gặp 429/rate-limit thì
-  // lùi nhịp rồi thử lại tối đa 3 lần thay vì bỏ cả ví.
+  // - Hết hạn mức tháng ở một endpoint: đánh dấu chết cho lượt này và chuyển
+  //   ngay sang endpoint khác (không lùi nhịp, không thử lại endpoint đó).
+  // - Trần tốc độ (429/compute units mỗi giây): lùi nhịp rồi thử lại.
+  // - Lỗi khác: giữ nguyên hành vi cũ - thử lại có lùi nhịp rồi bỏ cuộc.
   const BACKOFFS_MS = [800, 2000, 4500];
   let lastError: Error | null = null;
-  for (let attempt = 0; attempt <= BACKOFFS_MS.length; attempt++) {
+  const maxAttempts = pool.urls.length + BACKOFFS_MS.length;
+  for (let attempt = 0; attempt <= maxAttempts; attempt++) {
+    const idx = nextEndpoint(pool);
+    if (idx < 0) {
+      throw lastError ??
+        new Error("alchemy rpc failed: all endpoints out of monthly capacity");
+    }
+    const stat = pool.stats[idx];
+    stat.attempts++;
     const ctrl = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), RPC_TIMEOUT_MS);
+    let backoff = false;
     try {
-      const res = await fetch(url, {
+      const res = await fetch(pool.urls[idx], {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params }),
@@ -118,24 +188,37 @@ async function alchemyRpc(
       if (res.ok && json && !json.error) return json.result;
       const msg = String(json?.error?.message ?? `http=${res.status}`);
       lastError = new Error(`alchemy ${method} err=${msg}`);
+      stat.failures++;
+      if (/monthly capacity|capacity limit|quota/i.test(msg)) {
+        pool.dead.add(idx);
+        stat.quotaDead = true;
+        continue;
+      }
       const rateLimited = res.status === 429 ||
         /rate|compute units|too many requests/i.test(msg);
-      if (!rateLimited || attempt === BACKOFFS_MS.length) throw lastError;
+      if (!rateLimited) throw lastError;
+      backoff = true;
     } catch (e) {
       if (e === lastError) throw e;
       lastError = e instanceof Error ? e : new Error(String(e));
-      if (attempt === BACKOFFS_MS.length) throw lastError;
+      stat.failures++;
+      backoff = true;
     } finally {
       clearTimeout(timer);
     }
-    await new Promise((r) => setTimeout(r, BACKOFFS_MS[attempt]));
+    if (attempt === maxAttempts) throw lastError;
+    if (backoff) {
+      await new Promise((r) =>
+        setTimeout(r, BACKOFFS_MS[Math.min(attempt, BACKOFFS_MS.length - 1)])
+      );
+    }
   }
   throw lastError ?? new Error("alchemy rpc failed");
 }
 
 /** Lấy toàn bộ transfers VÀO một ví trong [fromBlock, toBlock] (có trần trang). */
 async function fetchInbound(
-  url: string,
+  pool: RpcPool,
   wallet: string,
   fromBlock: number,
   toBlock: number,
@@ -172,7 +255,7 @@ async function fetchInbound(
     do {
       const params = pageKey ? { ...q, pageKey } : q;
       // deno-lint-ignore no-explicit-any
-      const result: any = await alchemyRpc(url, "alchemy_getAssetTransfers", [
+      const result: any = await alchemyRpc(pool, "alchemy_getAssetTransfers", [
         params,
       ]);
       const batch: AlchemyTransfer[] = result?.transfers ?? [];
@@ -202,14 +285,15 @@ Deno.serve(async (req) => {
     return json({ ok: false, error: "unauthorized" }, 401);
   }
 
-  const url = alchemyUrl();
-  if (!url) {
+  const urls = alchemyUrls();
+  if (urls.length === 0) {
     return json({
       ok: false,
       skipped: true,
       reason: "alchemy_url_missing_or_invalid",
     });
   }
+  const pool = makePool(urls);
 
   const admin = createAdminClient();
   // deno-lint-ignore no-explicit-any
@@ -220,11 +304,6 @@ Deno.serve(async (req) => {
   };
 
   try {
-    const head = parseInt(await alchemyRpc(url, "eth_blockNumber", []), 16);
-    const safeHead = Math.max(0, head - REORG_BUFFER);
-    summary.head_block = head;
-    summary.safe_head = safeHead;
-
     // ── Bản đồ ví → user (cùng nguồn với scanner-rpc-tick) ──
     const [profilesRes, custodialRes] = await Promise.all([
       admin
@@ -274,18 +353,90 @@ Deno.serve(async (req) => {
     }
     summary.wallets_tracked = walletToUser.size;
 
-    // ── Watermark riêng + mốc bắt đầu mặc định = vị trí chân chính ──
-    const { data: wmRows } = await admin.from(WM_TABLE).select(
-      "wallet_address, last_block",
-    );
-    const wm = new Map<string, number>(
-      (wmRows ?? []).map((r) => [
+    // ── Watermark riêng: đọc TOÀN BỘ theo trang ──
+    // PostgREST trần 1.000 dòng/lượt mà bảng đã vượt 1.000 ví - cách đọc cũ
+    // bỏ sót các ví cuối bảng (cũng là lỗi khiến vòng quét "giậm chân" được
+    // ghi nhận ngày 14/10/2026). updated_at của mỗi dòng = lần ghé thăm ví
+    // gần nhất, dùng cho nhịp quét theo tầng bên dưới.
+    const wm = new Map<string, number>();
+    const lastVisit = new Map<string, number>();
+    for (let off = 0; ; off += 1000) {
+      const { data } = await admin.from(WM_TABLE)
+        .select("wallet_address, last_block, updated_at")
+        .order("wallet_address")
+        .range(off, off + 999);
+      const rows = data ?? [];
+      for (const r of rows) {
         // deno-lint-ignore no-explicit-any
-        String((r as any).wallet_address).toLowerCase(),
+        const a = String((r as any).wallet_address).toLowerCase();
         // deno-lint-ignore no-explicit-any
-        Number((r as any).last_block),
-      ]),
-    );
+        wm.set(a, Number((r as any).last_block));
+        // deno-lint-ignore no-explicit-any
+        const v = new Date(String((r as any).updated_at)).getTime();
+        if (Number.isFinite(v)) lastVisit.set(a, v);
+      }
+      if (rows.length < 1000) break;
+    }
+
+    // ── Hoạt động gần nhất của từng địa chỉ (transactions 90 ngày qua) ──
+    const since90 = new Date(Date.now() - 90 * 24 * 3600 * 1000).toISOString();
+    const lastActivity = new Map<string, number>();
+    for (let off = 0; ; off += 1000) {
+      const { data } = await admin.from("transactions")
+        .select("from_address, to_address, created_at")
+        .gte("created_at", since90)
+        .order("created_at", { ascending: false })
+        .range(off, off + 999);
+      const rows = data ?? [];
+      for (const r of rows) {
+        // deno-lint-ignore no-explicit-any
+        const ts = new Date(String((r as any).created_at)).getTime();
+        for (
+          const a of [
+            // deno-lint-ignore no-explicit-any
+            (r as any).from_address,
+            // deno-lint-ignore no-explicit-any
+            (r as any).to_address,
+          ]
+        ) {
+          if (typeof a === "string" && a) {
+            const k = a.toLowerCase();
+            // Sắp xếp giảm dần theo thời gian: lần gặp đầu tiên là mới nhất.
+            if (!lastActivity.has(k)) lastActivity.set(k, ts);
+          }
+        }
+      }
+      if (rows.length < 1000) break;
+    }
+
+    // ── Chia 3 tầng hoạt động ──
+    // Đếm và gắn tầng TRƯỚC khi gọi Alchemy, để lượt chạy vẫn báo cáo được
+    // tình hình kể cả khi Alchemy đang hết hạn mức tháng.
+    const NOW = Date.now();
+    const DAY_MS = 24 * 3600 * 1000;
+    const tierRankOf = new Map<string, number>(); // 0 nóng, 1 ấm, 2 lạnh
+    const tierCounts = { hot: 0, warm: 0, cold: 0 };
+    for (const w of walletToUser.keys()) {
+      const act = lastActivity.get(w);
+      const rank = act !== undefined && NOW - act <= 30 * DAY_MS
+        ? 0
+        : act !== undefined && NOW - act <= 90 * DAY_MS
+        ? 1
+        : 2;
+      tierRankOf.set(w, rank);
+      if (rank === 0) tierCounts.hot++;
+      else if (rank === 1) tierCounts.warm++;
+      else tierCounts.cold++;
+    }
+    summary.tiers = tierCounts;
+    summary.alchemy_endpoints = urls.length;
+
+    const head = parseInt(await alchemyRpc(pool, "eth_blockNumber", []), 16);
+    const safeHead = Math.max(0, head - REORG_BUFFER);
+    summary.head_block = head;
+    summary.safe_head = safeHead;
+
+    // ── Mốc bắt đầu mặc định cho ví chưa có watermark = vị trí chân chính ──
     const { data: mainWm } = await admin.from("scanner_watermarks").select(
       "last_block",
     );
@@ -295,11 +446,47 @@ Deno.serve(async (req) => {
     );
     summary.default_start_block = defaultStart;
 
-    // ── Chọn lô ví: chưa quét bao giờ trước, rồi watermark thấp nhất ──
-    const sweepList = [...walletToUser.keys()]
-      .map((w) => ({ wallet: w, from: wm.get(w) ?? defaultStart }))
-      .sort((a, b) => a.from - b.from)
-      .slice(0, BATCH_WALLETS);
+    // ── Chọn lô ví theo tầng: chỉ ví ĐẾN HẠN mới được quét ──
+    // Nhịp ghé thăm: nóng mỗi 2 giờ, ấm mỗi 24 giờ, lạnh mỗi 96 giờ (4 ngày).
+    // Ưu tiên trong lô: tầng nóng trước, quá hạn lâu nhất trước,
+    // watermark thấp nhất trước. Mô phỏng trên dữ liệu thật 23/10/2026:
+    // khoảng 7,8M CU/tháng - vừa gói free 30M CU với dư địa gấp ~4 lần.
+    const VISIT_INTERVAL_MS = [
+      2 * 3600 * 1000,
+      24 * 3600 * 1000,
+      96 * 3600 * 1000,
+    ];
+    const dueList: {
+      wallet: string;
+      from: number;
+      rank: number;
+      overdue: number;
+    }[] = [];
+    for (const w of walletToUser.keys()) {
+      const rank = tierRankOf.get(w) ?? 2;
+      const visited = lastVisit.get(w);
+      if (visited === undefined || NOW - visited >= VISIT_INTERVAL_MS[rank]) {
+        dueList.push({
+          wallet: w,
+          from: wm.get(w) ?? defaultStart,
+          rank,
+          overdue: visited === undefined
+            ? Number.MAX_SAFE_INTEGER
+            : NOW - visited,
+        });
+      }
+    }
+    dueList.sort((a, b) =>
+      a.rank - b.rank || b.overdue - a.overdue || a.from - b.from
+    );
+    const batchDue = dueList.slice(0, BATCH_WALLETS);
+    const sweepList = batchDue.map(({ wallet, from }) => ({ wallet, from }));
+    summary.due_now = dueList.length;
+    summary.batch_tiers = {
+      hot: batchDue.filter((d) => d.rank === 0).length,
+      warm: batchDue.filter((d) => d.rank === 1).length,
+      cold: batchDue.filter((d) => d.rank === 2).length,
+    };
 
     const raws: RawCandidate[] = [];
     const advanceTo = new Map<string, number>();
@@ -318,7 +505,7 @@ Deno.serve(async (req) => {
       }
       try {
         const { transfers, complete } = await fetchInbound(
-          url,
+          pool,
           wallet,
           from + 1,
           safeHead,
@@ -447,6 +634,7 @@ Deno.serve(async (req) => {
     summary.ingest_errors = ingestErrors;
 
     summary.watermarks_advanced = advanceTo.size;
+    summary.endpoints_dead = pool.dead.size;
     summary.duration_ms = Date.now() - started;
 
     // ── Ghi telemetry TRƯỚC khi chốt watermark (best-effort) ──
@@ -465,11 +653,16 @@ Deno.serve(async (req) => {
         gaps_resolved: 0,
         watermark_advanced: advanceTo.size > 0,
         wallets_tracked: walletToUser.size,
-        rpc_healthy: 1,
+        rpc_healthy: pool.urls.length - pool.dead.size,
         duration_ms: summary.duration_ms,
         ok: walletErrors === 0,
         error_message: walletErrors > 0 ? `${walletErrors} ví lỗi RPC` : null,
-        rpc_endpoint_stats: [{ url: "alchemy(***)", attempts: 1, failures: walletErrors, timeouts: 0 }],
+        rpc_endpoint_stats: pool.stats.map((s, i) => ({
+          url: `alchemy#${i + 1}`,
+          attempts: s.attempts,
+          failures: s.failures,
+          timeouts: 0,
+        })),
       });
     } catch (_) {
       // Telemetry lỗi không được làm hỏng lượt quét.
@@ -492,6 +685,7 @@ Deno.serve(async (req) => {
   } catch (e) {
     summary.ok = false;
     summary.error = e instanceof Error ? e.message : String(e);
+    summary.endpoints_dead = pool.dead.size;
     summary.duration_ms = Date.now() - started;
     return json(summary, 500);
   }
