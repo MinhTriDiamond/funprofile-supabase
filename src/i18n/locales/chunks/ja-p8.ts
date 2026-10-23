@@ -76,7 +76,7 @@ const chunk = {
   lbEmptyCommunity: 'コミュニティデータはまだありません',
   lbEmptyPets: '公開表示されているスピリットペットはまだありません',
   authOutageTitle: 'ログインが一時的に中断しています',
-  authOutageDesc: 'Lovable Cloud の応答が遅いか、一時的に接続が切れています。1〜2 分待ってから「再試行」をタップしてログインしてください。',
+  authOutageDesc: 'ログインサービスの応答が遅いか、一時的に接続が切れています。1〜2 分待ってから「再試行」をタップしてログインしてください。',
   authRetry: '再試行',
   acbAuthFailed: '認証に失敗しました。',
   acbInvalidLink: '認証リンクが無効か、期限切れです。',

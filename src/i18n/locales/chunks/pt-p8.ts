@@ -76,7 +76,7 @@ const chunk = {
   lbEmptyCommunity: 'Ainda não há dados da comunidade',
   lbEmptyPets: 'Ainda não há Pets Espirituais visíveis publicamente',
   authOutageTitle: 'O login está temporariamente interrompido',
-  authOutageDesc: 'O Lovable Cloud está respondendo lentamente ou temporariamente desconectado. Aguarde 1–2 minutos e toque em Tentar de novo antes de entrar.',
+  authOutageDesc: 'O nosso serviço de login está respondendo lentamente ou temporariamente desconectado. Aguarde 1–2 minutos e toque em Tentar de novo antes de entrar.',
   authRetry: 'Tentar de novo',
   acbAuthFailed: 'A autenticação falhou.',
   acbInvalidLink: 'O link de autenticação é inválido ou expirou.',

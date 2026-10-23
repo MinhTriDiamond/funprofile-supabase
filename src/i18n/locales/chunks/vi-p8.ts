@@ -76,7 +76,7 @@ const chunk = {
   lbEmptyCommunity: 'Chưa có dữ liệu cộng đồng',
   lbEmptyPets: 'Chưa có Linh thú nào hiển thị công khai',
   authOutageTitle: 'Đăng nhập đang tạm gián đoạn',
-  authOutageDesc: 'Lovable Cloud đang phản hồi chậm hoặc mất kết nối tạm thời. Vui lòng đợi 1–2 phút rồi bấm Thử lại trước khi đăng nhập.',
+  authOutageDesc: 'Hệ thống đăng nhập đang phản hồi chậm hoặc mất kết nối tạm thời. Vui lòng đợi 1–2 phút rồi bấm Thử lại trước khi đăng nhập.',
   authRetry: 'Thử lại',
   acbAuthFailed: 'Xác thực không thành công.',
   acbInvalidLink: 'Liên kết xác thực không hợp lệ hoặc đã hết hạn.',

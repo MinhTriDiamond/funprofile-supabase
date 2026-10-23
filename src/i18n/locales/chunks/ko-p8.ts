@@ -76,7 +76,7 @@ const chunk = {
   lbEmptyCommunity: '아직 커뮤니티 데이터가 없습니다',
   lbEmptyPets: '공개 표시되는 영혼 펫이 아직 없습니다',
   authOutageTitle: '로그인이 일시적으로 중단되었습니다',
-  authOutageDesc: 'Lovable Cloud 응답이 느리거나 일시적으로 연결이 끊겼습니다. 1–2분 기다린 후 다시 시도를 눌러 로그인해 주세요.',
+  authOutageDesc: '로그인 서비스 응답이 느리거나 일시적으로 연결이 끊겼습니다. 1–2분 기다린 후 다시 시도를 눌러 로그인해 주세요.',
   authRetry: '다시 시도',
   acbAuthFailed: '인증에 실패했습니다.',
   acbInvalidLink: '인증 링크가 유효하지 않거나 만료되었습니다.',
