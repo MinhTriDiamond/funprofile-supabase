@@ -1,6 +1,7 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { sendBrandedEmail } from "../_shared/resendClient.ts";
 import { otpEmailHtml } from "../_shared/emailTemplates.ts";
+import { checkTurnstile, CAPTCHA_ERROR_MESSAGE } from "../_shared/turnstile.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -50,7 +51,16 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    const { identifier, type = 'email' } = await req.json();
+    const { identifier, type = 'email', captcha_token } = await req.json();
+
+    // CAPTCHA (Cloudflare Turnstile): chi ep buoc khi da dat TURNSTILE_SECRET_KEY
+    const captchaError = await checkTurnstile(captcha_token);
+    if (captchaError) {
+      return new Response(
+        JSON.stringify({ success: false, error: CAPTCHA_ERROR_MESSAGE }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     // Create Supabase client with service role (needed for rate limiting)
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
