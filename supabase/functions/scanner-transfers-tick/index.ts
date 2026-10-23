@@ -24,8 +24,9 @@
 //    Alchemy trong ~4 ngày (chân B im từ 19/10/2026 vì "Monthly capacity
 //    limit exceeded") trong khi cả đời chỉ ghi được 27 donations mới -
 //    85%+ ví hoàn toàn im lìm. Mô phỏng trên dữ liệu thật: ~7,8M CU/tháng.
-// 2) Nhiều endpoint Alchemy luân phiên (ALCHEMY_BSC_RPC_URLS): endpoint
-//    nào hết hạn mức tháng thì tự chuyển sang endpoint kế tiếp.
+// 2) Nhiều endpoint Alchemy luân phiên (secret ALCHEMY_BSC_RPC_URL_2, _3...
+//    hoặc ALCHEMY_BSC_RPC_URLS): endpoint nào hết hạn mức tháng thì tự
+//    chuyển sang endpoint kế tiếp.
 // 3) Đọc watermark theo trang - sửa lỗi trần 1.000 dòng của PostgREST.
 
 import { corsHeaders, handleCors } from "../_shared/cors.ts";
@@ -78,21 +79,30 @@ function cronAuthorized(req: Request): boolean {
 }
 
 /**
- * Danh sách endpoint Alchemy: ưu tiên biến ALCHEMY_BSC_RPC_URLS (nhiều URL
- * cách nhau bằng dấu phẩy - mỗi URL thuộc một tài khoản Alchemy riêng thì có
- * hạn mức free riêng), không có thì dùng biến đơn ALCHEMY_BSC_RPC_URL cũ.
+ * Danh sách endpoint Alchemy, gom từ các secret:
+ * - ALCHEMY_BSC_RPC_URL (key gốc),
+ * - ALCHEMY_BSC_RPC_URL_2, _3, ... _10 (mỗi key bổ sung một secret riêng,
+ *   đặt tên nối số cho dễ quản lý),
+ * - ALCHEMY_BSC_RPC_URLS (một secret chứa nhiều URL ngăn bằng dấu phẩy,
+ *   nếu có dùng thêm).
  * LƯU Ý: nhiều app/key trong CÙNG một tài khoản Alchemy vẫn dùng chung một
  * hạn mức tháng của tài khoản đó - muốn cộng dồn hạn mức free thì các URL
  * phải thuộc các tài khoản khác nhau.
  */
 function alchemyUrls(): string[] {
-  const multi = (Deno.env.get("ALCHEMY_BSC_RPC_URLS") ?? "")
-    .split(",")
-    .map((s) => s.trim())
-    .filter((s) => s.startsWith("https://"));
-  if (multi.length > 0) return [...new Set(multi)];
-  const single = (Deno.env.get("ALCHEMY_BSC_RPC_URL") ?? "").trim();
-  return single.startsWith("https://") ? [single] : [];
+  const out: string[] = [];
+  const push = (raw: string | undefined) => {
+    const u = (raw ?? "").trim();
+    if (u.startsWith("https://") && !out.includes(u)) out.push(u);
+  };
+  push(Deno.env.get("ALCHEMY_BSC_RPC_URL"));
+  for (let i = 2; i <= 10; i++) {
+    push(Deno.env.get(`ALCHEMY_BSC_RPC_URL_${i}`));
+  }
+  for (const s of (Deno.env.get("ALCHEMY_BSC_RPC_URLS") ?? "").split(",")) {
+    push(s);
+  }
+  return out;
 }
 
 function hex(n: number): string {
