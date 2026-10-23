@@ -19,11 +19,12 @@
 //
 // v2 (23/10/2026) - xem docs/scanner-route-b-tiers-2026-10-23/:
 // 1) Quét theo 3 TẦNG HOẠT ĐỘNG thay vì vòng tròn đều mọi ví: ví có giao
-//    dịch 30 ngày qua (nóng) ghé mỗi 2 giờ, 31-90 ngày (ấm) mỗi 24 giờ,
-//    còn lại (lạnh) mỗi 96 giờ. Lý do: bản v1 đốt hết 30M CU free của
-//    Alchemy trong ~4 ngày (chân B im từ 19/10/2026 vì "Monthly capacity
-//    limit exceeded") trong khi cả đời chỉ ghi được 27 donations mới -
-//    85%+ ví hoàn toàn im lìm. Mô phỏng trên dữ liệu thật: ~7,8M CU/tháng.
+//    dịch 30 ngày qua (nóng) ghé mỗi 45 phút, 31-90 ngày (ấm) mỗi 8 giờ,
+//    còn lại (lạnh) mỗi 36 giờ (nhịp do bé Trí chốt). Lý do: bản v1 đốt
+//    hết 30M CU free của Alchemy trong ~4 ngày (chân B im từ 19/10/2026
+//    vì "Monthly capacity limit exceeded") trong khi cả đời chỉ ghi được
+//    27 donations mới - 85%+ ví hoàn toàn im lìm. Mô phỏng trên dữ liệu
+//    thật: ~24,8M CU/tháng toàn hệ, ~12,4M CU mỗi tài khoản khi có 2 key.
 // 2) Nhiều endpoint Alchemy luân phiên (secret ALCHEMY_BSC_RPC_URL_2, _3...
 //    hoặc ALCHEMY_BSC_RPC_URLS): endpoint nào hết hạn mức tháng thì tự
 //    chuyển sang endpoint kế tiếp.
@@ -457,14 +458,16 @@ Deno.serve(async (req) => {
     summary.default_start_block = defaultStart;
 
     // ── Chọn lô ví theo tầng: chỉ ví ĐẾN HẠN mới được quét ──
-    // Nhịp ghé thăm: nóng mỗi 2 giờ, ấm mỗi 24 giờ, lạnh mỗi 96 giờ (4 ngày).
-    // Ưu tiên trong lô: tầng nóng trước, quá hạn lâu nhất trước,
-    // watermark thấp nhất trước. Mô phỏng trên dữ liệu thật 23/10/2026:
-    // khoảng 7,8M CU/tháng - vừa gói free 30M CU với dư địa gấp ~4 lần.
+    // Nhịp ghé thăm (bé Trí chốt 23/10/2026): nóng mỗi 45 phút, ấm mỗi
+    // 8 giờ, lạnh mỗi 36 giờ. Ưu tiên trong lô: tầng nóng trước, quá hạn
+    // lâu nhất trước, watermark thấp nhất trước. Mô phỏng trên dữ liệu
+    // thật 23/10/2026: khoảng 24,8M CU/tháng toàn hệ - chia đều khoảng
+    // 12,4M CU cho mỗi tài khoản Alchemy khi có 2 key, và vẫn nằm dưới
+    // trần 30M CU của MỘT tài khoản (mất một key vẫn không gãy chân B).
     const VISIT_INTERVAL_MS = [
-      2 * 3600 * 1000,
-      24 * 3600 * 1000,
-      96 * 3600 * 1000,
+      45 * 60 * 1000,
+      8 * 3600 * 1000,
+      36 * 3600 * 1000,
     ];
     const dueList: {
       wallet: string;
