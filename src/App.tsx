@@ -38,6 +38,7 @@ const Profile = lazyWithChunkRecovery(loadProfilePage, "Profile");
 const Post = lazyWithChunkRecovery(() => import("./pages/Post"), "Post");
 const ShareRedirect = lazyWithChunkRecovery(() => import("./pages/ShareRedirect"), "ShareRedirect");
 const About = lazyWithChunkRecovery(() => import("./pages/About"), "About");
+const PrivacyPolicy = lazyWithChunkRecovery(() => import("./pages/PrivacyPolicy"), "PrivacyPolicy");
 const Leaderboard = lazyWithChunkRecovery(() => import("./pages/Leaderboard"), "Leaderboard");
 const AdminMigration = lazyWithChunkRecovery(() => import("./pages/AdminMigration"), "AdminMigration");
 const AdminShell = lazyWithChunkRecovery(
@@ -330,6 +331,7 @@ function App() {
                         <Route path="/:username/posts/:publicId" element={<Post />} />
                         <Route path="/:username/post/:slug" element={<Post />} />
                         <Route path="/about" element={<About />} />
+                        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
                         <Route path="/leaderboard" element={<Leaderboard />} />
                         <Route path="/leaderboard/:tab" element={<Leaderboard />} />
                         <Route path="/admin/migration" element={<AdminMigration />} />
