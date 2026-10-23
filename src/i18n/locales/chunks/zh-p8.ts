@@ -76,7 +76,7 @@ const chunk = {
   lbEmptyCommunity: '暂无社区数据',
   lbEmptyPets: '尚无公开显示的灵宠',
   authOutageTitle: '登录暂时中断',
-  authOutageDesc: 'Lovable Cloud 响应缓慢或暂时断开连接。请等待 1–2 分钟，点击“重试”后再登录。',
+  authOutageDesc: '我们的登录服务响应缓慢或暂时断开连接。请等待 1–2 分钟，点击“重试”后再登录。',
   authRetry: '重试',
   acbAuthFailed: '身份验证失败。',
   acbInvalidLink: '验证链接无效或已过期。',

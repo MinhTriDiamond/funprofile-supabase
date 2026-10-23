@@ -76,7 +76,7 @@ const chunk = {
   lbEmptyCommunity: 'Pas encore de données communautaires',
   lbEmptyPets: 'Aucun Animal de lumière n\'est visible publiquement pour le moment',
   authOutageTitle: 'La connexion est temporairement interrompue',
-  authOutageDesc: 'Lovable Cloud répond lentement ou est temporairement déconnecté. Veuillez attendre 1 à 2 minutes et appuyer sur Réessayer avant de vous connecter.',
+  authOutageDesc: 'Notre service de connexion répond lentement ou est temporairement déconnecté. Veuillez attendre 1 à 2 minutes et appuyer sur Réessayer avant de vous connecter.',
   authRetry: 'Réessayer',
   acbAuthFailed: 'Échec de l\'authentification.',
   acbInvalidLink: 'Le lien d\'authentification est invalide ou a expiré.',

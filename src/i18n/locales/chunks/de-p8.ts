@@ -76,7 +76,7 @@ const chunk = {
   lbEmptyCommunity: 'Noch keine Community-Daten',
   lbEmptyPets: 'Noch keine Geistigen Haustiere öffentlich sichtbar',
   authOutageTitle: 'Anmeldung vorübergehend unterbrochen',
-  authOutageDesc: 'Lovable Cloud reagiert langsam oder ist vorübergehend getrennt. Bitte warte 1–2 Minuten und tippe auf Erneut versuchen, bevor du dich anmeldest.',
+  authOutageDesc: 'Unser Anmeldedienst reagiert langsam oder ist vorübergehend nicht erreichbar. Bitte warte 1–2 Minuten und tippe auf Erneut versuchen, bevor du dich anmeldest.',
   authRetry: 'Erneut versuchen',
   acbAuthFailed: 'Authentifizierung fehlgeschlagen.',
   acbInvalidLink: 'Der Authentifizierungslink ist ungültig oder abgelaufen.',

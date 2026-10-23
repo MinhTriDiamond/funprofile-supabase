@@ -76,7 +76,7 @@ const chunk = {
   lbEmptyCommunity: 'No community data yet',
   lbEmptyPets: 'No Spirit Pets are publicly visible yet',
   authOutageTitle: 'Sign-in Is Temporarily Interrupted',
-  authOutageDesc: 'Lovable Cloud is responding slowly or temporarily disconnected. Please wait 1–2 minutes and tap Retry before signing in.',
+  authOutageDesc: 'Our sign-in service is responding slowly or is temporarily unreachable. Please wait 1-2 minutes and tap Retry before signing in.',
   authRetry: 'Retry',
   acbAuthFailed: 'Authentication failed.',
   acbInvalidLink: 'The authentication link is invalid or has expired.',

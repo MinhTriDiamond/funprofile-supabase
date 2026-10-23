@@ -76,7 +76,7 @@ const chunk = {
   lbEmptyCommunity: 'Aún no hay datos de la comunidad',
   lbEmptyPets: 'Aún no hay Mascotas Espirituales visibles públicamente',
   authOutageTitle: 'El inicio de sesión está interrumpido temporalmente',
-  authOutageDesc: 'Lovable Cloud responde con lentitud o está desconectado temporalmente. Espera 1–2 minutos y toca Reintentar antes de iniciar sesión.',
+  authOutageDesc: 'Nuestro servicio de inicio de sesión responde con lentitud o está desconectado temporalmente. Espera 1–2 minutos y toca Reintentar antes de iniciar sesión.',
   authRetry: 'Reintentar',
   acbAuthFailed: 'La autenticación falló.',
   acbInvalidLink: 'El enlace de autenticación no es válido o ha caducado.',

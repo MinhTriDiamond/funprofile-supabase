@@ -76,7 +76,7 @@ const chunk = {
   lbEmptyCommunity: 'Belum ada data komunitas',
   lbEmptyPets: 'Belum ada Pet Cahaya yang terlihat publik',
   authOutageTitle: 'Masuk Sedang Terganggu Sementara',
-  authOutageDesc: 'Lovable Cloud merespons lambat atau terputus sementara. Harap tunggu 1–2 menit dan ketuk Coba Lagi sebelum masuk.',
+  authOutageDesc: 'Layanan masuk kami merespons lambat atau terputus sementara. Harap tunggu 1–2 menit dan ketuk Coba Lagi sebelum masuk.',
   authRetry: 'Coba Lagi',
   acbAuthFailed: 'Autentikasi gagal.',
   acbInvalidLink: 'Tautan autentikasi tidak valid atau telah kedaluwarsa.',

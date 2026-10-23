@@ -33,18 +33,29 @@ const Auth = () => {
   const ssoFlow = searchParams.get('sso_flow') === 'true';
   const isSsoMode = ssoFlow && !!returnTo;
 
+  const probeAuthDegraded = async (): Promise<boolean> => {
+    const health = await checkSupabaseAuthHealth(8000);
+    // Chỉ bỏ qua 401/403 kiểu health endpoint; còn timeout/522/network thật phải báo degraded
+    // vì Auth/DB đang không cấp được kết nối và login chắc chắn sẽ fail.
+    const isServerDown = !!health.status && health.status >= 500;
+    const isNetworkDown = !health.status && isTransientAuthError({ message: health.error });
+    if (import.meta.env.DEV || localStorage.getItem('fun:debug:auth') === '1') {
+      console.debug('[Auth] Supabase Auth health', health);
+    }
+    return isServerDown || isNetworkDown;
+  };
+
   const refreshAuthHealth = async () => {
     setAuthHealthChecking(true);
     try {
-      const health = await checkSupabaseAuthHealth(8000);
-      // Chỉ bỏ qua 401/403 kiểu health endpoint; còn timeout/522/network thật phải báo degraded
-      // vì Auth/DB đang không cấp được kết nối và login chắc chắn sẽ fail.
-      const isServerDown = !!health.status && health.status >= 500;
-      const isNetworkDown = !health.status && isTransientAuthError({ message: health.error });
-      setAuthHealth(isServerDown || isNetworkDown ? 'degraded' : 'healthy');
-      if (import.meta.env.DEV || localStorage.getItem('fun:debug:auth') === '1') {
-        console.debug('[Auth] Supabase Auth health', health);
+      let degraded = await probeAuthDegraded();
+      if (degraded) {
+        // Một lần trượt mạng thoáng qua không được phép chốt banner:
+        // đợi 1,5 giây rồi thăm dò lại, chỉ báo degraded khi cả hai lần cùng hỏng.
+        await new Promise((resolve) => setTimeout(resolve, 1500));
+        degraded = await probeAuthDegraded();
       }
+      setAuthHealth(degraded ? 'degraded' : 'healthy');
     } finally {
       setAuthHealthChecking(false);
     }
@@ -53,6 +64,16 @@ const Auth = () => {
   useEffect(() => {
     refreshAuthHealth();
   }, []);
+
+  // Banner đang hiện: tự thăm dò lại mỗi 30 giây, hệ thống khỏe lại thì tự ẩn banner.
+  useEffect(() => {
+    if (authHealth !== 'degraded') return;
+    const id = setInterval(async () => {
+      const degraded = await probeAuthDegraded();
+      if (!degraded) setAuthHealth('healthy');
+    }, 30_000);
+    return () => clearInterval(id);
+  }, [authHealth]);
 
   // Dùng singleton useCurrentUser thay vì tự gọi getSession + onAuthStateChange.
   // Giảm tranh chấp lock "lock:sb-…-auth-token" với signInWithPassword.
