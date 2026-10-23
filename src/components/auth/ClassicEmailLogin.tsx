@@ -9,6 +9,7 @@ import { useLanguage } from '@/i18n/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { validateUsername, normalizeUsername, USERNAME_MAX_LENGTH } from '@/lib/username-validation';
 import { SetPasswordViaOtpDialog } from './SetPasswordViaOtpDialog';
+import { TurnstileWidget, TURNSTILE_ENABLED } from './TurnstileWidget';
 import logger from '@/lib/logger';
 import {
   SUPABASE_AUTH_TRANSIENT_MESSAGE,
@@ -34,6 +35,8 @@ export const ClassicEmailLogin = ({
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [otpOnlyHint, setOtpOnlyHint] = useState(false);
   const [setPasswordDialogOpen, setSetPasswordDialogOpen] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const [captchaReset, setCaptchaReset] = useState(0);
   type AuthEmailFunctionName = 'auth-signup-send-confirm' | 'password-reset-request';
   const summarizeEdgeError = async (functionName: AuthEmailFunctionName, error: any, responseData?: any) => {
     let status = error?.context?.status || error?.status || error?.statusCode || responseData?.status || null;
@@ -134,7 +137,7 @@ export const ClassicEmailLogin = ({
         const {
           data,
           error
-        } = await runWithRetry(() => supabase.auth.signInWithPassword({ email, password }));
+        } = await runWithRetry(() => supabase.auth.signInWithPassword({ email, password, options: { captchaToken: captchaToken ?? undefined } }));
         if (error) throw error;
         if (data.user) {
           await supabase.from('profiles').update({
@@ -153,6 +156,7 @@ export const ClassicEmailLogin = ({
           password,
           username: normalizedUsername,
           wallet_address: normalizedWallet,
+          captcha_token: captchaToken ?? undefined,
         });
         toast.success(
           `Đã gửi email xác nhận tới ${email}. Vui lòng mở email (kiểm tra cả Spam) và bấm liên kết để kích hoạt tài khoản. Liên kết có hiệu lực 30 phút.`,
@@ -274,6 +278,8 @@ export const ClassicEmailLogin = ({
       toast.error(error.message || t('authErrorGeneric'));
     } finally {
       setLoading(false);
+      setCaptchaToken(null);
+      setCaptchaReset((n) => n + 1);
     }
   };
   const handleForgotPassword = async () => {
@@ -284,7 +290,7 @@ export const ClassicEmailLogin = ({
     setLoading(true);
     try {
       // Plan B: gọi edge function FUN Profile (Resend, không leak user existence)
-      await invokeAuthEmailFunction('password-reset-request', { email });
+      await invokeAuthEmailFunction('password-reset-request', { email, captcha_token: captchaToken ?? undefined });
       toast.success(
         `Nếu ${email} có trong hệ thống, một email đặt lại mật khẩu vừa được gửi đi. Kiểm tra hộp thư (cả Spam) và bấm liên kết trong vòng 30 phút.`,
         { duration: 10000 }
@@ -383,7 +389,8 @@ export const ClassicEmailLogin = ({
           </div>
         </div>
         
-        <Button type="submit" className="w-full h-14 text-lg font-bold rounded-full relative overflow-hidden text-white" disabled={loading} style={{
+        <TurnstileWidget onToken={setCaptchaToken} resetSignal={captchaReset} />
+        <Button type="submit" className="w-full h-14 text-lg font-bold rounded-full relative overflow-hidden text-white" disabled={loading || (TURNSTILE_ENABLED && !captchaToken)} style={{
         background: 'linear-gradient(135deg, #166534 0%, #15803d 50%, #166534 100%)',
         boxShadow: '0 4px 20px rgba(22, 101, 52, 0.4)'
       }}>
