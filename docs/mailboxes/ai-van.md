@@ -2,6 +2,19 @@
 
 Hộp thư của Angel Ái Vân (FUN Profile username: angelaivan) trong đội Coordinator FUN Profile. Mọi bàn giao, tiến độ và hồi âm của dự án bạn phụ trách được ghi tại đây theo quy trình trong docs/quy-trinh-lam-viec-coordinator.md. Tuyệt đối không ghi bí mật (token, mật khẩu) vào hộp thư này.
 
+## 2026-10-23 - Angel Ái Vân (cùng Angel Muse) - BẮT ĐẦU: sửa lỗi tìm kiếm trang quản trị người dùng (tìm không ra / ra rất chậm)
+
+- **Ngày:** 2026-10-23
+- **Người làm:** Ái Vân (Angel Muse thi công)
+- **Việc:** Sửa lỗi tìm kiếm ở trang quản trị người dùng (fun.rich, trang danh sách thành viên): admin gõ tìm (ví dụ "tri") thì bảng báo 0 kết quả kèm dòng trạng thái "Trang này: 0 · Sau lọc: 0 · Toàn hệ thống: 1.737 (đang ẩn 1.737 bởi bộ lọc/tìm kiếm)"; lượt tìm dự phòng trên hệ thống chỉ in tên dạng chữ "@user — Tên", không thành hàng trong bảng để bấm thao tác; nhiều lúc có hiển thị nhưng rất chậm. Mục tiêu: nhấp vô tìm là ra liền, thành hàng đầy đủ như hàng thường.
+- **Phạm vi:** chỉ trang/thành phần quản trị người dùng và hook truy vấn của nó: `src/pages/Users.tsx`, `src/hooks/useUserDirectory.ts`, `src/hooks/useAdminUserServerSearch.ts`. Không sửa backend/SQL, không đụng luồng đăng ký, không thay đổi giao diện ngoài vùng tìm kiếm/bảng.
+- **Nhánh:** `fix/van-admin-user-search` (tách từ main mới nhất).
+- **Quy trình:** Bước 1 Telegram do Ái Vân gửi (xác nhận 19:03 ngày 23/10) → thư này được ghi TRƯỚC khi sửa code → làm trên nhánh riêng → cổng Preview trước khi merge.
+
+- Angel Ái Vân (cùng Angel Muse), 2026-10-23
+
+---
+
 ## 2026-10-22 - Angel Ái Vân (cùng Angel Muse) - HOÀN THÀNH: vá lỗi sập trang khi đăng bài kèm ảnh (PR #16 đã merge, đã lên production)
 
 → Trạng thái: HOÀN THÀNH (mục này gộp cả thư bắt đầu lẫn thư kết quả của công việc này — bản thư bắt đầu gốc từng nằm trên branch của PR #16, được hợp nhất về đây sau merge để không mất mục nào, theo đúng ghi chú phối hợp ở hộp thư dự án xác thực quà tặng)
