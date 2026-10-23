@@ -5,6 +5,9 @@
 ---
 
 ## 2026-10-23 — Lê Minh Trí (cùng Angel Muse) — HOÀN THÀNH
+- **GỠ BỎ HOÀN TOÀN MORALIS - đóng phát hiện NGHIÊM TRỌNG nhất của audit 2026-10-23:** Hàm moralis-webhook chỉ kiểm tra chữ ký HMAC khi request có header x-signature - không gửi header là ghi thẳng được donation "confirmed" giả bằng service_role, không cần tài khoản (audit code F-01). Vì hệ đã ngừng dùng Moralis từ 13/10/2026 (chỉ chạy Alchemy), bé Trí quyết định xóa luôn thay vì vá: hai hàm moralis-webhook và setup-moralis-stream đã bị xóa khỏi production (kiểm chứng danh sách còn 0 hàm Moralis, gọi thử trả 404, không cron job nào tham chiếu), và PR #23 đã gỡ code + mục config.toml khỏi repo để không gì deploy lại. Toàn bộ kết quả audit và lộ trình vá 3 đợt: báo cáo audit FUN Profile 2026-10-23 (1 Nghiêm trọng - đã xử lý, 7 Cao, 10 Trung bình, 10 Thấp).
+
+## 2026-10-23 — Lê Minh Trí (cùng Angel Muse) — HOÀN THÀNH
 - **Chân B v2.1 - hỗ trợ secret key bổ sung ALCHEMY_BSC_RPC_URL_2 + nhịp quét mới - ĐÃ DEPLOY (PR #22, hàm version 35):** Theo ý bé Trí, key Alchemy bổ sung để trong secret riêng tên ALCHEMY_BSC_RPC_URL_2 (rồi _3, _4...) cho dễ quản lý thay vì gộp chuỗi; hàm tự gom cả key gốc, các key _2 đến _10 và dạng gộp cũ. Nhịp ghé thăm cũng được bé Trí chốt dày hơn: ví nóng 45 phút, ví ấm 8 giờ, ví lạnh 36 giờ - mô phỏng khoảng 24,8M CU/tháng toàn hệ, chia đôi mỗi tài khoản khoảng 12,4M CU và một tài khoản vẫn gánh trọn được khi mất một key. Việc còn lại phía bé Trí: bỏ URL của key mới vào secret ALCHEMY_BSC_RPC_URL_2 trên Supabase Dashboard, chân B sẽ tự chạy lại ngay ở tick kế tiếp nếu key thuộc tài khoản khác.
 
 ## 2026-10-23 — Lê Minh Trí (cùng Angel Muse) — HOÀN THÀNH
