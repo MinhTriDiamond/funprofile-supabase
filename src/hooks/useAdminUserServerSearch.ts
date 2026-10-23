@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -8,6 +9,8 @@ export interface ServerSearchUser {
   avatar_url: string | null;
   wallet_address: string | null;
   is_banned: boolean;
+  created_at: string | null;
+  reward_status: string;
   pending_reward: number;
   approved_reward: number;
   posts_count?: number;
@@ -28,11 +31,21 @@ const escapeForOr = (s: string): string =>
   s.replace(/[,()%*]/g, " ").replace(/\s+/g, " ").trim();
 
 /**
- * Fallback search server-side khi local cache không tìm thấy user.
- * Tìm trên profiles theo username, username_normalized, full_name, email, các ví.
+ * Tìm kiếm user PHÍA SERVER trên profiles (username, username_normalized,
+ * full_name, display_name, các ví) bằng ilike — dùng làm nguồn kết quả chính
+ * cho ô tìm kiếm ở trang quản trị người dùng, thay cho việc chờ tải toàn bộ
+ * danh sách về client rồi mới lọc.
+ * Có debounce 300ms để không bắn truy vấn theo từng phím gõ.
  */
-export function useAdminUserServerSearch(query: string, enabled: boolean) {
-  const q = query.trim();
+export function useAdminUserServerSearch(query: string, enabled: boolean = true) {
+  const [debouncedQuery, setDebouncedQuery] = useState(query.trim());
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedQuery(query.trim()), 300);
+    return () => clearTimeout(timer);
+  }, [query]);
+
+  const q = debouncedQuery;
   return useQuery<ServerSearchUser[]>({
     queryKey: ["admin-user-server-search", q],
     enabled: enabled && q.length >= 2,
@@ -56,7 +69,7 @@ export function useAdminUserServerSearch(query: string, enabled: boolean) {
       const { data, error } = await supabase
         .from("profiles")
         .select(
-          "id, username, username_normalized, full_name, display_name, avatar_url, wallet_address, public_wallet_address, btc_address, is_banned"
+          "id, username, username_normalized, full_name, display_name, avatar_url, wallet_address, public_wallet_address, btc_address, is_banned, created_at, reward_status, pending_reward, approved_reward"
         )
         .or(filters)
         .limit(50);
@@ -72,8 +85,10 @@ export function useAdminUserServerSearch(query: string, enabled: boolean) {
         avatar_url: p.avatar_url ?? null,
         wallet_address: p.wallet_address ?? p.public_wallet_address ?? p.btc_address ?? null,
         is_banned: !!p.is_banned,
-        pending_reward: 0,
-        approved_reward: 0,
+        created_at: p.created_at ?? null,
+        reward_status: p.reward_status ?? "pending",
+        pending_reward: Number(p.pending_reward) || 0,
+        approved_reward: Number(p.approved_reward) || 0,
         email: null,
       }));
     },

@@ -2,6 +2,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useState, useMemo } from 'react';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
+import { useAdminUserServerSearch, type ServerSearchUser } from './useAdminUserServerSearch';
 
 export interface UserDirectoryEntry {
   id: string;
@@ -73,6 +74,44 @@ const TIER_NAMES: Record<number, string> = {
 };
 
 export const getTierName = (tier: number) => TIER_NAMES[tier] || `Tier ${tier}`;
+
+/**
+ * Dựng một UserDirectoryEntry từ kết quả tìm phía server (bảng profiles).
+ * Dùng cho user chưa có trong danh sách directory đã tải (directory vẫn đang
+ * tải nền hoặc chưa tải tới) để kết quả tìm hiện thành hàng ngay.
+ * Các số liệu nặng (bài viết, Light Score, CAMLY, tặng quà) chưa nạp ở đây —
+ * khi directory tải xong, entry đầy đủ theo id sẽ tự thay thế (xem filtered).
+ */
+const entryFromServerResult = (u: ServerSearchUser, email?: string | null): UserDirectoryEntry => ({
+  id: u.id,
+  username: u.username || 'unknown',
+  full_name: u.full_name,
+  avatar_url: u.avatar_url,
+  wallet_address: u.wallet_address,
+  created_at: u.created_at,
+  is_banned: u.is_banned,
+  email: email ?? u.email ?? null,
+  posts_count: 0,
+  comments_count: 0,
+  reactions_on_posts: 0,
+  friends_count: 0,
+  shares_count: 0,
+  livestreams_count: 0,
+  total_light_score: 0,
+  tier: 0,
+  total_minted: 0,
+  camly_calculated: 0,
+  camly_today: 0,
+  pending_reward: u.pending_reward || 0,
+  approved_reward: u.approved_reward || 0,
+  reward_status: u.reward_status || 'pending',
+  camly_claimed: 0,
+  usdt_received: 0,
+  internal_sent: 0,
+  internal_received: 0,
+  web3_sent: 0,
+  web3_received: 0,
+});
 
 const RPC_PAGE_SIZE = 1000;
 
@@ -207,6 +246,14 @@ export const useUserDirectory = () => {
   const isAdmin = adminData?.isAdmin || false;
   const emailsMap = adminData?.emails || new Map<string, string>();
 
+  // Tìm kiếm PHÍA SERVER: khi ô tìm có từ 2 ký tự, kết quả lấy thẳng từ
+  // truy vấn profiles (ilike) thay vì chờ tải toàn bộ directory về rồi lọc.
+  const isServerSearchMode = search.trim().length >= 2;
+  const { data: serverResults, isFetching: isSearchingServer } = useAdminUserServerSearch(
+    search,
+    isServerSearchMode,
+  );
+
   // Single RPC call for all user data
   const { data: allUsers, isLoading, error } = useQuery<UserDirectoryEntry[]>({
     queryKey: ['user-directory', isAdmin ? 'admin' : 'public'],
@@ -224,7 +271,7 @@ export const useUserDirectory = () => {
     gcTime: 15 * 60 * 1000,
   });
 
-  const filtered = useMemo(() => {
+  const clientFiltered = useMemo(() => {
     if (!allUsers) return [];
     let result = allUsers;
 
@@ -266,6 +313,62 @@ export const useUserDirectory = () => {
     return result;
   }, [allUsers, search, filters, isAdmin, emailsMap, sortBy]);
 
+  /**
+   * Kết quả hiển thị cuối cùng.
+   * - Ngoài chế độ tìm: dùng kết quả lọc client như trước.
+   * - Đang tìm (từ 2 ký tự): dùng kết quả SERVER đã trả về. Mỗi user khớp
+   *   được ghép với entry directory đầy đủ theo id nếu đã tải (giữ nguyên
+   *   số liệu nặng); user chưa có trong directory thì dựng hàng từ dữ liệu
+   *   profiles của kết quả server để hiện ngay, không chờ tải toàn bộ.
+   *   Trong lúc truy vấn server chưa trả về lần đầu, tạm giữ kết quả lọc
+   *   client làm cầu nối để bảng không trống chớp nhoáng.
+   */
+  const filtered = useMemo(() => {
+    if (!isServerSearchMode) return clientFiltered;
+    if (serverResults === undefined) return clientFiltered;
+
+    const byId = new Map((allUsers ?? []).map(u => [u.id, u]));
+    const partialIds = new Set<string>();
+    let result = serverResults.map(sr => {
+      const full = byId.get(sr.id);
+      if (full) return isAdmin && emailsMap.size > 0 ? { ...full, email: full.email ?? emailsMap.get(sr.id) ?? null } : full;
+      partialIds.add(sr.id);
+      return entryFromServerResult(sr, isAdmin ? emailsMap.get(sr.id) ?? null : null);
+    });
+
+    // Áp các bộ lọc như chế độ thường. Riêng các lọc theo số liệu nặng
+    // (điểm sáng / FUN / đã rút) chỉ áp cho entry đã có số liệu thật —
+    // entry tạm (partial) được giữ lại để khỏi loại oan user vừa tìm thấy.
+    if (filters.status === 'active') result = result.filter(u => !u.is_banned && u.reward_status !== 'on_hold');
+    else if (filters.status === 'suspended') result = result.filter(u => u.reward_status === 'on_hold' && !u.is_banned);
+    else if (filters.status === 'banned') result = result.filter(u => u.is_banned);
+
+    if (filters.wallet === 'has') result = result.filter(u => !!u.wallet_address);
+    else if (filters.wallet === 'none') result = result.filter(u => !u.wallet_address);
+
+    if (filters.scoreRange !== 'all') {
+      result = result.filter(u => {
+        if (partialIds.has(u.id)) return true;
+        if (filters.scoreRange === 'high') return u.total_light_score >= 1000;
+        if (filters.scoreRange === 'medium') return u.total_light_score >= 100 && u.total_light_score < 1000;
+        return u.total_light_score < 100;
+      });
+    }
+    if (filters.funMoney !== 'all') {
+      result = result.filter(u => partialIds.has(u.id) || (filters.funMoney === 'has' ? u.total_minted > 0 : u.total_minted === 0));
+    }
+    if (filters.withdrawn !== 'all') {
+      result = result.filter(u => partialIds.has(u.id) || (filters.withdrawn === 'yes' ? u.camly_claimed > 0 : u.camly_claimed === 0));
+    }
+
+    if (sortBy === 'username-asc') result = [...result].sort((a, b) => a.username.localeCompare(b.username));
+    else if (sortBy === 'username-desc') result = [...result].sort((a, b) => b.username.localeCompare(a.username));
+    else if (sortBy === 'email-asc') result = [...result].sort((a, b) => (emailsMap.get(a.id) || a.email || '').localeCompare(emailsMap.get(b.id) || b.email || ''));
+    else if (sortBy === 'email-desc') result = [...result].sort((a, b) => (emailsMap.get(b.id) || b.email || '').localeCompare(emailsMap.get(a.id) || a.email || ''));
+
+    return result;
+  }, [isServerSearchMode, serverResults, clientFiltered, allUsers, filters, sortBy, isAdmin, emailsMap]);
+
   const paginated = useMemo(() => {
     const slice = filtered.slice(page * pageSize, (page + 1) * pageSize);
     if (isAdmin && emailsMap.size > 0) {
@@ -306,6 +409,7 @@ export const useUserDirectory = () => {
     users: paginated,
     allUsers: filtered,
     isLoading,
+    isSearchingServer: isServerSearchMode && isSearchingServer,
     error,
     stats: stats || defaultStats,
     search,
