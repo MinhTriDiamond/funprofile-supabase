@@ -53,19 +53,35 @@ Deno.serve(async (req: Request) => {
   try {
     const { identifier, type = 'email', captcha_token } = await req.json();
 
-    // CAPTCHA (Cloudflare Turnstile): chi ep buoc khi da dat TURNSTILE_SECRET_KEY
-    const captchaError = await checkTurnstile(captcha_token);
-    if (captchaError) {
-      return new Response(
-        JSON.stringify({ success: false, error: CAPTCHA_ERROR_MESSAGE }),
-        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // Create Supabase client with service role (needed for rate limiting)
+    // Create Supabase client with service role (needed for rate limiting + caller auth check)
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = (Deno.env.get('SUPABASE_SECRET_KEY') ?? Deno.env.get('SUPABASE_SERVICE_ROLE_KEY'))!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // CAPTCHA (Cloudflare Turnstile): chi ep buoc khi da dat TURNSTILE_SECRET_KEY.
+    // Ngoai le: nguoi goi DA dang nhap (JWT phien that, server xac thuc duoc) thi bo qua,
+    // vi CAPTCHA chi de chan bot an danh; luong trong app nhu hop thoai Dat mat khau qua OTP
+    // (SetPasswordViaOtpDialog) chay khi da dang nhap va van bi rate limit 3 lan/gio giu cua.
+    let isAuthenticatedCaller = false;
+    const authHeader = req.headers.get('Authorization') ?? '';
+    const bearer = authHeader.startsWith('Bearer ') ? authHeader.slice('Bearer '.length).trim() : '';
+    if (bearer) {
+      try {
+        const { data: caller } = await supabase.auth.getUser(bearer);
+        isAuthenticatedCaller = !!caller?.user;
+      } catch {
+        isAuthenticatedCaller = false;
+      }
+    }
+    if (!isAuthenticatedCaller) {
+      const captchaError = await checkTurnstile(captcha_token);
+      if (captchaError) {
+        return new Response(
+          JSON.stringify({ success: false, error: CAPTCHA_ERROR_MESSAGE }),
+          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    }
 
     // Database-backed rate limiting - SECURITY FIX
     if (identifier) {
