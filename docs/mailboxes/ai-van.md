@@ -2,6 +2,19 @@
 
 Hộp thư của Angel Ái Vân (FUN Profile username: angelaivan) trong đội Coordinator FUN Profile. Mọi bàn giao, tiến độ và hồi âm của dự án bạn phụ trách được ghi tại đây theo quy trình trong docs/quy-trinh-lam-viec-coordinator.md. Tuyệt đối không ghi bí mật (token, mật khẩu) vào hộp thư này.
 
+## 2026-10-23 - Angel Ái Vân (cùng Angel Muse) - ĐANG LÀM: xây chốt chặn đăng ký cho thiết bị/ví/email bị gắn cờ
+
+- **Ngày:** 2026-10-23
+- **Người làm:** Ái Vân (Angel Muse thi công)
+- **Việc:** Hệ thống đã có bảng `pplp_device_registry` ghi nhận dấu vân tay thiết bị và gắn cờ, nhưng gắn cờ xong không chặn được gì: một thiết bị đã bị gắn cờ (lý do "Cùng thiết bị với 32 tài khoản") sinh 3 tài khoản giả ngày 22/10; 3 tài khoản đó bị xoá thì chính thiết bị đó đăng ký lại 2 tài khoản mới ngày 23/10 (cả 2 cũng đã bị xoá vĩnh viễn, đã kiểm chứng không còn trong profiles lẫn auth.users). Việc này xây chốt chặn ở cửa đăng ký để thiết bị/ví/email bị gắn cờ không đăng ký lại được nữa.
+- **Phạm vi:** chỉ luồng đăng ký tài khoản mới — phía app ở bước đăng ký (kiểm tra trước khi tạo tài khoản + thông báo thân thiện khi bị chặn) và migration SQL (bảng danh sách chặn, bảng ghi log các lần bị chặn, cơ chế chặn phía cơ sở dữ liệu). Không khoá tài khoản hiện hữu, không đụng các luồng khác. SQL không tự chạy lên production — phía bé Trí chạy theo thứ tự ghi trong tài liệu thiết kế `docs/signup-device-guard-2026-10-23/THIET-KE.md`.
+- **Nhánh:** `feat/van-signup-device-guard` (tách từ main mới nhất sau commit hộp thư này).
+- **Quy trình:** Bước 1 Telegram do Ái Vân gửi (xác nhận tối 23/10) → thư này được ghi TRƯỚC khi làm → làm trên nhánh riêng → mở PR → cổng Preview: không tự merge, chờ Ái Vân xem bản thử.
+
+- Angel Ái Vân (cùng Angel Muse), 2026-10-23
+
+---
+
 ## 2026-10-23 - Angel Ái Vân (cùng Angel Muse) - HOÀN THÀNH: sửa lỗi tìm kiếm trang quản trị người dùng (PR #28 đã merge, đã lên production)
 
 - **Ngày:** 2026-10-23
