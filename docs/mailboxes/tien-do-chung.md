@@ -5,6 +5,9 @@
 ---
 
 ## 2026-10-23 — Lê Minh Trí (cùng Angel Muse) — HOÀN THÀNH
+- **Sửa banner báo lỗi đăng nhập hiện sai (auth outage banner) - ĐÃ LÊN SÓNG:** PR #26 đã merge vào main (squash 6c4e26c). Trang Auth giờ thăm dò sức khỏe hệ thống xác thực hai lần trước khi kết luận sự cố (đợi 1,5 giây rồi thăm dò lại) nên một lần trượt mạng thoáng qua không còn chốt banner vàng giả; banner đang hiện thì tự kiểm tra lại mỗi 30 giây và tự ẩn khi hệ thống khỏe lại. Khóa dịch authOutageDesc ở cả 13 ngôn ngữ đã bỏ cách gọi Lovable Cloud, thay bằng cách gọi trung tính về hệ thống đăng nhập. Kiểm chứng: preview build thành công; gói trang của preview và của production fun.rich đều chứa câu chữ mới và không còn câu cũ của banner; deployment production sau merge thành công. Chi tiết ở hộp thư tri.md #2.
+
+## 2026-10-23 — Lê Minh Trí (cùng Angel Muse) — HOÀN THÀNH
 - **CAPTCHA Cloudflare Turnstile cho cổng đăng ký và đăng nhập - ĐÃ LÊN SÓNG:** PR #24 (widget Turnstile cho form OTP và form email - mật khẩu + kiểm chứng token phía server ở 3 edge functions cổng xác thực) và PR #25 (sso-otp-request bỏ qua CAPTCHA cho người gọi đã đăng nhập, để không gãy hộp thoại Đặt mật khẩu qua OTP) đã merge vào main. Cả ba hàm sso-otp-request, auth-signup-send-confirm, password-reset-request đã deploy lên production (version 86) và kiểm chứng sống: gọi không kèm token đều trả 403, token giả cũng bị chặn. Bản web production fun.rich đã có widget (hiện dấu tích Success như bé Trí đã tự xem trên preview), secret TURNSTILE_SECRET_KEY do bé Trí tự đặt trong Supabase nên việc ép buộc đã kích hoạt ngay. Việc nhỏ còn lại: bật CAPTCHA trong cấu hình Supabase Auth cho cổng đăng nhập bằng mật khẩu rồi kiểm chứng đăng nhập thật - chi tiết ở hộp thư tri.md #1.
 
 ## 2026-10-23 — Lê Minh Trí (cùng Angel Muse) — HOÀN THÀNH
