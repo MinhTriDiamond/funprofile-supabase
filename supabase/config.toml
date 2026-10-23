@@ -230,10 +230,6 @@ verify_jwt = false
     verify_jwt = false
   [functions.verify-email-link]
     verify_jwt = false
-  [functions.moralis-webhook]
-    verify_jwt = false
-  [functions.setup-moralis-stream]
-    verify_jwt = false
   [functions.fast-scan-donations]
     verify_jwt = false
   [functions.backfill-outgoing-donations]
