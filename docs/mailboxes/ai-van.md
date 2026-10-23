@@ -2,7 +2,7 @@
 
 Hộp thư của Angel Ái Vân (FUN Profile username: angelaivan) trong đội Coordinator FUN Profile. Mọi bàn giao, tiến độ và hồi âm của dự án bạn phụ trách được ghi tại đây theo quy trình trong docs/quy-trinh-lam-viec-coordinator.md. Tuyệt đối không ghi bí mật (token, mật khẩu) vào hộp thư này.
 
-## 2026-10-23 - Angel Ái Vân (cùng Angel Muse) - ĐÃ SỬA XONG, CHƯA MERGE: sửa lỗi tìm kiếm trang quản trị người dùng (PR #28, chờ cổng Preview)
+## 2026-10-23 - Angel Ái Vân (cùng Angel Muse) - HOÀN THÀNH: sửa lỗi tìm kiếm trang quản trị người dùng (PR #28 đã merge, đã lên production)
 
 - **Ngày:** 2026-10-23
 - **Người làm:** Ái Vân (Angel Muse thi công)
@@ -15,6 +15,8 @@ Hộp thư của Angel Ái Vân (FUN Profile username: angelaivan) trong đội 
 - **Đã làm:** (1) `src/hooks/useAdminUserServerSearch.ts` — thành nguồn tìm chính: debounce 300ms, bật ngay khi ô tìm có từ 2 ký tự, select thêm `created_at`, `reward_status`, `pending_reward`, `approved_reward`. (2) `src/hooks/useUserDirectory.ts` — khi đang tìm, kết quả lấy từ truy vấn server; user đã có trong directory thì ghép entry đầy đủ theo id (giữ số liệu nặng), user chưa tải tới thì dựng hàng từ dữ liệu profiles để hiện ngay; các bộ lọc giữ nguyên hành vi (lọc theo số liệu nặng chỉ áp cho entry đã có số liệu thật); trả thêm `isSearchingServer`. (3) `src/pages/Users.tsx` — bỏ cơ chế in tên dạng chữ; trạng thái rỗng phân biệt đang tìm/không có thành viên; skeleton tải nền không che kết quả tìm; ban/suspend/delete làm mới thêm cache tìm kiếm server. Không sửa backend/SQL, không đụng luồng đăng ký.
 - **Kiểm chứng:** cả 3 file qua esbuild transform không lỗi; **Cloudflare Pages build bản preview của nhánh thành công** (deploy successful cho commit code `5784c3e`) — tức bản dựng thật đã biên dịch đạt. Chưa chạy full typecheck tại môi trường thi công (không cài được toàn bộ dependencies của repo tại đó).
 - **PR:** https://github.com/MinhTriDiamond/funprofile-supabase/pull/28 — **chưa merge**, chờ cổng Preview: Ái Vân test trên link preview của nhánh (https://fix-van-admin-user-search.funprofile-supabase.pages.dev — vào trang quản trị người dùng, gõ tìm và kiểm tra kết quả hiện thành hàng ngay). Đạt thì merge PR này, sau merge Cloudflare tự deploy lên fun.rich và ghi bổ sung kết quả kiểm chứng production vào mục này.
+
+- **Kết quả (bổ sung sau merge):** Cổng Preview ĐÃ QUA — Ái Vân tự test bản preview của nhánh ngày 23/10 và xác nhận đạt ("tìm ra liền"). **PR #28 đã merge** ngày 2026-10-23 lúc 11:19:31 UTC, merge commit `1a688ef4058749fa310c4e6118d0f61c75a5b9fb` — https://github.com/MinhTriDiamond/funprofile-supabase/pull/28. **Kiểm chứng production:** đã đọc lại trực tiếp 3 file trên `main` tại đúng merge commit: `useAdminUserServerSearch.ts` có debounce 300ms, bật tìm từ 2 ký tự, select thêm `created_at`/`reward_status`/`pending_reward`/`approved_reward`; `useUserDirectory.ts` có `isSearchingServer` và ghép kết quả server vào danh sách; `src/pages/Users.tsx` không còn cơ chế "in tên dạng chữ". Cloudflare Pages: bản preview của nhánh deploy thành công (bot Cloudflare xác nhận trên PR); deploy production chạy theo cơ chế merge vào `main` là Cloudflare tự deploy lên fun.rich — trạng thái deploy production không xem được qua công cụ GitHub hiện có nên ghi rõ tại đây thay vì suy đoán. **Tồn dư:** nhánh `fix/van-admin-user-search` chưa xóa được bằng công cụ API hiện có (đúng tiền lệ PR #16) — nhờ người có quyền GitHub xóa giúp; nhánh đã merge xong, xóa an toàn.
 
 - Angel Ái Vân (cùng Angel Muse), 2026-10-23
 
