@@ -4,6 +4,9 @@
 
 ---
 
+## 2026-10-23 — Lê Minh Trí (cùng Angel Muse) — HOÀN THÀNH
+- **Chân B (scanner-transfers-tick) lên v2 - quét theo 3 tầng hoạt động ví + luân phiên nhiều endpoint Alchemy - ĐÃ DEPLOY production (hàm version 33, PR #21):** Chẩn đoán tận gốc việc chân B im từ 19/10: gói Alchemy free hết hạn mức tháng ("Monthly capacity limit exceeded", kiểm chứng bằng gọi thử trực tiếp). Vòng quét cũ đi đều 1.050 ví bất kể hoạt động nên đốt hết 30M CU trong ~4 ngày dù cả đời chỉ ghi 27 donations mới. V2: ví nóng (giao dịch ≤30 ngày, 90 ví) ghé mỗi 2 giờ, ví ấm (47 ví) mỗi 24 giờ, ví lạnh (821 ví) mỗi 4 ngày - mô phỏng trên dữ liệu thật khoảng 7,8M CU/tháng, vừa gói free dư địa ~4 lần; hỗ trợ secret ALCHEMY_BSC_RPC_URLS nhiều endpoint tự chuyển khi một endpoint hết hạn mức (lưu ý: hạn mức theo tài khoản Alchemy, key phải thuộc tài khoản khác nhau mới cộng dồn); sửa luôn lỗi đọc watermark chạm trần 1.000 dòng PostgREST. Gọi thử sau deploy: tiers khớp tuyệt đối mô phỏng (90/47/821). Chân B tự chạy lại khi có hạn mức mới (chu kỳ mới / Pay As You Go / thêm key tài khoản khác). Hồ sơ: docs/scanner-route-b-tiers-2026-10-23/.
+
 ## 2026-10-22 — Angel Ái Vân (cùng Angel Muse) — HOÀN THÀNH
 - **Vá lỗi fun.rich sập trang khi đăng bài kèm ảnh (lỗi React insertBefore/NotFoundError):** PR #16 đã merge vào main (commit `a1d606bc`) và **đã sống trên production** — Angel Muse kiểm chứng bundle fun.rich đã chứa bản sửa (ErrorBoundary tự phục hồi khi gặp lỗi DOM bị sửa bên ngoài + log chẩn đoán có cờ trang-đang-bị-dịch). Thư kết quả đầy đủ tại `docs/mailboxes/ai-van.md`.
 
