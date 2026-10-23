@@ -6,6 +6,7 @@ import { sendBrandedEmail, APP_URL } from "../_shared/resendClient.ts";
 import { signupConfirmHtml } from "../_shared/emailTemplates.ts";
 import { logSignupFailure } from '../_shared/signupFailureLog.ts';
 import { assertSignupEnabled } from "../_shared/signupGate.ts";
+import { checkTurnstile, CAPTCHA_ERROR_MESSAGE } from "../_shared/turnstile.ts";
 
 const cors = {
   "Access-Control-Allow-Origin": "*",
@@ -15,7 +16,7 @@ const cors = {
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: cors });
   try {
-    const { email, password, username, wallet_address } = await req.json();
+    const { email, password, username, wallet_address, captcha_token } = await req.json();
     if (!email || !password || !username) {
       return new Response(JSON.stringify({ error: "Thiếu thông tin" }), { status: 400, headers: { ...cors, "Content-Type": "application/json" } });
     }
@@ -25,6 +26,12 @@ Deno.serve(async (req) => {
     }
     if (String(password).length < 8) {
       return new Response(JSON.stringify({ error: "Mật khẩu tối thiểu 8 ký tự" }), { status: 400, headers: { ...cors, "Content-Type": "application/json" } });
+    }
+
+    // CAPTCHA (Cloudflare Turnstile): chi ep buoc khi da dat TURNSTILE_SECRET_KEY
+    const captchaError = await checkTurnstile(captcha_token);
+    if (captchaError) {
+      return new Response(JSON.stringify({ error: CAPTCHA_ERROR_MESSAGE }), { status: 403, headers: { ...cors, "Content-Type": "application/json" } });
     }
 
     const admin = createClient(Deno.env.get("SUPABASE_URL")!, (Deno.env.get('SUPABASE_SECRET_KEY') ?? Deno.env.get('SUPABASE_SERVICE_ROLE_KEY'))!);

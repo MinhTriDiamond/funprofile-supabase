@@ -3,6 +3,7 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { sendBrandedEmail, APP_URL } from "../_shared/resendClient.ts";
 import { passwordResetHtml } from "../_shared/emailTemplates.ts";
+import { checkTurnstile, CAPTCHA_ERROR_MESSAGE } from "../_shared/turnstile.ts";
 
 const cors = {
   "Access-Control-Allow-Origin": "*",
@@ -12,10 +13,15 @@ const cors = {
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: cors });
   try {
-    const { email } = await req.json();
+    const { email, captcha_token } = await req.json();
     const normalized = String(email || "").trim().toLowerCase();
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalized)) {
       return new Response(JSON.stringify({ error: "Email không hợp lệ" }), { status: 400, headers: { ...cors, "Content-Type": "application/json" } });
+    }
+    // CAPTCHA (Cloudflare Turnstile): chi ep buoc khi da dat TURNSTILE_SECRET_KEY
+    const captchaError = await checkTurnstile(captcha_token);
+    if (captchaError) {
+      return new Response(JSON.stringify({ error: CAPTCHA_ERROR_MESSAGE }), { status: 403, headers: { ...cors, "Content-Type": "application/json" } });
     }
     const admin = createClient(Deno.env.get("SUPABASE_URL")!, (Deno.env.get('SUPABASE_SECRET_KEY') ?? Deno.env.get('SUPABASE_SERVICE_ROLE_KEY'))!);
 

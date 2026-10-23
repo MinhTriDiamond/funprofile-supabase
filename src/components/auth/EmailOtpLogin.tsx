@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import logger from '@/lib/logger';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
+import { TurnstileWidget, TURNSTILE_ENABLED } from './TurnstileWidget';
 import { Mail, ArrowRight, CheckCircle2, Loader2, RefreshCw } from 'lucide-react';
 
 interface EmailOtpLoginProps {
@@ -21,6 +22,8 @@ export const EmailOtpLogin = ({ onSuccess }: EmailOtpLoginProps) => {
   const [loading, setLoading] = useState(false);
   const [retrying, setRetrying] = useState(false);
   const [countdown, setCountdown] = useState(0);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const [captchaReset, setCaptchaReset] = useState(0);
 
   // Countdown timer for OTP expiry
   useEffect(() => {
@@ -51,19 +54,21 @@ export const EmailOtpLogin = ({ onSuccess }: EmailOtpLoginProps) => {
     try {
       let result;
       try {
-        result = await invokeWithTimeout('sso-otp-request', { identifier: email, type: 'email' }, 25000);
+        result = await invokeWithTimeout('sso-otp-request', { identifier: email, type: 'email', captcha_token: captchaToken ?? undefined }, 25000);
       } catch (err: unknown) {
         const isTimeout = err instanceof Error && err.message === 'TIMEOUT';
         if (!isTimeout) throw err;
         // Auto-retry once (function should be warm now)
         setRetrying(true);
-        result = await invokeWithTimeout('sso-otp-request', { identifier: email, type: 'email' }, 15000);
+        result = await invokeWithTimeout('sso-otp-request', { identifier: email, type: 'email', captcha_token: captchaToken ?? undefined }, 15000);
       }
 
       const { data, error } = result;
       if (error) throw error;
 
       if (data?.success) {
+        setCaptchaToken(null);
+        setCaptchaReset((n) => n + 1);
         setStep('otp');
         setCountdown(300);
         toast.success(`${t('otpSentTo')} ${email}`);
@@ -79,7 +84,7 @@ export const EmailOtpLogin = ({ onSuccess }: EmailOtpLoginProps) => {
       setLoading(false);
       setRetrying(false);
     }
-  }, [email, t]);
+  }, [email, t, captchaToken]);
 
   const handleVerifyOtp = useCallback(async () => {
     if (otp.length !== 6) {
@@ -188,9 +193,11 @@ export const EmailOtpLogin = ({ onSuccess }: EmailOtpLoginProps) => {
             </div>
           </div>
 
+          <TurnstileWidget onToken={setCaptchaToken} resetSignal={captchaReset} />
+
           <Button
             onClick={handleSendOtp}
-            disabled={loading || !email}
+            disabled={loading || !email || (TURNSTILE_ENABLED && !captchaToken)}
             className="w-full h-14 text-lg font-bold rounded-full relative overflow-hidden text-white"
             style={{
               background: 'linear-gradient(135deg, #166534 0%, #15803d 50%, #166534 100%)',
