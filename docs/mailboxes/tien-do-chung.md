@@ -5,6 +5,9 @@
 ---
 
 ## 2026-10-23 — Lê Minh Trí (cùng Angel Muse) — HOÀN THÀNH
+- **Chân B v2.1 - hỗ trợ secret key bổ sung ALCHEMY_BSC_RPC_URL_2 + nhịp quét mới - ĐÃ DEPLOY (PR #22, hàm version 35):** Theo ý bé Trí, key Alchemy bổ sung để trong secret riêng tên ALCHEMY_BSC_RPC_URL_2 (rồi _3, _4...) cho dễ quản lý thay vì gộp chuỗi; hàm tự gom cả key gốc, các key _2 đến _10 và dạng gộp cũ. Nhịp ghé thăm cũng được bé Trí chốt dày hơn: ví nóng 45 phút, ví ấm 8 giờ, ví lạnh 36 giờ - mô phỏng khoảng 24,8M CU/tháng toàn hệ, chia đôi mỗi tài khoản khoảng 12,4M CU và một tài khoản vẫn gánh trọn được khi mất một key. Việc còn lại phía bé Trí: bỏ URL của key mới vào secret ALCHEMY_BSC_RPC_URL_2 trên Supabase Dashboard, chân B sẽ tự chạy lại ngay ở tick kế tiếp nếu key thuộc tài khoản khác.
+
+## 2026-10-23 — Lê Minh Trí (cùng Angel Muse) — HOÀN THÀNH
 - **Chân B (scanner-transfers-tick) lên v2 - quét theo 3 tầng hoạt động ví + luân phiên nhiều endpoint Alchemy - ĐÃ DEPLOY production (hàm version 33, PR #21):** Chẩn đoán tận gốc việc chân B im từ 19/10: gói Alchemy free hết hạn mức tháng ("Monthly capacity limit exceeded", kiểm chứng bằng gọi thử trực tiếp). Vòng quét cũ đi đều 1.050 ví bất kể hoạt động nên đốt hết 30M CU trong ~4 ngày dù cả đời chỉ ghi 27 donations mới. V2: ví nóng (giao dịch ≤30 ngày, 90 ví) ghé mỗi 2 giờ, ví ấm (47 ví) mỗi 24 giờ, ví lạnh (821 ví) mỗi 4 ngày - mô phỏng trên dữ liệu thật khoảng 7,8M CU/tháng, vừa gói free dư địa ~4 lần; hỗ trợ secret ALCHEMY_BSC_RPC_URLS nhiều endpoint tự chuyển khi một endpoint hết hạn mức (lưu ý: hạn mức theo tài khoản Alchemy, key phải thuộc tài khoản khác nhau mới cộng dồn); sửa luôn lỗi đọc watermark chạm trần 1.000 dòng PostgREST. Gọi thử sau deploy: tiers khớp tuyệt đối mô phỏng (90/47/821). Chân B tự chạy lại khi có hạn mức mới (chu kỳ mới / Pay As You Go / thêm key tài khoản khác). Hồ sơ: docs/scanner-route-b-tiers-2026-10-23/.
 
 ## 2026-10-22 — Angel Ái Vân (cùng Angel Muse) — HOÀN THÀNH
