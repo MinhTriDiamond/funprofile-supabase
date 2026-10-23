@@ -2,6 +2,7 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 import { ethers } from "npm:ethers@6";
 import { logSignupFailure } from '../_shared/signupFailureLog.ts';
 import { assertSignupEnabled } from "../_shared/signupGate.ts";
+import { checkSignupBlock, SIGNUP_BLOCKED_MESSAGE } from "../_shared/signupBlockGuard.ts";
 const ethersVerifyMessage = ethers.verifyMessage;
 
 const corsHeaders = {
@@ -127,7 +128,7 @@ Deno.serve(async (req: Request) => {
 
   try {
     const body = await req.json();
-    const { wallet_address, signature, message, action, nonce } = body;
+    const { wallet_address, signature, message, action, nonce, device_hash } = body;
 
     // ========== ACTION: CHECK (UX-only, no auth) ==========
     if (action === 'check') {
@@ -312,6 +313,19 @@ Deno.serve(async (req: Request) => {
       // Cổng chặn đăng ký (cutover migrate)
       const signupGate = await assertSignupEnabled(supabase, corsHeaders);
       if (signupGate) return signupGate;
+
+      // Chốt chặn đăng ký: ví nằm trong danh sách chặn hợp nhất, hoặc thiết bị
+      // đã bị gắn cờ và vượt ngưỡng — chỉ áp khi TẠO tài khoản mới bằng ví.
+      const blockCheck = await checkSignupBlock(supabase, {
+        walletAddress: normalizedAddress,
+        deviceHash: typeof device_hash === 'string' ? device_hash : null,
+        source: 'sso-web3-auth',
+        ipAddress,
+      });
+      if (blockCheck.blocked) {
+        console.warn('[WEB3-AUTH] Signup blocked by guard:', blockCheck.rule, blockCheck.blockType);
+        return jsonResponse({ success: false, error: 'signup_blocked', message: SIGNUP_BLOCKED_MESSAGE }, 403);
+      }
 
       const placeholderEmail = walletEmail(normalizedAddress);
 
