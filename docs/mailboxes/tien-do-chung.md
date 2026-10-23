@@ -5,6 +5,9 @@
 ---
 
 ## 2026-10-23 — Lê Minh Trí (cùng Angel Muse) — HOÀN THÀNH
+- **CAPTCHA Cloudflare Turnstile cho cổng đăng ký và đăng nhập - ĐÃ LÊN SÓNG:** PR #24 (widget Turnstile cho form OTP và form email - mật khẩu + kiểm chứng token phía server ở 3 edge functions cổng xác thực) và PR #25 (sso-otp-request bỏ qua CAPTCHA cho người gọi đã đăng nhập, để không gãy hộp thoại Đặt mật khẩu qua OTP) đã merge vào main. Cả ba hàm sso-otp-request, auth-signup-send-confirm, password-reset-request đã deploy lên production (version 86) và kiểm chứng sống: gọi không kèm token đều trả 403, token giả cũng bị chặn. Bản web production fun.rich đã có widget (hiện dấu tích Success như bé Trí đã tự xem trên preview), secret TURNSTILE_SECRET_KEY do bé Trí tự đặt trong Supabase nên việc ép buộc đã kích hoạt ngay. Việc nhỏ còn lại: bật CAPTCHA trong cấu hình Supabase Auth cho cổng đăng nhập bằng mật khẩu rồi kiểm chứng đăng nhập thật - chi tiết ở hộp thư tri.md #1.
+
+## 2026-10-23 — Lê Minh Trí (cùng Angel Muse) — HOÀN THÀNH
 - **GỠ BỎ HOÀN TOÀN MORALIS - đóng phát hiện NGHIÊM TRỌNG nhất của audit 2026-10-23:** Hàm moralis-webhook chỉ kiểm tra chữ ký HMAC khi request có header x-signature - không gửi header là ghi thẳng được donation "confirmed" giả bằng service_role, không cần tài khoản (audit code F-01). Vì hệ đã ngừng dùng Moralis từ 13/10/2026 (chỉ chạy Alchemy), bé Trí quyết định xóa luôn thay vì vá: hai hàm moralis-webhook và setup-moralis-stream đã bị xóa khỏi production (kiểm chứng danh sách còn 0 hàm Moralis, gọi thử trả 404, không cron job nào tham chiếu), và PR #23 đã gỡ code + mục config.toml khỏi repo để không gì deploy lại. Toàn bộ kết quả audit và lộ trình vá 3 đợt: báo cáo audit FUN Profile 2026-10-23 (1 Nghiêm trọng - đã xử lý, 7 Cao, 10 Trung bình, 10 Thấp).
 
 ## 2026-10-23 — Lê Minh Trí (cùng Angel Muse) — HOÀN THÀNH
