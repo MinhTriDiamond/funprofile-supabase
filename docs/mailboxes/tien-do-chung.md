@@ -5,6 +5,9 @@
 ---
 
 ## 2026-10-23 — Lê Minh Trí (cùng Angel Muse) — HOÀN THÀNH
+- **Trang Chính sách bảo mật (Privacy Policy) - ĐÃ LÊN SÓNG:** PR #27 đã merge vào main (squash 17a372ac). Trang mới tại fun.rich/privacy-policy (src/pages/PrivacyPolicy.tsx, đường dẫn khai báo trong App.tsx), song ngữ Anh - Việt với nút chuyển ngôn ngữ trên trang, 10 mục nội dung gồm cam kết không bán thông tin cá nhân và ghi chú bản ghi blockchain là vĩnh viễn. Kiểm chứng: preview build thành công; sau merge, deployment production thành công và fun.rich phục vụ đúng trang mới với đủ nội dung hai ngôn ngữ. Mục đích: đáp ứng điều kiện của Google để đưa ứng dụng OAuth của project FUN Platforms lên Production, để màn hình đăng nhập Google hiện đúng tên FUN PROFILE - bước cấu hình Google do bé Trí làm tiếp. Chi tiết ở hộp thư tri.md #3.
+
+## 2026-10-23 — Lê Minh Trí (cùng Angel Muse) — HOÀN THÀNH
 - **Sửa banner báo lỗi đăng nhập hiện sai (auth outage banner) - ĐÃ LÊN SÓNG:** PR #26 đã merge vào main (squash 6c4e26c). Trang Auth giờ thăm dò sức khỏe hệ thống xác thực hai lần trước khi kết luận sự cố (đợi 1,5 giây rồi thăm dò lại) nên một lần trượt mạng thoáng qua không còn chốt banner vàng giả; banner đang hiện thì tự kiểm tra lại mỗi 30 giây và tự ẩn khi hệ thống khỏe lại. Khóa dịch authOutageDesc ở cả 13 ngôn ngữ đã bỏ cách gọi Lovable Cloud, thay bằng cách gọi trung tính về hệ thống đăng nhập. Kiểm chứng: preview build thành công; gói trang của preview và của production fun.rich đều chứa câu chữ mới và không còn câu cũ của banner; deployment production sau merge thành công. Chi tiết ở hộp thư tri.md #2.
 
 ## 2026-10-23 — Lê Minh Trí (cùng Angel Muse) — HOÀN THÀNH
