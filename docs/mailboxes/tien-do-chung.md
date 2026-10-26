@@ -4,6 +4,9 @@
 
 ---
 
+## 2026-10-26 — Lê Minh Trí (cùng Angel Muse) — HOÀN THÀNH
+- **Thu hồi quyền Wave 1 theo audit 2026-10-23 - ĐÃ XONG:** 9 hàm (3 hàm cảnh báo mạo danh, cron_unschedule_by_name, cleanup_old_system_data, get_all_claim_history, 3 hàm refresh/drain) không còn gọi được bằng anon hay authenticated; view v_internal_addresses không còn cho anon đọc. Phát hiện trong lúc chạy: quyền thật nằm ở PUBLIC (Postgres tự cấp khi tạo hàm) nên lệnh thu hồi theo bản draft ban đầu không đổi gì - đã chạy bổ sung REVOKE FROM PUBLIC và kiểm chứng tất cả về false, trong khi chủ hàm và service_role giữ nguyên nên trigger hiển thị quà tức thì và job pg_cron không ảnh hưởng. Điểm còn mở: authenticated vẫn giữ SELECT trên view, chờ quyết định thu hồi thêm. Chi tiết ở hộp thư tri.md #4.
+
 ## 2026-10-23 — Lê Minh Trí (cùng Angel Muse) — HOÀN THÀNH
 - **Trang Chính sách bảo mật (Privacy Policy) - ĐÃ LÊN SÓNG:** PR #27 đã merge vào main (squash 17a372ac). Trang mới tại fun.rich/privacy-policy (src/pages/PrivacyPolicy.tsx, đường dẫn khai báo trong App.tsx), song ngữ Anh - Việt với nút chuyển ngôn ngữ trên trang, 10 mục nội dung gồm cam kết không bán thông tin cá nhân và ghi chú bản ghi blockchain là vĩnh viễn. Kiểm chứng: preview build thành công; sau merge, deployment production thành công và fun.rich phục vụ đúng trang mới với đủ nội dung hai ngôn ngữ. Mục đích: đáp ứng điều kiện của Google để đưa ứng dụng OAuth của project FUN Platforms lên Production, để màn hình đăng nhập Google hiện đúng tên FUN PROFILE - bước cấu hình Google do bé Trí làm tiếp. Chi tiết ở hộp thư tri.md #3.
 
