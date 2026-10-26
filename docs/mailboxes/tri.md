@@ -44,3 +44,9 @@ Nơi ghi các vòng việc do bé Trí phụ trách trên FUN Profile, theo quy 
 - Rollback đúng trạng thái cũ (nếu cần): GRANT EXECUTE ON FUNCTION public.<tên hàm>(<chữ ký>) TO PUBLIC - bản draft cũ ghi GRANT TO anon chỉ mở lại cho riêng anon.
 - Theo dõi 24 giờ sau chạy: để ý lỗi "permission denied for function" liên quan các hàm trên trong log app; có luồng nào bị ảnh hưởng thì GRANT lại đúng hàm đó.
 - ĐÓNG VÒNG 2026-10-26.
+
+## #5 - 2026-10-26 - Đóng băng cột đặc quyền của profiles theo audit 2026-10-23 (F1)
+- Người làm: bé Trí cùng Angel Muse. Không có nhánh code (thay đổi trực tiếp trên production DB, không qua deploy).
+- Lý do: audit toàn app ngày 23/10 (F1) phát hiện tài khoản thường tự sửa được 26 cột đặc quyền của chính mình qua PostgREST PATCH, gồm nhóm ban, trạng thái tài khoản, thưởng, gian lận, xác minh, đóng băng claim và hạn mức. Bảng posts đã có cơ chế đóng băng tương tự, profiles thì chưa.
+- Phạm vi: thêm hàm profiles_freeze_privilege_columns và trigger BEFORE UPDATE trg_profiles_freeze_privilege_columns trên bảng profiles, theo đúng mẫu posts_freeze_system_columns: tài khoản thường gọi bằng anon hoặc authenticated mà sửa tới 26 cột đặc quyền (is_banned, is_restricted, account_status, reward_status, reward_locked, pending_reward, approved_reward, total_rewards, grand_total_profit, fraud_trusted, fraud_risk_level, suspected_farming, farming_score, trust_level, total_light_score, light_tier, soul_level, identity_verified, identity_level, claim_freeze_until, claim_speed_limit_until, max_claim_per_request, exclude_from_leaderboard, admin_notes, email, has_password) thì hệ tự trả các cột đó về giá trị cũ, các cột thường như bio và avatar vẫn sửa bình thường; chỉ đường gọi phía máy chủ (service_role) và tài khoản có quyền admin mới đổi được các cột này. Không sửa code app, không đổi RLS, không đụng các trigger bảo vệ ví đang chạy.
+- Trạng thái: đang thực hiện (thông báo Telegram Bước 1 đã gửi tối ngày 26/10/2026).
