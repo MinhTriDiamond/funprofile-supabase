@@ -72,8 +72,6 @@ const Reels = lazyWithChunkRecovery(() => import("./pages/Reels"), "Reels");
 const VerifyEmail = lazyWithChunkRecovery(() => import("./pages/VerifyEmail"), "VerifyEmail");
 const ConfirmEmail = lazyWithChunkRecovery(() => import("./pages/ConfirmEmail"), "ConfirmEmail");
 const AuthCallback = lazyWithChunkRecovery(() => import("./pages/AuthCallback"), "AuthCallback");
-const PilotLogin = lazyWithChunkRecovery(() => import("./pages/PilotLogin"), "PilotLogin");
-const SsoCallback = lazyWithChunkRecovery(() => import("./pages/SsoCallback"), "SsoCallback");
 const IdentityDashboard = lazyWithChunkRecovery(() => import("./pages/identity/IdentityDashboard"), "IdentityDashboard");
 const IdentityOnboarding = lazyWithChunkRecovery(() => import("./pages/identity/IdentityOnboarding"), "IdentityOnboarding");
 const ConnectorPage = lazyWithChunkRecovery(() => import("./pages/connector/ConnectorPage"), "ConnectorPage");
@@ -318,9 +316,6 @@ function App() {
                         <Route path="/verify-email" element={<VerifyEmail />} />
                         <Route path="/confirm-email" element={<ConfirmEmail />} />
                         <Route path="/auth/callback" element={<AuthCallback />} />
-                        {/* PILOT cua account.fun.rich - chi cong them, khong sua dang nhap goc */}
-                        <Route path="/pilot-login" element={<PilotLogin />} />
-                        <Route path="/sso-callback" element={<SsoCallback />} />
                         <Route path="/law-of-light" element={<LawOfLight />} />
                         <Route path="/" element={<Feed />} />
                         <Route path="/friends" element={<Friends />} />
