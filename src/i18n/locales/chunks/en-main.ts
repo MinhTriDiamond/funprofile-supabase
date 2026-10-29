@@ -139,6 +139,12 @@ const chunk = {
   saved: 'Saved',
   seeMore: 'See More',
   seeLess: 'See Less',
+  postSeeTranslation: 'See translation',
+  postHideTranslation: 'Hide translation',
+  postTranslating: 'Translating...',
+  postTranslatedInto: 'Translation into {lang}',
+  postTranslationAutoNote: 'Automatic translation, may not be perfect.',
+  postTranslationFailed: 'Could not translate right now. Please try again later.',
   events: 'Events',
   homeFeed: 'Daily Quests',
   

@@ -11,6 +11,7 @@ import { PostHeader } from './PostHeader';
 import { PostMedia } from './PostMedia';
 import { PostFooter } from './PostFooter';
 import { ExpandableContent } from './ExpandableContent';
+import { PostTranslation } from './PostTranslation';
 import { CommentSection } from './CommentSection';
 import { ImageViewer } from './ImageViewer';
 import { EditPostDialog } from './EditPostDialog';
@@ -268,6 +269,7 @@ const PostContentBlock = ({ content, shareUrl, onOpenShare }: PostContentBlockPr
         {...longPress}
       >
         <ExpandableContent content={content} maxLength={300} maxLines={5} />
+        <PostTranslation content={content} />
       </div>
       {menuOpen && (
         <PostContextMenu

@@ -2,6 +2,17 @@
 
 Hộp thư của Angel Ái Vân (FUN Profile username: angelaivan) trong đội Coordinator FUN Profile. Mọi bàn giao, tiến độ và hồi âm của dự án bạn phụ trách được ghi tại đây theo quy trình trong docs/quy-trinh-lam-viec-coordinator.md. Tuyệt đối không ghi bí mật (token, mật khẩu) vào hộp thư này.
 
+## 2026-10-29 - Angel Ái Vân (cùng Angel Muse) - ĐANG LÀM: nút "Xem bản dịch" cho bài viết
+
+- **Ngày:** 2026-10-29
+- **Người làm:** Ái Vân (Angel Muse thi công)
+- **Việc:** Thêm nút dịch bài viết kiểu Facebook: bài tiếng Anh / tiếng nước ngoài hiện nút "Xem bản dịch", bấm thì hiện bản dịch sang ngôn ngữ giao diện của người xem (mặc định tiếng Việt), bấm lại thì ẩn; bài đã cùng ngôn ngữ thì không hiện nút.
+- **Phạm vi:** chỉ giao diện bài viết: `src/components/feed/PostTranslation.tsx` (mới), `src/components/feed/FacebookPostCard.tsx` (gắn nút vào phần nội dung bài), `src/i18n/locales/chunks/en-main.ts` và `vi-main.ts` (thêm vài câu chữ cho nút). Không đổi database, không thêm Edge Function, không đổi cách đăng bài, không đụng bình luận ở đợt này.
+- **Nhánh:** `feat/aivan-dich-bai-viet`
+- **Quyết định riêng cho việc này (29/10, Ái Vân nói rõ):** không gửi thông báo Telegram cho bé Trí nữa. Các bước an toàn còn lại vẫn giữ: làm trên nhánh riêng, qua cổng xem trước Cloudflare, chỉ merge khi Ái Vân duyệt bản xem trước.
+- **Cách dịch v1:** chỉ dịch khi người xem bấm nút (không dịch tự động lúc tải trang), dùng dịch vụ dịch công khai miễn phí qua trình duyệt (MyMemory trước, Google Translate công khai dự phòng), không dùng key bí mật nào, lưu tạm kết quả trong bộ nhớ của trang để bấm lại không phải dịch lại. Hạn chế v1: dịch vụ miễn phí có thể giới hạn số lần / lúc chậm, bản dịch ghi rõ là bản dịch tự động.
+- **Trạng thái:** đang làm, chưa merge, chưa lên fun.rich.
+
 ## 2026-10-23 - Angel Ái Vân (cùng Angel Muse) - ĐANG LÀM: xây chốt chặn đăng ký cho thiết bị/ví/email bị gắn cờ
 
 - **Ngày:** 2026-10-23
