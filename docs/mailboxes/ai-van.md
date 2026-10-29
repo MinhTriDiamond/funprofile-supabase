@@ -2,6 +2,13 @@
 
 Hộp thư của Angel Ái Vân (FUN Profile username: angelaivan) trong đội Coordinator FUN Profile. Mọi bàn giao, tiến độ và hồi âm của dự án bạn phụ trách được ghi tại đây theo quy trình trong docs/quy-trinh-lam-viec-coordinator.md. Tuyệt đối không ghi bí mật (token, mật khẩu) vào hộp thư này.
 
+## 2026-10-29 - Angel Ái Vân (cùng Angel Muse) - XONG: sửa lỗi thông báo đã merge (PR #40)
+
+- **Kết quả:** Ái Vân đã test bản xem trước và duyệt ("dạ ok hết rồi"). PR #40 đã merge vào `main`, mã merge `667dfb1e`. Kiểm tra trên `main`: đủ khiên đỏ cho thông báo gian lận trong dropdown, route `/admin?tab=reconciliation`, route `/notifications` cho loại gian lận, tab "Đối soát ví" đã đăng ký trong adminNav và vẽ trong AdminShell.
+- **Đã sửa:** (1) Thông báo "Báo cáo gian lận" trong bảng chuông hiện khiên đỏ thay vì avatar user; (2) Nhấn "Kết quả đối soát ví" mở đúng trang Đối soát ví (trước đây rớt về trang tổng quan); nhấn "Báo cáo gian lận" mở trang Thông báo đầy đủ để bấm mở rộng xem chi tiết từng cảnh báo.
+- **Ghi chú phạm vi:** để nút nhấn mở được danh sách thật, đã phải đăng ký lại tab "Đối soát ví" trong menu admin (trước đây màn hình này bị mồ côi, không nơi nào đăng ký) — ghi rõ ở đây để đội nắm.
+- **Chưa sửa (ngoài phạm vi, báo để đội biết):** 3 thông báo "Đã bổ sung 0 giao dịch thiếu" trùng nhau — nhiều khả năng do lỗi bị nuốt trong `wallet-reconciliation-cron` khi gộp thông báo (backend, cần phía bé Trí kiểm tra); chữ "0 giao dịch thiếu" gây hiểu lầm vì thực chất thông báo này sinh ra khi lỗi vượt ngưỡng.
+
 ## 2026-10-29 - Angel Ái Vân (cùng Angel Muse) - SỬA LỖI THÔNG BÁO: avatar báo cáo gian lận + nhấn cảnh báo không hiện danh sách
 
 - **Ngày:** 2026-10-29
