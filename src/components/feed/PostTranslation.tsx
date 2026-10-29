@@ -3,6 +3,17 @@ import { useLanguage } from '@/i18n/LanguageContext';
 import { LANGUAGE_META } from '@/i18n/registry';
 
 const translationCache = new Map<string, string>();
+// Vietnamese labels live here in v1 so the large auto-generated vi chunk
+// does not need a 95k file edit through the API for six short strings.
+// Other languages fall back to the English keys in en-main.ts.
+const VI_LABELS: Record<string, string> = {
+  postSeeTranslation: 'Xem bản dịch',
+  postHideTranslation: 'Ẩn bản dịch',
+  postTranslating: 'Đang dịch...',
+  postTranslatedInto: 'Bản dịch sang {lang}',
+  postTranslationAutoNote: 'Bản dịch tự động, có thể chưa hoàn hảo.',
+  postTranslationFailed: 'Chưa dịch được lúc này. Vui lòng thử lại sau.',
+};
 const VIETNAMESE_CHARS = /[àáảãạăắằẳẵặâấầẩẫậèéẻẽẹêếềểễệìíỉĩịòóỏõọôốồổỗộơớờởỡợùúủũụưứừửữựỳýỷỹỵđ]/i;
 const MAX_CHUNK = 450;
 
@@ -94,6 +105,15 @@ export function PostTranslation({ content }: { content: string }) {
   const [loading, setLoading] = useState(false);
   const [failed, setFailed] = useState(false);
   const target = mapTarget(language);
+  const label = (key: string, params?: Record<string, string | number>) => {
+    if (language === 'vi') {
+      const template = VI_LABELS[key] ?? key;
+      return params
+        ? template.replace(/\{(\w+)\}/g, (_, k) => String(params[k] ?? `{${k}}`))
+        : template;
+    }
+    return t(key, params);
+  };
 
   useEffect(() => {
     setShow(false);
@@ -150,18 +170,18 @@ export function PostTranslation({ content }: { content: string }) {
         disabled={loading}
         className="min-h-[32px] text-sm font-semibold text-muted-foreground hover:underline disabled:opacity-60"
       >
-        {loading ? t('postTranslating') : show ? t('postHideTranslation') : t('postSeeTranslation')}
+        {loading ? label('postTranslating') : show ? label('postHideTranslation') : label('postSeeTranslation')}
       </button>
       {failed && !show && (
-        <p className="text-sm text-muted-foreground">{t('postTranslationFailed')}</p>
+        <p className="text-sm text-muted-foreground">{label('postTranslationFailed')}</p>
       )}
       {show && translated && (
         <div className="mt-1 rounded-lg border border-border bg-muted/50 px-3 py-2">
           <div className="text-xs font-semibold text-muted-foreground">
-            {t('postTranslatedInto', { lang: nativeName })}
+            {label('postTranslatedInto', { lang: nativeName })}
           </div>
           <p className="mt-1 whitespace-pre-wrap break-words text-[15px] leading-relaxed">{translated}</p>
-          <div className="mt-1 text-xs text-muted-foreground">{t('postTranslationAutoNote')}</div>
+          <div className="mt-1 text-xs text-muted-foreground">{label('postTranslationAutoNote')}</div>
         </div>
       )}
     </div>
