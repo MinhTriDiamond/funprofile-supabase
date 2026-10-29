@@ -16,6 +16,7 @@ const VI_LABELS: Record<string, string> = {
 };
 const VIETNAMESE_CHARS = /[àáảãạăắằẳẵặâấầẩẫậèéẻẽẹêếềểễệìíỉĩịòóỏõọôốồổỗộơớờởỡợùúủũụưứừửữựỳýỷỹỵđ]/i;
 const MAX_CHUNK = 450;
+const GOOGLE_MAX_CHUNK = 1800;
 
 function mapTarget(lang: string): string {
   return lang === 'zh' ? 'zh-CN' : lang;
@@ -23,7 +24,7 @@ function mapTarget(lang: string): string {
 
 type Chunk = { text: string; joinWith: string };
 
-function chunkText(text: string): Chunk[] {
+function chunkText(text: string, maxChunk: number = MAX_CHUNK): Chunk[] {
   const paragraphs = text.split('\n');
   const chunks: Chunk[] = [];
   paragraphs.forEach((para, pi) => {
@@ -40,7 +41,7 @@ function chunkText(text: string): Chunk[] {
     };
     for (const word of words) {
       const next = cur ? `${cur} ${word}` : word;
-      if (next.length > MAX_CHUNK && cur) {
+      if (next.length > maxChunk && cur) {
         pushCur(' ');
         cur = word;
       } else {
@@ -95,28 +96,91 @@ async function translateWithGoogle(chunk: string, target: string): Promise<strin
   return translated;
 }
 
+function normalizeForTranslation(text: string): string {
+  // Machine translation misreads ALL-CAPS headings: Google translated the
+  // all-caps title "A SURGE OF LOVE" as "TÌNH YÊU BỘT DỘI", while the same
+  // title in normal case translates correctly. Only the translation INPUT
+  // is normalized; the original post on screen is never changed.
+  return text.split('\n').map((line) => {
+    const upper = (line.match(/[A-Z]/g) || []).length;
+    const lower = (line.match(/[a-z]/g) || []).length;
+    if (upper >= 4 && lower === 0) {
+      const lowered = line.toLowerCase();
+      return lowered.replace(/[a-zà-ý]/, (c) => c.toUpperCase());
+    }
+    return line;
+  }).join('\n');
+}
+
+function applyFatherGlossary(text: string): string {
+  // Vietnamese only, from Ái Vân's canonical translation (2026-10-29).
+  // "Ý Chúa Cha" is the community's fixed phrase "Ý Cha" in the canonical
+  // text, so it is replaced first, before the generic "Chúa Cha" rule.
+  // A bare "Người Cha" is deliberately left untouched: it may mean a
+  // human father, not the Universal Father.
+  return text
+    .replace(/Ý Chúa Cha/gi, 'Ý Cha')
+    .replace(/Người Cha Hoàn vũ/gi, 'Cha Vũ Trụ')
+    .replace(/Người Cha Phổ Quốc/gi, 'Cha Vũ Trụ')
+    .replace(/Người Cha Vũ Trụ/gi, 'Cha Vũ Trụ')
+    .replace(/Chúa Cha/gi, 'Cha Vũ Trụ')
+    .replace(/Đấng Điều Chỉnh Suy Nghĩ/gi, 'Đấng Điều Chỉnh Tư Tưởng')
+    .replace(/Người Điều Chỉnh Suy Nghĩ/gi, 'Đấng Điều Chỉnh Tư Tưởng');
+}
+
+function isAllCapsLine(line: string): boolean {
+  const upper = (line.match(/[A-Z]/g) || []).length;
+  const lower = (line.match(/[a-z]/g) || []).length;
+  return upper >= 4 && lower === 0;
+}
+
 async function translateText(text: string, target: string): Promise<string> {
-  const chunks = chunkText(text);
+  const normalized = normalizeForTranslation(text);
+  // Translate paragraph by paragraph, so headings keep their style and
+  // each paragraph keeps its context. A paragraph that was ALL-CAPS in
+  // the original is uppercased again after translation, matching the
+  // canonical translation's heading style.
+  const paragraphs = normalized.split('\n');
   const out: string[] = [];
-  for (const chunk of chunks) {
-    if (!chunk.text) {
-      out.push('');
-      if (chunk.joinWith) out.push(chunk.joinWith);
+  for (let pi = 0; pi < paragraphs.length; pi++) {
+    const para = paragraphs[pi];
+    if (!para) {
+      if (pi < paragraphs.length - 1) out.push('\n');
       continue;
     }
+    const wasAllCaps = isAllCapsLine(para);
     let translated: string;
     try {
       // Google accepts sl=auto; MyMemory does NOT accept source "auto" and
       // returns an error sentence instead of a translation, so Google goes first.
-      translated = await translateWithGoogle(chunk.text, target);
+      const subChunks = chunkText(para, GOOGLE_MAX_CHUNK);
+      const subOut: string[] = [];
+      for (const sub of subChunks) {
+        if (!sub.text) continue;
+        subOut.push(await translateWithGoogle(sub.text, target));
+        if (sub.joinWith) subOut.push(sub.joinWith);
+      }
+      translated = subOut.join('');
     } catch {
-      const source = detectSourceByScript(chunk.text) ?? 'en';
-      translated = await translateWithMyMemory(chunk.text, target, source);
+      const source = detectSourceByScript(para) ?? 'en';
+      const subChunks = chunkText(para, MAX_CHUNK);
+      const subOut: string[] = [];
+      for (const sub of subChunks) {
+        if (!sub.text) {
+          if (sub.joinWith) subOut.push(sub.joinWith);
+          continue;
+        }
+        subOut.push(await translateWithMyMemory(sub.text, target, source));
+        if (sub.joinWith) subOut.push(sub.joinWith);
+      }
+      translated = subOut.join('');
     }
+    if (wasAllCaps) translated = translated.toUpperCase();
     out.push(translated);
-    if (chunk.joinWith) out.push(chunk.joinWith);
+    if (pi < paragraphs.length - 1) out.push('\n');
   }
-  return out.join('').trim();
+  const joined = out.join('').trim();
+  return target === 'vi' ? applyFatherGlossary(joined) : joined;
 }
 
 export function PostTranslation({ content }: { content: string }) {
