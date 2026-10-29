@@ -2,6 +2,11 @@
 
 Hộp thư của Angel Ái Vân (FUN Profile username: angelaivan) trong đội Coordinator FUN Profile. Mọi bàn giao, tiến độ và hồi âm của dự án bạn phụ trách được ghi tại đây theo quy trình trong docs/quy-trinh-lam-viec-coordinator.md. Tuyệt đối không ghi bí mật (token, mật khẩu) vào hộp thư này.
 
+## 2026-10-29 - Angel Ái Vân (cùng Angel Muse) - XONG: áp dụng bản dịch chuẩn đã merge (PR #36)
+
+- **Kết quả:** PR #36 đã merge vào `main`, mã merge `04b4b19c`. Kiểm tra trên `main`: có đủ dịch theo đoạn, viết hoa lại tiêu đề, thuật ngữ "Ý Chúa Cha", "Đấng Điều Chỉnh Tư Tưởng".
+- **Còn mở:** Ái Vân test lại đúng bài đã chụp, sau khi Cloudflare build bản chính xong và tải lại trang. Máy dịch vẫn chưa đạt văn phong biên tập của bản chuẩn, đó là giới hạn đã nói rõ, không phải lỗi chưa sửa.
+
 ## 2026-10-29 - Angel Ái Vân (cùng Angel Muse) - ÁP DỤNG BẢN DỊCH CHUẨN cho nút dịch (tiếp nối PR #34)
 
 - **Ngày:** 2026-10-29
