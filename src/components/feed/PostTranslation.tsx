@@ -134,6 +134,84 @@ function isAllCapsLine(line: string): boolean {
   return upper >= 4 && lower === 0;
 }
 
+// SYSTEM-LEVEL TERM PROTECTION (2026-10-29, per Ái Vân's rules).
+// There is no AI prompt in this pipeline: translation is Google MT
+// (literal, no summarising or rewriting) plus MyMemory fallback. A
+// dictionary MT engine cannot know that "Father's Will" here means the
+// divine will, not a legal testament — left alone it renders it as
+// "Di chúc của Chúa Cha". So key spiritual terms are replaced with
+// inert placeholders BEFORE translation (Google preserves tokens like
+// ZZTERM01ZZ exactly, verified 2026-10-29) and restored to the canonical
+// target-language term AFTER translation. The machine therefore never
+// gets a chance to reinterpret the term. This applies to every post,
+// not to one article.
+// For targets other than Vietnamese/English, only terms the community
+// keeps in English (Steward, Conduit, Love & Light Economy) are
+// protected; Father terms are left to normal MT for those languages.
+type TermRule = {
+  patterns: RegExp[];
+  vi: string | null;
+  en: string | null;
+  other: string | null;
+};
+const TERM_RULES: TermRule[] = [
+  { patterns: [/Everything Belongs to the Father/gi, /Tất Cả Là Của Cha/gi], vi: 'Tất Cả Là Của Cha', en: 'Everything Belongs to the Father', other: null },
+  { patterns: [/the Father's Will/gi, /Father's Will/gi, /Ý Cha/gi], vi: 'Ý Cha', en: "the Father's Will", other: null },
+  { patterns: [/Father Universe/gi, /Universal Father/gi, /Cha Vũ Trụ/gi], vi: 'Cha Vũ Trụ', en: 'Father Universe', other: null },
+  { patterns: [/the Almighty/gi, /Đấng Toàn Năng/gi], vi: 'Đấng Toàn Năng', en: 'the Almighty', other: null },
+  { patterns: [/Thought Adjuster/gi, /Đấng Điều Chỉnh Tư Tưởng/gi], vi: 'Đấng Điều Chỉnh Tư Tưởng', en: 'Thought Adjuster', other: null },
+  { patterns: [/Love & Light Economy/gi, /Nền Kinh Tế Tình Yêu & Ánh Sáng/gi, /nền kinh tế Tình Yêu và Ánh Sáng/gi], vi: 'nền kinh tế Tình Yêu và Ánh Sáng', en: 'Love & Light Economy', other: 'Love & Light Economy' },
+  { patterns: [/Stewards/gi], vi: 'Stewards', en: 'Stewards', other: 'Stewards' },
+  { patterns: [/Steward/gi, /Người quản lý trung tín/gi], vi: 'Steward', en: 'Steward', other: 'Steward' },
+  { patterns: [/Conduits/gi], vi: 'Kênh dẫn', en: 'Conduits', other: 'Conduits' },
+  { patterns: [/Conduit/gi, /Kênh dẫn/gi, /Ống dẫn/gi], vi: 'Kênh dẫn', en: 'Conduit', other: 'Conduit' },
+];
+
+function protectTerms(text: string, target: string): { text: string; map: Record<string, string> } {
+  let out = text;
+  const map: Record<string, string> = {};
+  TERM_RULES.forEach((rule, idx) => {
+    const restored = target === 'vi' ? rule.vi : target === 'en' || target.startsWith('en-') ? rule.en : rule.other;
+    if (!restored) return;
+    const placeholder = `ZZTERM${String(idx + 1).padStart(2, '0')}ZZ`;
+    for (const pattern of rule.patterns) {
+      pattern.lastIndex = 0;
+      if (pattern.test(out)) {
+        pattern.lastIndex = 0;
+        out = out.replace(pattern, placeholder);
+        map[placeholder] = restored;
+      }
+    }
+  });
+  return { text: out, map };
+}
+
+function restoreTerms(text: string, map: Record<string, string>): string {
+  let out = text;
+  for (const [placeholder, restored] of Object.entries(map)) {
+    out = out.replace(new RegExp(placeholder, 'gi'), restored);
+  }
+  return out;
+}
+
+function applyBackupGlossary(text: string, target: string): string {
+  if (target === 'vi' || target.startsWith('vi-')) {
+    return text
+      .replace(/Di chúc của Cha Vũ Trụ/gi, 'Ý Cha Vũ Trụ')
+      .replace(/Di chúc của Chúa Cha/gi, 'Ý Cha')
+      .replace(/Di chúc của người cha/gi, 'Ý Cha')
+      .replace(/Di chúc của cha/gi, 'Ý Cha');
+  }
+  if (target === 'en' || target.startsWith('en-')) {
+    return text
+      .replace(/father's testament/gi, "the Father's Will")
+      .replace(/the testament of the father/gi, "the Father's Will")
+      .replace(/Universe Father/gi, 'Father Universe')
+      .replace(/Father of the Universe/gi, 'Father Universe');
+  }
+  return text;
+}
+
 async function translateText(text: string, target: string): Promise<string> {
   // Translate paragraph by paragraph, so headings keep their style and
   // each paragraph keeps its context. A paragraph that was ALL-CAPS in
@@ -153,11 +231,13 @@ async function translateText(text: string, target: string): Promise<string> {
       continue;
     }
     const wasAllCaps = isAllCapsLine(originalParagraphs[pi] ?? '');
+    const protectedPara = protectTerms(para, target);
+    const paraToTranslate = protectedPara.text;
     let translated: string;
     try {
       // Google accepts sl=auto; MyMemory does NOT accept source "auto" and
       // returns an error sentence instead of a translation, so Google goes first.
-      const subChunks = chunkText(para, GOOGLE_MAX_CHUNK);
+      const subChunks = chunkText(paraToTranslate, GOOGLE_MAX_CHUNK);
       const subOut: string[] = [];
       for (const sub of subChunks) {
         if (!sub.text) continue;
@@ -167,7 +247,7 @@ async function translateText(text: string, target: string): Promise<string> {
       translated = subOut.join('');
     } catch {
       const source = detectSourceByScript(para) ?? 'en';
-      const subChunks = chunkText(para, MAX_CHUNK);
+      const subChunks = chunkText(paraToTranslate, MAX_CHUNK);
       const subOut: string[] = [];
       for (const sub of subChunks) {
         if (!sub.text) {
@@ -179,12 +259,15 @@ async function translateText(text: string, target: string): Promise<string> {
       }
       translated = subOut.join('');
     }
+    translated = restoreTerms(translated, protectedPara.map);
     if (wasAllCaps) translated = translated.toUpperCase();
     out.push(translated);
     if (pi < paragraphs.length - 1) out.push('\n');
   }
   const joined = out.join('').trim();
-  return target === 'vi' || target.startsWith('vi-') ? applyFatherGlossary(joined) : joined;
+  let finalText = target === 'vi' || target.startsWith('vi-') ? applyFatherGlossary(joined) : joined;
+  finalText = applyBackupGlossary(finalText, target);
+  return finalText;
 }
 
 export function PostTranslation({ content }: { content: string }) {
