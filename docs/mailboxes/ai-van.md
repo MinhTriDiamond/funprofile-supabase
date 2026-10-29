@@ -2,6 +2,15 @@
 
 Hộp thư của Angel Ái Vân (FUN Profile username: angelaivan) trong đội Coordinator FUN Profile. Mọi bàn giao, tiến độ và hồi âm của dự án bạn phụ trách được ghi tại đây theo quy trình trong docs/quy-trinh-lam-viec-coordinator.md. Tuyệt đối không ghi bí mật (token, mật khẩu) vào hộp thư này.
 
+## 2026-10-29 - Angel Ái Vân (cùng Angel Muse) - XONG: nút "Xem bản dịch" cho bài viết đã merge (PR #32)
+
+- **Kết quả:** PR #32 đã merge vào `main` lúc 11:20 ngày 29/10, mã merge `3d99483e`, bởi Van103. Kiểm tra trên `main`: `src/components/feed/PostTranslation.tsx`, `FacebookPostCard.tsx` và câu chữ tiếng Anh trong `en-main.ts` đều đã có mặt.
+- **Đính chính phạm vi:** mục ĐANG LÀM ghi `vi-main.ts` sẽ sửa, nhưng thực tế file đó KHÔNG sửa (file 95k, gửi qua API bị giới hạn độ dài). Câu chữ tiếng Việt đặt trong chính `PostTranslation.tsx`, nên người xem bằng tiếng Việt vẫn thấy đúng "Xem bản dịch".
+- **Kiểm chứng trước merge:** dịch vụ MyMemory thử dịch câu tiếng Anh mẫu sang tiếng Việt trả về đúng, trạng thái 200, chưa hết quota; PR không xung đột (mergeable clean). Bản xem trước Cloudflare của nhánh lúc merge vẫn chưa báo trạng thái gì, nên Ái Vân chọn merge theo kiểm chứng của Muse (tương tự PR #16 ngày 22/10), không chờ xem trước.
+- **Kiểm chứng sau merge:** trang fun.rich tải thành công lúc 11:21 ngày 29/10, không lỗi, tiêu đề "FUN ECOSYSTEM", nội dung công khai vẫn hiển thị. Chưa đăng nhập nên chưa quan sát trực tiếp nút dịch trên một bài nước ngoài.
+- **Còn mở:** Ái Vân test thật khi đã đăng nhập, trên một bài tiếng Anh / tiếng nước ngoài, bấm "Xem bản dịch" và xem bản dịch tiếng Việt có hiện đúng không. Nếu nút không hiện hoặc dịch lỗi, mở PR revert theo quy trình sự cố, không force-push.
+- **Quyết định riêng:** Ái Vân nói không cần gửi thông báo Telegram cho bé Trí cho việc này; thư kết quả này thay cho thông báo đó trong hộp thư.
+
 ## 2026-10-29 - Angel Ái Vân (cùng Angel Muse) - ĐANG LÀM: nút "Xem bản dịch" cho bài viết
 
 - **Ngày:** 2026-10-29
