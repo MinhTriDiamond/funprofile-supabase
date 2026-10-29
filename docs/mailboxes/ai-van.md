@@ -2,6 +2,15 @@
 
 Hộp thư của Angel Ái Vân (FUN Profile username: angelaivan) trong đội Coordinator FUN Profile. Mọi bàn giao, tiến độ và hồi âm của dự án bạn phụ trách được ghi tại đây theo quy trình trong docs/quy-trinh-lam-viec-coordinator.md. Tuyệt đối không ghi bí mật (token, mật khẩu) vào hộp thư này.
 
+## 2026-10-29 - Angel Ái Vân (cùng Angel Muse) - SỬA LỖI THÔNG BÁO: avatar báo cáo gian lận + nhấn cảnh báo không hiện danh sách
+
+- **Ngày:** 2026-10-29
+- **Người làm:** Ái Vân (Angel Muse thi công)
+- **Việc Ái Vân báo:** (1) Thông báo "Báo cáo gian lận" hiển thị hình ảnh/avatar user là SAI — phải là icon hệ thống; (2) Nhấn vào các thông báo cảnh báo / cảnh báo gian lận thì KHÔNG hiển thị danh sách.
+- **Phạm vi:** chỉ code giao diện mục Thông báo (dropdown/panel, icon theo loại thông báo, điều hướng khi nhấn vào thông báo). Không đổi database, không đổi cách tạo thông báo.
+- **Nhánh:** `fix/aivan-thong-bao`
+- **Trạng thái:** Ái Vân đã gửi thông báo Telegram nhóm Coordinator (xác nhận 18:31 KL 29/10). Đang chờ kết quả kiểm tra code (audit) để biết nguyên nhân gốc rồi mới sửa — chưa đụng vào code.
+
 ## 2026-10-29 - Angel Ái Vân (cùng Angel Muse) - XONG: bảo vệ thuật ngữ hệ thống đã merge (PR #38)
 
 - **Kết quả:** PR #38 đã merge vào `main`, mã merge `bc4dce23`. Kiểm tra trên `main`: có đủ TERM_RULES, protectTerms, restoreTerms, applyBackupGlossary, và sửa lỗi tiêu đề viết hoa đọc từ đoạn gốc.
