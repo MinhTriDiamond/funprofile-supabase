@@ -35,6 +35,7 @@ import BackfillTab from "@/components/admin/BackfillTab";
 import AdminSecretsPage from "@/pages/admin/AdminSecretsPage";
 import TransactionsTrustPage from "@/pages/admin/TransactionsTrustPage";
 import TransactionValidationPage from "@/pages/admin/TransactionValidationPage";
+import WalletReconciliationTab from "@/components/admin/WalletReconciliationTab";
 import { useAdminUsers, invalidateAdminData } from "@/hooks/useAdminUsers";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 
@@ -223,6 +224,8 @@ export const AdminSection = () => {
       return <AdminSecretsPage />;
     case "backfill":
       return <BackfillTab />;
+    case "reconciliation":
+      return <WalletReconciliationTab />;
     case "system":
       return <SystemTab adminId={userId} />;
     default:
