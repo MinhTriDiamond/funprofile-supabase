@@ -2,6 +2,17 @@
 
 Hộp thư của Angel Ái Vân (FUN Profile username: angelaivan) trong đội Coordinator FUN Profile. Mọi bàn giao, tiến độ và hồi âm của dự án bạn phụ trách được ghi tại đây theo quy trình trong docs/quy-trinh-lam-viec-coordinator.md. Tuyệt đối không ghi bí mật (token, mật khẩu) vào hộp thư này.
 
+## 2026-10-29 - Angel Ái Vân (cùng Angel Muse) - ÁP DỤNG BẢN DỊCH CHUẨN cho nút dịch (tiếp nối PR #34)
+
+- **Ngày:** 2026-10-29
+- **Người làm:** Ái Vân (Angel Muse thi công)
+- **Ái Vân gửi bản dịch chuẩn** của bài "FINANCIAL FLOW WITHIN THE FATHER'S WILL" và nhờ kiểm tra, áp dụng để mọi bài đều dịch chuẩn hơn. Bản chuẩn đã lưu tại `~/workspace/your_files/ban-dich-chuan-dong-tai-chinh-trong-y-cha.md`.
+- **Kiểm tra:** bản dịch máy trước đó sai ở 2 chỗ rõ nhất — tiêu đề viết hoa toàn bộ bị máy đọc sai thành "TÌNH YÊU BỘT DỘI", "DI CHUYỂN"; và tên Cha bị dịch lung tung thành "Chúa Cha", "Người Cha Hoàn vũ", "Người Cha Phổ Quốc".
+- **Đã áp dụng vào code dịch (chỉ tiếng Việt):** dịch theo từng đoạn thay vì cắt 450 ký tự; tiêu đề viết hoa được dịch bằng chữ thường rồi viết hoa lại kết quả; thuật ngữ theo bản chuẩn — "Ý Chúa Cha" → "Ý Cha", "Chúa Cha" còn lại → "Cha Vũ Trụ", "Người Cha Hoàn vũ / Phổ Quốc / Vũ Trụ" → "Cha Vũ Trụ", "Đấng Điều Chỉnh Suy Nghĩ" → "Đấng Điều Chỉnh Tư Tưởng". "Người Cha" đứng một mình giữ nguyên vì có thể chỉ người cha ngoài đời.
+- **Nói rõ giới hạn:** máy dịch Google không học được từ một ví dụ như người biên tập, nên văn phong trau chuốt của bản chuẩn (ví dụ "sự tuôn chảy", "nguồn mạch sức sống") và việc giữ nguyên từ "Steward" chưa làm được bằng code giao diện hiện tại; muốn đạt mức đó cần dịch bằng AI có hướng dẫn thuật ngữ, chưa có đường triển khai từ phía Muse.
+- **Nhánh:** `fix/aivan-dich-bai-viet-dich-chuan`
+- **Trạng thái:** đang làm trên nhánh, chưa merge. Tiếp tục quyết định riêng của Ái Vân cho việc dịch bài viết: không gửi thông báo Telegram cho bé Trí.
+
 ## 2026-10-29 - Angel Ái Vân (cùng Angel Muse) - XONG: sửa lỗi bản dịch MyMemory đã merge (PR #34)
 
 - **Kết quả:** PR #34 đã merge vào `main`, mã merge `0d04d1fc`. Kiểm tra trên `main`: không còn `auto|` trong `PostTranslation.tsx`, Google dịch trước, MyMemory chỉ dự phòng với nguồn rõ ràng, dòng báo lỗi API được lọc.
