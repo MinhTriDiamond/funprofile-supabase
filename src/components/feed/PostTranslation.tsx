@@ -135,12 +135,16 @@ function isAllCapsLine(line: string): boolean {
 }
 
 async function translateText(text: string, target: string): Promise<string> {
-  const normalized = normalizeForTranslation(text);
   // Translate paragraph by paragraph, so headings keep their style and
   // each paragraph keeps its context. A paragraph that was ALL-CAPS in
   // the original is uppercased again after translation, matching the
   // canonical translation's heading style.
-  const paragraphs = normalized.split('\n');
+  // BUG FIX (2026-10-29): wasAllCaps must be read from the ORIGINAL
+  // paragraph, not the normalized one — normalization already converts
+  // ALL-CAPS to sentence case, so checking after normalization was
+  // always false and headings never became uppercase again.
+  const originalParagraphs = text.split('\n');
+  const paragraphs = normalizeForTranslation(text).split('\n');
   const out: string[] = [];
   for (let pi = 0; pi < paragraphs.length; pi++) {
     const para = paragraphs[pi];
@@ -148,7 +152,7 @@ async function translateText(text: string, target: string): Promise<string> {
       if (pi < paragraphs.length - 1) out.push('\n');
       continue;
     }
-    const wasAllCaps = isAllCapsLine(para);
+    const wasAllCaps = isAllCapsLine(originalParagraphs[pi] ?? '');
     let translated: string;
     try {
       // Google accepts sl=auto; MyMemory does NOT accept source "auto" and
@@ -180,7 +184,7 @@ async function translateText(text: string, target: string): Promise<string> {
     if (pi < paragraphs.length - 1) out.push('\n');
   }
   const joined = out.join('').trim();
-  return target === 'vi' ? applyFatherGlossary(joined) : joined;
+  return target === 'vi' || target.startsWith('vi-') ? applyFatherGlossary(joined) : joined;
 }
 
 export function PostTranslation({ content }: { content: string }) {
