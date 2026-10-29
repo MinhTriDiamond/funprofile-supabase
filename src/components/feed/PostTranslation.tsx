@@ -16,6 +16,7 @@ const VI_LABELS: Record<string, string> = {
 };
 const VIETNAMESE_CHARS = /[àáảãạăắằẳẵặâấầẩẫậèéẻẽẹêếềểễệìíỉĩịòóỏõọôốồổỗộơớờởỡợùúủũụưứừửữựỳýỷỹỵđ]/i;
 const MAX_CHUNK = 450;
+const GOOGLE_MAX_CHUNK = 1800;
 
 function mapTarget(lang: string): string {
   return lang === 'zh' ? 'zh-CN' : lang;
@@ -23,7 +24,7 @@ function mapTarget(lang: string): string {
 
 type Chunk = { text: string; joinWith: string };
 
-function chunkText(text: string): Chunk[] {
+function chunkText(text: string, maxChunk: number = MAX_CHUNK): Chunk[] {
   const paragraphs = text.split('\n');
   const chunks: Chunk[] = [];
   paragraphs.forEach((para, pi) => {
@@ -40,7 +41,7 @@ function chunkText(text: string): Chunk[] {
     };
     for (const word of words) {
       const next = cur ? `${cur} ${word}` : word;
-      if (next.length > MAX_CHUNK && cur) {
+      if (next.length > maxChunk && cur) {
         pushCur(' ');
         cur = word;
       } else {
@@ -95,8 +96,40 @@ async function translateWithGoogle(chunk: string, target: string): Promise<strin
   return translated;
 }
 
+function normalizeForTranslation(text: string): string {
+  // Machine translation misreads ALL-CAPS headings: Google translated the
+  // all-caps title "A SURGE OF LOVE" as "TÌNH YÊU BỘT DỘI", while the same
+  // title in normal case translates correctly. Only the translation INPUT
+  // is normalized; the original post on screen is never changed.
+  return text.split('\n').map((line) => {
+    const upper = (line.match(/[A-Z]/g) || []).length;
+    const lower = (line.match(/[a-z]/g) || []).length;
+    if (upper >= 4 && lower === 0) {
+      const lowered = line.toLowerCase();
+      return lowered.replace(/[a-zà-ý]/, (c) => c.toUpperCase());
+    }
+    return line;
+  }).join('\n');
+}
+
+function applyFatherGlossary(text: string): string {
+  // Vietnamese only, and only for phrases that unambiguously mean the
+  // Universal Father in this community. Google renders "Father" as
+  // "Chúa Cha" or "Người Cha Hoàn vũ / Phổ Quốc"; the community name is
+  // "Cha Vũ Trụ". A bare "Người Cha" (which could mean a human father)
+  // is deliberately left untouched.
+  return text
+    .replace(/Người Cha Hoàn vũ/gi, 'Cha Vũ Trụ')
+    .replace(/Người Cha Phổ Quốc/gi, 'Cha Vũ Trụ')
+    .replace(/Người Cha Vũ Trụ/gi, 'Cha Vũ Trụ')
+    .replace(/Chúa Cha/gi, 'Cha Vũ Trụ');
+}
+
 async function translateText(text: string, target: string): Promise<string> {
-  const chunks = chunkText(text);
+  const normalized = normalizeForTranslation(text);
+  // Larger, paragraph-aware chunks for Google (1800 chars) so a heading and
+  // its paragraph keep more context than the old 450-char word cuts.
+  const chunks = chunkText(normalized, GOOGLE_MAX_CHUNK);
   const out: string[] = [];
   for (const chunk of chunks) {
     if (!chunk.text) {
@@ -111,12 +144,24 @@ async function translateText(text: string, target: string): Promise<string> {
       translated = await translateWithGoogle(chunk.text, target);
     } catch {
       const source = detectSourceByScript(chunk.text) ?? 'en';
-      translated = await translateWithMyMemory(chunk.text, target, source);
+      const subChunks = chunkText(chunk.text, MAX_CHUNK);
+      const subOut: string[] = [];
+      for (const sub of subChunks) {
+        if (!sub.text) {
+          subOut.push('');
+          if (sub.joinWith) subOut.push(sub.joinWith);
+          continue;
+        }
+        subOut.push(await translateWithMyMemory(sub.text, target, source));
+        if (sub.joinWith) subOut.push(sub.joinWith);
+      }
+      translated = subOut.join('');
     }
     out.push(translated);
     if (chunk.joinWith) out.push(chunk.joinWith);
   }
-  return out.join('').trim();
+  const joined = out.join('').trim();
+  return target === 'vi' ? applyFatherGlossary(joined) : joined;
 }
 
 export function PostTranslation({ content }: { content: string }) {
