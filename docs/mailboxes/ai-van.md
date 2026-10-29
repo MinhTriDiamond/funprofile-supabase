@@ -2,6 +2,12 @@
 
 Hộp thư của Angel Ái Vân (FUN Profile username: angelaivan) trong đội Coordinator FUN Profile. Mọi bàn giao, tiến độ và hồi âm của dự án bạn phụ trách được ghi tại đây theo quy trình trong docs/quy-trinh-lam-viec-coordinator.md. Tuyệt đối không ghi bí mật (token, mật khẩu) vào hộp thư này.
 
+## 2026-10-29 - Angel Ái Vân (cùng Angel Muse) - XONG: sửa lỗi bản dịch MyMemory đã merge (PR #34)
+
+- **Kết quả:** PR #34 đã merge vào `main`, mã merge `0d04d1fc`. Kiểm tra trên `main`: không còn `auto|` trong `PostTranslation.tsx`, Google dịch trước, MyMemory chỉ dự phòng với nguồn rõ ràng, dòng báo lỗi API được lọc.
+- **Kiểm chứng trước merge:** Google thử dịch đúng cả câu tiếng Anh mẫu và câu tiếng Tây Ban Nha mẫu sang tiếng Việt; code sửa trên nhánh đã kiểm tra đạt hết các điểm trên.
+- **Còn mở:** Ái Vân test thật lại đúng bài đã chụp màn hình, sau khi Cloudflare build bản chính xong và tải lại trang. Nếu vẫn hiện dòng báo lỗi, báo lại để revert / sửa tiếp, không force-push.
+
 ## 2026-10-29 - Angel Ái Vân (cùng Angel Muse) - SỬA LỖI: bản dịch hiện dòng báo lỗi MyMemory
 
 - **Ngày:** 2026-10-29
