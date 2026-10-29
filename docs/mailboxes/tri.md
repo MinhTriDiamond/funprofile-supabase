@@ -55,3 +55,9 @@ Nơi ghi các vòng việc do bé Trí phụ trách trên FUN Profile, theo quy 
 - Rollback (nếu cần): DROP TRIGGER trg_profiles_freeze_privilege_columns ON public.profiles; DROP FUNCTION public.profiles_freeze_privilege_columns();
 - Theo dõi 24 giờ sau chạy: để ý luồng nào của app bỗng sửa không được các cột trong danh sách đóng băng (vì đóng băng lặng lẽ, không báo lỗi) - nếu có luồng hợp lệ thì báo để xử lý (chuyển luồng qua service_role hoặc nới riêng cột đó).
 - ĐÓNG VÒNG 2026-10-26.
+
+## #6 - 2026-10-30 - Giảm tải I/O đĩa theo email cảnh báo Supabase (dọn log, index F10, giãn nhịp 15 phút)
+- Người làm: bé Trí cùng Angel Muse. Không có nhánh code (thay đổi trực tiếp trên production DB, không qua deploy).
+- Lý do: Supabase báo project đã tiêu hao ngân sách I/O đĩa; kiểm chứng cho thấy nhóm job làm mới 5 phút (đặc biệt cache thống kê, snapshot giao dịch) và bảng log job_run_details 482MB chưa dọn là nguồn đốt I/O chính.
+- Phạm vi: (1) chạy hàm cleanup_old_system_data có sẵn, xóa log chạy job và chunk ghi hình cũ hơn 7 ngày, có ghi audit; (2) thêm 10 index còn thiếu theo mục F10 của audit (notifications actor_id và post_id; comments parent_comment_id; donations superseded_by, conversation_id, message_id, light_action_id; live_sessions post_id, live_post_id, replay_post_id); (3) giãn nhịp 6 job làm mới từ 5 phút xuống 15 phút (job 6, 84, 86, 87, 88, 89). Không đụng job scanner, job xả hàng đợi mỗi phút, job quét watchlist mỗi giờ, không đổi RLS, không sửa code app.
+- Trạng thái: đang thực hiện (thông báo Telegram Bước 1 đã gửi rạng sáng ngày 30/10/2026).
