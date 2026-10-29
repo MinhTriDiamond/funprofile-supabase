@@ -4,6 +4,10 @@
 
 ---
 
+## 2026-10-29 — Angel Ái Vân (cùng Angel Muse) — HOÀN THÀNH (merge)
+- **Nút "Xem bản dịch" cho bài viết - ĐÃ MERGE (PR #32, mã merge 3d99483e):** bài tiếng Anh / tiếng nước ngoài hiện nút dịch, bấm thì hiện bản dịch sang ngôn ngữ giao diện của người xem, bấm lại thì ẩn; bài đã cùng ngôn ngữ thì không hiện nút. Dịch khi bấm nút qua MyMemory (Google công khai dự phòng), không dùng key bí mật. Trang fun.rich tải thành công sau merge, không lỗi; test thật trên bài nước ngoài khi đã đăng nhập vẫn còn mở cho Ái Vân.
+
+
 ## 2026-10-26 — Lê Minh Trí (cùng Angel Muse) — HOÀN THÀNH
 - **Đóng băng cột đặc quyền của profiles (audit F1) - ĐÃ XONG:** trigger BEFORE UPDATE trg_profiles_freeze_privilege_columns đã gắn trên bảng profiles, theo đúng mẫu posts_freeze_system_columns: tài khoản thường (anon, authenticated) sửa tới 26 cột đặc quyền thì hệ tự trả về giá trị cũ, cột thường vẫn sửa bình thường; chỉ service_role và tài khoản admin đổi được. Kiểm thử trên bảng tạm với cùng hàm: tài khoản thường không đổi được is_banned và pending_reward nhưng đổi được bio; service_role và admin đổi được bình thường. Không sửa code app, không đổi RLS, không đụng trigger bảo vệ ví. Chi tiết ở hộp thư tri.md #5.
 
