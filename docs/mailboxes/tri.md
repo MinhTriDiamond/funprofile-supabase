@@ -66,3 +66,10 @@ Nơi ghi các vòng việc do bé Trí phụ trách trên FUN Profile, theo quy 
 - Rollback (nếu cần): đổi lịch 6 job về */5 bằng cron.alter_job; index mới xóa được bằng DROP INDEX; dữ liệu đã xóa không khôi phục được (chỉ log và chunk cũ hơn 7 ngày).
 - Theo dõi: để ý số liệu Honor Board và cache sau khi giãn nhịp (dự kiến chậm nhất 15 phút), và xem email Supabase tiếp theo có còn cảnh báo I/O không.
 - ĐÓNG VÒNG 2026-10-30.
+
+## #7 - 2026-10-30 - Chuẩn tin Bước 1 và Bước 7 trong quy trình Coordinator
+- Người làm: bé Trí cùng Angel Muse. Tài liệu, không đụng production.
+- Lý do: sau vòng giảm tải I/O, bé Trí quyết chuẩn hóa tin nhắn đội: tin Bước 1 phải nói bối cảnh, hiện trạng và tại sao cần làm; tin Bước 7 phải báo rõ đã làm gì, tác động, ý nghĩa, hiệu quả đo được và giúp gì cho platform.
+- Phạm vi: cập nhật cùng nội dung vào quy trình trong repo (docs/quy-trinh-lam-viec-coordinator.md) và bản chính trong your_files.
+- Trạng thái: đã xong 2026-10-30.
+- ĐÓNG VÒNG 2026-10-30.

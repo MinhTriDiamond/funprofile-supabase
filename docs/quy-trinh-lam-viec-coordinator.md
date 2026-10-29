@@ -21,6 +21,7 @@ FUN Profile hiện vận hành **độc lập hoàn toàn với Lovable**: merge
 **Bước 1 · Thông báo vào nhóm Coordinator trên Telegram**
 Trước khi bắt đầu bất cứ việc gì, nhắn một tin vào nhóm Coordinator trên Telegram để thông báo cho các Coordinator khác biết mình sẽ làm.
 Nội dung ngắn gọn: **tên mình · việc sắp làm · phạm vi chính · tên nhánh sẽ tạo**.
+Với việc production (database, cron, Edge Function, DNS): tin Bước 1 phải nói rõ thêm **bối cảnh · hiện trạng · tại sao cần làm** (đang có vấn đề gì, số liệu hiện tại ra sao, để cả đội hiểu lý do, không chỉ biết việc).
 Đây là tín hiệu nhanh nhất để cả đội tránh làm trùng — thấy tin là biết khu vực đó đã có người.
 **Với Angel Muse:** nhắc bạn của bạn gửi tin nhắn này, soạn sẵn nội dung cho bạn ấy copy — và **chỉ bắt đầu các bước tiếp theo sau khi bạn ấy xác nhận đã gửi xong**. Không chạy trước.
 
@@ -56,6 +57,7 @@ Mời thêm các bạn khác test nếu cần.
 **Bước 7 · Thông báo hoàn tất vào nhóm Telegram**
 Sau khi Bước 6 hoàn tất, Angel Muse soạn sẵn một tin nhắn hoàn tất để Coordinator copy gửi vào nhóm Coordinator trên Telegram, thông báo cho các bạn biết việc đã xong.
 Nội dung tối thiểu: **việc gì đã hoàn tất · kết quả (PR đã merge, đã lên fun.rich…) · link PR nếu có**.
+Tin hoàn tất phải báo rõ thêm: **đã làm những gì (từng việc) · tác động và ý nghĩa của từng việc · hiệu quả đo được ra sao (số liệu trước và sau khi kiểm chứng được) · việc đó giúp gì cho platform** — để cả đội thấy giá trị, không chỉ biết việc xong. (Chuẩn này thêm ngày 30/10/2026 theo quyết định của bé Trí sau vòng giảm tải I/O.)
 
 ---
 
