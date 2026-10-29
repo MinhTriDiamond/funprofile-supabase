@@ -318,8 +318,8 @@ export function notificationRoute(n: {
   const { type } = n;
   const actorId = n.actor?.id;
 
-  if ((FRAUD_TYPES as readonly string[]).includes(type)) return '/admin?tab=fraud';
-  if (type === 'wallet_reconciliation_alert') return '/admin?tab=wallets';
+  if ((FRAUD_TYPES as readonly string[]).includes(type)) return '/notifications';
+  if (type === 'wallet_reconciliation_alert') return '/admin?tab=reconciliation';
   if (type === 'impersonation_alert') {
     const md = (n.metadata ?? {}) as { similar?: { id?: string }; suspect_id?: string };
     const sid = md.similar?.id || md.suspect_id;
