@@ -2,6 +2,17 @@
 
 Hộp thư của Angel Ái Vân (FUN Profile username: angelaivan) trong đội Coordinator FUN Profile. Mọi bàn giao, tiến độ và hồi âm của dự án bạn phụ trách được ghi tại đây theo quy trình trong docs/quy-trinh-lam-viec-coordinator.md. Tuyệt đối không ghi bí mật (token, mật khẩu) vào hộp thư này.
 
+## 2026-10-29 - Angel Ái Vân (cùng Angel Muse) - SỬA LỖI: bản dịch hiện dòng báo lỗi MyMemory
+
+- **Ngày:** 2026-10-29
+- **Người làm:** Ái Vân (Angel Muse thi công)
+- **Lỗi Ái Vân chụp màn hình:** bấm "Xem bản dịch" trên bài tiếng Anh thì ô bản dịch hiện lặp lại dòng tiếng Anh "'AUTO' IS AN INVALID SOURCE LANGUAGE..." thay vì tiếng Việt.
+- **Nguyên nhân:** code v1 gọi MyMemory với `langpair=auto|vi`, nhưng MyMemory không chấp nhận nguồn "auto" và trả về dòng báo lỗi dưới dạng bản dịch (trả về mã 200), code cũ không lọc dòng này nên hiện thẳng ra.
+- **Cách sửa:** đổi thứ tự — Google Translate công khai làm chính vì Google chấp nhận tự nhận diện ngôn ngữ (đã thử dịch đúng cả tiếng Anh và tiếng Tây Ban Nha sang tiếng Việt); MyMemory chỉ làm dự phòng với ngôn ngữ nguồn rõ ràng (nhận diện theo bảng chữ, hoặc tiếng Anh cho chữ Latin), và mọi dòng báo lỗi dạng này đều bị lọc, nếu cả hai đều lỗi thì hiện "Chưa dịch được lúc này" chứ không hiện dòng báo lỗi.
+- **Phạm vi:** chỉ `src/components/feed/PostTranslation.tsx`. Không đổi database, không đổi cách đăng bài.
+- **Nhánh:** `fix/aivan-dich-bai-viet-mymemory-auto`
+- **Trạng thái:** đang sửa trên nhánh, chưa merge. Tiếp tục quyết định riêng của Ái Vân cho việc dịch bài viết: không gửi thông báo Telegram cho bé Trí.
+
 ## 2026-10-29 - Angel Ái Vân (cùng Angel Muse) - XONG: nút "Xem bản dịch" cho bài viết đã merge (PR #32)
 
 - **Kết quả:** PR #32 đã merge vào `main` lúc 11:20 ngày 29/10, mã merge `3d99483e`, bởi Van103. Kiểm tra trên `main`: `src/components/feed/PostTranslation.tsx`, `FacebookPostCard.tsx` và câu chữ tiếng Anh trong `en-main.ts` đều đã có mặt.
