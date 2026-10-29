@@ -2,7 +2,7 @@
  * NotificationDropdown — Desktop: Facebook-style popover preview. Mobile: navigate to /notifications.
  */
 
-import { Bell, CheckCheck } from 'lucide-react';
+import { Bell, CheckCheck, Shield } from 'lucide-react';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -231,6 +231,14 @@ export const NotificationDropdown = ({ centerNavStyle = false, isActiveRoute = f
                 {/* Avatar with icon overlay */}
                 <div className="relative flex-shrink-0">
                   {(() => {
+                    const isFraud = FRAUD_TYPES.includes(notification.type);
+                    if (isFraud) {
+                      return (
+                        <div className="w-10 h-10 rounded-full flex items-center justify-center bg-gradient-to-br from-destructive to-destructive/80 border-2 border-destructive/60">
+                          <Shield className="w-5 h-5 text-white" />
+                        </div>
+                      );
+                    }
                     const isSystem = SYSTEM_TYPES.includes(notification.type);
                     return (
                       <Avatar className="w-10 h-10">
