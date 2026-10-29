@@ -52,13 +52,31 @@ function chunkText(text: string): Chunk[] {
   return chunks;
 }
 
-async function translateWithMyMemory(chunk: string, target: string): Promise<string> {
-  const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(chunk)}&langpair=auto|${target}`;
+function isApiErrorText(text: string): boolean {
+  // MyMemory returns API errors as a 200 response whose "translation" is an
+  // English error sentence. Never show that sentence as a translation.
+  return /invalid (source|target) language|mymemory warning|query length|no query specified/i.test(text);
+}
+
+function detectSourceByScript(text: string): string | null {
+  if (/[\u4e00-\u9fff]/.test(text)) return 'zh-CN';
+  if (/[\u3040-\u30ff]/.test(text)) return 'ja';
+  if (/[\uac00-\ud7af]/.test(text)) return 'ko';
+  if (/[\u0400-\u04ff]/.test(text)) return 'ru';
+  if (/[\u0600-\u06ff]/.test(text)) return 'ar';
+  if (/[\u0e00-\u0e7f]/.test(text)) return 'th';
+  if (/[\u0590-\u05ff]/.test(text)) return 'he';
+  if (/[\u0900-\u097f]/.test(text)) return 'hi';
+  return null;
+}
+
+async function translateWithMyMemory(chunk: string, target: string, source: string): Promise<string> {
+  const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(chunk)}&langpair=${source}|${target}`;
   const res = await fetch(url);
   if (!res.ok) throw new Error(`MyMemory ${res.status}`);
   const data = await res.json();
   const translated = data?.responseData?.translatedText as string | undefined;
-  if (!translated || /MYMEMORY WARNING|QUERY LENGTH LIMIT|NO QUERY SPECIFIED/i.test(translated)) {
+  if (!translated || isApiErrorText(translated)) {
     throw new Error('MyMemory unavailable');
   }
   return translated;
@@ -73,7 +91,7 @@ async function translateWithGoogle(chunk: string, target: string): Promise<strin
   const translated = parts
     .map((p: unknown) => (Array.isArray(p) ? String(p[0] ?? '') : ''))
     .join('');
-  if (!translated) throw new Error('Google empty');
+  if (!translated || isApiErrorText(translated)) throw new Error('Google empty');
   return translated;
 }
 
@@ -88,9 +106,12 @@ async function translateText(text: string, target: string): Promise<string> {
     }
     let translated: string;
     try {
-      translated = await translateWithMyMemory(chunk.text, target);
-    } catch {
+      // Google accepts sl=auto; MyMemory does NOT accept source "auto" and
+      // returns an error sentence instead of a translation, so Google goes first.
       translated = await translateWithGoogle(chunk.text, target);
+    } catch {
+      const source = detectSourceByScript(chunk.text) ?? 'en';
+      translated = await translateWithMyMemory(chunk.text, target, source);
     }
     out.push(translated);
     if (chunk.joinWith) out.push(chunk.joinWith);
