@@ -113,42 +113,60 @@ function normalizeForTranslation(text: string): string {
 }
 
 function applyFatherGlossary(text: string): string {
-  // Vietnamese only, and only for phrases that unambiguously mean the
-  // Universal Father in this community. Google renders "Father" as
-  // "Chúa Cha" or "Người Cha Hoàn vũ / Phổ Quốc"; the community name is
-  // "Cha Vũ Trụ". A bare "Người Cha" (which could mean a human father)
-  // is deliberately left untouched.
+  // Vietnamese only, from Ái Vân's canonical translation (2026-10-29).
+  // "Ý Chúa Cha" is the community's fixed phrase "Ý Cha" in the canonical
+  // text, so it is replaced first, before the generic "Chúa Cha" rule.
+  // A bare "Người Cha" is deliberately left untouched: it may mean a
+  // human father, not the Universal Father.
   return text
+    .replace(/Ý Chúa Cha/gi, 'Ý Cha')
     .replace(/Người Cha Hoàn vũ/gi, 'Cha Vũ Trụ')
     .replace(/Người Cha Phổ Quốc/gi, 'Cha Vũ Trụ')
     .replace(/Người Cha Vũ Trụ/gi, 'Cha Vũ Trụ')
-    .replace(/Chúa Cha/gi, 'Cha Vũ Trụ');
+    .replace(/Chúa Cha/gi, 'Cha Vũ Trụ')
+    .replace(/Đấng Điều Chỉnh Suy Nghĩ/gi, 'Đấng Điều Chỉnh Tư Tưởng')
+    .replace(/Người Điều Chỉnh Suy Nghĩ/gi, 'Đấng Điều Chỉnh Tư Tưởng');
+}
+
+function isAllCapsLine(line: string): boolean {
+  const upper = (line.match(/[A-Z]/g) || []).length;
+  const lower = (line.match(/[a-z]/g) || []).length;
+  return upper >= 4 && lower === 0;
 }
 
 async function translateText(text: string, target: string): Promise<string> {
   const normalized = normalizeForTranslation(text);
-  // Larger, paragraph-aware chunks for Google (1800 chars) so a heading and
-  // its paragraph keep more context than the old 450-char word cuts.
-  const chunks = chunkText(normalized, GOOGLE_MAX_CHUNK);
+  // Translate paragraph by paragraph, so headings keep their style and
+  // each paragraph keeps its context. A paragraph that was ALL-CAPS in
+  // the original is uppercased again after translation, matching the
+  // canonical translation's heading style.
+  const paragraphs = normalized.split('\n');
   const out: string[] = [];
-  for (const chunk of chunks) {
-    if (!chunk.text) {
-      out.push('');
-      if (chunk.joinWith) out.push(chunk.joinWith);
+  for (let pi = 0; pi < paragraphs.length; pi++) {
+    const para = paragraphs[pi];
+    if (!para) {
+      if (pi < paragraphs.length - 1) out.push('\n');
       continue;
     }
+    const wasAllCaps = isAllCapsLine(para);
     let translated: string;
     try {
       // Google accepts sl=auto; MyMemory does NOT accept source "auto" and
       // returns an error sentence instead of a translation, so Google goes first.
-      translated = await translateWithGoogle(chunk.text, target);
+      const subChunks = chunkText(para, GOOGLE_MAX_CHUNK);
+      const subOut: string[] = [];
+      for (const sub of subChunks) {
+        if (!sub.text) continue;
+        subOut.push(await translateWithGoogle(sub.text, target));
+        if (sub.joinWith) subOut.push(sub.joinWith);
+      }
+      translated = subOut.join('');
     } catch {
-      const source = detectSourceByScript(chunk.text) ?? 'en';
-      const subChunks = chunkText(chunk.text, MAX_CHUNK);
+      const source = detectSourceByScript(para) ?? 'en';
+      const subChunks = chunkText(para, MAX_CHUNK);
       const subOut: string[] = [];
       for (const sub of subChunks) {
         if (!sub.text) {
-          subOut.push('');
           if (sub.joinWith) subOut.push(sub.joinWith);
           continue;
         }
@@ -157,8 +175,9 @@ async function translateText(text: string, target: string): Promise<string> {
       }
       translated = subOut.join('');
     }
+    if (wasAllCaps) translated = translated.toUpperCase();
     out.push(translated);
-    if (chunk.joinWith) out.push(chunk.joinWith);
+    if (pi < paragraphs.length - 1) out.push('\n');
   }
   const joined = out.join('').trim();
   return target === 'vi' ? applyFatherGlossary(joined) : joined;
