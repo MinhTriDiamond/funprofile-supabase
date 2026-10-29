@@ -2,6 +2,18 @@
 
 Hộp thư của Angel Ái Vân (FUN Profile username: angelaivan) trong đội Coordinator FUN Profile. Mọi bàn giao, tiến độ và hồi âm của dự án bạn phụ trách được ghi tại đây theo quy trình trong docs/quy-trinh-lam-viec-coordinator.md. Tuyệt đối không ghi bí mật (token, mật khẩu) vào hộp thư này.
 
+## 2026-10-29 - Angel Ái Vân (cùng Angel Muse) - SỬA HỆ THỐNG: bảo vệ thuật ngữ khi dịch, Ý Cha không bao giờ thành di chúc (tiếp nối PR #36)
+
+- **Ngày:** 2026-10-29
+- **Người làm:** Ái Vân (Angel Muse thi công)
+- **Ái Vân yêu cầu bằng tiếng Anh:** bản dịch hiện tại làm đổi nghĩa gốc (ví dụ "DÒNG TÀI CHÍNH TRONG Ý CHA" bị dịch thành "Dòng chảy tài chính trong di chúc của người cha"), và đưa 6 quy tắc: gốc là chuẩn, giữ thuật ngữ tâm linh, không dịch theo nghĩa từ điển, giữ văn phong gốc, không viết lại bài, áp dụng mọi ngôn ngữ; yêu cầu sửa ở cấp hệ thống, không chỉ một bài, và kiểm tra lại bài này từng câu.
+- **Nguyên nhân đã kiểm chứng:** máy dịch Google không có "prompt" AI để hiểu ngữ cảnh — khi tiêu đề đứng một mình không ngữ cảnh, nó dịch "the Father's Will" thành "Di chúc của Chúa Cha" (Muse thử lại đúng ra kết quả này ngày 29/10).
+- **Cách sửa hệ thống (chỉ code giao diện, không đổi database):** trước khi dịch, các thuật ngữ được thay bằng mã giữ chỗ (Google giữ nguyên mã ZZTERM01ZZ, đã kiểm chứng) rồi sau khi dịch mới đổi lại đúng thuật ngữ chuẩn — máy không còn cơ hội diễn giải sai. Áp dụng cho mọi bài viết, hai chiều Anh↔Việt: Ý Cha ↔ the Father's Will, Cha Vũ Trụ ↔ Father Universe, Đấng Toàn Năng ↔ the Almighty, Tất Cả Là Của Cha ↔ Everything Belongs to the Father, Thought Adjuster ↔ Đấng Điều Chỉnh Tư Tưởng, Love & Light Economy ↔ nền kinh tế Tình Yêu và Ánh Sáng, Steward/Stewards và Conduit/Kênh dẫn giữ đúng thuật ngữ (với ngôn ngữ khác ngoài Anh/Việt chỉ giữ Steward, Conduit, Love & Light Economy bằng tiếng Anh). Dự phòng: mọi biến thể "Di chúc của..." còn lọt vẫn bị đổi thành "Ý Cha"; "father's testament" thành "the Father's Will".
+- **Đã kiểm tra từng câu trên bài này:** tiêu đề cho ra "DÒNG TÀI CHÍNH TRONG Ý CHA: TÌNH YÊU DÂNG TRÀO VÀ NGUỒN SỨC SỐNG." (đúng thuật ngữ, hết "di chúc"); mục 1 cho ra "1. NGUỒN THIÊNG LIÊNG: TOÀN BỘ TÀI CHÍNH TOÀN CẦU ĐỀU THUỘC VỀ CHA VŨ TRỤ."; câu về Steward giữ đúng từ "Stewards". Cấu trúc đoạn, tiêu đề viết hoa, đánh số, dấu đầu dòng được giữ nguyên vì dịch theo từng đoạn.
+- **Nói rõ:** máy dịch vẫn dịch từng câu theo nghĩa đen, không tóm tắt hay viết lại (đúng quy tắc 1 và 5); văn phong trau chuốt của bản chuẩn vẫn là việc của người biên tập.
+- **Nhánh:** `fix/aivan-dich-bai-viet-tieu-de-viet-hoa` (gồm cả sửa lỗi tiêu đề viết hoa phải đọc từ đoạn gốc trước khi chuẩn hóa)
+- **Trạng thái:** đang làm trên nhánh, chưa merge. Tiếp tục quyết định riêng của Ái Vân cho việc dịch bài viết: không gửi thông báo Telegram cho bé Trí.
+
 ## 2026-10-29 - Angel Ái Vân (cùng Angel Muse) - XONG: áp dụng bản dịch chuẩn đã merge (PR #36)
 
 - **Kết quả:** PR #36 đã merge vào `main`, mã merge `04b4b19c`. Kiểm tra trên `main`: có đủ dịch theo đoạn, viết hoa lại tiêu đề, thuật ngữ "Ý Chúa Cha", "Đấng Điều Chỉnh Tư Tưởng".
