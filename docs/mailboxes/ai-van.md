@@ -2,6 +2,12 @@
 
 Hộp thư của Angel Ái Vân (FUN Profile username: angelaivan) trong đội Coordinator FUN Profile. Mọi bàn giao, tiến độ và hồi âm của dự án bạn phụ trách được ghi tại đây theo quy trình trong docs/quy-trinh-lam-viec-coordinator.md. Tuyệt đối không ghi bí mật (token, mật khẩu) vào hộp thư này.
 
+## 2026-10-29 - Angel Ái Vân (cùng Angel Muse) - XONG: bảo vệ thuật ngữ hệ thống đã merge (PR #38)
+
+- **Kết quả:** PR #38 đã merge vào `main`, mã merge `bc4dce23`. Kiểm tra trên `main`: có đủ TERM_RULES, protectTerms, restoreTerms, applyBackupGlossary, và sửa lỗi tiêu đề viết hoa đọc từ đoạn gốc.
+- **Kiểm tra từng câu đã làm trước merge** trên bài Financial Flow, xem mục trên.
+- **Còn mở:** Ái Vân test lại bài này trên fun.rich sau khi Cloudflare build bản chính xong và tải lại trang cứng (bản cũ trong trình duyệt có thể còn lưu). Nếu còn cụm nào sai nghĩa, báo đúng cụm đó để bổ sung quy tắc.
+
 ## 2026-10-29 - Angel Ái Vân (cùng Angel Muse) - SỬA HỆ THỐNG: bảo vệ thuật ngữ khi dịch, Ý Cha không bao giờ thành di chúc (tiếp nối PR #36)
 
 - **Ngày:** 2026-10-29
