@@ -4,6 +4,9 @@
 
 ---
 
+## 2026-10-30 — Lê Minh Trí (cùng Angel Muse) — HOÀN THÀNH
+- **Giảm tải I/O đĩa theo email cảnh báo Supabase - ĐÃ XONG:** (1) dọn thật 1.116.392 chunk ghi hình và 270.358 log job cũ hơn 7 ngày (phát hiện hàm dọn báo số nhưng rollback lặng lẽ vì thiếu bảng system_audit_log, đã tạo bảng rồi chạy lại và kiểm chứng còn 0 dòng cũ); (2) đủ 10 index F10 đã tạo; (3) 6 job làm mới giãn từ 5 phút xuống 15 phút, job scanner và job mỗi phút/giờ giữ nguyên. App vẫn lên bình thường sau thay đổi. Chi tiết ở hộp thư tri.md #6.
+
 ## 2026-10-29 — Angel Ái Vân (cùng Angel Muse) — HOÀN THÀNH (merge)
 - **Nút "Xem bản dịch" cho bài viết - ĐÃ MERGE (PR #32, mã merge 3d99483e):** bài tiếng Anh / tiếng nước ngoài hiện nút dịch, bấm thì hiện bản dịch sang ngôn ngữ giao diện của người xem, bấm lại thì ẩn; bài đã cùng ngôn ngữ thì không hiện nút. Dịch khi bấm nút qua MyMemory (Google công khai dự phòng), không dùng key bí mật. Trang fun.rich tải thành công sau merge, không lỗi; test thật trên bài nước ngoài khi đã đăng nhập vẫn còn mở cho Ái Vân.
 
