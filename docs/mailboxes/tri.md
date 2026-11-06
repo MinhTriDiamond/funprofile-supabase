@@ -73,3 +73,9 @@ Nơi ghi các vòng việc do bé Trí phụ trách trên FUN Profile, theo quy 
 - Phạm vi: cập nhật cùng nội dung vào quy trình trong repo (docs/quy-trinh-lam-viec-coordinator.md) và bản chính trong your_files.
 - Trạng thái: đã xong 2026-10-30.
 - ĐÓNG VÒNG 2026-10-30.
+
+## #8 - 2026-11-06 - Job giữ thông báo 30 ngày (notifications-retention-weekly)
+- Người làm: bé Trí cùng Angel Muse. Không có nhánh code (thay đổi trực tiếp trên production DB, không qua deploy).
+- Lý do: bảng notifications đã 538 MB với 1.833.749 dòng, trong đó 1.659.529 dòng cũ hơn 30 ngày, người dùng gần như không còn xem lại thông báo cũ sau 30 ngày; bảng tăng khoảng 6.000 dòng mới mỗi ngày nên nếu không dọn định kỳ thì sẽ nặng dần và làm chậm app. Trí đã chốt giữ thông báo 30 ngày từ 30/10.
+- Phạm vi: (1) tạo hàm notifications_retention(30, 20000, 40) theo đúng mẫu hàm live_session_events_retention đã có sẵn: xóa theo lô 20.000 dòng, tối đa 40 lô mỗi lần chạy, trả về số dòng đã xóa để kiểm chứng; (2) tạo job pg_cron notifications-retention-weekly chạy mỗi Chủ nhật 04:50 UTC (12:50 giờ Malaysia); (3) lần chạy đầu chạy tay theo lô có kiểm chứng để dọn hết tồn đọng, rồi job tuần giữ trạng thái ổn định. Không tạo job dọn tuần trùng lặp vì job 17 cleanup-old-system-data-daily đã chạy cleanup_old_system_data mỗi ngày 03:30 UTC và đang dọn thật (kiểm chứng 06/11: 5/5 lần gần nhất thành công, ~27.000 log/ngày, bảng chunk 0 dòng).
+- Trạng thái: đang thực hiện (thông báo Telegram Bước 1 đã gửi ngày 06/11/2026).
