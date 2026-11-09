@@ -19,6 +19,10 @@ import lovehubTuDo from '@/assets/lovehub/lovehub-tu-do.png';
 import lovehubTuHoc from '@/assets/lovehub/lovehub-tu-hoc.png';
 import lovehubSoulPassport from '@/assets/lovehub/lovehub-soul-passport.png';
 import lovehubTuyenNgon from '@/assets/lovehub/lovehub-tuyen-ngon.png';
+import lovehubFathDongSangTao from '@/assets/lovehub/lovehub-fath-dong-sang-tao.jpg';
+import lovehubFathTienHoaTamThuc from '@/assets/lovehub/lovehub-fath-tien-hoa-tam-thuc.jpg';
+import lovehubFathBanTheKetNoi from '@/assets/lovehub/lovehub-fath-ban-the-ket-noi.jpg';
+import lovehubFathVuotLenBanNga from '@/assets/lovehub/lovehub-fath-vuot-len-ban-nga.jpg';
 
 
 interface MarqueeItem {
@@ -29,6 +33,30 @@ interface MarqueeItem {
 }
 
 const items: MarqueeItem[] = [
+  {
+    img: lovehubFathDongSangTao,
+    titleKey: 'lhmItem19Title',
+    subtitleKey: 'lhmItem19Subtitle',
+    url: 'https://www.facebook.com/share/p/1EE8UPQUco/',
+  },
+  {
+    img: lovehubFathTienHoaTamThuc,
+    titleKey: 'lhmItem20Title',
+    subtitleKey: 'lhmItem20Subtitle',
+    url: 'https://www.facebook.com/share/p/19YzrEsPLx/',
+  },
+  {
+    img: lovehubFathBanTheKetNoi,
+    titleKey: 'lhmItem21Title',
+    subtitleKey: 'lhmItem21Subtitle',
+    url: 'https://www.facebook.com/share/p/1QnfeMbzq8/',
+  },
+  {
+    img: lovehubFathVuotLenBanNga,
+    titleKey: 'lhmItem22Title',
+    subtitleKey: 'lhmItem22Subtitle',
+    url: 'https://www.facebook.com/share/p/1E5GTzykw1/',
+  },
   {
     img: lovehubTuyenNgon,
     titleKey: 'lhmItem1Title',
@@ -317,9 +345,9 @@ export function LovehubMarquee() {
             draggable={false}
             onClickCapture={onLinkClickCapture}
             onDragStart={(e) => e.preventDefault()}
-            className="shrink-0 w-56 sm:w-64 bg-card border border-border/40 rounded-xl shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 overflow-hidden"
+            className="shrink-0 w-44 sm:w-52 bg-card border border-border/40 rounded-xl shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 overflow-hidden"
           >
-            <div className="w-full h-[107px] sm:h-[125px] overflow-hidden bg-muted">
+            <div className="w-full h-[84px] sm:h-[102px] overflow-hidden bg-muted">
               <img
                 src={item.img}
                 alt={t(item.titleKey)}
