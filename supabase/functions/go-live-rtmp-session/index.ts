@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {
+  getRtmpSessionWindowStart,
   getStreamLiveInput,
   getStreamPlaybackUrls,
   isLiveInputConnected,
@@ -52,7 +53,7 @@ Deno.serve(async (req) => {
     if (session.cloudflare_live_input_id) {
       const liveInput = await getStreamLiveInput(session.cloudflare_live_input_id).catch(() => null);
       const videos = await listStreamLiveInputVideos(session.cloudflare_live_input_id).catch(() => []);
-      const liveVideo = selectActiveLiveVideo(videos, session.armed_at || session.created_at || null, 60);
+      const liveVideo = selectActiveLiveVideo(videos, getRtmpSessionWindowStart(session), 60);
 
       // Yêu cầu video thật trong list — không chấp nhận chỉ kết nối RTMP.
       sourceConnected = isLiveInputConnected(liveInput) && !!liveVideo;

@@ -2,6 +2,7 @@
 import {
   detectRtmpLiveConnection,
   getLiveInputState,
+  getRtmpSessionWindowStart,
   getStreamPlaybackUrls,
 } from '../_shared/cloudflareStreamService.ts';
 import { corsHeaders, createAdminClient, HttpError, json, normalizeError, requireUser } from '../_shared/httpAuth.ts';
@@ -67,7 +68,7 @@ Deno.serve(async (req) => {
     const admin = createAdminClient() as any;
     const { data: session, error } = await admin
       .from('live_sessions')
-      .select('id, owner_id, host_user_id, mode, status, title, description, source_connected_at, source_connected, connected_at, disconnected_at, connection_status, last_disconnected_at, last_connection_check_at, live_input_status, preview_ready, preview_url, reconnect_count, ended_at, end_reason, auto_end_reason, signal_status, signal_lost_at, reconnect_deadline_at, video_signal_lost_at, cloudflare_live_input_id, cloudflare_video_uid, hls_url, playback_url, post_id, live_post_id, archive_status, archive_error, rtmp_config_id, is_persistent_stream, is_input_armed, armed_at, armed_session_token, created_at, updated_at')
+      .select('id, owner_id, host_user_id, mode, status, title, description, source_connected_at, source_connected, connected_at, disconnected_at, connection_status, last_disconnected_at, last_connection_check_at, live_input_status, preview_ready, preview_url, reconnect_count, ended_at, end_reason, auto_end_reason, signal_status, signal_lost_at, reconnect_deadline_at, video_signal_lost_at, cloudflare_live_input_id, cloudflare_video_uid, hls_url, playback_url, post_id, live_post_id, archive_status, archive_error, rtmp_config_id, is_persistent_stream, is_input_armed, armed_at, armed_session_token, created_at, started_at, go_live_clicked_at, updated_at')
       .eq('id', liveSessionId)
       .maybeSingle();
     if (error) throw error;
@@ -133,7 +134,7 @@ Deno.serve(async (req) => {
     const videoListCount = detection.diagnostics.videoCount;
     const pickedReason = detection.reason;
     const cloudflareErrors = detection.errors;
-    const sessionStartedAt = session.armed_at || session.created_at || null;
+    const sessionStartedAt = getRtmpSessionWindowStart(session);
     // Live Input connected is the source-of-truth for RTMP still pushing.
     // Video list/active video is used for preview UID only and may lag Cloudflare.
     const connected = detection.connected || detection.videoStreaming;

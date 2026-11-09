@@ -2,6 +2,20 @@
 
 > Việc mới nhất nằm ở trên cùng. Vũ phản hồi trạng thái ngay dưới mỗi mục nhé.
 
+## Sửa lỗi RTMP Live tự kết thúc oan — 2026-11-09 (Ghi nhận TRƯỚC + kết quả)
+
+- Người thực hiện: Quang Vũ cùng Angel Muse. Nhánh: `fix/rtmp-no-video-false-auto-end`, tách từ `main` mới nhất `821b1e5`.
+- **Bối cảnh:** Cha báo phiên RTMP (nguồn Restream) mới mở thì chạy, chạy ~4–7 phút thì **tự kết thúc**, sau đó **không phát lại được**; Restream hiện đích Fun Profile ở trạng thái "Unable to connect" trong khi các đích khác vẫn Streaming.
+- **Hiện trạng:** phiên đang public, Live Input Cloudflare vẫn connected, video nguồn vẫn hiển thị trong producer, nhưng hệ thống phân loại nhầm `input_connected_no_video` → mở ân hạn 180 giây → watchdog tự gọi `endRtmpLiveSession(..., 'source_disconnected_no_active_video')` → end-flow **tắt Live Input** → encoder bị ngắt và không kết nối lại được.
+- **Nguyên nhân gốc (đọc code):** `detectRtmpLiveConnection` chỉ lấy video "phiên hiện tại" từ list của Live Input, lọc `created >= (armed_at || created_at) - 60s`. Cloudflare đóng dấu `created` theo **lúc encoder CONNECT** (chính codebase đã ghi nhận ở `validateRtmpReplayVideoForSession`). Khi encoder kết nối trước lúc producer armed (persistent Live Input / stream key tái dùng) thì video đang live bị lọc loại ⇒ `videoStreaming=false` ⇒ "mất nguồn" giả. Detector cũng **bỏ qua `session.cloudflare_video_uid`** (video do webhook xác nhận) khi quyết định nguồn còn sống.
+- **Phạm vi:** `supabase/functions/_shared/cloudflareStreamService.ts`, `stream-webhook`, `go-live-rtmp-session`, `get-rtmp-live-session-status`; thêm test `src/modules/live/rtmpCurrentVideoResolution.test.ts`. Không sửa tệp cấm, **không có migration**, không đổi cron/secret, không ghi dữ liệu production, không đụng Agora/webcam/trần 4 giờ/luồng kết thúc thủ công.
+- **Đã làm:** thêm `getRtmpSessionWindowStartMs/Start` (mốc cửa sổ = timestamp **sớm nhất** của phiên), `matchRtmpVideoToSession` (ưu tiên metadata Cloudflare — `meta.liveSessionId`/`liveInput` — rồi mới tới cửa sổ thời gian), `resolveRtmpCurrentActiveVideo` (4 bậc ưu tiên, gồm lưới an toàn: Live Input **đang connected** + Cloudflare báo có video đang live trên chính input này thì **không** coi là mất nguồn). `detectRtmpLiveConnection` dùng bộ nhận diện mới và phơi `activeVideoReason` để chẩn đoán về sau. Ba điểm poll còn lại (webhook, go-live, status poll) dùng chung mốc cửa sổ sớm nhất.
+- **Bảo toàn hành vi:** input connected mà **không** có video live nào ⇒ vẫn phân loại `input_connected_no_video` ⇒ vẫn ân hạn rồi kết thúc; video mang metadata phiên khác luôn bị loại.
+- **Kiểm chứng:** `bunx vitest run src/modules/live/` 17 file / 88 test đạt (77 cũ + 11 test mới); `bunx vitest run` toàn repo 490 đạt, 30 skip, 1 file lỗi `prices-unavailable.render.test.tsx` là **lỗi có sẵn** (đã kiểm chứng bằng `git stash`); `tsgo --noEmit` exit 0; `deno check` 4 tệp thay đổi đạt; `git diff --check` đạt. Hồ sơ: `docs/rtmp-live-false-end-2026-11-09/README.md`.
+- **Còn lại:** chưa push/PR, chưa deploy, chưa test end-to-end bằng nguồn RTMP thật > 5 phút trên production. Khi phát hành cần deploy 3 function `stream-webhook`, `get-rtmp-live-session-status`, `go-live-rtmp-session` (helper chung nằm trong các function này). Chưa có phép phát hành từ Cha.
+
+---
+
 ## Bắt đầu rà soát chat/call — 2026-10-17
 
 - Cha xác nhận đã thông báo vào nhóm Coordinator trước khi bắt đầu.

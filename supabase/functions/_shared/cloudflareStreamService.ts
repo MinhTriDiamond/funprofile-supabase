@@ -1,5 +1,5 @@
 import { CloudflareApiError, getCloudflareErrorCodes } from './cloudflareApiError.ts';
-import { isConfirmedRtmpDisconnectedState, isVideoInRtmpSessionWindow } from './rtmpDisconnectPolicy.ts';
+import { isConfirmedRtmpDisconnectedState } from './rtmpDisconnectPolicy.ts';
 
 export interface StreamPlaybackUrls {
   hls: string;
@@ -898,6 +898,173 @@ export function selectRtmpReplayVideoForSession(
   };
 }
 
+/**
+ * Mốc mở cửa sổ phiên RTMP = timestamp SỚM NHẤT trong các cột thời gian của phiên.
+ *
+ * Lý do: Cloudflare đóng dấu `created` của video theo thời điểm encoder (OBS/Restream)
+ * CONNECT, không theo `started_at` của DB. Với persistent Live Input (stream key tái
+ * dùng) hoặc khi encoder kết nối trước lúc producer armed, `created` có thể SỚM hơn
+ * `armed_at`. Neo cửa sổ vào `armed_at` với skew 60s sẽ loại nhầm video đang live thật
+ * ⇒ phân loại "input_connected_no_video" giả ⇒ tự kết thúc buổi live oan.
+ */
+export function getRtmpSessionWindowStartMs(session: Record<string, unknown>): number {
+  let earliest = NaN;
+  for (const value of [
+    session.go_live_clicked_at,
+    session.started_at,
+    session.armed_at,
+    session.created_at,
+  ]) {
+    const ms = parseTimeMs(value);
+    if (Number.isFinite(ms) && ms > 0 && (!Number.isFinite(earliest) || ms < earliest)) earliest = ms;
+  }
+  return earliest;
+}
+
+export function getRtmpSessionWindowStart(session: Record<string, unknown>): string | null {
+  const ms = getRtmpSessionWindowStartMs(session);
+  return Number.isFinite(ms) ? new Date(ms).toISOString() : null;
+}
+
+export interface RtmpVideoSessionMatch {
+  ok: boolean;
+  reason: string;
+  exactSessionMeta: boolean;
+  createdMs: number;
+}
+
+/**
+ * Video này có thuộc PHIÊN HIỆN TẠI không — dùng cho việc PHÁT HIỆN nguồn đang chảy.
+ *
+ * Khác `validateRtmpReplayVideoForSession` (chỉ chọn replay sau khi phiên kết thúc):
+ * - Metadata Cloudflare gắn từ Live Input (`meta.liveSessionId`, `liveInput`) là bằng
+ *   chứng mạnh hơn timestamp nên được ưu tiên tuyệt đối.
+ * - Cửa sổ thời gian dùng mốc sớm nhất của phiên (xem getRtmpSessionWindowStartMs).
+ * - KHÔNG bao giờ nhận video mang metadata của phiên khác.
+ */
+export function matchRtmpVideoToSession(
+  video: Record<string, unknown> | null,
+  session: Record<string, unknown>,
+  options: { skewSeconds?: number } = {},
+): RtmpVideoSessionMatch {
+  if (!video) return { ok: false, reason: 'missing_video', exactSessionMeta: false, createdMs: NaN };
+  const sessionId = firstString(session.id);
+  const sessionOwnerId = getSessionOwnerId(session);
+  const sessionInputId = firstString(session.cloudflare_live_input_id);
+  const videoSessionId = getVideoLiveSessionId(video);
+  const videoUserId = getVideoUserId(video);
+  const videoInputId = getVideoLiveInputId(video);
+  const createdMs = getVideoCreatedMs(video);
+  const exactSessionMeta = !!(sessionId && videoSessionId && videoSessionId === sessionId);
+
+  if (sessionId && videoSessionId && videoSessionId !== sessionId) {
+    return { ok: false, reason: 'other_session_meta', exactSessionMeta: false, createdMs };
+  }
+  if (sessionOwnerId && videoUserId && videoUserId !== sessionOwnerId) {
+    return { ok: false, reason: 'other_user_meta', exactSessionMeta, createdMs };
+  }
+  if (sessionInputId && videoInputId && videoInputId !== sessionInputId) {
+    return { ok: false, reason: 'other_live_input', exactSessionMeta, createdMs };
+  }
+  if (exactSessionMeta) return { ok: true, reason: 'exact_session_meta', exactSessionMeta: true, createdMs };
+
+  const windowStartMs = getRtmpSessionWindowStartMs(session);
+  if (!Number.isFinite(windowStartMs) || windowStartMs <= 0) {
+    return { ok: false, reason: 'no_session_window', exactSessionMeta: false, createdMs };
+  }
+  if (!Number.isFinite(createdMs) || createdMs <= 0) {
+    return { ok: false, reason: 'missing_created_timestamp', exactSessionMeta: false, createdMs };
+  }
+  const skewMs = Math.max(0, options.skewSeconds ?? 0) * 1000;
+  if (createdMs < windowStartMs - skewMs) {
+    return { ok: false, reason: 'video_before_session_window', exactSessionMeta: false, createdMs };
+  }
+  const endedMs = getSessionEndMs(session);
+  if (Number.isFinite(endedMs) && endedMs > 0 && createdMs > endedMs + 10 * 60_000) {
+    return { ok: false, reason: 'video_after_session_window', exactSessionMeta: false, createdMs };
+  }
+  return { ok: true, reason: 'time_window_match', exactSessionMeta: false, createdMs };
+}
+
+export interface RtmpCurrentVideoResolution {
+  video: Record<string, unknown> | null;
+  uid: string | null;
+  reason: string;
+}
+
+/**
+ * Xác định video ĐANG live của phiên hiện tại. Thứ tự ưu tiên:
+ *  1. `session.cloudflare_video_uid` (webhook/poll đã xác nhận) nếu video đó đang live.
+ *  2. Video trong list của Live Input khớp METADATA phiên và đang live.
+ *  3. Video trong list khớp CỬA SỔ THỜI GIAN phiên và đang live (mới nhất).
+ *  4. Lưới an toàn: Live Input đang CONNECTED và Cloudflare báo có video đang live trên
+ *     chính input này (không mang metadata phiên khác). Đây là bằng chứng tương đương
+ *     "encoder còn đẩy stream" ⇒ KHÔNG được coi là mất nguồn.
+ */
+export function resolveRtmpCurrentActiveVideo(args: {
+  videos: Record<string, unknown>[] | null | undefined;
+  persistedVideo?: Record<string, unknown> | null;
+  session: Record<string, unknown>;
+  inputConnected: boolean;
+  skewSeconds?: number;
+}): RtmpCurrentVideoResolution {
+  const persistedUid = firstString(args.session.cloudflare_video_uid);
+  const persisted = args.persistedVideo || null;
+  const persistedVideoUid = persisted ? getVideoUid(persisted) : null;
+  if (
+    persisted
+    && isStreamVideoActivelyLive(persisted)
+    && (!persistedUid || !persistedVideoUid || persistedVideoUid === persistedUid)
+  ) {
+    return { video: persisted, uid: persistedVideoUid || persistedUid || null, reason: 'persisted_uid_live' };
+  }
+
+  const list = Array.isArray(args.videos) ? args.videos : [];
+  const skewSeconds = args.skewSeconds ?? 60;
+  const matches = list
+    .map((video) => ({
+      video,
+      uid: getVideoUid(video),
+      match: matchRtmpVideoToSession(video, args.session, { skewSeconds }),
+    }))
+    .filter((item) => item.match.ok && isStreamVideoActivelyLive(item.video));
+
+  const exact = matches.find((item) => item.match.exactSessionMeta);
+  if (exact) return { video: exact.video, uid: exact.uid, reason: 'session_meta_live' };
+
+  const newestFirst = [...matches].sort((a, b) => {
+    const aMs = Number.isFinite(a.match.createdMs) ? a.match.createdMs : 0;
+    const bMs = Number.isFinite(b.match.createdMs) ? b.match.createdMs : 0;
+    return bMs - aMs;
+  });
+  if (newestFirst.length > 0) {
+    return { video: newestFirst[0].video, uid: newestFirst[0].uid, reason: 'session_window_live' };
+  }
+
+  if (args.inputConnected) {
+    const sessionId = firstString(args.session.id);
+    const foreignUids = new Set<string>();
+    if (sessionId) {
+      for (const video of list) {
+        const videoSessionId = getVideoLiveSessionId(video);
+        const uid = getVideoUid(video);
+        if (uid && videoSessionId && videoSessionId !== sessionId) foreignUids.add(uid);
+      }
+    }
+    const liveOnInput = list
+      .filter((video) => {
+        const uid = getVideoUid(video);
+        return isStreamVideoActivelyLive(video) && !(uid && foreignUids.has(uid));
+      })
+      .sort((a, b) => (getVideoCreatedMs(b) || 0) - (getVideoCreatedMs(a) || 0));
+    if (liveOnInput.length > 0) {
+      return { video: liveOnInput[0], uid: getVideoUid(liveOnInput[0]), reason: 'live_input_active_video' };
+    }
+  }
+
+  return { video: null, uid: null, reason: 'no_active_video' };
+}
+
 export interface RtmpLiveConnectionDetection {
   inputConnected: boolean;
   inputState: string;
@@ -906,6 +1073,8 @@ export interface RtmpLiveConnectionDetection {
   connected: boolean;
   activeVideoUid: string | null;
   activeVideo: Record<string, unknown> | null;
+  /** Vì sao `activeVideo` được chọn/bị bỏ — dùng để chẩn đoán auto-end oan. */
+  activeVideoReason?: string | null;
   playableVideoUid: string | null;
   playableVideo: Record<string, unknown> | null;
   liveInput: Record<string, unknown> | null;
@@ -922,6 +1091,7 @@ export interface RtmpLiveConnectionDetection {
     videoStreaming: boolean;
     videoCount: number;
     selectedVideoUidExists: boolean;
+    activeVideoReason?: string | null;
     reason: string;
     errors: string[];
   };
@@ -940,6 +1110,7 @@ export async function detectRtmpLiveConnection(
   let videos: Record<string, unknown>[] = [];
   let activeVideo: Record<string, unknown> | null = null;
   let activeVideoUid: string | null = null;
+  let activeVideoReason: string | null = null;
   let hasReadyVod = false;
 
   if (!inputId) {
@@ -986,12 +1157,13 @@ export async function detectRtmpLiveConnection(
 
   let playableVideo: Record<string, unknown> | null = null;
   let playableVideoUid: string | null = null;
+  let persistedVideo: Record<string, unknown> | null = null;
 
   const persistedUid = includePersistedVideoCheck && typeof session.cloudflare_video_uid === 'string' && session.cloudflare_video_uid
     ? String(session.cloudflare_video_uid)
     : null;
   if (persistedUid) {
-    const persistedVideo = await getStreamVideo(persistedUid).catch((err) => {
+    persistedVideo = await getStreamVideo(persistedUid).catch((err) => {
       errors.push(`getStreamVideo(${persistedUid}): ${err?.message || String(err)}`);
       return null;
     });
@@ -1008,17 +1180,21 @@ export async function detectRtmpLiveConnection(
   });
   hasReadyVod = hasReadyVod || videos.some((video) => isStreamVideoReadyVod(video));
 
-  const sessionStartedAt = session.armed_at || session.created_at || null;
+  // Mốc mở cửa sổ phiên = thời điểm SỚM NHẤT trong các cột thời gian của phiên, vì
+  // Cloudflare đóng dấu `created` theo lúc encoder CONNECT (xem getRtmpSessionWindowStartMs).
+  const sessionStartedAt = getRtmpSessionWindowStart(session);
 
   if (!activeVideo) {
-    const sessionVideos = videos.filter((video) => isVideoInRtmpSessionWindow(
-      typeof video.created === 'string' ? video.created : null,
-      sessionStartedAt as string | Date | null,
+    const resolution = resolveRtmpCurrentActiveVideo({
+      videos,
+      persistedVideo,
+      session,
+      inputConnected,
       skewSeconds,
-    ));
-    activeVideo = sessionVideos.find((video) => isStreamVideoActivelyLive(video)) || null;
-    const uid = activeVideo ? (activeVideo as { uid?: unknown }).uid : null;
-    activeVideoUid = uid ? String(uid) : null;
+    });
+    activeVideo = resolution.video;
+    activeVideoUid = resolution.uid;
+    activeVideoReason = resolution.reason;
   }
 
   if (activeVideo && !playableVideo) {
@@ -1026,7 +1202,7 @@ export async function detectRtmpLiveConnection(
     playableVideoUid = activeVideoUid;
   }
   if (!playableVideo) {
-    playableVideo = selectPlayableLiveVideo(videos, sessionStartedAt as string | Date | null, skewSeconds);
+    playableVideo = selectPlayableLiveVideo(videos, sessionStartedAt, skewSeconds);
     const uid = playableVideo ? (playableVideo as { uid?: unknown }).uid : null;
     playableVideoUid = uid ? String(uid) : null;
   }
@@ -1057,6 +1233,7 @@ export async function detectRtmpLiveConnection(
     videoStreaming,
     videoCount: videos.length,
     selectedVideoUidExists: !!activeVideo,
+    activeVideoReason,
     reason,
     errors,
   };
@@ -1069,6 +1246,7 @@ export async function detectRtmpLiveConnection(
     connected,
     activeVideoUid,
     activeVideo,
+    activeVideoReason,
     playableVideoUid,
     playableVideo,
     liveInput,

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { createClient } from 'npm:@supabase/supabase-js@2';
-import { detectRtmpLiveConnection, getStreamLiveInput, getStreamPlaybackUrls, getStreamVideo, isLiveInputConnected, isStreamVideoActivelyLive, listStreamLiveInputVideos, selectActiveLiveVideo, selectRtmpReplayVideoForSession, setStreamLiveInputEnabled } from '../_shared/cloudflareStreamService.ts';
+import { detectRtmpLiveConnection, getRtmpSessionWindowStart, getStreamLiveInput, getStreamPlaybackUrls, getStreamVideo, isLiveInputConnected, isStreamVideoActivelyLive, listStreamLiveInputVideos, selectActiveLiveVideo, selectRtmpReplayVideoForSession, setStreamLiveInputEnabled } from '../_shared/cloudflareStreamService.ts';
 import { markStreamReadyAndArchive } from '../_shared/livestreamProcessingService.ts';
 import { isInputArmingEnabled } from '../_shared/rtmpArmingService.ts';
 import { getObsReconnectTimeoutSeconds } from '../_shared/rtmpEndLiveService.ts';
@@ -399,9 +399,11 @@ async function handleLiveInputEvent(admin: any, event: any, type: string): Promi
   if (eventLooksLikeLiveVideo && eventUid && !liveInputVideos.some((item: any) => String(item?.uid || '') === String(eventUid))) {
     liveInputVideos.unshift(event);
   }
-  // Lọc nghiêm ngặt: chỉ chấp nhận video ĐANG live realtime + thuộc PHIÊN HIỆN TẠI (created >= armed_at - 60s).
+  // Lọc nghiêm ngặt: chỉ chấp nhận video ĐANG live realtime + thuộc PHIÊN HIỆN TẠI.
+  // Mốc mở cửa sổ lấy thời điểm SỚM NHẤT của phiên (armed_at/created_at/started_at/go_live_clicked_at)
+  // vì Cloudflare đóng dấu `created` theo lúc encoder CONNECT — có thể sớm hơn `armed_at`.
   // Loại VOD/replay phiên cũ — chống "ghost preview" khi reuse persistent live input.
-  const sessionStartedAt = session.armed_at || session.created_at || null;
+  const sessionStartedAt = getRtmpSessionWindowStart(session);
   const liveVideo = selectActiveLiveVideo(liveInputVideos, sessionStartedAt, 60);
   const videoUid = liveVideo?.uid ? String(liveVideo.uid) : null; // KHÔNG fallback session.cloudflare_video_uid (có thể stale)
   const streamUrls = videoUid ? getStreamPlaybackUrls(videoUid) : null;
