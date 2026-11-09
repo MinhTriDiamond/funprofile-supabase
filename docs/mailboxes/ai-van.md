@@ -2,6 +2,21 @@
 
 Hộp thư của Angel Ái Vân (FUN Profile username: angelaivan) trong đội Coordinator FUN Profile. Mọi bàn giao, tiến độ và hồi âm của dự án bạn phụ trách được ghi tại đây theo quy trình trong docs/quy-trinh-lam-viec-coordinator.md. Tuyệt đối không ghi bí mật (token, mật khẩu) vào hộp thư này.
 
+## 2026-11-09 - Angel Ái Vân (cùng Angel Muse) - THÊM 4 BÀI FATH UNI LÊN Ô CHẠY NGANG LOVEHUB
+
+- **Ngày:** 2026-11-09
+- **Người làm:** Ái Vân (Angel Muse thi công)
+- **Việc:** Thêm 4 bài mới của trang Fath Uni (07–08/11/2026) lên đầu ô chạy ngang LoveHUB trên trang Feed của fun.rich. Bé gửi trực tiếp 4 link Facebook + 4 hình trong chat ngày 09/11, Muse đã đối chiếu khớp từng bài với bài gốc trên Facebook.
+- **Phạm vi:** chỉ ô chạy ngang LoveHUB (`src/components/feed/LovehubMarquee.tsx`): thêm 4 hình mới vào `src/assets/lovehub/`, thêm 4 thẻ mới lên đầu danh sách, thêm key tiêu đề `lhmItem19`–`lhmItem22` vào file ngôn ngữ tiếng Việt + tiếng Anh (ngôn ngữ khác tự hiện tiếng Anh theo cơ chế dự phòng sẵn có). Không gỡ hay đổi 18 thẻ cũ, không đụng database, không đụng phần khác của trang.
+- **Nhánh:** `feat/aivan-them-4-bai-fath-uni-marquee` (tách từ main mới nhất, commit `821b1e5`).
+- **Quy trình:** Bước 1 Telegram — bé nói "dạ ok nhé Muse, muse đưa lên fun rich giúp bé nhé" lúc 11:06 ngày 09/11; chưa thấy bé nhắn xác nhận đã gửi tin Telegram, đã nhắc bé gửi kèm theo lúc bắt đầu làm (tin đã soạn sẵn cho bé copy). Thư này được ghi TRƯỚC khi sửa code → làm trên nhánh riêng → cổng Preview trước khi merge.
+- **4 bài mới (theo thứ tự lên đầu):** (1) Khái Niệm Đồng Sáng Tạo (Co-creation) — 08/11 08:22 — https://www.facebook.com/share/p/1EE8UPQUco/; (2) Hành Trình Tiến Hóa Tâm Thức Của Con Người — 08/11 08:08 — https://www.facebook.com/share/p/19YzrEsPLx/; (3) Bản Thể Con Người Kết Nối Với Nguồn Cội Vũ Trụ — 08/11 07:57 — https://www.facebook.com/share/p/1QnfeMbzq8/; (4) Vượt Lên Khỏi Bản Ngã, Lo Sợ Và Phán Xét — 07/11 07:51 — https://www.facebook.com/share/p/1E5GTzykw1/.
+- **Lưu ý (kiểm tra trang thật ngày 09/11):** trên fun.rich hiện tại không có thẻ nào ghi "PLP", thẻ của Cha ghi là "FATH UNI" (thẻ 15), thẻ của bé Ly là "CAMLY DUONG" (thẻ 16); 4 trang mặc định trong lịch chạy tự động không khớp đúng với trang thật. Việc này chỉ thêm thẻ mới nên không ảnh hưởng; 18 thẻ cũ giữ nguyên.
+- **Đã làm / Kiểm chứng / PR / Kết quả:** (ghi bổ sung sau khi cổng Preview qua và merge — xem mục kết quả bên dưới khi xong).
+
+---
+
+
 ## 2026-10-29 - Angel Ái Vân (cùng Angel Muse) - XONG: sửa lỗi thông báo đã merge (PR #40)
 
 - **Kết quả:** Ái Vân đã test bản xem trước và duyệt ("dạ ok hết rồi"). PR #40 đã merge vào `main`, mã merge `667dfb1e`. Kiểm tra trên `main`: đủ khiên đỏ cho thông báo gian lận trong dropdown, route `/admin?tab=reconciliation`, route `/notifications` cho loại gian lận, tab "Đối soát ví" đã đăng ký trong adminNav và vẽ trong AdminShell.
