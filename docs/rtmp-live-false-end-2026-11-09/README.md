@@ -66,14 +66,24 @@ Không đổi: Agora/webcam, trần thời lượng 4 giờ, luồng kết thúc
 - `deno check --node-modules-dir=auto` cho 4 tệp thay đổi → đạt.
 - `git diff --check` → đạt.
 
-## 5. Phát hành (chờ Cha cho phép riêng)
+## 5. Cổng Preview và phát hành
 
-Không có migration. Cần deploy **4 Edge Function** lên project `tljfqavndndfsvtazibe`:
+- PR: **#46** — https://github.com/MinhTriDiamond/funprofile-supabase/pull/46 (nhánh `fix/rtmp-no-video-false-auto-end`).
+- Cloudflare Pages build **thành công** cho commit `f44c9b8`:
+  - Preview nhánh: `https://fix-rtmp-no-video-false-auto.funprofile-supabase.pages.dev` (HTTP 200)
+  - Preview theo commit: `https://ee279e1a.funprofile-supabase.pages.dev` (HTTP 200)
+- **Giới hạn của cổng preview:** bản sửa nằm hoàn toàn ở Edge Function (server-side). Link preview Cloudflare Pages
+  chỉ kiểm chứng được **không hồi quy frontend**, **không** chứng minh được bản sửa. Muốn kiểm chứng thật phải
+  deploy 3 function dưới đây rồi chạy một phiên RTMP thật > 5 phút.
 
-1. `_shared/cloudflareStreamService.ts` không deploy độc lập — nằm trong 4 function dưới.
-2. `stream-webhook`
-3. `get-rtmp-live-session-status`
-4. `go-live-rtmp-session`
+Không có migration. Cần deploy **3 Edge Function** lên project `tljfqavndndfsvtazibe`:
+
+1. `stream-webhook`
+2. `get-rtmp-live-session-status`
+3. `go-live-rtmp-session`
+
+(`_shared/cloudflareStreamService.ts` là helper dùng chung, không deploy độc lập — nội dung của nó đi kèm 3
+function trên.)
 
 `live-rtmp-grace-watchdog` và `live-replay-archive-cron` **không cần deploy** (chúng gọi helper chung nên
 hưởng lợi ngay ở lần deploy kế tiếp; nếu muốn áp cùng lúc thì deploy luôn cũng an toàn). Không đổi cron,
