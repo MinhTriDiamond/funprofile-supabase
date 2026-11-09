@@ -68,34 +68,56 @@ Không đổi: Agora/webcam, trần thời lượng 4 giờ, luồng kết thúc
 
 ## 5. Cổng Preview, merge và phát hành
 
-- PR: **#46** — https://github.com/MinhTriDiamond/funprofile-supabase/pull/46 (nhánh `fix/rtmp-no-video-false-auto-end`).
-- **Đã merge** (squash) vào `main` ngày 2026-11-09: commit `b4b1b05`.
-- Cloudflare Pages build **thành công**:
-  - Preview nhánh: `https://fix-rtmp-no-video-false-auto.funprofile-supabase.pages.dev` (HTTP 200)
+- PR code: **#46** — https://github.com/MinhTriDiamond/funprofile-supabase/pull/46 → **đã merge** (squash) vào `main`: `b4b1b05`.
+- PR tài liệu/hộp thư: **#47** → **đã merge**: `45cdfce`.
+- Cloudflare Pages build **thành công**: preview nhánh `https://fix-rtmp-no-video-false-auto.funprofile-supabase.pages.dev` (HTTP 200).
 - **Giới hạn của cổng preview:** bản sửa nằm hoàn toàn ở Edge Function (server-side). Link preview Cloudflare Pages
-  chỉ kiểm chứng được **không hồi quy frontend**, **không** chứng minh được bản sửa. Muốn kiểm chứng thật phải
-  deploy 3 function dưới đây rồi chạy một phiên RTMP thật > 5 phút.
-- **⚠️ Deploy đang bị chặn 403.** Ngày 2026-11-09 đã chạy Supabase CLI và nhận:
-  `unexpected deploy status 403: Your account does not have the necessary privileges to access this endpoint`.
-  `supabase functions list --project-ref tljfqavndndfsvtazibe` **cũng 403**. `supabase projects list` chỉ thấy
-  `richard-book`, `richardbook`, `lovehub.fun`, `docs.fun.rich` — không thấy project FUN Profile. Nguyên nhân:
-  token CLI trong máy (`~/.supabase/access-token`, tạo 2026-10-24) thuộc tài khoản không có quyền trên project
-  `tljfqavndndfsvtazibe`. **Cần một trong hai:** (a) người sở hữu tổ chức chạy `supabase login` trên máy này
-  rồi deploy lại, hoặc (b) giao Lovable deploy Edge Function.
-  Lệnh deploy sẵn sàng: `supabase functions deploy stream-webhook get-rtmp-live-session-status go-live-rtmp-session --project-ref tljfqavndndfsvtazibe`.
+  chỉ kiểm chứng được **không hồi quy frontend**, **không** chứng minh được bản sửa.
 
-Không có migration. Cần deploy **3 Edge Function** lên project `tljfqavndndfsvtazibe`:
+### 5.1 Chặn deploy 403 (đã gỡ)
 
-1. `stream-webhook`
-2. `get-rtmp-live-session-status`
-3. `go-live-rtmp-session`
+Lượt deploy đầu tiên bị từ chối vì token Supabase CLI trong máy (`~/.supabase/access-token`, tạo 2026-10-24) thuộc
+tài khoản không có quyền trên `tljfqavndndfsvtazibe` (`unexpected deploy status 403`; `functions list` cũng 403;
+`projects list` không thấy project FUN Profile). Đã gỡ bằng cách đăng nhập lại CLI bằng tài khoản sở hữu tổ chức
+(chủ project), sau đó `supabase projects list` thấy đúng `tljfqavndndfsvtazibe`.
 
-(`_shared/cloudflareStreamService.ts` là helper dùng chung, không deploy độc lập — nội dung của nó đi kèm 3
-function trên.)
+### 5.2 ⚠️ ĐÍNH CHÍNH phạm vi phát hành: cần **5** Edge Function, không phải 3
 
-`live-rtmp-grace-watchdog` và `live-replay-archive-cron` **không cần deploy** (chúng gọi helper chung nên
-hưởng lợi ngay ở lần deploy kế tiếp; nếu muốn áp cùng lúc thì deploy luôn cũng an toàn). Không đổi cron,
-không đổi secret, không đổi dữ liệu.
+Bản ghi trước của hồ sơ này nói `live-rtmp-grace-watchdog` và `live-replay-archive-cron` "không cần deploy".
+**Điều đó SAI.** Mỗi Edge Function được bundle kèm **bản sao riêng** của các tệp `_shared/`, nên một function
+chỉ nhận được bản sửa helper khi chính nó được deploy lại. Hai cron này mới là bên **thực sự gọi
+`endRtmpLiveSession`** để kết thúc phiên, nên nếu bỏ qua chúng thì lỗi vẫn còn.
+
+Phạm vi đúng — 5 function (đã deploy ngày 2026-11-09):
+
+| Function | Version mới | Ghi chú |
+|---|---|---|
+| `stream-webhook` | **91** | nhận webhook Cloudflare, chọn video live để dựng preview |
+| `get-rtmp-live-session-status` | **93** | poll trạng thái nguồn cho Live Producer |
+| `go-live-rtmp-session` | **89** | recheck nguồn trước khi lên sóng |
+| `live-rtmp-grace-watchdog` | **92** | **bên gọi kết thúc phiên** (quan trọng nhất) |
+| `live-replay-archive-cron` | **98** | **bên gọi kết thúc phiên** + archive replay |
+
+Các function khác có import `cloudflareStreamService.ts` (`admin-replay-debug`, `create-rtmp-live-session`,
+`delete-post-archive`, `live-replay-poll-status`, `live-replay-resolve-stuck`, `live-rtmp-cleanup-stuck`,
+`reset-rtmp-stream-key`, `rtmp-repair-missing-live-inputs`, `stream-orphan-cleanup`) **không** cần deploy lượt này:
+đã kiểm tra chúng chỉ dùng các hàm khác (`getStreamPlaybackUrls`, `getStreamVideo`, `createStreamLiveInput`,
+`setStreamLiveInputEnabled`…) và **không** gọi `detectRtmpLiveConnection` để quyết định kết thúc phiên.
+
+Kiểm tra trước khi deploy 2 cron: `git log --since=2026-10-20` cho thấy **không có** commit nào khác chạm vào
+`live-rtmp-grace-watchdog/`, `live-replay-archive-cron/` hay các helper phụ thuộc ⇒ deploy lần này chỉ mang theo
+đúng bản vá nhận diện video, không kéo theo thay đổi nào chưa được duyệt.
+
+### 5.3 Kiểm chứng sau deploy
+
+- `supabase functions list --project-ref tljfqavndndfsvtazibe` → cả 5 function **ACTIVE** đúng version ở bảng trên.
+- CORS preflight `OPTIONS` cho cả 5 function → **204**.
+- `POST` không kèm JWT tới 4 function nội bộ → **401** (guard còn nguyên).
+- `POST {}` tới `stream-webhook` → **401 `{"error":"Invalid signature"}`** — đúng kỳ vọng: hàm vẫn xác thực chữ ký
+  webhook Cloudflare bình thường.
+- Không có migration; **không** đổi cron schedule, secret hay dữ liệu.
+
+Còn lại: chạy một phiên RTMP thật > 5 phút để kiểm chứng end-to-end (xem mục 7).
 
 Kiểm chứng sau deploy: tạo một phiên RTMP mới, để chạy > 5 phút, xác nhận **không** tự kết thúc và log
 `[OBS_DETECT_V2]` có `videoStreaming: true` cùng `activeVideoReason` là một trong
