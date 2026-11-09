@@ -117,16 +117,39 @@ Kiểm tra trước khi deploy 2 cron: `git log --since=2026-10-20` cho thấy *
   webhook Cloudflare bình thường.
 - Không có migration; **không** đổi cron schedule, secret hay dữ liệu.
 
-Còn lại: chạy một phiên RTMP thật > 5 phút để kiểm chứng end-to-end (xem mục 7).
+### 5.4 Xác minh chính mã đang chạy trên production
 
-Kiểm chứng sau deploy: tạo một phiên RTMP mới, để chạy > 5 phút, xác nhận **không** tự kết thúc và log
-`[OBS_DETECT_V2]` có `videoStreaming: true` cùng `activeVideoReason` là một trong
-`persisted_uid_live | session_meta_live | session_window_live | live_input_active_video`.
+Đã tải **mã đang chạy** từ project bằng `supabase functions download <fn> --project-ref tljfqavndndfsvtazibe`
+(ra thư mục tạm, **không** đụng repo) rồi so với repo:
+
+| Function | Có `resolveRtmpCurrentActiveVideo` | Còn bộ lọc cũ `armed_at ± 60s` | So với repo |
+|---|---|---|---|
+| `stream-webhook` | có | **không còn** | giống hệt |
+| `get-rtmp-live-session-status` | có | **không còn** | giống hệt |
+| `go-live-rtmp-session` | có | **không còn** | giống hệt |
+| `live-rtmp-grace-watchdog` | có | **không còn** | giống hệt |
+| `live-replay-archive-cron` | có | **không còn** | giống hệt (chỉ khác 1 ký tự BOM vô hại; 560 dòng y hệt) |
+
+Mỗi function bundle **bản sao riêng** của `_shared/cloudflareStreamService.ts`, nên bảng này là bằng chứng trực tiếp
+rằng cả 5 function đều đã chạy bộ nhận diện mới, không còn function nào giữ bộ lọc cũ.
+
+### 5.5 Kết quả kiểm chứng end-to-end — ĐẠT
+
+- Cha chạy một phiên RTMP thật (nguồn **Restream**) ngày 2026-11-09, sau khi cả 5 function đã deploy.
+- Phiên **vượt mốc 7 phút** và vẫn đang phát tại thời điểm ghi nhận — mốc cũ là tự kết thúc ở ~4–7 phút.
+- **Không** xuất hiện thông báo `live_auto_ended` ("Live của bạn đã tự kết thúc"). Thông báo này được ghi đúng 1 lần
+  cho mỗi lần tự kết thúc (chống trùng theo `live_session_id`), nên việc thiếu nó là dấu hiệu đáng tin.
+- Không phải mở lại Live Producer, không gặp lại "Unable to connect" ở đích Restream.
+- Kết luận: lỗi tự kết thúc oan đã hết; các nhánh an toàn (input connected mà không có video live ⇒ vẫn ân hạn rồi
+  kết thúc) được giữ nguyên.
 
 ## 6. Cách khôi phục
 
-Revert commit trên nhánh này (`git revert <sha>`) và deploy lại 3 function về bản trước, hoặc deploy lại
+Revert commit trên nhánh này (`git revert <sha>`) và deploy lại 5 function về bản trước, hoặc deploy lại
 version cũ qua Supabase Dashboard. Không có thay đổi DB nên không cần rollback dữ liệu.
+Version ngay trước khi sửa (suy ra từ số version hiện tại, mỗi lần deploy tăng 1): `stream-webhook` 90,
+`get-rtmp-live-session-status` 92, `go-live-rtmp-session` 88, `live-rtmp-grace-watchdog` 91,
+`live-replay-archive-cron` 97.
 
 ## 7. Giới hạn còn lại
 
