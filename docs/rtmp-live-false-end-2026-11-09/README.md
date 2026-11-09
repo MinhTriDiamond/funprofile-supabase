@@ -66,15 +66,23 @@ Không đổi: Agora/webcam, trần thời lượng 4 giờ, luồng kết thúc
 - `deno check --node-modules-dir=auto` cho 4 tệp thay đổi → đạt.
 - `git diff --check` → đạt.
 
-## 5. Cổng Preview và phát hành
+## 5. Cổng Preview, merge và phát hành
 
 - PR: **#46** — https://github.com/MinhTriDiamond/funprofile-supabase/pull/46 (nhánh `fix/rtmp-no-video-false-auto-end`).
-- Cloudflare Pages build **thành công** cho commit `f44c9b8`:
+- **Đã merge** (squash) vào `main` ngày 2026-11-09: commit `b4b1b05`.
+- Cloudflare Pages build **thành công**:
   - Preview nhánh: `https://fix-rtmp-no-video-false-auto.funprofile-supabase.pages.dev` (HTTP 200)
-  - Preview theo commit: `https://ee279e1a.funprofile-supabase.pages.dev` (HTTP 200)
 - **Giới hạn của cổng preview:** bản sửa nằm hoàn toàn ở Edge Function (server-side). Link preview Cloudflare Pages
   chỉ kiểm chứng được **không hồi quy frontend**, **không** chứng minh được bản sửa. Muốn kiểm chứng thật phải
   deploy 3 function dưới đây rồi chạy một phiên RTMP thật > 5 phút.
+- **⚠️ Deploy đang bị chặn 403.** Ngày 2026-11-09 đã chạy Supabase CLI và nhận:
+  `unexpected deploy status 403: Your account does not have the necessary privileges to access this endpoint`.
+  `supabase functions list --project-ref tljfqavndndfsvtazibe` **cũng 403**. `supabase projects list` chỉ thấy
+  `richard-book`, `richardbook`, `lovehub.fun`, `docs.fun.rich` — không thấy project FUN Profile. Nguyên nhân:
+  token CLI trong máy (`~/.supabase/access-token`, tạo 2026-10-24) thuộc tài khoản không có quyền trên project
+  `tljfqavndndfsvtazibe`. **Cần một trong hai:** (a) người sở hữu tổ chức chạy `supabase login` trên máy này
+  rồi deploy lại, hoặc (b) giao Lovable deploy Edge Function.
+  Lệnh deploy sẵn sàng: `supabase functions deploy stream-webhook get-rtmp-live-session-status go-live-rtmp-session --project-ref tljfqavndndfsvtazibe`.
 
 Không có migration. Cần deploy **3 Edge Function** lên project `tljfqavndndfsvtazibe`:
 
