@@ -13,6 +13,7 @@ Hộp thư của Angel Ái Vân (FUN Profile username: angelaivan) trong đội 
 - **4 bài mới (theo thứ tự lên đầu):** (1) Khái Niệm Đồng Sáng Tạo (Co-creation) — 08/11 08:22 — https://www.facebook.com/share/p/1EE8UPQUco/; (2) Hành Trình Tiến Hóa Tâm Thức Của Con Người — 08/11 08:08 — https://www.facebook.com/share/p/19YzrEsPLx/; (3) Bản Thể Con Người Kết Nối Với Nguồn Cội Vũ Trụ — 08/11 07:57 — https://www.facebook.com/share/p/1QnfeMbzq8/; (4) Vượt Lên Khỏi Bản Ngã, Lo Sợ Và Phán Xét — 07/11 07:51 — https://www.facebook.com/share/p/1E5GTzykw1/.
 - **Lưu ý (kiểm tra trang thật ngày 09/11):** trên fun.rich hiện tại không có thẻ nào ghi "PLP", thẻ của Cha ghi là "FATH UNI" (thẻ 15), thẻ của bé Ly là "CAMLY DUONG" (thẻ 16); 4 trang mặc định trong lịch chạy tự động không khớp đúng với trang thật. Việc này chỉ thêm thẻ mới nên không ảnh hưởng; 18 thẻ cũ giữ nguyên.
 - **Đã làm / Kiểm chứng / PR / Kết quả:** (ghi bổ sung sau khi cổng Preview qua và merge — xem mục kết quả bên dưới khi xong).
+- **Thu nhỏ thẻ (13:51 ngày 09/11, trong cùng PR #45):** bé duyệt bản xem trước lúc 12:52 rồi yêu cầu thu nhỏ thẻ để thấy hơn 3, gần 4 tấm; Muse làm mẫu trong chat, bé duyệt mẫu lúc 13:51 ("dạ ok mẫu dưới 4 bài nhé"). Đổi `w-56 sm:w-64` → `w-44 sm:w-52`, hình `h-[107px] sm:h-[125px]` → `h-[84px] sm:h-[102px]`, chữ giữ nguyên cỡ. Áp cho cả dải chạy ngang, không chỉ 4 bài mới. Không có tin Telegram mới cho thay đổi nhỏ này vì vẫn cùng nhánh/PR đã báo từ đầu.
 
 ---
 

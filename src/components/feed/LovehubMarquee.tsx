@@ -345,9 +345,9 @@ export function LovehubMarquee() {
             draggable={false}
             onClickCapture={onLinkClickCapture}
             onDragStart={(e) => e.preventDefault()}
-            className="shrink-0 w-56 sm:w-64 bg-card border border-border/40 rounded-xl shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 overflow-hidden"
+            className="shrink-0 w-44 sm:w-52 bg-card border border-border/40 rounded-xl shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 overflow-hidden"
           >
-            <div className="w-full h-[107px] sm:h-[125px] overflow-hidden bg-muted">
+            <div className="w-full h-[84px] sm:h-[102px] overflow-hidden bg-muted">
               <img
                 src={item.img}
                 alt={t(item.titleKey)}
