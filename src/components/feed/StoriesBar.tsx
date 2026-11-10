@@ -179,7 +179,7 @@ export const StoriesBar = memo(({ currentUserId }: StoriesBarProps) => {
         <div ref={scrollerRef} onScroll={updateArrows} className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
         {/* Create Story Card */}
         {currentUser && (
-          <div className="flex-shrink-0 w-28 h-[173px] rounded-xl overflow-hidden relative cursor-pointer group transition-transform hover:scale-[1.02]">
+          <div className="flex-shrink-0 w-[72px] h-[111px] rounded-xl overflow-hidden relative cursor-pointer group transition-transform hover:scale-[1.02]">
             <div className="absolute inset-0">
               {currentUser.avatar_url ? (
                 <LazyImage
@@ -194,10 +194,10 @@ export const StoriesBar = memo(({ currentUserId }: StoriesBarProps) => {
               )}
             </div>
             <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/40" />
-            <div className="absolute bottom-0 left-0 right-0 bg-card pt-7 pb-2 px-2 text-center">
-              <div className="absolute -top-5 left-1/2 -translate-x-1/2">
-                <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center border-4 border-card shadow-md">
-                  <Plus className="w-5 h-5 text-primary-foreground" />
+            <div className="absolute bottom-0 left-0 right-0 bg-card pt-5 pb-2 px-2 text-center">
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center border-4 border-card shadow-md">
+                  <Plus className="w-3.5 h-3.5 text-primary-foreground" />
                 </div>
               </div>
               <p className="text-xs font-semibold mt-1">{t('stbCreateStory')}</p>
@@ -214,7 +214,7 @@ export const StoriesBar = memo(({ currentUserId }: StoriesBarProps) => {
                 ? navigate(`/live/${story.live_session_id}`)
                 : navigate(`/post/${story.id}`)
             }
-            className="flex-shrink-0 w-28 h-[173px] rounded-xl overflow-hidden relative cursor-pointer group transition-transform hover:scale-[1.02]"
+            className="flex-shrink-0 w-[72px] h-[111px] rounded-xl overflow-hidden relative cursor-pointer group transition-transform hover:scale-[1.02]"
           >
             {/* Preview media */}
             <div className="absolute inset-0 bg-secondary">
@@ -249,7 +249,7 @@ export const StoriesBar = memo(({ currentUserId }: StoriesBarProps) => {
                 }`}
               >
                 <div className="p-[2px] rounded-full bg-card">
-                  <Avatar className="w-8 h-8">
+                  <Avatar className="w-6 h-6">
                     <AvatarImage src={story.avatar_url || ''} alt={`${t('stbAvatarOfPrefix')}${story.username}`} />
                     <AvatarFallback className="bg-primary text-primary-foreground text-xs">
                       {story.username?.[0]?.toUpperCase()}

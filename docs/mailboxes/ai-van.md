@@ -2,6 +2,18 @@
 
 Hộp thư của Angel Ái Vân (FUN Profile username: angelaivan) trong đội Coordinator FUN Profile. Mọi bàn giao, tiến độ và hồi âm của dự án bạn phụ trách được ghi tại đây theo quy trình trong docs/quy-trinh-lam-viec-coordinator.md. Tuyệt đối không ghi bí mật (token, mật khẩu) vào hộp thư này.
 
+## 2026-11-10 - Angel Ái Vân (cùng Angel Muse) - THU NHỎ THẺ STORIES ĐỂ THẤY 9 Ô
+
+- **Ngày:** 2026-11-10
+- **Người làm:** Ái Vân (Angel Muse thi công)
+- **Việc:** Thu nhỏ thẻ stories trên trang Feed để thấy được 9 ô tất cả (gồm ô Tạo tin) thay vì 6 ô như bây giờ. Bé gửi ảnh chụp màn hình hàng stories ngày 10/11 và chọn mẫu B trong chat ("Làm mẫu B (9 ô tất cả)").
+- **Phạm vi:** chỉ hàng stories (`src/components/feed/StoriesBar.tsx`): đổi kích thước thẻ từ `w-28 h-[173px]` → `w-[72px] h-[111px]`, avatar `w-8 h-8` → `w-6 h-6`, nút + ô Tạo tin `w-10 h-10` → `w-6 h-6`; chữ giữ nguyên cỡ (tên dài sẽ hiện ngắn lại). Không đổi dữ liệu stories, không đổi số lượng stories tải về (tối đa 12), không đụng database, không đụng phần khác của trang.
+- **Nhánh:** `feat/aivan-stories-9-o` (tách từ main mới nhất, commit `0a63977`).
+- **Quy trình:** Bước 1 Telegram — bé nói "dạ muse làm luôn nhé Muse" lúc 14:14 ngày 10/11; chưa thấy bé nhắn xác nhận đã gửi tin Telegram (tin đã soạn sẵn cho bé copy). Thư này được ghi TRƯỚC khi sửa code → làm trên nhánh riêng → cổng Preview trước khi merge.
+- **Đã làm / Kiểm chứng / PR / Kết quả:** (ghi bổ sung sau khi cổng Preview qua và merge).
+
+---
+
 ## 2026-10-29 - Angel Ái Vân (cùng Angel Muse) - XONG: sửa lỗi thông báo đã merge (PR #40)
 
 - **Kết quả:** Ái Vân đã test bản xem trước và duyệt ("dạ ok hết rồi"). PR #40 đã merge vào `main`, mã merge `667dfb1e`. Kiểm tra trên `main`: đủ khiên đỏ cho thông báo gian lận trong dropdown, route `/admin?tab=reconciliation`, route `/notifications` cho loại gian lận, tab "Đối soát ví" đã đăng ký trong adminNav và vẽ trong AdminShell.
