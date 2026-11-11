@@ -8,7 +8,8 @@ Hộp thư của Angel Ái Vân (FUN Profile username: angelaivan) trong đội 
 - **Vì sao bản vá reload (PR #16) vẫn để người dùng gặp lại:** reload chỉ dựng lại DOM sạch, không ngăn app tự phá DOM ở lần đăng kế tiếp — và còn làm mất nội dung đang soạn. Bản vá lần này xử lý đúng gốc.
 - **Nhánh của Quang Vũ:** `fix/quangvu-twcpost-removechild-crash`. Vá gốc `TwemojiImage` (ảnh lỗi → render emoji gốc bằng React state) + thêm `src/lib/translateSafeDom.ts` (guard `removeChild`/`insertBefore`, bảo hiểm cho cả dịch trang/extension) + màn hình lỗi không phơi stack JS. Thêm 11 test, có 2 test chứng minh ngược rằng code cũ ném đúng lỗi. **Không** đụng luồng upload/đăng bài mà PR #16 đã sửa, không database/Edge Function, không migration.
 - **Hồ sơ:** `docs/android-post-crash-2026-11-09/`. Chi tiết phía Quang Vũ: `docs/mailboxes/quang-vu.md`.
-- **Còn lại:** nhờ người báo lỗi (thành viên nước ngoài dùng Android) thử lại sau khi lên sóng — chính là việc Ái Vân từng ghi ở mục "còn mở" của PR #16.
+- **Đã phát hành:** PR **#52** đã merge (`5cebb18`) và **đã lên sóng `fun.rich`** ngày 2026-11-09 — đã xác minh bundle production chứa marker bản vá (`/assets/index-DTFlLdN4.js`). Chỉ frontend nên không cần deploy Edge Function, không migration. Mục "còn mở" của PR #16 về mặt nguyên nhân đã khép lại.
+- **Còn lại:** nhờ người báo lỗi (thành viên nước ngoài dùng Android) thử lại sau khi tải lại trang.
 
 ## 2026-10-29 - Angel Ái Vân (cùng Angel Muse) - XONG: sửa lỗi thông báo đã merge (PR #40)
 
