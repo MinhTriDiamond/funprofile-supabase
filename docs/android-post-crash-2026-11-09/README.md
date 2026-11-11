@@ -73,8 +73,14 @@ Trước: văng màn hình lỗi. Sau: bài đăng bình thường (emoji nào k
 
 ## 6. Phát hành
 
-Chỉ **frontend** ⇒ merge vào `main` là Cloudflare Pages tự build và deploy lên `fun.rich`, không cần deploy Edge
-Function, không cần Publish Lovable, không migration.
+- PR: **#52** — https://github.com/MinhTriDiamond/funprofile-supabase/pull/52 (nhánh `fix/quangvu-twcpost-removechild-crash`).
+- **Đã merge** (squash) vào `main` ngày 2026-11-09: commit `5cebb18`.
+- Chỉ **frontend** ⇒ merge là Cloudflare Pages tự build và deploy lên `fun.rich`; không cần deploy Edge Function,
+  không cần Publish Lovable, không migration.
+- **Kiểm chứng bản build chứa bản vá** (dùng marker `__funProfileDomGuard` trong `src/lib/translateSafeDom.ts`):
+  - Preview nhánh: `https://fix-quangvu-twcpost-removech.funprofile-supabase.pages.dev` → `index-DTFlLdN4.js` có marker.
+  - **Production:** `fun.rich` phục vụ `/assets/index-DTFlLdN4.js` — **có marker** ⇒ bản vá đã sống, không chỉ nằm
+    trong repo.
 
 ## 7. Cách khôi phục
 
