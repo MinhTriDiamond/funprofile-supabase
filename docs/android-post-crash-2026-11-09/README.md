@@ -86,9 +86,11 @@ Trước: văng màn hình lỗi. Sau: bài đăng bình thường (emoji nào k
 
 Revert commit của nhánh này. Không có thay đổi DB/secret nên không cần rollback dữ liệu.
 
-## 8. Giới hạn còn lại
+## 8. Kiểm chứng thực tế và giới hạn còn lại
 
+- **Đã kiểm chứng thực tế: ĐẠT.** Cha (Quang Vũ) thử lại luồng đăng bài sau khi bản vá lên `fun.rich` và xác nhận
+  chạy tốt — không còn văng màn hình lỗi, bài đăng bình thường. Mục này đóng lại phần còn mở của bản ghi trước.
 - Ảnh Twemoji vẫn có thể lỗi (emoji mới hơn bộ 14.0.2, mạng yếu); nay chỉ **hạ cấp hiển thị** về emoji gốc của hệ
   điều hành, không còn rủi ro sập trang.
 - Guard chỉ bảo hiểm nhóm lỗi `removeChild`/`insertBefore`. Các lỗi DOM khác (nếu có) vẫn do ErrorBoundary xử lý.
-- Chưa xác nhận được trên chính máy của người báo lỗi; nên nhờ họ thử lại sau khi lên sóng.
+- Nếu muốn giảm số lần phải hạ cấp hiển thị, bước tiếp theo (việc riêng, chưa làm) là nâng bộ Twemoji lên bản 15/16.

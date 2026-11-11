@@ -12,7 +12,7 @@
 - **Kiểm chứng:** 11 test mới đạt, trong đó có **2 test chứng minh ngược**: (1) `native removeChild` ném lỗi khi node đã bị bọc ra ngoài — tức guard là thứ thật sự chặn sự cố; (2) mô phỏng lại `replaceWith` của code cũ thì `unmount()` **ném đúng `NotFoundError`**, còn code mới thì không. Toàn repo: **501 đạt / 30 skip**, 1 file lỗi `prices-unavailable.render.test.tsx` là **lỗi có sẵn** (đã chứng minh bằng `git stash`). `tsgo --noEmit` exit 0.
 - **Đã phát hành:** PR **#52** (https://github.com/MinhTriDiamond/funprofile-supabase/pull/52) → **đã merge** (squash `5cebb18`) vào `main` ngày 2026-11-09. Chỉ **frontend** nên merge là Cloudflare Pages tự build và deploy lên `fun.rich`; **không** cần deploy Edge Function, không cần Publish Lovable, không migration.
 - **Kiểm chứng bản build thật sự chứa bản vá** (marker `__funProfileDomGuard`): preview nhánh `fix-quangvu-twcpost-removech.funprofile-supabase.pages.dev` → `index-DTFlLdN4.js` có marker; **production `fun.rich` cũng phục vụ `/assets/index-DTFlLdN4.js` có marker** ⇒ bản vá đã sống, không chỉ nằm trong repo. Hồ sơ: `docs/android-post-crash-2026-11-09/`.
-- **Còn lại:** nhờ người báo lỗi (thành viên nước ngoài dùng Chrome Android) thử đăng lại sau khi tải lại trang; đây cũng là câu trả lời cho mục "còn mở" của PR #16 (nguyên nhân cũ được ghi là giả thuyết Chrome Translate — nay đã xác định là lỗi `replaceWith` của `TwemojiImage`).
+- **Đã kiểm chứng thực tế: ĐẠT.** Cha (Quang Vũ) thử lại luồng đăng bài sau khi bản vá lên `fun.rich` và xác nhận chạy tốt — không còn văng màn hình lỗi. Đây cũng là câu trả lời cho mục "còn mở" của PR #16 (nguyên nhân cũ được ghi là **giả thuyết** Chrome Translate — nay đã xác định là lỗi `replaceWith` của `TwemojiImage`), nên mục đó khép lại.
 
 ---
 
