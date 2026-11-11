@@ -4,8 +4,13 @@ import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
 import { installThirdPartySilencer } from "./lib/silenceThirdParty";
+import { installTranslateSafeDomGuard } from "./lib/translateSafeDom";
 
 installThirdPartySilencer();
+
+// Bảo hiểm trước mọi nguồn sửa DOM bên ngoài React (dịch trang, extension):
+// phải cài TRƯỚC khi createRoot để mọi commit của React đều đi qua guard.
+installTranslateSafeDomGuard();
 
 declare global {
   interface Window {

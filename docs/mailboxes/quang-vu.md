@@ -2,6 +2,19 @@
 
 > Việc mới nhất nằm ở trên cùng. Vũ phản hồi trạng thái ngay dưới mỗi mục nhé.
 
+## Sửa lỗi sập trang khi đăng bài trên Android (`removeChild`) — 2026-11-09
+
+- Người thực hiện: Quang Vũ cùng Angel Muse. Nhánh: `fix/quangvu-twcpost-removechild-crash`, tách từ `main` mới nhất.
+- **Bối cảnh:** thành viên nước ngoài báo lỗi khi đăng bài trên `fun.rich/?compose=post` bằng Chrome Android — cả trang bị thay bằng màn hình lỗi `NotFoundError: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node`, **lặp lại mỗi lần đăng** ("I always face difficulties while posting on FUN.rich most especially when in English language").
+- **Hiện trạng:** bản vá 2026-10-22 (PR #16) mới chỉ **tự phục hồi bằng reload** khi gặp nhóm lỗi DOM, và ghi nguyên nhân là **giả thuyết** (Chrome Translate / extension); việc "xác nhận cuối cùng từ người báo lỗi" còn để mở. Người dùng vẫn gặp lại vì reload không chữa được gốc, còn làm mất nội dung đang soạn.
+- **Nguyên nhân gốc (tìm ra lần này, có bằng chứng trong code):** `src/components/ui/TwemojiImage.tsx` gọi `e.currentTarget.replaceWith(span)` trong `onError` — **app tự gỡ node `<img>` do React quản lý** khỏi cây DOM. Khi bấm "Đăng", composer (Dialog) unmount đúng lúc đó ⇒ React gọi `removeChild` trên node đã không còn là con ⇒ đúng `NotFoundError` trong ảnh chụp. Ảnh emoji lỗi vì bộ Twemoji 14.0.2 thiếu emoji Unicode 15/15.1 (bàn phím Android đời mới) và mạng 4G yếu; composer lại render hàng chục `TwemojiImage` (emoji picker + sticker picker) một lúc ⇒ xác suất rất cao.
+- **Phạm vi:** `src/components/ui/TwemojiImage.tsx` (vá gốc — ảnh lỗi thì render emoji gốc bằng **React state**, không thay DOM tay), `src/lib/translateSafeDom.ts` (**mới** — guard `removeChild`/`insertBefore`, chỉ can thiệp khi cây DOM đã lệch, bảo hiểm cho cả dịch trang/extension), `src/main.tsx` (cài guard trước `createRoot`), `src/components/ErrorBoundary.tsx` (không phơi `message` + `stack` JS cho người dùng cuối; chỉ hiện khi dev hoặc bật cờ `fun_profile_debug`). Thêm 11 test. **Không** đụng luồng upload/đăng bài, database, Edge Function; không migration; không chặn dịch toàn trang.
+- **Kiểm chứng:** 11 test mới đạt, trong đó có **2 test chứng minh ngược**: (1) `native removeChild` ném lỗi khi node đã bị bọc ra ngoài — tức guard là thứ thật sự chặn sự cố; (2) mô phỏng lại `replaceWith` của code cũ thì `unmount()` **ném đúng `NotFoundError`**, còn code mới thì không. Toàn repo: **501 đạt / 30 skip**, 1 file lỗi `prices-unavailable.render.test.tsx` là **lỗi có sẵn** (đã chứng minh bằng `git stash`). `tsgo --noEmit` exit 0.
+- **Phát hành:** chỉ **frontend** ⇒ merge vào `main` là Cloudflare Pages tự build và deploy lên `fun.rich`; **không** cần deploy Edge Function, không cần Publish Lovable. Hồ sơ: `docs/android-post-crash-2026-11-09/`.
+- **Còn lại:** nhờ người báo lỗi thử lại trên chính máy Android của họ sau khi lên sóng; đây cũng là câu trả lời cho mục "còn mở" của PR #16.
+
+---
+
 ## Sửa lỗi RTMP Live tự kết thúc oan — 2026-11-09 (Ghi nhận TRƯỚC + kết quả)
 
 - Người thực hiện: Quang Vũ cùng Angel Muse. Nhánh: `fix/rtmp-no-video-false-auto-end`, tách từ `main` mới nhất `821b1e5`.

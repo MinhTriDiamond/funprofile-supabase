@@ -2,6 +2,14 @@
 
 Hộp thư của Angel Ái Vân (FUN Profile username: angelaivan) trong đội Coordinator FUN Profile. Mọi bàn giao, tiến độ và hồi âm của dự án bạn phụ trách được ghi tại đây theo quy trình trong docs/quy-trinh-lam-viec-coordinator.md. Tuyệt đối không ghi bí mật (token, mật khẩu) vào hộp thư này.
 
+## 2026-11-09 — Quang Vũ (cùng Angel Muse) — TÌM RA NGUYÊN NHÂN GỐC của lỗi sập trang khi đăng bài (mục còn mở của PR #16)
+
+- **Để Ái Vân biết và đóng mục "còn mở" ở thư 2026-10-22:** nguyên nhân gốc **không phải** Chrome Translate/extension như giả thuyết khi đó, mà là **lỗi của app**: `src/components/ui/TwemojiImage.tsx` gọi `e.currentTarget.replaceWith(span)` trong `onError` — tự gỡ node `<img>` do React quản lý khỏi cây DOM. Khi composer (Dialog) unmount lúc bấm "Đăng", React gọi `removeChild` trên node đã không còn là con ⇒ `NotFoundError` ⇒ sập toàn trang. Ảnh emoji lỗi vì bộ Twemoji 14.0.2 thiếu emoji Unicode mới (bàn phím Android đời mới) và mạng 4G yếu, trong khi composer render hàng chục ảnh emoji/sticker cùng lúc.
+- **Vì sao bản vá reload (PR #16) vẫn để người dùng gặp lại:** reload chỉ dựng lại DOM sạch, không ngăn app tự phá DOM ở lần đăng kế tiếp — và còn làm mất nội dung đang soạn. Bản vá lần này xử lý đúng gốc.
+- **Nhánh của Quang Vũ:** `fix/quangvu-twcpost-removechild-crash`. Vá gốc `TwemojiImage` (ảnh lỗi → render emoji gốc bằng React state) + thêm `src/lib/translateSafeDom.ts` (guard `removeChild`/`insertBefore`, bảo hiểm cho cả dịch trang/extension) + màn hình lỗi không phơi stack JS. Thêm 11 test, có 2 test chứng minh ngược rằng code cũ ném đúng lỗi. **Không** đụng luồng upload/đăng bài mà PR #16 đã sửa, không database/Edge Function, không migration.
+- **Hồ sơ:** `docs/android-post-crash-2026-11-09/`. Chi tiết phía Quang Vũ: `docs/mailboxes/quang-vu.md`.
+- **Còn lại:** nhờ người báo lỗi (thành viên nước ngoài dùng Android) thử lại sau khi lên sóng — chính là việc Ái Vân từng ghi ở mục "còn mở" của PR #16.
+
 ## 2026-10-29 - Angel Ái Vân (cùng Angel Muse) - XONG: sửa lỗi thông báo đã merge (PR #40)
 
 - **Kết quả:** Ái Vân đã test bản xem trước và duyệt ("dạ ok hết rồi"). PR #40 đã merge vào `main`, mã merge `667dfb1e`. Kiểm tra trên `main`: đủ khiên đỏ cho thông báo gian lận trong dropdown, route `/admin?tab=reconciliation`, route `/notifications` cho loại gian lận, tab "Đối soát ví" đã đăng ký trong adminNav và vẽ trong AdminShell.

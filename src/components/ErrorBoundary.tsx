@@ -29,6 +29,24 @@ interface State {
 }
 
 const AUTO_RETRY_SECONDS = 5;
+const TECHNICAL_DETAILS_FLAG = "fun_profile_debug";
+
+/**
+ * Chi tiết kỹ thuật (message + stack) chỉ hiện ở môi trường dev hoặc khi người
+ * dùng bật cờ `fun_profile_debug = '1'` trong localStorage.
+ *
+ * Sự cố 2026-11-09: màn hình lỗi phơi nguyên stack JS cho một thành viên nước
+ * ngoài trên Android — vừa khó hiểu vừa lộ chi tiết nội bộ. Chẩn đoán vẫn được
+ * ghi đầy đủ ra console qua `getErrorDiagnostics()`.
+ */
+function shouldShowTechnicalDetails(): boolean {
+  if (import.meta.env.DEV) return true;
+  try {
+    return window.localStorage.getItem(TECHNICAL_DETAILS_FLAG) === "1";
+  } catch {
+    return false;
+  }
+}
 
 class ErrorBoundaryInner extends Component<InnerProps, State> {
   private retryTimer: number | null = null;
@@ -169,7 +187,7 @@ class ErrorBoundaryInner extends Component<InnerProps, State> {
                 {t('erbModuleLabel')}<span className="font-semibold">{this.state.lazyLabel}</span>
               </div>
             )}
-            {this.state.error && !isChunkError && (
+            {this.state.error && !isChunkError && shouldShowTechnicalDetails() && (
               <pre className="text-left text-xs bg-muted p-3 rounded-lg overflow-auto max-h-40 text-destructive">
                 {this.state.error.message}
                 {"\n"}
