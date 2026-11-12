@@ -2,6 +2,21 @@
 
 > Việc mới nhất nằm ở trên cùng. Vũ phản hồi trạng thái ngay dưới mỗi mục nhé.
 
+## 2026-11-13 — HOÀN THÀNH KHÔI PHỤC 200000 CAMLY (TX 0x0e47…5ad4)
+
+- Cha đã duyệt khôi phục. Reverify receipt success; backup trước đều rỗng. Thử ROLLBACK và assert đầy đủ rồi COMMIT đúng một donation + gift post, trigger đồng bộ 2 transactions/2 snapshot rows. Không gửi thêm tiền, không đổi ví/schema/trigger hay phát thưởng thủ công.
+- Donation da0c3856-8c02-404a-ac2f-4d44bec72206; public gift post 0082e117-2559-40c4-8c77-2822f3ba66b7; đúng 200000 CAMLY, giờ block 2026-11-12T15:59:05Z và lời nhắn.
+- Kiểm chứng public API: lịch sử trả đúng TX, endpoint chi tiết Card đủ dữ liệu, post HTTP200; summary người nhận 2→3 giao dịch, CAMLY 200000→400000. BNB giữ nguyên. Chưa xác minh UI thực tế do công cụ browser lỗi; Cha cần tải lại lịch sử để thấy dữ liệu đã cập nhật.
+- Hồ sơ + SQL rollback + evidence: docs/android-gift-card-2026-11-13/. Thay đổi nằm tại DATABASE PRODUCTION tljfqavndndfsvtazibe; PR #56 frontend vẫn chưa merge.
+
+
+## 2026-11-13 — ĐƯỢC PHÉP KHÔI PHỤC TX GIFT THIẾU
+
+- Cha xác nhận “OK CHA ĐỒNG Ý, BÉ KHÔI PHỤC NHÉ” cho TX 0x0e47286f...e5ad4, 200000 CAMLY, angelquangvu → amosmuhwezi.
+- Đã reverify receipt success và decode Transfer bằng viem/BigInt. Phạm vi: khôi phục 1 donation + 1 gift celebration; để trigger hiện hành đồng bộ transactions/snapshot lịch sử. Không gửi tiền mới, không đổi liên kết ví, không thay schema/trigger/auth, không phát thưởng thủ công.
+- Endpoint record-donation yêu cầu phiên app sender/admin hiện chưa có. Dùng SQL quản trị có transaction/lock/kiểm tra trùng và thử ROLLBACK trước; lưu before snapshot và SQL/rollback trong hồ sơ docs/android-gift-card-2026-11-13/.
+
+
 ## 2026-11-13 — KẾT QUẢ NHÁNH: Android gift — PR #56, chờ Preview thực tế/khôi phục
 
 - PR https://github.com/MinhTriDiamond/funprofile-supabase/pull/56, code commit 380bb82. Preview code build thành công: https://c3858e09.funprofile-supabase.pages.dev.

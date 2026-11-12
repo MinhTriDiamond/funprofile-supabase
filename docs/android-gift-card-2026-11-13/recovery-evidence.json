@@ -1,0 +1,95 @@
+{
+  "verified_at_utc": "2026-11-12T23:35:44.806971+00:00",
+  "chain_receipt_status": "0x1",
+  "transfer": {
+    "hash": "0x0e47286f240e22b9006cf5f58b6a3ea12d6e33022c1e0d753a6443efd03e5ad4",
+    "from": "0x7e12ce3a5e95ce580b647a1a3f5700266f471ec8",
+    "to": "0x8b73415e530163df2e1ec4d45a641858a4af4bfb",
+    "rawAmount": "200000000",
+    "amount": "200000",
+    "decimals": 3,
+    "chainId": 56
+  },
+  "before_counts": {
+    "donations": 0,
+    "posts": 0,
+    "snapshot": 0,
+    "transactions": 0
+  },
+  "after": {
+    "donations": [
+      {
+        "amount": "200000",
+        "created_at": "2026-11-12T15:59:05+00:00",
+        "id": "da0c3856-8c02-404a-ac2f-4d44bec72206",
+        "post_id": "0082e117-2559-40c4-8c77-2822f3ba66b7",
+        "recipient_address": "0x8b73415e530163df2e1ec4d45a641858a4af4bfb",
+        "sender_address": "0x7e12ce3a5e95ce580b647a1a3f5700266f471ec8",
+        "status": "confirmed"
+      }
+    ],
+    "posts": [
+      {
+        "gift_amount": "200000",
+        "id": "0082e117-2559-40c4-8c77-2822f3ba66b7",
+        "moderation_status": "approved",
+        "post_type": "gift_celebration",
+        "visibility": "public"
+      }
+    ],
+    "snapshot": 2,
+    "transactions": 2
+  },
+  "recipient_summary": {
+    "scope": "profile",
+    "totals": {
+      "net": 400000.002,
+      "sum_in": 400000.002,
+      "sum_out": 0,
+      "count_in": 3,
+      "count_out": 0,
+      "total_usd": null,
+      "count_total": 3,
+      "sum_unknown": 0,
+      "count_pending": 0,
+      "count_unknown": 0
+    },
+    "by_type": [
+      {
+        "count": 3,
+        "tx_type": "gift"
+      }
+    ],
+    "by_chain": [
+      {
+        "chain": "bsc",
+        "count": 3,
+        "direction": "in"
+      }
+    ],
+    "by_token": [
+      {
+        "count": 1,
+        "direction": "in",
+        "sum_amount": 0.002,
+        "token_symbol": "BNB"
+      },
+      {
+        "count": 2,
+        "direction": "in",
+        "sum_amount": 400000,
+        "token_symbol": "CAMLY"
+      }
+    ],
+    "by_status": [
+      {
+        "count": 3,
+        "status": "confirmed"
+      }
+    ],
+    "target_user_id": "5812ad63-2fc7-4858-9cea-264a7d151ce6"
+  },
+  "public_history_contains_tx": true,
+  "public_card_source_id": "da0c3856-8c02-404a-ac2f-4d44bec72206",
+  "public_card_status": "confirmed"
+}

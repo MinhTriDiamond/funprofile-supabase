@@ -1,3 +1,7 @@
+## 2026-11-13 — Quang Vũ cùng Angel Muse: đã khôi phục quà Android thiếu lịch sử/card
+
+Theo xác nhận của Cha, đã khôi phục đúng TX thành công 0x0e47…5ad4 (200000 CAMLY, angelquangvu→amosmuhwezi) vào donation + gift post production, trigger đồng bộ lịch sử. Public API xác nhận TX/Card; người nhận từ 2→3 giao dịch, CAMLY 200000→400000. Không chuyển tiền mới hoặc đổi số dư on-chain. Có backup trước, dry-run rollback, SQL và evidence trong docs/android-gift-card-2026-11-13/. Bản vá phòng lỗi gửi Android nằm ở PR #56, chưa merge.
+
 ## 2026-11-13 — Quang Vũ cùng Angel Muse: dọn nhánh Git đã hoàn tất
 
 Đã xóa 4 local + 26 remote đã xác minh hoàn tất; có bundle backup và lease SHA chống xóa nhánh vừa được người khác cập nhật. Giữ 3 nhánh PR mở #29/#45/#51 và nhánh donation verification còn 4 commit riêng chưa merge. Không đổi code/production. Hồ sơ: `docs/branch-cleanup-2026-11-13/README.md`.

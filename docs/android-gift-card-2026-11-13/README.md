@@ -51,3 +51,21 @@ Chỉ frontend: Cloudflare Pages Preview kiểm tra modal/progress UI bằng tes
 ## PR và Preview bản code
 
 PR #56: https://github.com/MinhTriDiamond/funprofile-supabase/pull/56. Cloudflare check commit 380bb82: SUCCESS. Preview: https://c3858e09.funprofile-supabase.pages.dev. Chưa merge hoặc sửa dữ liệu production.
+
+
+## ĐÃ KHÔI PHỤC PRODUCTION — 2026-11-13 (cập nhật sau các mục chờ ở trên)
+
+Cha đã đồng ý khôi phục đúng TX. Đã reverify receipt bằng viem decodeEventLog/formatUnits; giữ nguyên ví profile dù ví hiện tại khác địa chỉ gửi. Backup trước thao tác: `/private/tmp/android-gift-debug/before-recovery-all.json` (donations/posts/transactions/snapshot đều 0), receipt proof tại cùng thư mục.
+
+Endpoint record-donation cần app session sender/admin mà môi trường hiện không có. Đã khôi phục bằng SQL quản trị có scope một TX, advisory lock, kiểm tra chưa tồn tại và profile, transaction nguyên tử; không hạ bảo vệ hoặc đổi schema/trigger. Đã thử toàn bộ bằng ROLLBACK và qua assert trước khi chạy COMMIT. Script: `recover-one-confirmed-tx.sql`; script rollback **chưa chạy**: `rollback-one-recovery.sql`.
+
+Kết quả đã commit:
+- Donation `da0c3856-8c02-404a-ac2f-4d44bec72206`, confirmed, 200000 CAMLY, đúng thời gian block `2026-11-12T15:59:05Z`, lời nhắn như ảnh.
+- Gift post công khai `0082e117-2559-40c4-8c77-2822f3ba66b7`, linked donation.post_id, moderation approved.
+- Trigger hiện hành tạo 2 transactions và 2 snapshot rows (gửi/nhận). Không chèn raw transactions bằng tay, không cần quét/refresh toàn hệ thống.
+- API công khai `get_unified_transactions` scope profile nhận được chính TX mới; `get_unified_transaction_detail` trả dữ liệu Card, đúng sender/recipient, theme/sound và confirmed. Public REST post trả HTTP200 và đúng gift_amount/tx_hash.
+- Summary amosmuhwezi: số giao dịch nhận **2 → 3**; CAMLY **1 lần / 200000 → 2 lần / 400000**; BNB giữ 1 lần / 0.002. Bằng chứng rút gọn: `recovery-evidence.json`.
+
+Không gửi tiền mới, không phát/mint thưởng thủ công (light_score_earned=0 theo quy ước backfill), không tạo thông báo/chat bổ sung. Đã xác minh API đọc lịch sử/Card và bài gift; thử UI browser automation không hoạt động do lỗi công cụ, chưa có xác nhận mở Card trực tiếp từ người dùng. Tải lại trang lịch sử (cache query tối đa30s) để xem kết quả trên production hoặc Preview cùng backend.
+
+Bản vá frontend phòng lỗi mới vẫn ở PR #56, chưa merge; không nhầm việc khôi phục dữ liệu lần này với phát hành bản vá.
