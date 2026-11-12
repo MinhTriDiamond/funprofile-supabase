@@ -2,6 +2,14 @@
 
 > Việc mới nhất nằm ở trên cùng. Vũ phản hồi trạng thái ngay dưới mỗi mục nhé.
 
+## 2026-11-13 — HOÀN THÀNH: bản vá Android gift đã lên fun.rich
+
+- Cha đã yêu cầu merge/deploy. PR #56 đã merge squash 987d35d; nhánh code xóa sau merge, Preview head cuối đã SUCCESS.
+- Cloudflare production build SUCCESS (deployment https://2a5434ea.funprofile-supabase.pages.dev). Đọc asset thật trên fun.rich: index-GiwMzvpS.js, useSendToken-nm_RwVlo.js có marker bản vá late-hash/in-flight lock; UnifiedGiftSendDialog-CkIGt6qW.js.
+- Kết quả: frontend mới giữ phản hồi ví Android muộn, chặn reset/gửi trùng và loop trạng thái gift; 13 regression tests + tsgo đã đạt trước merge. Không deploy Edge Function hoặc chuyển tiền thật để thử. Giao dịch thiếu lịch sử/card đã khôi phục đúng ở mục trước.
+- Hồ sơ phát hành: docs/android-gift-card-2026-11-13/README.md. Nhánh hồ sơ docs/quangvu-android-gift-release, chỉ tài liệu, không code.
+
+
 ## 2026-11-13 — HOÀN THÀNH KHÔI PHỤC 200000 CAMLY (TX 0x0e47…5ad4)
 
 - Cha đã duyệt khôi phục. Reverify receipt success; backup trước đều rỗng. Thử ROLLBACK và assert đầy đủ rồi COMMIT đúng một donation + gift post, trigger đồng bộ 2 transactions/2 snapshot rows. Không gửi thêm tiền, không đổi ví/schema/trigger hay phát thưởng thủ công.

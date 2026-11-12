@@ -7,9 +7,11 @@
 - [x] Tái hiện vòng render và rollback success qua test provider thật.
 - [x] Update idempotent và giữ terminal success cho cùng tx.
 - [x] Tái hiện khoảng trống lưu pending sau receipt, lưu trước await receipt để recovery có dữ liệu.
-- [ ] Kiểm chứng test/tsgo; review và tạo PR/Preview.
+- [x] Kiểm chứng test/tsgo; review và tạo PR/Preview.
 
 
 ## Cập nhật theo TX người dùng cung cấp
 
 TX 0x0e47286f...e5ad4 receipt success, DB cả3 bảng rỗng. Mở rộng kiểm chứng slow-sign Promise.race bỏ hashmuộn, mobile watchdog reset và nút cancel giả. Đã sửa giữ promise+in-flight lock, recheck30s sau awaitDB; 13 test đạt. Chỉ chuẩn bị khôi phục transaction cũ, chưa ghi production. Hồ sơ chi tiết docs/android-gift-card-2026-11-13/README.md.
+
+Phát hành: PR #56 merge 987d35d, Cloudflare production SUCCESS, marker bản vá được xác nhận trong useSendToken-nm_RwVlo.js trên fun.rich.
