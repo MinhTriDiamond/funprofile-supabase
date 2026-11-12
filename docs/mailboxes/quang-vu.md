@@ -2,6 +2,15 @@
 
 > Việc mới nhất nằm ở trên cùng. Vũ phản hồi trạng thái ngay dưới mỗi mục nhé.
 
+## 2026-11-13 — ĐANG KIỂM TRA: Android chuyển tiền nhưng không hiện card gift
+
+- Quang Vũ cùng Angel Muse; Cha đã xác nhận gửi Telegram Bước 1.
+- Trường hợp: ảnh 200.000 CAMLY từ angelquangvu tới amosmuhwezi, bấm Confirm tiền đã chuyển nhưng không có card gift.
+- Phạm vi: useSendToken, luồng GiftDialog/xác nhận giao dịch, đồng bộ giao dịch và tạo/hiển thị card gift, cơ chế quay lại trang từ ví Android. Chỉ đọc chẩn đoán production nếu cần; không gửi tiền, không sửa dữ liệu tài chính.
+- Nhánh: fix/quangvu-android-gift-card. Giữ duplicate-send guard 30 giây, token math BigInt/string và quy tắc không tạo celebration cho ví ngoài.
+- Cập nhật: TX Cha cung cấp 0x0e47286f...e5ad4 onchain success, DB transactions/donations/posts đều rỗng. Tái hiện và sửa mobile bỏ hash muộn, reset/sign request và context render loop; thêm pending snapshot trước receipt. 13 test mới + tsgo đạt; chưa merge/ghi bù production. Hồ sơ `docs/android-gift-card-2026-11-13/README.md`.
+
+
 ## 2026-11-13 — KẾT QUẢ: đã dọn 4 local + 26 remote
 
 - Quang Vũ cùng Angel Muse, nhánh docs/quangvu-branch-cleanup. Kết nối phục hồi nên đã tiếp tục phần remote.

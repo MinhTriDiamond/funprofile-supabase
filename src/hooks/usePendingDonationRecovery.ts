@@ -3,26 +3,12 @@ import { createPublicClient, http } from 'viem';
 import { bsc, bscTestnet } from 'viem/chains';
 import { supabase } from '@/integrations/supabase/client';
 import logger from '@/lib/logger';
+import type { PendingDonationPayload } from '@/utils/pendingDonation';
 
 const PENDING_PREFIX = 'pending_donation_';
 const MAX_AGE_DAYS = 7;
 const MAX_AGE_MS = MAX_AGE_DAYS * 24 * 60 * 60 * 1000;
 
-interface PendingDonationPayload {
-  txHash: string;
-  recipientId: string;
-  senderId?: string;
-  amount: string;
-  tokenSymbol: string;
-  tokenAddress?: string;
-  chainId?: number;
-  message?: string;
-  messageTemplate?: string;
-  postId?: string;
-  cardTheme?: string;
-  cardSound?: string;
-  timestamp: number;
-}
 
 /**
  * Hook chạy khi user đăng nhập để tự động retry các pending donations bị gián đoạn

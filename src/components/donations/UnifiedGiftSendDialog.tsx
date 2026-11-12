@@ -17,6 +17,7 @@ import { SUPPORTED_TOKENS, TokenOption } from './TokenSelector';
 import { MessageTemplate, MESSAGE_TEMPLATES } from './QuickGiftPicker';
 import { GiftCardData } from './GiftCelebrationModal';
 import { DonationSuccessCard, DonationCardData } from './DonationSuccessCard';
+import { rememberPendingDonation } from '@/utils/pendingDonation';
 import { useSendToken } from '@/hooks/useSendToken';
 import { useTokenBalances } from '@/hooks/useTokenBalances';
 import { validateMinSendValue } from '@/lib/minSendValidation';
@@ -710,6 +711,19 @@ export const UnifiedGiftSendDialog = ({
       try {
         const hash = await sendToken({ token: walletToken, recipient: frozenRecipient.walletAddress, amount, skipBackground: true, targetChainId: selectedChainId });
         if (hash) {
+          // Android may suspend/unmount this dialog while the receipt is pending.
+          // Save recovery data before presenting the card or awaiting the network.
+          if (frozenRecipient.id) {
+            rememberPendingDonation({
+              txHash: hash, recipientId: frozenRecipient.id,
+              senderId: senderUserId || currentUserId || undefined,
+              amount, tokenSymbol: selectedToken.symbol,
+              tokenAddress: resolvedTokenAddress || undefined,
+              chainId: selectedChainId, message: customMessage,
+              messageTemplate: selectedTemplate?.id, postId,
+              timestamp: Date.now(),
+            });
+          }
           // VERIFY: recipient hiện tại (sau await) phải khớp với snapshot lúc bấm Gửi
           const currentRecipient = recipientsWithWallet[0];
           if (currentRecipient?.id !== frozenRecipient.id || currentRecipient?.walletAddress !== frozenRecipient.walletAddress) {
@@ -963,7 +977,9 @@ export const UnifiedGiftSendDialog = ({
 
   // ── Mobile UX: Watchdog reset nếu tx kẹt quá 90s (user bỏ ví, không quay lại) ──
   useEffect(() => {
-    if (!isPending || txStep === 'idle') return;
+    // A wallet signing request can still return a broadcast hash after 90s.
+    // Resetting it here would allow another send while the first is unresolved.
+    if (!isPending || txStep === 'idle' || txStep === 'signing') return;
     const timer = setTimeout(() => {
       toast.error('Quá thời gian chờ giao dịch. Vui lòng kiểm tra ví và thử lại.', { duration: 8000 });
       resetState();
@@ -1155,6 +1171,11 @@ export const UnifiedGiftSendDialog = ({
                 onRecheckReceipt={recheckReceipt}
                 onCopyAddress={handleCopyAddress}
                 onForceCancel={() => {
+                  if (!isBtcNetwork && txStep === 'signing') {
+                    reopenWalletApp();
+                    toast.info('Hãy huỷ yêu cầu ngay trong app ví. FUN vẫn chờ kết quả để tránh gửi trùng.');
+                    return;
+                  }
                   // Mobile safety: MetaMask không phản hồi → reset toàn bộ trạng thái
                   resetState();
                   setBtcTxStep('idle');
