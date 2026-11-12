@@ -1,4 +1,5 @@
 ﻿/* eslint-disable @typescript-eslint/no-explicit-any */
+import { getRtmpActiveVideoPatch } from '../_shared/rtmpSessionStatus.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import { detectRtmpLiveConnection, getStreamPlaybackUrls, listStreamLiveInputVideos, selectRtmpReplayVideoForSession } from '../_shared/cloudflareStreamService.ts';
 import { createOrUpdateInstantReplayPost } from '../_shared/replayFeedService.ts';
@@ -187,11 +188,10 @@ async function autoEndDisconnectedRtmpSessions(admin: any): Promise<number> {
     }
     if (signalState === 'current_video') {
       const reconnectingOrLegacy = session.status === 'disconnect_grace' || session.status === 'reconnecting';
-      const nextStatus = reconnectingOrLegacy && (session.post_id || session.live_post_id)
-        ? 'live'
-        : (session.title?.trim() && session.description?.trim() ? 'ready_to_go_live' : 'source_connected');
+      const livePatch = getRtmpActiveVideoPatch(session, now);
+      if (!livePatch) continue;
       const { error: recoveryError } = await admin.from('live_sessions').update({
-        status: nextStatus,
+        ...livePatch,
         connection_status: 'connected',
         source_connected: true,
         last_disconnected_at: null,
@@ -248,11 +248,10 @@ async function autoEndDisconnectedRtmpSessions(admin: any): Promise<number> {
       }
       const finalState = classifyRtmpVideoSignal(recheck);
       if (finalState === 'current_video') {
-        const nextStatus = (session.post_id || session.live_post_id)
-          ? 'live'
-          : (session.title?.trim() && session.description?.trim() ? 'ready_to_go_live' : 'source_connected');
+        const livePatch = getRtmpActiveVideoPatch(session, now);
+        if (!livePatch) continue;
         const { error: reconnectError } = await admin.from('live_sessions').update({
-          status: nextStatus,
+          ...livePatch,
           connection_status: 'connected',
           source_connected: true,
           last_disconnected_at: null,
@@ -324,11 +323,10 @@ async function autoEndDisconnectedRtmpSessions(admin: any): Promise<number> {
     const finalState = classifyRtmpVideoSignal(recheck);
     if (finalState === 'current_video') {
       console.log('[RTMP_WATCHDOG] cancel end (recheck shows connected)', { live_session_id: session.id, reason: recheck.reason });
-      const reconnectedPublicLive = session.status === 'disconnect_grace' || session.status === 'reconnecting';
+      const livePatch = getRtmpActiveVideoPatch(session, new Date().toISOString());
+      if (!livePatch) continue;
       const { error: recoveryError } = await admin.from('live_sessions').update({
-        status: reconnectedPublicLive && (session.post_id || session.live_post_id)
-          ? 'live'
-          : (session.title?.trim() && session.description?.trim() ? 'ready_to_go_live' : 'source_connected'),
+        ...livePatch,
         connection_status: 'connected',
         source_connected: true,
         last_disconnected_at: null,

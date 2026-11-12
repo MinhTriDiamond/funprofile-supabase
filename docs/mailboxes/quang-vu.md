@@ -2,6 +2,17 @@
 
 > Việc mới nhất nằm ở trên cùng. Vũ phản hồi trạng thái ngay dưới mỗi mục nhé.
 
+## 2026-11-12 — ĐANG KIỂM TRA: happycamlycoin live nhưng feed hiện xử lý video
+
+- Người làm: Quang Vũ cùng Angel Muse; Cha xác nhận đã gửi Telegram Bước 1.
+- Nhánh: `fix/muse-live-feed-status`, từ `origin/main` mới nhất.
+- Hiện trạng: ảnh người dùng cho thấy Cloudflare Stream báo Live, feed/profile lại hiện đã phát trực tiếp và Video đang được xử lý.
+- Phạm vi: truy vết dữ liệu phiên live/post của happycamlycoin; kiểm tra hydration, playback resolver, trạng thái feed/profile và các Edge Function đồng bộ RTMP liên quan; test hồi quy. Chưa kết luận nguyên nhân, chưa thay đổi production.
+- Đã xác định gốc: archive cron current_video ghi live → ready_to_go_live; host RTMP mặc định offline vì thiếu tín hiệu sống. Mã production tải về khớp base repo. Đã sửa trên nhánh, 117 test liên quan đạt; tsgo/Deno check đạt. Chưa deploy/merge. Hồ sơ: `docs/rtmp-live-feed-status-2026-11-12/`.
+- Kết quả nhánh: PR #55 https://github.com/MinhTriDiamond/funprofile-supabase/pull/55 — đang chờ Cloudflare Preview và kiểm chứng/deploy backend; chưa merge, chưa hoàn tất production. Version rollback đã lưu: archive cron 98, go-live 89.
+- Phạm vi production vẫn chỉ đọc chẩn đoán theo quyền Cha xác nhận; không UPDATE dữ liệu hoặc deploy.
+
+
 ## Sửa lỗi sập trang khi đăng bài trên Android (`removeChild`) — 2026-11-09
 
 - Người thực hiện: Quang Vũ cùng Angel Muse. Nhánh: `fix/quangvu-twcpost-removechild-crash`, tách từ `main` mới nhất.
