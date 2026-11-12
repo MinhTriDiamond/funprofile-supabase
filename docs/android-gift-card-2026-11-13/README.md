@@ -46,3 +46,8 @@ Thông tin chuẩn bị cho endpoint (chưa gọi): sender_id `1c98a6eb-b939-43a
 ## Preview và rollback
 
 Chỉ frontend: Cloudflare Pages Preview kiểm tra modal/progress UI bằng test giả lập, không yêu cầu user chuyển thêm tiền. Sau Preview đạt mới merge; không deploy Edge Function. Rollback bằng PR revert. Snapshot pending vẫn dùng đúng key/schema cũ nên bản trước tiếp tục đọc được.
+
+
+## PR và Preview bản code
+
+PR #56: https://github.com/MinhTriDiamond/funprofile-supabase/pull/56. Cloudflare check commit 380bb82: SUCCESS. Preview: https://c3858e09.funprofile-supabase.pages.dev. Chưa merge hoặc sửa dữ liệu production.

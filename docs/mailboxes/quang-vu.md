@@ -2,6 +2,15 @@
 
 > Việc mới nhất nằm ở trên cùng. Vũ phản hồi trạng thái ngay dưới mỗi mục nhé.
 
+## 2026-11-13 — KẾT QUẢ NHÁNH: Android gift — PR #56, chờ Preview thực tế/khôi phục
+
+- PR https://github.com/MinhTriDiamond/funprofile-supabase/pull/56, code commit 380bb82. Preview code build thành công: https://c3858e09.funprofile-supabase.pages.dev.
+- Đã sửa mobile giữ phản hồi ví muộn, khóa in-flight/reset và race lookup; giữ guard30s; context no-op khi dữ liệu không đổi và không lùi success; lưu pending ngay khi có hash.
+- 13 test hồi quy đạt; tsgo và diff check đạt. Full suite 507 đạt/30 skip/22 fail do nhóm live REST DNS và lỗi render giá đã có từ trước. Review hai đường gửi trùng đã được xử lý và có test chứng minh.
+- Chưa merge, chưa khôi phục dữ liệu production. TX thực tế onchain success nhưng thiếu transactions/donations/posts; bản sửa frontend không tự khôi phục giao dịch cũ đã mất hash trong phiên trước.
+- Cha đã cho phép lưu TX/chẩn đoán vào GitHub sau khi auto-review chặn mô tả PR lần đầu. Không hỏi/copy secret qua chat. Hướng khôi phục chuẩn bị trong docs/android-gift-card-2026-11-13/README.md.
+
+
 ## 2026-11-13 — ĐANG KIỂM TRA: Android chuyển tiền nhưng không hiện card gift
 
 - Quang Vũ cùng Angel Muse; Cha đã xác nhận gửi Telegram Bước 1.
