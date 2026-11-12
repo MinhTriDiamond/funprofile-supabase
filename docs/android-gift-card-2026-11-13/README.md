@@ -69,3 +69,15 @@ Kết quả đã commit:
 Không gửi tiền mới, không phát/mint thưởng thủ công (light_score_earned=0 theo quy ước backfill), không tạo thông báo/chat bổ sung. Đã xác minh API đọc lịch sử/Card và bài gift; thử UI browser automation không hoạt động do lỗi công cụ, chưa có xác nhận mở Card trực tiếp từ người dùng. Tải lại trang lịch sử (cache query tối đa30s) để xem kết quả trên production hoặc Preview cùng backend.
 
 Bản vá frontend phòng lỗi mới vẫn ở PR #56, chưa merge; không nhầm việc khôi phục dữ liệu lần này với phát hành bản vá.
+
+
+## ĐÃ MERGE VÀ DEPLOY FRONTEND — 2026-11-13
+
+Theo yêu cầu “CHA MERGE VÀ DEPLOY GIÚP CON NHÉ”, PR #56 đã merge squash `987d35dff6c4215f0a3367319fb9a4e827ec797e` sau Cloudflare Preview head 0908c20 SUCCESS (https://14cda4b9.funprofile-supabase.pages.dev).
+
+Cloudflare Pages production commit 987d35d: **SUCCESS**; deployment https://2a5434ea.funprofile-supabase.pages.dev. Đã đọc trực tiếp asset từ https://fun.rich (không chỉ kiểm tra dashboard):
+- Entry mới `/assets/index-GiwMzvpS.js`.
+- `/assets/useSendToken-nm_RwVlo.js` có marker “Ví vẫn đang xử lý” / “Yêu cầu trước vẫn đang chờ ví phản hồi” của bản vá.
+- Dialog mới `/assets/UnifiedGiftSendDialog-CkIGt6qW.js`.
+
+Trước deploy, fun.rich còn entry index-DTFlLdN4 / useSendToken-BgUoS30k và không có marker. Sau deploy marker có thật trên asset production, chứng minh frontend mới đã lên. Không deploy Edge Function, không đổi secret/cron/schema. Nhánh code PR #56 đã xóa sau merge; giao dịch đã khôi phục ở mục trước vẫn giữ nguyên. Chưa tạo khoản chuyển tiền mới để test thực tế Android.

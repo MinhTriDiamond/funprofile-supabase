@@ -1,3 +1,7 @@
+## 2026-11-13 — Quang Vũ cùng Angel Muse: bản vá Android gift đã phát hành
+
+PR #56 đã merge (987d35d), Cloudflare production deploy SUCCESS; đã đọc asset fun.rich xác nhận bản vá late-hash/khóa gửi trùng có thật. Giữ phản hồi ví muộn, ổn định gift context và lưu pending sớm. 13 test mới + tsgo đạt; không deploy Edge Function. Quà 200000 CAMLY bị thiếu đã khôi phục trước đó, không chuyển tiền mới. Hồ sơ docs/android-gift-card-2026-11-13/README.md.
+
 ## 2026-11-13 — Quang Vũ cùng Angel Muse: đã khôi phục quà Android thiếu lịch sử/card
 
 Theo xác nhận của Cha, đã khôi phục đúng TX thành công 0x0e47…5ad4 (200000 CAMLY, angelquangvu→amosmuhwezi) vào donation + gift post production, trigger đồng bộ lịch sử. Public API xác nhận TX/Card; người nhận từ 2→3 giao dịch, CAMLY 200000→400000. Không chuyển tiền mới hoặc đổi số dư on-chain. Có backup trước, dry-run rollback, SQL và evidence trong docs/android-gift-card-2026-11-13/. Bản vá phòng lỗi gửi Android nằm ở PR #56, chưa merge.
