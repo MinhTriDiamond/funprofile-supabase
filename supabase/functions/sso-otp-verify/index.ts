@@ -1,6 +1,7 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { logSignupFailure } from '../_shared/signupFailureLog.ts';
 import { assertSignupEnabled } from "../_shared/signupGate.ts";
+import { assertNotSignupBlocked } from "../_shared/signupBlockGuard.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -14,7 +15,8 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    const { identifier, code } = await req.json();
+    const { identifier, code, device_hash } = await req.json();
+    const ipAddress = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || req.headers.get('cf-connecting-ip') || null;
 
     console.log(`[OTP-VERIFY] Verifying OTP for: ${identifier}`);
 
@@ -201,6 +203,16 @@ Deno.serve(async (req: Request) => {
       // Cổng chặn đăng ký (cutover migrate)
       const signupGate = await assertSignupEnabled(supabase, corsHeaders);
       if (signupGate) return signupGate;
+
+      // Chốt chặn đăng ký: email/thiết bị nằm trong danh sách chặn, hoặc thiết bị
+      // đã bị gắn cờ và vượt ngưỡng — chỉ áp khi TẠO tài khoản mới (nhánh !user).
+      const blockGuard = await assertNotSignupBlocked(supabase, {
+        email: userEmail,
+        deviceHash: typeof device_hash === 'string' ? device_hash : null,
+        source: 'sso-otp-verify',
+        ipAddress,
+      }, corsHeaders);
+      if (blockGuard) return blockGuard;
 
       // Create new user
       const { data: newUser, error: createError } = await supabase.auth.admin.createUser({

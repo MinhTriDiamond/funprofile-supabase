@@ -8,6 +8,7 @@ import logger from '@/lib/logger';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { TurnstileWidget, TURNSTILE_ENABLED } from './TurnstileWidget';
+import { getDeviceHash } from '@/utils/deviceFingerprint';
 import { Mail, ArrowRight, CheckCircle2, Loader2, RefreshCw } from 'lucide-react';
 
 interface EmailOtpLoginProps {
@@ -95,18 +96,33 @@ export const EmailOtpLogin = ({ onSuccess }: EmailOtpLoginProps) => {
     setLoading(true);
     setRetrying(false);
     try {
+      // Gửi kèm dấu vân tay thiết bị để phía server áp chốt chặn đăng ký cho tài khoản MỚI
+      const deviceHash = await getDeviceHash().catch(() => null);
+      const verifyBody = { identifier: email, code: otp, type: 'email', device_hash: deviceHash ?? undefined };
       let result;
       try {
-        result = await invokeWithTimeout('sso-otp-verify', { identifier: email, code: otp, type: 'email' }, 25000);
+        result = await invokeWithTimeout('sso-otp-verify', verifyBody, 25000);
       } catch (err: unknown) {
         const isTimeout = err instanceof Error && err.message === 'TIMEOUT';
         if (!isTimeout) throw err;
         setRetrying(true);
-        result = await invokeWithTimeout('sso-otp-verify', { identifier: email, code: otp, type: 'email' }, 15000);
+        result = await invokeWithTimeout('sso-otp-verify', verifyBody, 15000);
       }
 
       const { data, error } = result;
-      if (error) throw error;
+      if (error) {
+        // Chốt chặn đăng ký trả 403 kèm message thân thiện trong thân phản hồi — đọc ra để hiển thị cho người dùng
+        let blockedMessage: string | null = null;
+        try {
+          const ctx = (error as unknown as { context?: Response })?.context;
+          const body = ctx ? await ctx.clone().json() : null;
+          if (body?.error === 'signup_blocked') {
+            blockedMessage = body?.message || 'Không thể tạo tài khoản mới với thông tin này. Nếu bạn cho rằng đây là nhầm lẫn, vui lòng liên hệ đội hỗ trợ FUN Profile để được xem xét.';
+          }
+        } catch { /* bỏ qua — dùng lỗi gốc bên dưới */ }
+        if (blockedMessage) throw new Error(blockedMessage);
+        throw error;
+      }
 
       if (data?.success && data?.access_token && data?.refresh_token) {
         const { error: sessionError } = await supabase.auth.setSession({
@@ -139,6 +155,8 @@ export const EmailOtpLogin = ({ onSuccess }: EmailOtpLoginProps) => {
           }, 1500);
         }
         onSuccess(data.user_id, data.is_new_user);
+      } else if (data?.error === 'signup_blocked') {
+        throw new Error(data?.message || 'Không thể tạo tài khoản mới với thông tin này. Nếu bạn cho rằng đây là nhầm lẫn, vui lòng liên hệ đội hỗ trợ FUN Profile để được xem xét.');
       } else {
         throw new Error(data?.error || 'Verification failed');
       }

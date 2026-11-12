@@ -5,6 +5,7 @@
 
 import { bsc } from 'wagmi/chains';
 import { supabase } from '@/integrations/supabase/client';
+import { getDeviceHash } from '@/utils/deviceFingerprint';
 
 export const AUTH_CHAIN_ID = bsc.id; // 56
 export const WALLET_AUTH_SNAPSHOT_KEY = 'fun_wallet_auth_flow';
@@ -174,21 +175,37 @@ export async function verifyWalletLoginSignature(input: {
   message: string;
   signature: string;
 }) {
+  // Gửi kèm dấu vân tay thiết bị để phía server áp chốt chặn đăng ký cho tài khoản MỚI
+  const deviceHash = await getDeviceHash().catch(() => null);
+
   const { data, error } = await supabase.functions.invoke('sso-web3-auth', {
     body: {
       wallet_address: normalizeAddress(input.address),
       signature: input.signature,
       message: input.message,
       nonce: input.nonce,
+      device_hash: deviceHash ?? undefined,
     },
   });
 
   if (error) {
+    // Chốt chặn đăng ký trả 403 kèm message thân thiện trong thân phản hồi — đọc ra để hiển thị cho người dùng
+    let blockedMessage: string | null = null;
+    try {
+      const ctx = (error as unknown as { context?: Response })?.context;
+      const body = ctx ? await ctx.clone().json() : null;
+      if (body?.error === 'signup_blocked') {
+        blockedMessage = body?.message || 'Không thể tạo tài khoản mới với thông tin này. Nếu bạn cho rằng đây là nhầm lẫn, vui lòng liên hệ đội hỗ trợ FUN Profile để được xem xét.';
+      }
+    } catch { /* bỏ qua — dùng lỗi gốc bên dưới */ }
+    if (blockedMessage) throw new Error(blockedMessage);
     throw new Error(data?.error || error.message || 'Không thể xác thực ví.');
   }
 
   if (!data?.success || !data?.token_hash || !data?.user_id) {
-    throw new Error(data?.error || 'Không thể hoàn tất xác thực ví.');
+    throw new Error(data?.error === 'signup_blocked'
+      ? (data?.message || 'Không thể tạo tài khoản mới với thông tin này. Nếu bạn cho rằng đây là nhầm lẫn, vui lòng liên hệ đội hỗ trợ FUN Profile để được xem xét.')
+      : (data?.error || 'Không thể hoàn tất xác thực ví.'));
   }
 
   return {
