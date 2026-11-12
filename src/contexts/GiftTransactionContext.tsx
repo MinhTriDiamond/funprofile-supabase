@@ -176,15 +176,31 @@ export function GiftTransactionProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const update: ContextValue['update'] = useCallback((patch) => {
-    setCurrent(prev => (prev ? { ...prev, ...patch, updatedAt: Date.now() } : prev));
+    setCurrent(prev => {
+      if (!prev) return prev;
+      // Receipt polling may finish before the dialog's last broadcast update.
+      // A new transfer must use start(), never reopen a completed transaction.
+      if (prev.step === 'success' && patch.step && patch.step !== 'success') return prev;
+      if (Object.entries(patch).every(([key, value]) => Object.is(prev[key as keyof GiftTxState], value))) return prev;
+      return { ...prev, ...patch, updatedAt: Date.now() };
+    });
   }, []);
 
   const finishSuccess: ContextValue['finishSuccess'] = useCallback((txHash, scanUrl) => {
-    setCurrent(prev => (prev ? { ...prev, step: 'success', txHash, scanUrl: scanUrl ?? prev.scanUrl ?? null, updatedAt: Date.now() } : prev));
+    setCurrent(prev => {
+      if (!prev) return prev;
+      const nextScanUrl = scanUrl ?? prev.scanUrl ?? null;
+      if (prev.step === 'success' && prev.txHash === txHash && prev.scanUrl === nextScanUrl) return prev;
+      return { ...prev, step: 'success', txHash, scanUrl: nextScanUrl, updatedAt: Date.now() };
+    });
   }, []);
 
   const finishError: ContextValue['finishError'] = useCallback((errorTitle, errorDescription) => {
-    setCurrent(prev => (prev ? { ...prev, step: 'error', errorTitle, errorDescription, updatedAt: Date.now() } : prev));
+    setCurrent(prev => {
+      if (!prev || prev.step === 'success') return prev;
+      if (prev.step === 'error' && prev.errorTitle === errorTitle && prev.errorDescription === errorDescription) return prev;
+      return { ...prev, step: 'error', errorTitle, errorDescription, updatedAt: Date.now() };
+    });
   }, []);
 
   const dismiss = useCallback(() => setCurrent(null), []);

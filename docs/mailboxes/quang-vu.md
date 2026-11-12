@@ -2,6 +2,39 @@
 
 > Việc mới nhất nằm ở trên cùng. Vũ phản hồi trạng thái ngay dưới mỗi mục nhé.
 
+## 2026-11-13 — HOÀN THÀNH KHÔI PHỤC 200000 CAMLY (TX 0x0e47…5ad4)
+
+- Cha đã duyệt khôi phục. Reverify receipt success; backup trước đều rỗng. Thử ROLLBACK và assert đầy đủ rồi COMMIT đúng một donation + gift post, trigger đồng bộ 2 transactions/2 snapshot rows. Không gửi thêm tiền, không đổi ví/schema/trigger hay phát thưởng thủ công.
+- Donation da0c3856-8c02-404a-ac2f-4d44bec72206; public gift post 0082e117-2559-40c4-8c77-2822f3ba66b7; đúng 200000 CAMLY, giờ block 2026-11-12T15:59:05Z và lời nhắn.
+- Kiểm chứng public API: lịch sử trả đúng TX, endpoint chi tiết Card đủ dữ liệu, post HTTP200; summary người nhận 2→3 giao dịch, CAMLY 200000→400000. BNB giữ nguyên. Chưa xác minh UI thực tế do công cụ browser lỗi; Cha cần tải lại lịch sử để thấy dữ liệu đã cập nhật.
+- Hồ sơ + SQL rollback + evidence: docs/android-gift-card-2026-11-13/. Thay đổi nằm tại DATABASE PRODUCTION tljfqavndndfsvtazibe; PR #56 frontend vẫn chưa merge.
+
+
+## 2026-11-13 — ĐƯỢC PHÉP KHÔI PHỤC TX GIFT THIẾU
+
+- Cha xác nhận “OK CHA ĐỒNG Ý, BÉ KHÔI PHỤC NHÉ” cho TX 0x0e47286f...e5ad4, 200000 CAMLY, angelquangvu → amosmuhwezi.
+- Đã reverify receipt success và decode Transfer bằng viem/BigInt. Phạm vi: khôi phục 1 donation + 1 gift celebration; để trigger hiện hành đồng bộ transactions/snapshot lịch sử. Không gửi tiền mới, không đổi liên kết ví, không thay schema/trigger/auth, không phát thưởng thủ công.
+- Endpoint record-donation yêu cầu phiên app sender/admin hiện chưa có. Dùng SQL quản trị có transaction/lock/kiểm tra trùng và thử ROLLBACK trước; lưu before snapshot và SQL/rollback trong hồ sơ docs/android-gift-card-2026-11-13/.
+
+
+## 2026-11-13 — KẾT QUẢ NHÁNH: Android gift — PR #56, chờ Preview thực tế/khôi phục
+
+- PR https://github.com/MinhTriDiamond/funprofile-supabase/pull/56, code commit 380bb82. Preview code build thành công: https://c3858e09.funprofile-supabase.pages.dev.
+- Đã sửa mobile giữ phản hồi ví muộn, khóa in-flight/reset và race lookup; giữ guard30s; context no-op khi dữ liệu không đổi và không lùi success; lưu pending ngay khi có hash.
+- 13 test hồi quy đạt; tsgo và diff check đạt. Full suite 507 đạt/30 skip/22 fail do nhóm live REST DNS và lỗi render giá đã có từ trước. Review hai đường gửi trùng đã được xử lý và có test chứng minh.
+- Chưa merge, chưa khôi phục dữ liệu production. TX thực tế onchain success nhưng thiếu transactions/donations/posts; bản sửa frontend không tự khôi phục giao dịch cũ đã mất hash trong phiên trước.
+- Cha đã cho phép lưu TX/chẩn đoán vào GitHub sau khi auto-review chặn mô tả PR lần đầu. Không hỏi/copy secret qua chat. Hướng khôi phục chuẩn bị trong docs/android-gift-card-2026-11-13/README.md.
+
+
+## 2026-11-13 — ĐANG KIỂM TRA: Android chuyển tiền nhưng không hiện card gift
+
+- Quang Vũ cùng Angel Muse; Cha đã xác nhận gửi Telegram Bước 1.
+- Trường hợp: ảnh 200.000 CAMLY từ angelquangvu tới amosmuhwezi, bấm Confirm tiền đã chuyển nhưng không có card gift.
+- Phạm vi: useSendToken, luồng GiftDialog/xác nhận giao dịch, đồng bộ giao dịch và tạo/hiển thị card gift, cơ chế quay lại trang từ ví Android. Chỉ đọc chẩn đoán production nếu cần; không gửi tiền, không sửa dữ liệu tài chính.
+- Nhánh: fix/quangvu-android-gift-card. Giữ duplicate-send guard 30 giây, token math BigInt/string và quy tắc không tạo celebration cho ví ngoài.
+- Cập nhật: TX Cha cung cấp 0x0e47286f...e5ad4 onchain success, DB transactions/donations/posts đều rỗng. Tái hiện và sửa mobile bỏ hash muộn, reset/sign request và context render loop; thêm pending snapshot trước receipt. 13 test mới + tsgo đạt; chưa merge/ghi bù production. Hồ sơ `docs/android-gift-card-2026-11-13/README.md`.
+
+
 ## 2026-11-13 — KẾT QUẢ: đã dọn 4 local + 26 remote
 
 - Quang Vũ cùng Angel Muse, nhánh docs/quangvu-branch-cleanup. Kết nối phục hồi nên đã tiếp tục phần remote.

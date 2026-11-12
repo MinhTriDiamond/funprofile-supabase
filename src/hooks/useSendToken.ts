@@ -13,6 +13,7 @@ import { isMobileDevice, isInjectedMobileBrowser } from '@/utils/mobileWalletCon
 import { useDisconnect, useConnect } from 'wagmi';
 import type { WalletToken } from '@/lib/tokens';
 import logger from '@/lib/logger';
+import { waitForWalletBroadcast } from '@/utils/waitForWalletBroadcast';
 
 export type TxStep = 'idle' | 'signing' | 'broadcasted' | 'confirming' | 'finalizing' | 'success' | 'timeout';
 
@@ -28,7 +29,7 @@ interface SendTokenParams {
 
 const DB_TIMEOUT_MS = 8_000;
 const RECEIPT_TIMEOUT_MS = 60_000;
-// Mobile: 45s đủ để user mở ví và xác nhận, tránh cảm giác app treo.
+// Mobile: sau 45s chỉ nhắc chờ; không bỏ phản hồi hash có thể đến muộn.
 // Desktop: 75s vì user thường nhìn extension popup chậm hơn.
 const SIGN_TIMEOUT_MS_MOBILE = 45_000;
 const SIGN_TIMEOUT_MS_DESKTOP = 75_000;
@@ -68,10 +69,14 @@ export function useSendToken() {
 
   // ── Cancellation flag for background tasks ──
   const bgCancelRef = useRef(0);
+  const sendInFlightRef = useRef(false);
+  const signingRequestRef = useRef(false);
   // ── Lưu lại request gần nhất để có thể "Mở lại ví" ──
   const lastDeepLinkRef = useRef<{ connectorId?: string; connectorName?: string } | null>(null);
 
   const resetState = useCallback(() => {
+    // A UI reset cannot revoke a request already handed to the wallet.
+    if (signingRequestRef.current) return;
     // Cancel any in-flight background tasks
     bgCancelRef.current += 1;
     setTxStep('idle');
@@ -133,6 +138,10 @@ export function useSendToken() {
   const sendToken = async (params: SendTokenParams): Promise<string | null> => {
     const { token, recipient, amount, skipBackground = false, targetChainId } = params;
     const senderAddress = activeAddress || providerAddress;
+    if (sendInFlightRef.current) {
+      toast.info('Yêu cầu trước vẫn đang chờ ví phản hồi. Vui lòng xác nhận hoặc huỷ ngay trong ví.');
+      return null;
+    }
 
     // --- Validation ---
     if (!isConnected || !senderAddress) {
@@ -196,6 +205,16 @@ export function useSendToken() {
       // Nếu query DB lỗi → vẫn cho gửi nhưng giữ in-memory guard
     }
 
+    // Recheck after the async duplicate query: the first send may already have
+    // returned its hash while a second click was still waiting on that query.
+    const latestSendTs = recentSendMap.get(dKey);
+    if (latestSendTs && Date.now() - latestSendTs < DUPLICATE_WINDOW_MS) {
+      toast.error('Giao dịch này vừa được gửi. Vui lòng đợi 30 giây để tránh chuyển trùng.');
+      return null;
+    }
+    if (sendInFlightRef.current) return null;
+    sendInFlightRef.current = true;
+
     // --- Begin send flow ---
     setIsProcessing(true);
     setTxHash(null);
@@ -251,18 +270,27 @@ export function useSendToken() {
         });
       }
 
-      const signPromise = !token.address
-        ? sendTransactionAsync({
-            to: recipient as `0x${string}`,
-            value: parseEther(amount),
-          })
-        : sendTransactionAsync({
-            to: token.address,
-            data: encodeERC20Transfer(recipient as `0x${string}`, amount, token.decimals),
-          });
+      signingRequestRef.current = true;
+      try {
+        const signPromise = !token.address
+          ? sendTransactionAsync({
+              to: recipient as `0x${string}`,
+              value: parseEther(amount),
+            })
+          : sendTransactionAsync({
+              to: token.address,
+              data: encodeERC20Transfer(recipient as `0x${string}`, amount, token.decimals),
+            });
 
-      const signTimeout = isMobileWC ? SIGN_TIMEOUT_MS_MOBILE : SIGN_TIMEOUT_MS_DESKTOP;
-      hash = await withTimeout(signPromise, signTimeout, 'SIGN_REQUEST');
+        const signTimeout = isMobileWC ? SIGN_TIMEOUT_MS_MOBILE : SIGN_TIMEOUT_MS_DESKTOP;
+        hash = isMobileDevice()
+          ? await waitForWalletBroadcast(signPromise, signTimeout, () => {
+              toast.info('Ví vẫn đang xử lý. Hãy mở lại ví để kiểm tra, không gửi thêm giao dịch.', { duration: 10000 });
+            })
+          : await withTimeout(signPromise, signTimeout, 'SIGN_REQUEST');
+      } finally {
+        signingRequestRef.current = false;
+      }
 
       // Step 2: Broadcasted — return hash IMMEDIATELY
       logger.debug('[SEND] TX_HASH_RECEIVED:', hash);
@@ -429,6 +457,7 @@ export function useSendToken() {
       resetState();
       return null;
     } finally {
+      sendInFlightRef.current = false;
       logger.debug('[SEND] FLOW_FINALLY');
       (window as any).__TX_IN_PROGRESS__ = false;
       setIsProcessing(false);
