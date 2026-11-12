@@ -8,4 +8,4 @@
 - [x] Test hồi quy: published live/ready/reconnecting + current video giữ live; chưa publish giữ pre-live; terminal không hồi sinh.
 - [x] Helper trạng thái RTMP + patch tín hiệu video được xác nhận; dùng trong các nhánh recovery archive cron và go-live (grace watchdog không chứa lỗi hạ trạng thái live bình thường).
 - [ ] Test, tsgo, Deno check, kiểm tra mã deploy và Preview/PR.
-- [ ] Chuẩn bị hồ sơ deploy/rollback; chỉ thay đổi production khi được phép theo quy trình.
+- [x] Chuẩn bị hồ sơ deploy/rollback; chỉ thay đổi production khi được phép theo quy trình.

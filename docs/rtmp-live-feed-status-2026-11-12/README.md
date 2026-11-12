@@ -28,12 +28,17 @@ Người thực hiện: Quang Vũ cùng Angel Muse. Nhánh: `fix/muse-live-feed-
 
 - Test hồi quy ban đầu sao lại điều kiện cron cũ: 4 thất bại, chứng minh live/published pre-live bị hạ sai.
 - 15 ca mới: published live/ready/source/reconnecting; live_post_id; legacy live; pre-live chưa publish; terminal/ended_at; hợp đồng frontend isFreshLiveSession/getPostPlayback.
+- `bunx vitest run src/modules/live/ src/components/feed/postPlaybackResolver.test.ts`: 19 file / 117 test đạt.
 - `tsgo --noEmit`: exit 0.
 - `deno check --node-modules-dir=auto` 2 function: exit 0. Đã khôi phục dependencies bằng `bun install --frozen-lockfile` sau Deno check; không thay lockfile.
 - Toàn repo: 494 đạt / 30 skip / 22 fail; 21 fail do sandbox DNS không truy cập Supabase, 1 file giá unavailable render lỗi đã được ghi nhận từ trước (xem hồ sơ 2026-11-09). Không coi toàn bộ test suite là pass.
 - Review độc lập không thấy blocker mới. Race sẵn có: recovery update chỉ guard ended_at=null, có thể cạnh tranh với ending chưa có ended_at; ngoài phạm vi sửa này.
 
 ## Phát hành và khôi phục
+
+PR: https://github.com/MinhTriDiamond/funprofile-supabase/pull/55 — chưa merge.
+
+Version trước deploy: `go-live-rtmp-session` 89 và `live-replay-archive-cron` 98; cả hai ACTIVE, verify_jwt=false (xác thực bên trong function được giữ nguyên). Cron archive chạy mỗi phút.
 
 Chưa deploy production ở thời điểm viết hồ sơ. Cloudflare Pages chỉ build frontend nên Preview không chứng minh Edge Function đã đổi.
 
