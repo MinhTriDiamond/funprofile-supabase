@@ -2,6 +2,21 @@
 
 > Việc mới nhất nằm ở trên cùng. Vũ phản hồi trạng thái ngay dưới mỗi mục nhé.
 
+## 2026-11-13 — KẾT QUẢ TẠM: đã dọn 4 nhánh local, remote chờ kết nối GitHub
+
+- Đã xóa local: docs/muse-live-feed-deployed, fix/muse-live-feed-status (PR #55 đã squash), fix/quangvu-chat-call-hardening, fix/rtmp-no-video-auto-end. Nội dung đã có trong main; không mất code.
+- Đã tạo và verify bundle tại `/private/tmp/funprofile-before-branch-cleanup-20261113.bundle`, lưu toàn bộ tên/SHA vào `docs/branch-cleanup-2026-11-13/README.md` để khôi phục.
+- Giữ main + docs/quangvu-branch-cleanup đang làm, giữ supabase/.temp/. Chưa xóa remote: fetch lỗi DNS, gh API không kết nối, connector lỗi transport. Chưa đối chiếu được PR mở nên không xóa mù.
+- Chưa có PR hồ sơ vì GitHub mất kết nối. Cần tiếp tục phần remote khi mạng hoạt động trở lại.
+
+
+## 2026-11-13 — ĐANG LÀM: rà soát và dọn nhánh không còn dùng
+
+- Người làm: Quang Vũ cùng Angel Muse; Cha xác nhận đã gửi Telegram.
+- Phạm vi: nhánh local và origin của funprofile-supabase; đối chiếu main, PR, worktree; chỉ xóa nhánh đã hoàn tất, giữ nhánh đang dùng/PR mở/nội dung chưa merge. Không sửa code hoặc production, giữ nguyên supabase/.temp/.
+- Nhánh hồ sơ: `docs/quangvu-branch-cleanup`. Lưu SHA và bản sao Git bundle trước khi xóa để có thể khôi phục.
+
+
 ## 2026-11-12 — KẾT QUẢ: triển khai sửa trạng thái live happycamlycoin
 
 - Quang Vũ cùng Angel Muse; Cha đã cho phép merge/deploy. PR #55 đã merge squash `d03781f6f580be62269dbeca1076e3c04b170bd7`.
