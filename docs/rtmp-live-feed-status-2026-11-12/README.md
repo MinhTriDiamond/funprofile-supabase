@@ -49,3 +49,14 @@ Trước deploy: lưu code function production ra thư mục tạm bằng `supab
 Sau deploy: đọc lại session/profile/public route RPC; xác nhận status live + host online + last_seen_at mới, is_live=true. Chờ hơn một chu kỳ cron rồi đọc lại để chứng minh không bị hạ về ready. Xem bài trên profile/feed có nhãn live và HLS phát được. Nếu nguồn đã tắt thì không ép live.
 
 Rollback: revert PR và deploy lại đúng 2 function từ bản trước. Không cần rollback schema/dữ liệu. Bản sao tạm mã function cũ: `/private/tmp/fun-live-feed-debug/supabase/functions/` (không chứa secret).
+
+
+## Kết quả production — 2026-11-12
+
+Cha đã cho phép merge và deploy. PR #55 đã merge bằng squash `d03781f6f580be62269dbeca1076e3c04b170bd7` (GitHub REST trả merged=true). Lệnh GraphQL trước đó timeout, connector GitHub không có quyền ghi; merge hoàn tất bằng tài khoản GitHub CLI đã đăng nhập.
+
+Đã deploy trên `tljfqavndndfsvtazibe`: `live-replay-archive-cron` version **99**, `go-live-rtmp-session` version **90**, cả hai ACTIVE; verify_jwt=false giữ nguyên. Không chạy UPDATE dữ liệu hoặc migration.
+
+Sau cron, phiên tự chuyển ready_to_go_live/offline → live/online. Hai mốc `last_seen_at`: **13:40:14.175 UTC** và **13:41:06.930 UTC**, status vẫn live, ended_at=null. Profile is_live=false → **true**, current_live_session_id trỏ đúng phiên. Public route RPC rỗng → trả phiên live cùng HLS URL. Đây là kiểm chứng qua nhiều lần cron, không chỉ kiểm tra deploy thành công.
+
+Giới hạn: máy kiểm tra timeout DNS/kết nối khi tải manifest videodelivery.net, nên chưa xác nhận hình phát thực tế bằng trình duyệt. Cần người xem tải lại feed/profile để xác nhận hình/âm thanh.

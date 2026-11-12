@@ -1,3 +1,7 @@
+## 2026-11-12 — Sửa feed hiển thị sai livestream happycamlycoin
+
+Quang Vũ cùng Angel Muse: PR #55 đã merge, deploy archive cron v99 + go-live v90. Cron không còn hạ phiên đã publish từ live về ready_to_go_live; ghi tín hiệu online từ video RTMP được xác nhận. Qua nhiều lần cron: phiên live/online, profile is_live=true, route feed trả lại video. Chưa xác minh hình/âm thanh do máy kiểm tra timeout HLS. Hồ sơ: `docs/rtmp-live-feed-status-2026-11-12/README.md`.
+
 # Tiến độ chung — FUN Profile
 
 > Mốc mới nhất nằm ở trên cùng. Mỗi coordinator ghi mốc của mình vào đây khi có việc hoàn thành hoặc quyết định mới.

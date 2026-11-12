@@ -2,6 +2,15 @@
 
 > Việc mới nhất nằm ở trên cùng. Vũ phản hồi trạng thái ngay dưới mỗi mục nhé.
 
+## 2026-11-12 — KẾT QUẢ: triển khai sửa trạng thái live happycamlycoin
+
+- Quang Vũ cùng Angel Muse; Cha đã cho phép merge/deploy. PR #55 đã merge squash `d03781f6f580be62269dbeca1076e3c04b170bd7`.
+- Production Supabase: archive cron v99, go-live v90 ACTIVE. Giữ cấu hình xác thực, không migration/UPDATE trực tiếp.
+- Trước: phiên ready_to_go_live/offline, profile is_live=false, route feed rỗng. Sau: phiên live/online qua mốc cron 13:40:14 và 13:41:06 UTC, profile is_live=true, route trả đúng phiên và URL HLS.
+- 117 test liên quan + tsgo/Deno đạt. Chưa xác minh hình/âm thanh thực tế vì máy kiểm tra timeout khi tải HLS. Hồ sơ: `docs/rtmp-live-feed-status-2026-11-12/README.md`.
+- Nhánh tài liệu kết quả dự kiến `docs/muse-live-feed-deployed`; đang đồng bộ hồ sơ do GitHub CLI gặp lỗi mạng, connector chỉ có quyền đọc.
+
+
 ## 2026-11-12 — ĐANG KIỂM TRA: happycamlycoin live nhưng feed hiện xử lý video
 
 - Người làm: Quang Vũ cùng Angel Muse; Cha xác nhận đã gửi Telegram Bước 1.
