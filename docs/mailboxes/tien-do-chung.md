@@ -1,3 +1,7 @@
+## 2026-11-13 — Quang Vũ cùng Angel Muse: dọn nhánh Git đã hoàn tất
+
+Đã xóa 4 local + 26 remote đã xác minh hoàn tất; có bundle backup và lease SHA chống xóa nhánh vừa được người khác cập nhật. Giữ 3 nhánh PR mở #29/#45/#51 và nhánh donation verification còn 4 commit riêng chưa merge. Không đổi code/production. Hồ sơ: `docs/branch-cleanup-2026-11-13/README.md`.
+
 ## 2026-11-12 — Sửa feed hiển thị sai livestream happycamlycoin
 
 Quang Vũ cùng Angel Muse: PR #55 đã merge, deploy archive cron v99 + go-live v90. Cron không còn hạ phiên đã publish từ live về ready_to_go_live; ghi tín hiệu online từ video RTMP được xác nhận. Qua nhiều lần cron: phiên live/online, profile is_live=true, route feed trả lại video. Chưa xác minh hình/âm thanh do máy kiểm tra timeout HLS. Hồ sơ: `docs/rtmp-live-feed-status-2026-11-12/README.md`.

@@ -2,6 +2,14 @@
 
 > Việc mới nhất nằm ở trên cùng. Vũ phản hồi trạng thái ngay dưới mỗi mục nhé.
 
+## 2026-11-13 — KẾT QUẢ: đã dọn 4 local + 26 remote
+
+- Quang Vũ cùng Angel Muse, nhánh docs/quangvu-branch-cleanup. Kết nối phục hồi nên đã tiếp tục phần remote.
+- Đã xóa 4 nhánh local đã hoàn tất và 26 remote đã merge; atomic push với lease SHA từng ref thành công. Có Git bundle đã verify để khôi phục; tên/SHA/bằng chứng trong `docs/branch-cleanup-2026-11-13/README.md`.
+- Giữ main; 3 nhánh PR mở #29/#45/#51; nhánh feat/tri-donation-verification-flow còn 4 commit riêng, chưa có PR. Không mất công việc đang làm. Giữ nguyên supabase/.temp/.
+- Không thay code hoặc production. Hồ sơ/PR đang hoàn tất trên nhánh riêng; các mục KẾT QUẢ TẠM phía dưới là lịch sử giai đoạn mất mạng, đã được mục này cập nhật.
+
+
 ## 2026-11-13 — KẾT QUẢ TẠM: đã dọn 4 nhánh local, remote chờ kết nối GitHub
 
 - Đã xóa local: docs/muse-live-feed-deployed, fix/muse-live-feed-status (PR #55 đã squash), fix/quangvu-chat-call-hardening, fix/rtmp-no-video-auto-end. Nội dung đã có trong main; không mất code.

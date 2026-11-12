@@ -57,3 +57,38 @@ Không lấy được inventory mới nhất: git fetch --prune lỗi DNS github
 ## Còn giữ
 
 `main` và nhánh hồ sơ đang làm `docs/quangvu-branch-cleanup`. Chưa sửa code, chưa thay đổi production. Cần tiếp tục đối chiếu PR và dọn remote khi kết nối GitHub hoạt động trở lại.
+
+
+## Kết quả tiếp tục khi kết nối phục hồi
+
+Đã đọc danh sách refs thật bằng git ls-remote; đối chiếu các PR qua GitHub connector với query is:pr và get_pr_info. Đã xóa thành công **26 nhánh remote** bằng một atomic push, mỗi ref có force-with-lease theo đúng SHA đã backup. Lệnh thành công exit 0; không có nhánh thay đổi SHA trong lúc thực hiện.
+
+Giữ 3 PR mở: #29 feat/van-signup-device-guard, #45 feat/aivan-them-4-bai-fath-uni-marquee, #51 feat/aivan-stories-9-o. Giữ feat/tri-donation-verification-flow vì chưa có PR và còn 4 commit / 10 tệp thay đổi riêng (727 dòng thêm), không được coi là nhánh thừa.
+
+Nhánh remote đã xóa (SHA ở bảng inventory phía trên):
+- `docs/aivan-dich-bai-viet-fix-ket-qua` — ancestor of main
+- `docs/aivan-dich-bai-viet-ket-qua` — ancestor of main
+- `docs/aivan-dich-chuan-ket-qua` — ancestor of main
+- `docs/aivan-dich-thuat-ngu-ket-qua` — ancestor of main
+- `docs/aivan-thong-bao-ket-qua` — ancestor of main
+- `docs/aivan-upload-crash-fix-result` — ancestor of main
+- `docs/tri-mailbox-9-close-recordings` — merged PR #50
+- `docs/tri-quy-trinh-coordinator` — ancestor of main
+- `docs/tri-r2-recordings-cleanup` — merged PR #44
+- `feat/aivan-dich-bai-viet` — ancestor of main
+- `feat/tri-privacy-policy-page` — merged PR #27
+- `feat/tri-signup-captcha` — merged PR #24
+- `fix/aivan-dich-bai-viet-dich-chuan` — ancestor of main
+- `fix/aivan-dich-bai-viet-mymemory-auto` — ancestor of main
+- `fix/aivan-dich-bai-viet-tieu-de-viet-hoa` — ancestor of main
+- `fix/aivan-thong-bao` — ancestor of main
+- `fix/aivan-upload-insertbefore-crash` — ancestor of main
+- `fix/muse-live-feed-status` — merged PR #55
+- `fix/quangvu-chat-call-hardening` — ancestor of main
+- `fix/tri-auth-outage-banner` — merged PR #26
+- `fix/tri-otp-captcha-authskip` — merged PR #25
+- `fix/van-admin-user-search` — ancestor of main
+- `pilot/door-callback` — ancestor of main
+- `revert-30-pilot/door-callback` — ancestor of main
+- `tri/notification-retention-30d` — merged PR #42
+- `tri/notification-retention-30d-close` — merged PR #43
