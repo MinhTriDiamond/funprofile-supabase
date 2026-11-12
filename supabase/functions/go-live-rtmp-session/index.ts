@@ -189,6 +189,8 @@ Deno.serve(async (req) => {
       .from('live_sessions')
       .update({
         status: 'live',
+        host_connection_status: 'online',
+        last_seen_at: now,
         connection_status: 'connected',
         source_connected: true,
         last_disconnected_at: null,

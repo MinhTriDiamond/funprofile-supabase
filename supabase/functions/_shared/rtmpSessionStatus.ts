@@ -33,3 +33,24 @@ export function isRtmpSessionEndedOrFrozen(session: { status?: string | null; en
 export function rtmpFrozenStatusSqlList(): string {
   return `(${RTMP_FROZEN_STATUSES.map((status) => `"${status}"`).join(',')})`;
 }
+
+interface RtmpPublicSession {
+  status?: string | null;
+  ended_at?: string | null;
+  post_id?: string | null;
+  live_post_id?: string | null;
+  title?: string | null;
+  description?: string | null;
+}
+
+/** Only call after Cloudflare confirms a current-session live video. */
+export function getRtmpActiveVideoPatch(session: RtmpPublicSession, now: string) {
+  if (isRtmpSessionEndedOrFrozen(session)) return null;
+  return {
+    status: session.status === 'live' || session.post_id || session.live_post_id
+      ? 'live'
+      : (session.title?.trim() && session.description?.trim() ? 'ready_to_go_live' : 'source_connected'),
+    host_connection_status: 'online',
+    last_seen_at: now,
+  };
+}
