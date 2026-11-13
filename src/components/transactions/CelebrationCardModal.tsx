@@ -60,6 +60,7 @@ function rowToReceivedData(
     senderDisplayName: sender.display_name ?? null,
     senderAvatarUrl: sender.avatar_url ?? null,
     senderId: sender.user_id ?? '',
+    recipientId: recipient.user_id,
     recipientUsername,
     recipientDisplayName: recipient.display_name ?? null,
     recipientAvatarUrl: recipient.avatar_url ?? null,

@@ -36,6 +36,7 @@ export interface DonationReceivedData {
   senderDisplayName?: string | null;
   senderAvatarUrl?: string | null;
   senderId: string;
+  recipientId?: string | null;
   recipientUsername?: string;
   recipientDisplayName?: string | null;
   recipientAvatarUrl?: string | null;
@@ -180,8 +181,9 @@ export const DonationReceivedCard = ({
             <div className="mx-3 mt-3 flex items-center justify-center gap-3">
               <button
                 type="button"
-                onClick={() => { handleClose(); navigate(`/profile/${data.senderId}`); }}
-                className="flex flex-col items-center gap-1 flex-1 min-w-0 hover:opacity-80 transition-opacity"
+                disabled={!data.senderId}
+                onClick={(event) => { event.stopPropagation(); if (!data.senderId) return; handleClose(); navigate(`/profile/${data.senderId}`); }}
+                className="flex flex-col items-center gap-1 flex-1 min-w-0 enabled:cursor-pointer enabled:hover:opacity-80 disabled:cursor-default transition-opacity"
               >
                 <Avatar className="w-12 h-12 shrink-0" style={{ boxShadow: '0 0 0 2px #fca5a5' }}>
                   <AvatarImage src={data.senderAvatarUrl || undefined} />
@@ -202,7 +204,12 @@ export const DonationReceivedCard = ({
                 </div>
               </div>
 
-              <div className="flex flex-col items-center gap-1 flex-1 min-w-0">
+              <button
+                type="button"
+                disabled={!data.recipientId}
+                onClick={(event) => { event.stopPropagation(); if (!data.recipientId) return; handleClose(); navigate(`/profile/${data.recipientId}`); }}
+                className="flex flex-col items-center gap-1 flex-1 min-w-0 enabled:cursor-pointer enabled:hover:opacity-80 disabled:cursor-default transition-opacity"
+              >
                 <Avatar className="w-12 h-12 shrink-0" style={{ boxShadow: '0 0 0 2px #6ee7b7' }}>
                   <AvatarImage src={data.recipientAvatarUrl || undefined} />
                   <AvatarFallback className="bg-emerald-50 text-emerald-600 font-bold text-sm">
@@ -213,7 +220,7 @@ export const DonationReceivedCard = ({
                   <div className="text-xs font-extrabold leading-tight truncate" style={{ color: '#047857' }}>{data.recipientDisplayName || data.recipientUsername || t('youLabel')}</div>
                   <div className="text-[10px] font-medium truncate" style={{ color: '#059669' }}>@{data.recipientUsername || 'you'}</div>
                 </div>
-              </div>
+              </button>
             </div>
 
             {/* Amount */}

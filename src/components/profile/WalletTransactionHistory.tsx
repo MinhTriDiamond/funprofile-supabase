@@ -558,6 +558,7 @@ function DonationCard({ d, userId, walletLabelMap }: { d: DonationRecord; userId
     senderDisplayName: d.sender_display_name || externalLabel,
     senderAvatarUrl: d.sender_avatar_url,
     senderId: d.sender_id || '',
+    recipientId: d.recipient_id,
     recipientUsername: d.recipient_username || undefined,
     recipientDisplayName: d.recipient_display_name,
     recipientAvatarUrl: d.recipient_avatar_url,

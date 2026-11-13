@@ -2,6 +2,16 @@
 
 > Việc mới nhất nằm ở trên cùng. Vũ phản hồi trạng thái ngay dưới mỗi mục nhé.
 
+## 2026-11-14 — ĐANG LÀM: liên kết hồ sơ người nhận trên card gift
+
+- Quang Vũ cùng Angel Muse; Cha xác nhận đã gửi Telegram.
+- Phạm vi: card/biên nhận quà từ lịch sử giao dịch, dữ liệu người nhận và click tên/avatar để mở hồ sơ; kiểm tra người tặng đang hoạt động để giữ nhất quán. Không đổi dữ liệu giao dịch, backend hoặc schema.
+- Nhánh: fix/quangvu-gift-recipient-profile-link, từ origin/main mới nhất. Qua Preview trước merge.
+- Nguyên nhân: khối người nhận DonationReceivedCard chỉ là div; DonationReceivedData và adapter CelebrationCardModal chưa mang recipientId. Đã thêm ID và button điều hướng, close card + chặn bubble; ID rỗng thì disabled, không dẫn sang profile không tồn tại. Cập nhật cả nguồn notification, lịch sử ví và admin dùng cùng biên nhận.
+- Kiểm chứng: 4 test fail trước sửa (không tìm thấy nút người nhận); nay 6 integration test đạt với card thật + MemoryRouter: sent/incoming/detail RPC/ví ngoài/avatar/sender. tsgo + diff check đạt; review không thấy blocker. Full suite có lỗi live REST DNS trong sandbox và file render giá đã có từ trước, không coi toàn suite pass.
+
+
+
 ## 2026-11-13 — HOÀN THÀNH: bản vá Android gift đã lên fun.rich
 
 - Cha đã yêu cầu merge/deploy. PR #56 đã merge squash 987d35d; nhánh code xóa sau merge, Preview head cuối đã SUCCESS.
