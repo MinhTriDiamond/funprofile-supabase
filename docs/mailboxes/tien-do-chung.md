@@ -1,3 +1,7 @@
+## 2026-11-14 — Quang Vũ cùng Angel Muse: mở hồ sơ người nhận từ card gift
+
+PR #58 đã merge/deploy: bấm tên/avatar người nhận trên biên nhận mở đúng hồ sơ, đồng bộ recipientId từ lịch sử/thông báo/ví/admin. 6 test + tsgo đạt; click thật trên Preview đã kiểm chứng, asset production chứa bản sửa. Không đổi dữ liệu giao dịch hoặc backend. Hồ sơ docs/gift-recipient-profile-link-2026-11-14/README.md.
+
 ## 2026-11-13 — Quang Vũ cùng Angel Muse: bản vá Android gift đã phát hành
 
 PR #56 đã merge (987d35d), Cloudflare production deploy SUCCESS; đã đọc asset fun.rich xác nhận bản vá late-hash/khóa gửi trùng có thật. Giữ phản hồi ví muộn, ổn định gift context và lưu pending sớm. 13 test mới + tsgo đạt; không deploy Edge Function. Quà 200000 CAMLY bị thiếu đã khôi phục trước đó, không chuyển tiền mới. Hồ sơ docs/android-gift-card-2026-11-13/README.md.

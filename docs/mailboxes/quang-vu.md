@@ -2,6 +2,15 @@
 
 > Việc mới nhất nằm ở trên cùng. Vũ phản hồi trạng thái ngay dưới mỗi mục nhé.
 
+## 2026-11-14 — HOÀN THÀNH: tên/avatar người nhận card gift mở được hồ sơ
+
+- PR #58 https://github.com/MinhTriDiamond/funprofile-supabase/pull/58 đã merge squash a4a4f34 sau cổng Preview. Nhánh code đã xóa.
+- Nguyên nhân: recipient là div, thiếu recipientId trong adapter. Nay tên/avatar/username là button, đóng card rồi mở đúng route hồ sơ; ID rỗng/ví ngoài không dẫn đường sai. Đồng bộ ID ở mọi nguồn cùng dùng biên nhận.
+- 6 integration test + tsgo đạt; review không thấy blocker. Preview thật đã click đúng người nhận được báo lỗi, card đóng và canonical profile đúng tải được, có nút Tặng quà.
+- Cloudflare production SUCCESS (https://70c33883.funprofile-supabase.pages.dev), đã đọc index-uOp7jHfP.js trên fun.rich xác minh mã button/recipientId mới. Chưa click lại production vì người dùng đang dùng browser. Không đổi backend, DB/schema hay dữ liệu giao dịch.
+- Hồ sơ: docs/gift-recipient-profile-link-2026-11-14/README.md. Nhánh tài liệu kết quả: docs/quangvu-gift-profile-release.
+
+
 ## 2026-11-14 — ĐANG LÀM: liên kết hồ sơ người nhận trên card gift
 
 - Quang Vũ cùng Angel Muse; Cha xác nhận đã gửi Telegram.
