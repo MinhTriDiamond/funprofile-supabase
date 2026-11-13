@@ -114,6 +114,7 @@ export const DonationReceivedNotification = () => {
         senderDisplayName,
         senderAvatarUrl: senderProfile?.avatar_url,
         senderId: next.sender_id || '',
+        recipientId: userId,
         recipientUsername,
         recipientDisplayName,
         recipientAvatarUrl: recipientProfile?.avatar_url,

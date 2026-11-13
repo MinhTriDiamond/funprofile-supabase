@@ -299,6 +299,7 @@ function DonationCard({ d, userId, btcPrice }: { d: DonationRecord; userId: stri
     senderDisplayName: d.sender_display_name,
     senderAvatarUrl: d.sender_avatar_url,
     senderId: d.sender_id || '',
+    recipientId: d.recipient_id,
     recipientUsername: d.recipient_username || undefined,
     recipientDisplayName: d.recipient_display_name,
     recipientAvatarUrl: d.recipient_avatar_url,
