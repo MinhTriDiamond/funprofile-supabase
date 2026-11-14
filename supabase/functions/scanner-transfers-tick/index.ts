@@ -11,8 +11,11 @@
 //     theo (tx_hash, user_id) ⇒ hai chân ghi trùng nhau vẫn an toàn)
 //   - bản đồ ví → user: cùng truy vấn profiles + custodial_wallets như tick.
 //
-// Phạm vi v1: chỉ chiều VÀO (toAddress = ví hệ thống) — đúng bản chất
-// donations. Chiều ra vẫn do chân getLogs phụ trách.
+// Phạm vi: chiều VÀO (toAddress = ví hệ thống) để bắt donations, và từ
+// v3 (14/11/2026) thêm chiều RA (fromAddress = ví hệ thống) để ghi vết
+// các giao dịch chuyển ra ví ngoài (phân loại external_out, chỉ lưu
+// transactions, không ghi donations). Chân getLogs cũ không còn phụ
+// trách chiều ra nữa.
 //
 // Watermark RIÊNG theo ví ở bảng `scanner_transfers_watermarks`
 // (scanner_watermarks của chân chính khóa theo token, không theo ví).
@@ -29,6 +32,14 @@
 //    hoặc ALCHEMY_BSC_RPC_URLS): endpoint nào hết hạn mức tháng thì tự
 //    chuyển sang endpoint kế tiếp.
 // 3) Đọc watermark theo trang - sửa lỗi trần 1.000 dòng của PostgREST.
+//
+// v3 (14/11/2026) - khôi phục ghi nhận chiều RA:
+// - Mỗi ví quét thêm fromAddress (2 truy vấn transfer nữa) + phân loại
+//   external_out (chỉ lưu vết transactions, không ghi donations).
+// - lastActivity tính thêm từ donations để ví nhận quà thường xuyên
+//   được xếp nhóm nóng đúng hạn.
+// - Ước tính tổng Route B lên dưới ~50M CU/tháng, vẫn trong hạn mức
+//   2 khóa Alchemy (60M CU/tháng).
 
 import { corsHeaders, handleCors } from "../_shared/cors.ts";
 import { createAdminClient } from "../_shared/supabase.ts";
@@ -227,20 +238,24 @@ async function alchemyRpc(
   throw lastError ?? new Error("alchemy rpc failed");
 }
 
-/** Lấy toàn bộ transfers VÀO một ví trong [fromBlock, toBlock] (có trần trang). */
-async function fetchInbound(
+/** Lấy toàn bộ transfers VÀO hoặc RA một ví trong [fromBlock, toBlock] (có trần trang). */
+async function fetchTransfers(
   pool: RpcPool,
   wallet: string,
   fromBlock: number,
   toBlock: number,
+  direction: "in" | "out",
 ): Promise<{ transfers: AlchemyTransfer[]; complete: boolean }> {
   const out: AlchemyTransfer[] = [];
   // Hai truy vấn: ERC-20 của 4 token hệ thống + native BNB (external).
+  const dirField = direction === "in"
+    ? { toAddress: wallet }
+    : { fromAddress: wallet };
   const queries: Record<string, unknown>[] = [
     {
       fromBlock: hex(fromBlock),
       toBlock: hex(toBlock),
-      toAddress: wallet,
+      ...dirField,
       contractAddresses: TOKEN_ADDRS,
       category: ["erc20"],
       order: "asc",
@@ -251,7 +266,7 @@ async function fetchInbound(
     {
       fromBlock: hex(fromBlock),
       toBlock: hex(toBlock),
-      toAddress: wallet,
+      ...dirField,
       category: ["external"],
       order: "asc",
       withMetadata: false,
@@ -389,7 +404,7 @@ Deno.serve(async (req) => {
       if (rows.length < 1000) break;
     }
 
-    // ── Hoạt động gần nhất của từng địa chỉ (transactions 90 ngày qua) ──
+    // ── Hoạt động gần nhất của từng địa chỉ (transactions + donations 90 ngày qua) ──
     const since90 = new Date(Date.now() - 90 * 24 * 3600 * 1000).toISOString();
     const lastActivity = new Map<string, number>();
     for (let off = 0; ; off += 1000) {
@@ -414,6 +429,43 @@ Deno.serve(async (req) => {
             const k = a.toLowerCase();
             // Sắp xếp giảm dần theo thời gian: lần gặp đầu tiên là mới nhất.
             if (!lastActivity.has(k)) lastActivity.set(k, ts);
+          }
+        }
+      }
+      if (rows.length < 1000) break;
+    }
+
+    // donations cũng là hoạt động: ví mới chỉ nhận quà qua app (chưa có
+    // dòng transactions nào) vẫn phải được xếp nóng. donations không giữ
+    // địa chỉ ví — đổi sender_id/recipient_id sang ví qua bản đồ ngược.
+    const userToWallet = new Map<string, string>();
+    for (const [w, u] of walletToUser) {
+      if (!userToWallet.has(u.id)) userToWallet.set(u.id, w);
+    }
+    for (let off = 0; ; off += 1000) {
+      const { data } = await admin.from("donations")
+        .select("sender_id, recipient_id, created_at")
+        .gte("created_at", since90)
+        .order("created_at", { ascending: false })
+        .range(off, off + 999);
+      const rows = data ?? [];
+      for (const r of rows) {
+        // deno-lint-ignore no-explicit-any
+        const ts = new Date(String((r as any).created_at)).getTime();
+        for (
+          const uid of [
+            // deno-lint-ignore no-explicit-any
+            (r as any).sender_id,
+            // deno-lint-ignore no-explicit-any
+            (r as any).recipient_id,
+          ]
+        ) {
+          if (typeof uid === "string" && uid) {
+            const w = userToWallet.get(uid);
+            if (w) {
+              const prev = lastActivity.get(w);
+              if (prev === undefined || ts > prev) lastActivity.set(w, ts);
+            }
           }
         }
       }
@@ -517,12 +569,32 @@ Deno.serve(async (req) => {
         continue;
       }
       try {
-        const { transfers, complete } = await fetchInbound(
+        const inbound = await fetchTransfers(
           pool,
           wallet,
           from + 1,
           safeHead,
+          "in",
         );
+        const outbound = await fetchTransfers(
+          pool,
+          wallet,
+          from + 1,
+          safeHead,
+          "out",
+        );
+        // Gộp hai chiều; khử trùng lượt tự chuyển (from == to == ví) vì
+        // một transfer tự gửi sẽ trúng cả hai truy vấn.
+        const seenKeys = new Set<string>();
+        const transfers: AlchemyTransfer[] = [];
+        for (const t of [...inbound.transfers, ...outbound.transfers]) {
+          const key =
+            `${t.hash.toLowerCase()}|${t.from.toLowerCase()}|${t.to.toLowerCase()}|${(t.rawContract?.address ?? "").toLowerCase()}|${t.rawContract?.value ?? ""}`;
+          if (seenKeys.has(key)) continue;
+          seenKeys.add(key);
+          transfers.push(t);
+        }
+        const complete = inbound.complete && outbound.complete;
         let lastSeenBlock = from;
         for (const t of transfers) {
           const block = parseInt(t.blockNum, 16);
@@ -616,6 +688,9 @@ Deno.serve(async (req) => {
       }
       const recipient = walletToUser.get(c.to_address.toLowerCase());
       const sender = walletToUser.get(c.from_address.toLowerCase());
+      // Chiều ra: chủ ví là người GỬI (transactions ghi theo owner);
+      // donations không ghi với external_out nên sender_user_id không dùng.
+      const owner = c.classification === "external_out" ? sender : recipient;
       try {
         const r = await ingestTransfer(admin, {
           tx_hash: c.tx_hash,
@@ -627,7 +702,7 @@ Deno.serve(async (req) => {
           amount_display: c.amount_display,
           usd_value: null,
           classification: c.classification,
-          matched_user_id: recipient?.id ?? null,
+          matched_user_id: owner?.id ?? null,
           sender_user_id: sender?.id ?? null,
           chain_id: CHAIN_ID,
         });

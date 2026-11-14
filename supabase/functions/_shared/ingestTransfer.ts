@@ -17,6 +17,7 @@
 export type IngestClassification =
   | "internal"
   | "external_in"
+  | "external_out"
   | "swap_suspect"
   | "dust_filtered"
   | "already_in_db";
@@ -32,7 +33,7 @@ export interface IngestRow {
   amount_display: string;
   usd_value: number | null;
   classification: IngestClassification;
-  /** Chủ ví nhận (bắt buộc để ghi). */
+  /** Chủ ví (nhận với chiều vào, gửi với chiều ra — bắt buộc để ghi). */
   matched_user_id: string | null;
   /** Chủ ví gửi nếu là ví hệ thống (chỉ dùng cho `internal`). */
   sender_user_id?: string | null;
@@ -66,6 +67,9 @@ export function donationPolicyFor(
         // Policy ví ngoài: KHÔNG tạo gift_celebration post.
         create_gift_post: false,
       };
+    case "external_out":
+      // Chuyển ra ví ngoài: chỉ lưu vết transactions, KHÔNG vào donations.
+      return null;
     default:
       // swap_suspect / dust_filtered / already_in_db không vào donations.
       return null;
@@ -77,6 +81,7 @@ export function writesTransaction(classification: IngestClassification): boolean
   return (
     classification === "internal" ||
     classification === "external_in" ||
+    classification === "external_out" ||
     classification === "swap_suspect"
   );
 }
@@ -142,7 +147,9 @@ export async function ingestTransfer(
   // 2. donations — chỉ với internal / external_in
   const policy = donationPolicyFor(row.classification);
   if (!policy) {
-    out.skipped_reason = "chỉ lưu vết transactions (nghi ngờ swap)";
+    out.skipped_reason = row.classification === "external_out"
+      ? "chỉ lưu vết transactions (chuyển ra ví ngoài)"
+      : "chỉ lưu vết transactions (nghi ngờ swap)";
     return out;
   }
 
