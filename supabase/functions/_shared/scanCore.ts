@@ -55,6 +55,7 @@ export function minForSymbol(symbol: string): string {
 export type Classification =
   | "internal"
   | "external_in"
+  | "external_out"
   | "swap_suspect"
   | "dust_filtered"
   | "already_in_db";
@@ -85,7 +86,8 @@ export interface ClassifiedCandidate extends RawCandidate {
  * 3. `swap_suspect`   — cùng tx_hash nhưng ≥2 token khác nhau (2 chân swap)
  *                       ⇒ chỉ lưu vết `transactions`, KHÔNG ghi `donations`.
  * 4. `internal`       — cả from và to là ví hệ thống.
- * 5. `external_in`    — from là ví ngoài.
+ * 5. `external_out`   — to là ví ngoài (from là ví hệ thống).
+ * 6. `external_in`    — from là ví ngoài.
  */
 export function classifyCandidates(
   raws: RawCandidate[],
@@ -122,6 +124,9 @@ export function classifyCandidates(
     }
     if (systemWallets.has(from) && systemWallets.has(to)) {
       return { ...r, classification: "internal" as Classification, skip_reason: null };
+    }
+    if (systemWallets.has(from)) {
+      return { ...r, classification: "external_out" as Classification, skip_reason: null };
     }
     return { ...r, classification: "external_in" as Classification, skip_reason: null };
   });
