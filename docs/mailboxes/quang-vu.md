@@ -2,6 +2,13 @@
 
 > Việc mới nhất nằm ở trên cùng. Vũ phản hồi trạng thái ngay dưới mỗi mục nhé.
 
+## 2026-11-21 — HOÀN TẤT UPLOAD BACKUP R2, QUOTA ĐÃ GIẢM
+
+- Cha đã xác nhận trực tiếp upload đúng 12 file vào bucket/prefix public đã nêu. Dashboard 12/12 thành công; đọc lại toàn bộ 10 phần video + manifest + script từ R2, SHA-256 và size cả 12 file khớp local. Manifest và bằng chứng tại `docs/rtmp-stream-cleanup-audit-2026-11-20/r2-remote-verification.json`.
+- Tải mới dashboard Stream: 529 video, 722/1.000 phút, giảm 301 phút so với 1.023/1.000; tại snapshot còn 278 phút trống. 6 replay khôi phục đã có R2 và nguồn Stream cũ 404; còn 5 replay không đủ nguồn giữ guard. Chưa mở live thử.
+- Ba recording ngoài phiên ngày 17–18/11 vẫn còn nguyên trên Stream, nay có backup local và R2 (~289 phút/2,77 GB). Xác nhận vừa rồi chỉ cho upload, chưa xóa thủ công thêm nguồn.
+- Source fix đã merge PR #65/deploy v100; cập nhật hồ sơ trong PR #66. README có rollback và tin Telegram để Cha copy. Không đổi secret/schema/cron hay quyền bucket.
+
 ## 2026-11-21 — KIỂM CHỨNG SAU V100: 6 replay đã lưu R2 và dọn Stream
 
 - Trên đúng 11 replay backup: 6 hàng đã có nguồn/R2/dấu xóa, còn 5 pending chưa đủ nguồn. HEAD thật: cả 6 URL R2 HTTP200 và size khớp; 6 HLS Stream cũ HTTP404. Không ép map nguồn cho 5 hàng còn lại, chưa test live thật/đo lại quota dashboard.

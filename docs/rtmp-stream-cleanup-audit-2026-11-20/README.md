@@ -139,3 +139,23 @@ Trình duyệt đã mở đúng account production `6083e34ad429331916b93ba8a5ed
 **Upload chưa thực hiện.** Bước bấm Mở ở hộp chọn đúng 12 file bị automatic approval review từ chối vì cần xác nhận trực tiếp cho payload video và bucket đích đang bật public access. Không thử đường khác để truyền dữ liệu. Câu hỏi xác nhận upload đúng 12 file vào đúng prefix/account đã gửi Cha; chờ trả lời. Hộp chọn file đang giữ 12 file đã chọn. Ba video Stream mới ngoài phiên vẫn còn nguyên; thao tác xóa vĩnh viễn vẫn cần xác nhận riêng tại bước xóa. Không lấy/reveal API key.
 
 Tin Telegram cập nhật số liệu mới: PR65/v100 đã khôi phục 6 replay, R2 HEAD200 đủsize và Stream cũ404; còn 5 pending chưa đủ nguồn nên giữ nguyên. Backup local 3 bản mới (~289 phút/2,77 GB) đã full-decode và thử ghép/hash; prefix R2 bổ sung đã chuẩn bị nhưng chưa upload vì đang chờ Cha xác nhận payload/bucket public. Chưa tuyên bố live thật đã hoạt động lại.
+
+## Xác nhận upload bổ sung — 21/11/2026
+
+Cha đã trả lời “ok, cha xác nhận” cho câu hỏi upload đúng 12 file (~2,77 GB) vào bucket public `fun-rich-media`, account `6083e34ad429331916b93ba8a5ede81d`, prefix `rtmp-stream-backups-2026-11-21/`. Sau xác nhận, đã chọn lại đúng 10 phần video + manifest + script phục hồi và bấm Mở trên dashboard; hàng upload bắt đầu. Chưa coi upload hoàn tất trước khi dashboard báo đủ và kiểm tra hash dữ liệu đọc lại từ R2. Xác nhận này chỉ cho upload; không coi là xác nhận xóa thêm bản Stream.
+
+## Hoàn tất upload R2 và kiểm chứng lại — 21/11/2026
+
+Sau xác nhận trực tiếp của Cha, dashboard báo **12/12 files uploaded** vào đúng `fun-rich-media/rtmp-stream-backups-2026-11-21/`. Đã GET đọc lại toàn bộ 10 phần video, manifest và script từ `https://media.fun.rich/rtmp-stream-backups-2026-11-21/`; cả 12 file có dung lượng và SHA-256 khớp hoàn toàn bản local. Bằng chứng: `r2-remote-verification.json`, all_verified=true. Tổng video 2.765.958.396 byte; hai file phục hồi/manifest thêm 4.031 byte. Bản local vẫn giữ nguyên. Thử ghép local trước upload cũng đã cho SHA-256 toàn MP4 khớp.
+
+[Bản kê backup R2](https://media.fun.rich/rtmp-stream-backups-2026-11-21/manifest.json) và script `restore_backups.py` nằm cùng prefix. Muốn phục hồi: tải đủ các phần + manifest + script về cùng một thư mục, chạy `python3 restore_backups.py <thư-mục-đích>`; script kiểm hash từng phần và hash toàn file, không ghi đè file đã có. Các phần là backup, không phải URL phát MP4 trực tiếp.
+
+### Quota thực tế sau tự dọn
+
+Đã mở đúng dashboard Stream account `c94ab2ffb5381cac3177eec3734467b4`, tải lại toàn trang để tránh số liệu cache: **529 video, 722/1.000 phút**, so với ảnh ban đầu 534 video, 1.023/1.000 phút. Giảm 301 phút; tại lần kiểm tra này còn 278 phút trống và không còn vượt quota. Danh sách cũng có recording mới ngày 20/11 nên chênh lệch số video thuần là 5 dù 6 nguồn đã được dọn. Không tự mở live thử; không khẳng định mọi lỗi RTMP khác đã hết.
+
+**Ba recording ngày 17–18/11 ngoài phiên chưa bị xóa thủ công.** Xác nhận vừa nhận chỉ cho upload; không thay thế xác nhận xóa vĩnh viễn. Lỗi đầy quota ban đầu đã được giải phóng bởi luồng archive/cleanup khôi phục 6 replay. Còn 5 replay chưa đủ nguồn giữ strict guard, không ép UID.
+
+### Tin Telegram để Cha copy
+
+> Quang Vũ · Đã sửa và phát hành lỗi recovery RTMP qua PR #65, archive cron v100 ACTIVE. 6 replay đã lưu R2 và dọn Stream; kiểm chứng R2 HTTP200/size khớp và nguồn Stream cũ 404. Dashboard tải mới giảm từ 1.023 xuống 722/1.000 phút, còn 278 phút trống; 529 video thay vì 534. Đã backup 3 recording ngày 17–18/11 (~289 phút/2,77 GB) trên máy và R2 dưới dạng 10 phần + manifest + script, đọc lại 12/12 file SHA-256/dung lượng khớp. Chưa xóa thủ công 3 nguồn này; 5 replay chưa đủ nguồn giữ nguyên. Bản vá có 36 test liên quan, tsgo, Deno và review đạt; full suite có lỗi ngoài phạm vi đã ghi hồ sơ. Việc này khôi phục tự lưu/tự dọn, giải phóng quota cho RTMP và bảo toàn các recording ngoài phiên. PR: https://github.com/MinhTriDiamond/funprofile-supabase/pull/65 .

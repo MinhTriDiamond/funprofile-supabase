@@ -1,3 +1,7 @@
+## 2026-11-21 — RTMP: quota về 722 phút, backup R2 đã xác minh
+
+Sau PR #65/v100, 6 replay đã lưu R2 và dọn nguồn. Dashboard tải mới giảm từ 1.023 xuống 722/1.000 phút (529 video), còn 278 phút trống. Cha xác nhận upload bổ sung; 12/12 file backup R2 của 3 recording ngoài phiên đã được đọc lại, size/SHA-256 khớp local. Chưa xóa thủ công 3 recording này, chưa live test. Hồ sơ/bằng chứng và tin Telegram: docs/rtmp-stream-cleanup-audit-2026-11-20/README.md; PR hồ sơ #66.
+
 ## 2026-11-21 — RTMP: kiểm chứng 6 replay đã archive và xóa nguồn
 
 Sau PR #65/v100, 6/11 replay mục tiêu đã có R2 và dấu xóa Stream; HEAD cả 6 R2 HTTP200/size khớp, HLS Stream cũ 404. Còn 5 pending giữ nguyên strict guard. Backup 3 recording mới đã kiểm chứng local; chuẩn bị 12 file để lưu thêm R2 nhưng upload đang chờ Cha xác nhận vì bucket public, không xóa 3 nguồn mới. Hồ sơ RTMP ngày 20/11 có số liệu/bằng chứng chi tiết.
