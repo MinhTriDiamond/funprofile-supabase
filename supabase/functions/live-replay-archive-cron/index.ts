@@ -1,8 +1,8 @@
 ﻿/* eslint-disable @typescript-eslint/no-explicit-any */
+import { recoverMissingRtmpReplays } from '../_shared/rtmpReplayRecovery.ts';
 import { getRtmpActiveVideoPatch } from '../_shared/rtmpSessionStatus.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2';
-import { detectRtmpLiveConnection, getStreamPlaybackUrls, listStreamLiveInputVideos, selectRtmpReplayVideoForSession } from '../_shared/cloudflareStreamService.ts';
-import { createOrUpdateInstantReplayPost } from '../_shared/replayFeedService.ts';
+import { detectRtmpLiveConnection, getStreamPlaybackUrls } from '../_shared/cloudflareStreamService.ts';
 import { archiveReplay, cleanupArchivedStreamVideos, pollMp4ForReplay } from '../_shared/archiveReplayService.ts';
 import { endRtmpLiveSession, getDisconnectGraceSeconds, getObsReconnectTimeoutSeconds } from '../_shared/rtmpEndLiveService.ts';
 import { classifyRtmpVideoSignal } from '../_shared/rtmpDisconnectPolicy.ts';
@@ -31,97 +31,6 @@ function isAuthorized(req: Request): boolean {
     !!(cronSecret && req.headers.get('X-Cron-Secret') === cronSecret);
 }
 
-async function recoverMissingRtmpReplays(admin: any): Promise<number> {
-  const { data: sessions } = await admin
-    .from('live_sessions')
-    .select('id, owner_id, host_user_id, user_id, cloudflare_live_input_id, cloudflare_video_uid, post_id, live_post_id, title, started_at, go_live_clicked_at, created_at, ended_at, updated_at')
-    .eq('mode', 'rtmp_obs')
-    .in('status', ['ended', 'replay_temp_ready', 'processing', 'processing_stream', 'stream_ready', 'exporting_mp4', 'archiving_r2', 'uploading_r2', 'verifying_r2', 'failed'])
-    .not('cloudflare_live_input_id', 'is', null)
-    .or('post_id.not.is.null,live_post_id.not.is.null')
-    .order('updated_at', { ascending: true })
-    .limit(30);
-
-  let recovered = 0;
-  for (const session of sessions || []) {
-    const { data: existing } = await admin
-      .from('live_replays')
-      .select('id')
-      .eq('live_session_id', session.id)
-      .limit(1)
-      .maybeSingle();
-    if (existing?.id) continue;
-
-    // Poll 2 láº§n Ã— 1.5s â€” phÃ²ng khi recover cron tá»›i sá»›m hÆ¡n UID materialize.
-    let videos = await listStreamLiveInputVideos(session.cloudflare_live_input_id).catch(() => []);
-    if (videos.length === 0) {
-      await new Promise((r) => setTimeout(r, 1500));
-      videos = await listStreamLiveInputVideos(session.cloudflare_live_input_id).catch(() => []);
-    }
-    const selection = selectRtmpReplayVideoForSession(videos as any, session, session.cloudflare_video_uid || null, {
-      skewSeconds: 60,
-      afterEndMinutes: 10,
-    });
-    const video = selection.video as any;
-    if (!video?.uid) {
-      console.warn('[RTMP_RECOVER_REPLAY_NO_STRICT_VIDEO]', {
-        live_session_id: session.id,
-        live_input_id: session.cloudflare_live_input_id,
-        preferredUid: session.cloudflare_video_uid || null,
-        reason: selection.reason,
-        candidates: selection.candidates,
-        rejected: selection.rejected.slice(0, 5),
-      });
-      continue;
-    }
-
-    const uid = String(video.uid);
-    const urls = getStreamPlaybackUrls(uid);
-    await admin.from('live_sessions').update({
-      cloudflare_video_uid: uid,
-      // NÃ¢ng status sang replay_temp_ready Ä‘á»ƒ FE/Ops tháº¥y cÃ³ replay táº¡m thá»i ngay.
-      status: 'replay_temp_ready',
-      recording_status: video?.readyToStream ? 'ready' : 'processing',
-      recording_ready_at: video?.readyToStream ? new Date().toISOString() : null,
-      archive_status: 'pending',
-      archive_error: null,
-    }).eq('id', session.id).in('status', ['ended', 'failed', 'processing']);
-
-    const { data: replay, error } = await admin.from('live_replays').upsert({
-      live_session_id: session.id,
-      user_id: session.owner_id || session.host_user_id || session.user_id,
-      // RTMP replays do not have a chunked_recordings row; use the live session UUID
-      // so this UUID column stays valid and remains one replay per session.
-      chunked_recording_id: session.id,
-      stream_uid: uid,
-      cloudflare_video_uid: uid,
-      playback_hls: urls.hls,
-      playback_dash: urls.dash,
-      playback_mp4: urls.mp4,
-      cloudflare_playback_url: urls.hls,
-      status: 'ready',
-      processing_started_at: new Date().toISOString(),
-      storage_provider: 'cloudflare_stream',
-      playback_provider: 'cloudflare_temp',
-      archive_status: 'pending',
-      archive_error: null,
-      cloudflare_vod_enabled: true,
-      last_cf_response: video,
-    }, { onConflict: 'chunked_recording_id' }).select('*').single();
-    if (!error) {
-      const postId = await createOrUpdateInstantReplayPost(admin as any, replay, urls.hls);
-      if (postId && replay?.id) {
-        await admin.from('live_replays').update({
-          replay_post_id: postId,
-          auto_posted_at: replay.auto_posted_at || new Date().toISOString(),
-          posted_at: replay.posted_at || new Date().toISOString(),
-        }).eq('id', replay.id);
-      }
-      recovered += 1;
-    }
-  }
-  return recovered;
-}
 
 function getReconnectDeadline(signalLostAt: string, timeoutSeconds: number): string | null {
   const lostAt = Date.parse(signalLostAt);
@@ -381,7 +290,6 @@ Deno.serve(async (req) => {
 
   const { replay_id, limit = 5, cleanup_limit = 10 } = await req.json().catch(() => ({}));
   const auto_ended_rtmp_sessions = await autoEndDisconnectedRtmpSessions(admin as any);
-  const recovered_rtmp_replays = await recoverMissingRtmpReplays(admin as any);
   const cleanup_archived_stream_videos = await cleanupArchivedStreamVideos(admin as any, cleanup_limit).catch((error) => ({
     scanned: 0,
     deleted: 0,
@@ -544,6 +452,11 @@ Deno.serve(async (req) => {
       });
     }
   }
+
+  const recovered_rtmp_replays = await recoverMissingRtmpReplays(admin as any).catch(() => {
+    console.warn('[RTMP_RECOVER_REPLAY_BATCH_FAILED]');
+    return 0;
+  });
 
   return json({
     ok: true,

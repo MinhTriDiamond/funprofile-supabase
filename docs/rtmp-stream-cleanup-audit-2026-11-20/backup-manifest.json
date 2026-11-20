@@ -1,0 +1,39 @@
+{
+  "backup_directory": ".local-backups/rtmp-stream-2026-11-21",
+  "storage": "local only; R2 destination not yet accessible",
+  "items": [
+    {
+      "uid": "1f2fa1ad3edcece1ac91c0bfd57b79e6",
+      "source": "hls-highest-variant",
+      "duration_seconds": 6537.0437,
+      "bytes": 1077464791,
+      "sha256": "8662675149ca129bc4dc2921356442c72efc775463a6359f6f602913334dbac3",
+      "segment_count": 6484,
+      "full_decode_exit_code": 0,
+      "full_decode_elapsed_seconds": 634.7,
+      "decode_warnings": "non-monotonic DTS warnings from null output muxer; exit 0"
+    },
+    {
+      "uid": "ef247d9971654b03e10e607529004c09",
+      "source": "hls-highest-variant",
+      "duration_seconds": 5434.048594,
+      "bytes": 866883568,
+      "sha256": "03aed4651e73c28cf19c043661e0aac6aee11a2c6bd04c077088e56816aaccd9",
+      "segment_count": 5398,
+      "full_decode_exit_code": 0,
+      "full_decode_elapsed_seconds": 564.1,
+      "decode_warnings": "non-monotonic DTS warnings from null output muxer; exit 0"
+    },
+    {
+      "uid": "fbf2bbefecb1d36d1c6aceae8613a211",
+      "source": "hls-highest-variant",
+      "duration_seconds": 5370.286599,
+      "bytes": 821610037,
+      "sha256": "a48b8bf3c85a42c8c4a249f97abbf88519cba673ef8a5fe17f6813652a6f20ca",
+      "segment_count": 5336,
+      "full_decode_exit_code": 0,
+      "full_decode_elapsed_seconds": 546.8,
+      "decode_warnings": "non-monotonic DTS warnings from null output muxer; exit 0"
+    }
+  ]
+}
