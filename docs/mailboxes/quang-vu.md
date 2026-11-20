@@ -2,6 +2,40 @@
 
 > Việc mới nhất nằm ở trên cùng. Vũ phản hồi trạng thái ngay dưới mỗi mục nhé.
 
+## 2026-11-21 — ĐÃ CHUẨN BỊ BẢN VÁ VÀ BACKUP RTMP
+
+- Ba recording mới ngày17–18/11 đã backup local đủ hình/tiếng, tổng2.765.958.396byte, thời lượng289phút1giây; SHA-256 tại `docs/rtmp-stream-cleanup-audit-2026-11-20/backup-manifest.json`. Full decode exit0; có cảnh báo timestamp ở null output muxer được ghi rõ. Chưa có bản sao R2 mới vì chưa truy cập đúng bucket production; không xóa nguồn.
+- Bản vá `rtmpReplayRecovery` giữ strict matching, phục hồi placeholder thiếuUID bằng CAS, giữ identity, quét keyset ưu tiên chưathử rồi retrycũ; tối đa5attempt/tick +deadline mềm15s, cooldownsession10phút. Recovery chạy sau archive/cleanup; lỗi từnghàng/batch không chặn job chính. Production có sẵn session.archive_next_retry_at, không migration.
+- 36 test liên quan /4file +tsgo +deno check đạt; review độc lập không còn Critical/Important. Fullsuite đã chạy và có23testfail/10file do nhóm REST/DNS, timeout và test giá; hồ sơ nêu chi tiết, không coi fullsuite pass. Chuẩn bị commit/PR/Preview; chưa merge/deploy.
+
+## 2026-11-21 — BỔ SUNG PHẠM VI: sửa recovery replay RTMP thiếu UID
+
+- Theo chỉ đạo tiếp tục của Cha; production xác nhận 11/11 replay RTMP pending thiếu stream_uid/cloudflare_video_uid, trong khi session có cloudflare_video_uid. Recovery đang skip mọi replay có id; archive lại lọc stream_uid khác null. Source cron deploy khớp repo, khác duy nhất BOM.
+- Nhánh sửa riêng: `fix/quangvu-rtmp-replay-source-recovery`. Phạm vi mã: shared recovery service, archive cron wiring, test regression. Không đổi auth/schema/secret hay mở rộng strict matching. Hồ sơ/design/plan ngày 21/11 đi kèm.
+- Ba recording mới chưa có session/replay tiếp tục được backup riêng; không tự gắn vào phiên cũ hoặc xóa hàng loạt. Chưa deploy/xóa.
+
+## 2026-11-20 — TIẾP TỤC XỬ LÝ: bảo toàn bản ghi và khôi phục dung lượng RTMP
+
+- Cha đã đồng ý tiếp tục thực hiện sau kết quả chẩn đoán.
+- Bổ sung phạm vi: kiểm kê video tồn, tìm bản sao R2/backup và xác minh trước khi lập danh sách dọn; điều tra vì sao persistent recording không gắn replay; chuẩn bị sửa/test theo nguyên nhân xác minh được. Không mua thêm storage tự động. Xóa vĩnh viễn qua UI chỉ sau khi có danh sách cụ thể và xác nhận tại thao tác.
+- Nhánh hiện tại `docs/quangvu-rtmp-stream-cleanup-audit`; nếu sửa mã sẽ tạo nhánh fix riêng và đi qua Preview/PR, không commit main.
+- Đang kiểm tra quyền thao tác sẵn có; không yêu cầu hoặc ghi secret qua chat/repo/hộp thư.
+
+## 2026-11-20 — KẾT QUẢ KIỂM TRA: RTMP bị chặn vì đầy quota Stream
+
+- Log Cloudflare của input phiên hiện tại xác nhận `STORAGE_QUOTA_EXHAUSTED` và `STREAM_FAILED_TO_START` lúc 15:19:47 UTC (23:19:47 GMT+8). Dashboard xác nhận 534 video, 1.023/1.000 phút.
+- Production DB: 468 replay RTMP có URL R2 và dấu xóa Stream; 11 pending, 37 unrecoverable. Có cơ chế tự xóa sau archive và cron active mỗi phút; dấu DB chưa thay thế kiểm chứng lại từng video/object.
+- Ba UID video còn tồn ngày 17–18/11 không có session/replay/post khớp trong truy vấn kiểm tra, nên watchdog theo replay không bao phủ. Chưa xác minh bản R2/backup của chúng, chưa kết luận có thể xóa. Chưa kiểm kê toàn bộ 534 video.
+- Hồ sơ và đề xuất tiếp theo: `docs/rtmp-stream-cleanup-audit-2026-11-20/README.md`, có tin Telegram kết quả để Cha copy. Chỉ đọc production và ghi tài liệu; chưa xóa/sửa/deploy/tăng gói. Dung lượng chưa giảm. Chưa commit/push/PR/merge; nhánh `docs/quangvu-rtmp-stream-cleanup-audit`.
+
+## 2026-11-20 — ĐANG KIỂM TRA: dung lượng Cloudflare Stream và dọn bản ghi RTMP
+
+- Quang Vũ cùng Angel Muse; Cha xác nhận đã gửi Telegram trước khi bắt đầu.
+- Hiện trạng theo ảnh Cha cung cấp: 534 video, 1.023/1.000 phút lưu trữ; Cha báo RTMP lỗi. Chưa xác minh nguyên nhân lỗi bằng log production.
+- Phạm vi: kiểm tra mã kết thúc RTMP, archive sang R2, điều kiện xóa video Stream, cron/retry và hồ sơ triển khai; chỉ đọc production nếu có quyền truy cập sẵn. Không xóa video, không đổi schema/config/secret, không deploy.
+- Nhánh thực tế theo quy ước dự án: `docs/quangvu-rtmp-stream-cleanup-audit`, tạo từ `origin/main` sau fetch; thay cho tên nhánh dự kiến trong tin Telegram.
+- Trạng thái: đang lần theo mã và đối chiếu tài liệu Cloudflare; kết quả sẽ ghi lại sau kiểm chứng.
+
 ## 2026-11-14 — HOÀN THÀNH: tên/avatar người nhận card gift mở được hồ sơ
 
 - PR #58 https://github.com/MinhTriDiamond/funprofile-supabase/pull/58 đã merge squash a4a4f34 sau cổng Preview. Nhánh code đã xóa.

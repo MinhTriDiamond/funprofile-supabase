@@ -1,3 +1,7 @@
+## 2026-11-20 — Quang Vũ cùng Angel Muse: kiểm tra RTMP đầy Stream
+
+Log Cloudflare xác nhận STORAGE_QUOTA_EXHAUSTED chặn live; dashboard 534 video, 1.023/1.000 phút. DB ghi nhận 468 replay RTMP có URL R2 và dấu xóa Stream; ba UID bản ghi tồn ngày 17–18/11 không có replay khớp nên ngoài tập watchdog. Chỉ chẩn đoán, chưa xóa/sửa/deploy, chưa giảm dung lượng; chưa PR/merge. Hồ sơ local: docs/rtmp-stream-cleanup-audit-2026-11-20/README.md.
+
 ## 2026-11-14 — Quang Vũ cùng Angel Muse: mở hồ sơ người nhận từ card gift
 
 PR #58 đã merge/deploy: bấm tên/avatar người nhận trên biên nhận mở đúng hồ sơ, đồng bộ recipientId từ lịch sử/thông báo/ví/admin. 6 test + tsgo đạt; click thật trên Preview đã kiểm chứng, asset production chứa bản sửa. Không đổi dữ liệu giao dịch hoặc backend. Hồ sơ docs/gift-recipient-profile-link-2026-11-14/README.md.
