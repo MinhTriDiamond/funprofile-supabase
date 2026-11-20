@@ -439,3 +439,20 @@ SQL: `docs/superpowers/plans/2026-10-15-livestream-orphan-dry-run.sql`. Candidat
 - Nhánh sửa đã fast-forward vào main và push `67bf611`; Lovable project `331267a9-893e-47d1-8309-12038b7636f7` xác nhận latest_commit_sha khớp. Đã gửi publish request (deployment `e8b7fe02-d4c9-425c-960f-a871a76a5038`, trạng thái ban đầu pending).
 - Sau thời gian build/phát hành, đã kiểm tra bundle thật: fun.rich tải `Chat-BXvayuqW.js`, funprofile.lovable.app tải `Chat-uDBKOP4w.js`; cả hai chứa endpoint `agora-call-token` và UI `Gửi tệp tạm dừng`. Domain thật đã nhận code mới. Yêu cầu đăng nhập Cloudflare trước đó không còn cần thiết; không thay cấu hình Cloudflare qua UI.
 - Chưa test RTC thực tế hai tài khoản/Safari iPhone. Cần xác minh frontend thật trước, rồi kiểm tra gọi/nhắn tin bằng hai tài khoản thử nghiệm. `supabase/.temp/` được giữ nguyên ngoài commit.
+
+
+## 2026-11-21 · BẮT ĐẦU DỌN TOÀN BỘ CLOUDFLARE STREAM
+
+- Quang Vũ cùng Angel Muse; Cha xác nhận đã gửi Telegram và yêu cầu giải phóng toàn bộ quota 1.000 phút.
+- Hiện trạng gần nhất: 529 video, 722/1.000 phút; cần kiểm kê lại trước thao tác.
+- Nhánh: `fix/quangvu-stream-full-cleanup`, từ `origin/main` tại `a5252ec`.
+- Phạm vi: kiểm kê toàn tài khoản Stream, đối chiếu tham chiếu DB/feed và R2; sao lưu, kiểm chứng trước khi xóa nguồn; giữ khả năng xem lại trên feed; hồ sơ và cách phục hồi trong `docs/stream-full-cleanup-2026-11-21/`. Không xóa live input/stream key.
+- Chưa xóa dữ liệu trong đợt này. Không xóa video đang live hoặc chưa có bản sao đã kiểm chứng.
+
+
+## 2026-11-21 · CHECKPOINT BACKUP TOÀN BỘ STREAM — CHỜ XÁC NHẬN UPLOAD
+
+- Nhánh `fix/quangvu-stream-full-cleanup`; đã kiểm kê đủ 529 UID, 35 UID có nội dung tổng ~721,84 phút; 1 UID đang LIVE được bảo vệ.
+- Đã backup 34 VOD / 5.130.690.432 byte; kiểm chứng cấu trúc, thời lượng, SHA-256 và giải mã (2 full, 32 lấy mẫu); thử ghép lại đủ 34 file thành công. 47 file gói phục hồi đã sẵn sàng local.
+- Auto-review chặn upload gói mới vì xác nhận cũ chỉ 12 file/2,77 GB. Chờ Cha xác nhận upload 47 file/5,13 GB vào bucket public fun-rich-media, prefix stream-full-backups-2026-11-21/. Không thử bypass.
+- Chưa upload gói mới, chưa xóa Stream, chưa thay DB/feed; quota vẫn là số đo đầu đợt 722/1.000 phút, chưa tuyên bố đạt 1.000 phút trống. Hồ sơ `docs/stream-full-cleanup-2026-11-21/`.
