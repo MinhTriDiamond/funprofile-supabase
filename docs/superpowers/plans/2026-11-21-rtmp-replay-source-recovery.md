@@ -29,7 +29,7 @@
 - [x] Viết regression test các trường hợp trong spec, chuyển nguyên recovery hiện có sang shared để chạy test và xác nhận thất bại tại replay có id/UID null.
 - [x] Sửa guard/conditional update, giữ nguyên id; giữ healthy replay và không ghi post/session nếu strict mismatch hoặc race.
 - [x] Test tập trung, matching/fencing và feed regression; tsgo; deno check entrypoint; full suite và ghi rõ lỗi có sẵn nếu gặp.
-- [ ] Review diff độc lập, commit/push nhánh; lấy Preview đúng build và tạo PR. Không deploy Edge trước khi hoàn tất cổng dự án.
+- [x] Review diff độc lập, commit/push nhánh; lấy Preview đúng build và tạo PR. Đã merge PR65 qua Preview và deploy v100 sau cổng dự án.
 
 ### Task 2: Hồ sơ vận hành
 

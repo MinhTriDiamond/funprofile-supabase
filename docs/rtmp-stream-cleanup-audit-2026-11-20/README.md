@@ -89,7 +89,7 @@ Chỉ lập danh sách UID đã có backup kiểm chứng, ghi rõ nơi giữ b�
 - Cả 19 recording trên input không khớp trực tiếp stream_uid/cloudflare_video_uid ở live_replays. Có 8 UID khớp live_sessions và 6 UID còn được tham chiếu từ post (video_url/media_urls/metadata); không xóa nhóm có tham chiếu. Không suy diễn rằng các session đó không có replay: đối chiếu thêm theo live_session_id xác nhận một số replay tồn tại nhưng cả hai UID null.
 - 11/11 replay RTMP pending thiếu cả hai UID trong khi session có UID. Archive lọc stream_uid khác null, recovery cũ skip bất kỳ replay có id. Đây là lỗi phục hồi nguồn đã xác nhận trong code production (cron khác repo chỉ BOM).
 - Bản vá local tách recovery thành shared service, giữ strict selector cũ, phục hồi UID trên đúng replay placeholder với điều kiện source/R2/status/lease chưa đổi; giữ id/chunked_recording_id hiện có. Không tạo replay công khai cho pre-live.
-- Review độc lập phát hiện thêm batch30 có thể che phiên phía sau và lỗi một hàng chặn toàn cron. Đã chuyển sang keyset theo id, bulk lookup replay theo session ID (production không có FK để embed), giới hạn5 recovery thành công/tick, cooldown10phút khi placeholder strict mismatch, cô lập lỗi từng hàng và catch lỗi batch trong cron để archive/cleanup tiếp tục.
+- Review độc lập phát hiện thêm batch 30 có thể che phiên phía sau và lỗi một hàng chặn toàn cron. Đã chuyển sang keyset theo id, bulk lookup replay theo session ID (production không có FK để embed), giới hạn5 recovery thành công/tick, cooldown 10 phút khi placeholder strict mismatch, cô lập lỗi từng hàng và catch lỗi batch trong cron để archive/cleanup tiếp tục.
 - Regression từng thất bại trước sửa: existing placeholder bỏ qua; sửa làm đổi chunked_recording_id; target sau30healthy không được quét; writeerror thoát toàn recovery. Sau sửa: 34 test của4file liên quan đạt; tsgo và deno check entrypoint đạt.
 - Full suite đã chạy: 76 file pass, 10 file fail; 525 test pass, 23 fail, 30 skip. Các nhóm fail: a1-admin-guard/batch2, admin-backfill-guard, btc-pending-verification-sweep, check-login-method-containment, log-security-action-guard, recalculate-user-financial-guard, run-financial-reconciliation-guard, user-directory-split-guard, prices-unavailable.render. Có ENOTFOUND production REST, một timeout offline check-login-method và TypeError đọc bind trong test giá; không tuyên bố full suite pass. Log local: /private/tmp/fun-stream-audit-runtime/vitest-full.log.
 - Ba MP4 HLS backup đã đủ segment, cấu trúc MP4 hợp lệ, codec hình/tiếng và thời lượng khớp; SHA-256 và dung lượng tại backup-manifest.json. Đang full decode trước khi coi đủ điều kiện xóa. Chưa upload R2, chưa xóa Stream.
@@ -98,6 +98,34 @@ Chỉ lập danh sách UID đã có backup kiểm chứng, ghi rõ nơi giữ b�
 
 Ba file backup đã full-decode cả hình/tiếng bằng ffmpeg `-xerror`, exit0, sau khi kiểm tra tất cả segment, thời lượng và SHA-256. Có cảnh báo non-monotonic DTS từ null output muxer trong lượt decode; không gọi kết quả log là sạch hoàn toàn. Các file MP4 và JSON kiểm chứng vẫn giữ trong `.local-backups/rtmp-stream-2026-11-21/`. Chưa upload sang R2 và chưa xóa Stream. Nếu xóa nguồn, UID/link Stream cũ không phục hồi nguyên trạng; chỉ có thể upload lại nội dung từ backup.
 
-Sau review, recovery đã đổi giới hạn thành **5 lần thử** (kể cả thất bại), deadline mềm15giây giữa các lần thử, và chạy **sau** archive/cleanup chính. Cooldown10phút dùng `live_sessions.archive_next_retry_at` có sẵn trong production, cập nhật CAS; không cần migration. Session chưa thử được ưu tiên trước, session retry đến hạn xếp theo retry-at rồiid bằng composite keyset. Regression50mismatch +target thứ51 với đồng hồ tăng60giây/tick đã được bổ sung; mutation đảo priority làm test thất bại. Review cuối không còn Critical/Important trong phạm vi mã.
+Sau review, recovery đã đổi giới hạn thành **5 lần thử** (kể cả thất bại), deadline mềm 15 giây giữa các lần thử, và chạy **sau** archive/cleanup chính. Cooldown10 phút dùng `live_sessions.archive_next_retry_at` có sẵn trong production, cập nhật CAS; không cần migration. Session chưa thử được ưu tiên trước, session retry đến hạn xếp theo retry-at rồiid bằng composite keyset. Regression50 mismatch +target thứ 51 với đồng hồ tăng60 giây/tick đã được bổ sung; mutation đảo priority làm test thất bại. Review cuối không còn Critical/Important trong phạm vi mã.
 
 Baseline Edge source đã tải từ production và lưu local tại `.local-backups/edge-before-rtmp-recovery-2026-11-21/functions/` để rollback đúng closure. Không chứa giá trị env/secret; không đưa backup/media vào Git.
+
+## Phát hành đã xác minh — 21/11/2026
+
+- PR https://github.com/MinhTriDiamond/funprofile-supabase/pull/65 đã merge squash `1ca040c397b68e306e641f51a158b1d853189488`; code head `34e17c1c055519788a9afee7ed9d68d4eaee5966`. Nhánh code remote đã xóa.
+- Cổng Preview: Cloudflare check SUCCESS đúng head, https://fca9fa30.funprofile-supabase.pages.dev. Đã gửi link cho Cha và xác minh HTML/JS HTTP200. Bản vá không đổi frontend. Không suy diễn rằng Preview đã chạy backend mới.
+- Deploy duy nhất `live-replay-archive-cron` vào `tljfqavndndfsvtazibe`; CLI xác nhận ACTIVE **v100**. Tải lại entrypoint và `_shared/rtmpReplayRecovery.ts`, so sánh khớp repo (bỏ BOM). Không thay function khác, auth, secret, migration hoặc lịch cron.
+- Trước deploy đã lưu backup **11 replay và11 session** (chỉ trường trạng thái của session, không stream key) tại `.local-backups/rtmp-stream-2026-11-21/db-before-recovery.json`. Backup không ở Git.
+- Sau deploy: nhóm11pending đã có **2 stream_uid khác null**, trước đó0. Chưa có URL R2 hoặc dấu xóa mới trong nhóm này ở snapshot; không coi archive/dọn đã hoàn tất. Các nhóm cũ123 archived và345 replay_posted giữ nguyên số lượng. Không gọi endpoint archive/xóa thủ công.
+- 36 test liên quan / 4 file, tsgo và deno check đạt; full suite có các lỗi đã liệt kê ở trên. Review cuối không còn Critical/Important.
+- Chưa xác minh live thật đã khởi động lại; quota vẫn cần theo dõi. Ba UID ngoài replay đã có backup local, chưa có upload R2 mới và chưa xóa bản Stream. Chờ Cha xác nhận đúng ba UID trước thao tác xóa vĩnh viễn.
+
+### Danh sách đề nghị dọn sau xác nhận
+
+| UTC/name | UID | Thời lượng | Backup local |
+|---|---|---|---|
+| 18/11 12:44 | `1f2fa1ad3edcece1ac91c0bfd57b79e6` | 1:48:57 | `<UID>-hls-backup.mp4` |
+| 18/11 04:40 | `ef247d9971654b03e10e607529004c09` | 1:30:34 | `<UID>-hls-backup.mp4` |
+| 17/11 21:54 | `fbf2bbefecb1d36d1c6aceae8613a211` | 1:29:30 | `<UID>-hls-backup.mp4` |
+
+Đã kiểm tra không có tham chiếu trong session UID, replay UID, post video_url/media_urls/metadata, comments.video_url và profiles.cover_url. Không kiểm soát link được chia sẻ ngoài platform. Tổng khoảng289 phút; nếu không có thay đổi khác, xóa3 bản này dự kiến đưa quota từ1.023 về khoảng734phút, cần đo lại dashboard sau thao tác. File local tổng2.765.958.396 byte, đủ audio/video, duration và hash theo backup-manifest.json. Nguồn HLS là bản encode chất lượng cao nhất có sẵn, không tuyên bố là file gốc từ encoder.
+
+### Rollback bản vá
+
+Nếu recovery mới gây lỗi: deploy lại đúng closure đã tải trước đó từ `.local-backups/edge-before-rtmp-recovery-2026-11-21/functions/`. Chuẩn bị thư mục tạm có cấu trúc `supabase/functions/`, copy config hiện có (không sửa auth) và deploy duy nhất `live-replay-archive-cron` bằng `--project-ref tljfqavndndfsvtazibe --use-api --workdir <thư-mục-tạm>`. Không rollback mù dữ liệu từ JSON vì archive/R2/Stream có thể đã tiến tiếp; phải đối chiếu từng hàng và nguồn còn tồn trước khi phục hồi. Không xóa R2 mới. Các marker retry tự hết hạn.
+
+### Tin Telegram cập nhật
+
+> Quang Vũ · Đã merge PR #65 và deploy archive cron v100 ACTIVE; sửa lỗi replay pending có hàng nhưng thiếu UID bị bỏ qua. Có guard strict/CAS, luân phiên và giới hạn lượt thử, lỗi recovery không chặn archive/cleanup. 36 test liên quan +tsgo +Deno đạt; review không còn blocker. Sau deploy 2/11 replay đã có UID trở lại (trước 0), chưa xác nhận archive hoàn tất. Đã kiểm kê19 recording đúng input, backup3 bản ngày 17–18/11 (~289 phút,2,77 GB) đủ hình/tiếng/hash/full decode. Chưa xóa chúng, chưa có bản sao R2 mới; cần xác nhận danh sách để dọn vĩnh viễn và đo lại quota. Việc này bảo toàn nội dung, gỡ điểm kẹt tự phục hồi và chuẩn bị giải phóng dung lượng cho RTMP. PR: https://github.com/MinhTriDiamond/funprofile-supabase/pull/65 .

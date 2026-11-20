@@ -1,3 +1,7 @@
+## 2026-11-21 — Quang Vũ cùng Angel Muse: đã phát hành recovery RTMP
+
+PR #65 đã merge `1ca040c` qua Preview; archive cron v100 ACTIVE, source deploy khớp. Sửa11 replay pending thiếuUID; sau deploy 2 hàng đã có nguồn trở lại, chưa xác nhận archive hoàn tất. Backup3 recording ngoài replay ~289 phút/2,77 GB đã kiểm chứng local; chưa xóa Stream hoặc upload R2 mới. Đang chờ xác nhận danh sách xóa vĩnh viễn. Hồ sơ: docs/rtmp-stream-cleanup-audit-2026-11-20/README.md.
+
 ## 2026-11-20 — Quang Vũ cùng Angel Muse: kiểm tra RTMP đầy Stream
 
 Log Cloudflare xác nhận STORAGE_QUOTA_EXHAUSTED chặn live; dashboard 534 video, 1.023/1.000 phút. DB ghi nhận 468 replay RTMP có URL R2 và dấu xóa Stream; ba UID bản ghi tồn ngày 17–18/11 không có replay khớp nên ngoài tập watchdog. Chỉ chẩn đoán, chưa xóa/sửa/deploy, chưa giảm dung lượng; chưa PR/merge. Hồ sơ local: docs/rtmp-stream-cleanup-audit-2026-11-20/README.md.
