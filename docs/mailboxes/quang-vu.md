@@ -2,6 +2,13 @@
 
 > Việc mới nhất nằm ở trên cùng. Vũ phản hồi trạng thái ngay dưới mỗi mục nhé.
 
+## 2026-11-21 — KIỂM CHỨNG SAU V100: 6 replay đã lưu R2 và dọn Stream
+
+- Trên đúng 11 replay backup: 6 hàng đã có nguồn/R2/dấu xóa, còn 5 pending chưa đủ nguồn. HEAD thật: cả 6 URL R2 HTTP200 và size khớp; 6 HLS Stream cũ HTTP404. Không ép map nguồn cho 5 hàng còn lại, chưa test live thật/đo lại quota dashboard.
+- Đã mở đúng bucket production `fun-rich-media`; tạo prefix trống `rtmp-stream-backups-2026-11-21/`. Chuẩn bị 10 phần video dưới 300 MB + manifest + script ghép, tổng 12 file ~2,77GB; thử ghép cả 3 video khớp SHA-256.
+- Upload chưa thực hiện: automatic approval review từ chối nút Mở do cần Cha xác nhận trực tiếp payload/bucket đang public. Đã hỏi đúng 12 file/account/prefix; đang chờ. Không bypass hoặc lấy secret. Ba bản Stream ngoài phiên chưa xóa.
+- Hồ sơ: `docs/rtmp-stream-cleanup-audit-2026-11-20/README.md`, manifest phần và runtime-media-verification.json. PR hồ sơ #66 đang cập nhật, nhánh `docs/quangvu-rtmp-recovery-release`.
+
 ## 2026-11-21 — ĐÃ MERGE/DEPLOY: recovery RTMP, chờ xác nhận dọn3 recording
 
 - PR #65 https://github.com/MinhTriDiamond/funprofile-supabase/pull/65 merge squash `1ca040c`, nhánh code remote đã xóa. Preview head `34e17c1` SUCCESS https://fca9fa30.funprofile-supabase.pages.dev, HTML/JS200, link đã gửi Cha.

@@ -1,0 +1,92 @@
+[
+  {
+    "replay_id": "14eb7c5d-524a-4b9a-91bd-76ff2490602e",
+    "uid": "369b04b448887b3b4fb991bacd7d1cae",
+    "r2": {
+      "curl_exit": 0,
+      "http": 200,
+      "bytes": 79380704
+    },
+    "expected_bytes": 79380704,
+    "stream_hls": {
+      "curl_exit": 0,
+      "http": 404,
+      "bytes": null
+    }
+  },
+  {
+    "replay_id": "42f37bc2-07ce-4c81-9693-8abe8d1026f1",
+    "uid": "3c255ca2590788c8919121ab2e764ac3",
+    "r2": {
+      "curl_exit": 0,
+      "http": 200,
+      "bytes": 155749187
+    },
+    "expected_bytes": 155749187,
+    "stream_hls": {
+      "curl_exit": 0,
+      "http": 404,
+      "bytes": null
+    }
+  },
+  {
+    "replay_id": "864f31a8-7ac4-487f-870b-d25ec1329e1a",
+    "uid": "3f717c54737819214b9301bf089e4ea9",
+    "r2": {
+      "curl_exit": 0,
+      "http": 200,
+      "bytes": 787096743
+    },
+    "expected_bytes": 787096743,
+    "stream_hls": {
+      "curl_exit": 0,
+      "http": 404,
+      "bytes": null
+    }
+  },
+  {
+    "replay_id": "a8e13b56-085a-4a63-a58a-c1bf31af4fd1",
+    "uid": "d258aa754d21b33a92dfc0dc1693dbcc",
+    "r2": {
+      "curl_exit": 0,
+      "http": 200,
+      "bytes": 676792092
+    },
+    "expected_bytes": 676792092,
+    "stream_hls": {
+      "curl_exit": 0,
+      "http": 404,
+      "bytes": null
+    }
+  },
+  {
+    "replay_id": "e6995964-32dc-43e4-84ab-0cb20aaaa933",
+    "uid": "69deafac08c10f4ee45b641dc01b92f7",
+    "r2": {
+      "curl_exit": 0,
+      "http": 200,
+      "bytes": 65379182
+    },
+    "expected_bytes": 65379182,
+    "stream_hls": {
+      "curl_exit": 0,
+      "http": 404,
+      "bytes": null
+    }
+  },
+  {
+    "replay_id": "e93e9fb3-4967-4a2c-8c3b-e4cd0c8f15c2",
+    "uid": "175d0c3c53de1cf80be0bdf8ecab9f88",
+    "r2": {
+      "curl_exit": 0,
+      "http": 200,
+      "bytes": 5501091
+    },
+    "expected_bytes": 5501091,
+    "stream_hls": {
+      "curl_exit": 0,
+      "http": 404,
+      "bytes": null
+    }
+  }
+]

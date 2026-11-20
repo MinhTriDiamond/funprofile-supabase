@@ -1,3 +1,7 @@
+## 2026-11-21 — RTMP: kiểm chứng 6 replay đã archive và xóa nguồn
+
+Sau PR #65/v100, 6/11 replay mục tiêu đã có R2 và dấu xóa Stream; HEAD cả 6 R2 HTTP200/size khớp, HLS Stream cũ 404. Còn 5 pending giữ nguyên strict guard. Backup 3 recording mới đã kiểm chứng local; chuẩn bị 12 file để lưu thêm R2 nhưng upload đang chờ Cha xác nhận vì bucket public, không xóa 3 nguồn mới. Hồ sơ RTMP ngày 20/11 có số liệu/bằng chứng chi tiết.
+
 ## 2026-11-21 — Quang Vũ cùng Angel Muse: đã phát hành recovery RTMP
 
 PR #65 đã merge `1ca040c` qua Preview; archive cron v100 ACTIVE, source deploy khớp. Sửa11 replay pending thiếuUID; sau deploy 2 hàng đã có nguồn trở lại, chưa xác nhận archive hoàn tất. Backup3 recording ngoài replay ~289 phút/2,77 GB đã kiểm chứng local; chưa xóa Stream hoặc upload R2 mới. Đang chờ xác nhận danh sách xóa vĩnh viễn. Hồ sơ: docs/rtmp-stream-cleanup-audit-2026-11-20/README.md.

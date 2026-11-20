@@ -129,3 +129,13 @@ Nếu recovery mới gây lỗi: deploy lại đúng closure đã tải trước
 ### Tin Telegram cập nhật
 
 > Quang Vũ · Đã merge PR #65 và deploy archive cron v100 ACTIVE; sửa lỗi replay pending có hàng nhưng thiếu UID bị bỏ qua. Có guard strict/CAS, luân phiên và giới hạn lượt thử, lỗi recovery không chặn archive/cleanup. 36 test liên quan +tsgo +Deno đạt; review không còn blocker. Sau deploy 2/11 replay đã có UID trở lại (trước 0), chưa xác nhận archive hoàn tất. Đã kiểm kê19 recording đúng input, backup3 bản ngày 17–18/11 (~289 phút,2,77 GB) đủ hình/tiếng/hash/full decode. Chưa xóa chúng, chưa có bản sao R2 mới; cần xác nhận danh sách để dọn vĩnh viễn và đo lại quota. Việc này bảo toàn nội dung, gỡ điểm kẹt tự phục hồi và chuẩn bị giải phóng dung lượng cho RTMP. PR: https://github.com/MinhTriDiamond/funprofile-supabase/pull/65 .
+
+## Kiểm chứng runtime và chuẩn bị backup R2 bổ sung
+
+Snapshot tiếp theo trên đúng 11 replay đã backup: **6 replay đã có UID/R2 và dấu xóa Stream**, còn 5 pending chưa có UID. Kiểm chứng ngoài DB trên 6 media: R2 HEAD200, Content-Length bằng filesize_bytes; HLS Stream cũ HEAD404. Bằng chứng tại `runtime-media-verification.json`. Đây là xác minh luồng tự lưu và tự dọn thực sự đã tiến sau v100, không chỉ dấu DB. Chưa test phát live thật hoặc đo lại phút quota trên dashboard. Không ép xử lý 5 hàng không đủ strict match.
+
+Trình duyệt đã mở đúng account production `6083e34ad429331916b93ba8a5ede81d` và bucket `fun-rich-media`. Dashboard R2 giới hạn 300 MB/file. Đã tạo prefix trống `rtmp-stream-backups-2026-11-21/` và chia 3 MP4 local thành 10 phần dưới 300 MB, kèm `manifest.json` và `restore_backups.py`: tổng 12 file, khoảng 2,77 GB. Đã chạy ghép phục hồi thử trên cả 3 video, SHA-256 toàn file khớp hoàn toàn. Manifest phần tại `r2-backup-parts-manifest.json`. Đây là backup để ghép lại, không phải 3 URL MP4 phát trực tiếp trên R2.
+
+**Upload chưa thực hiện.** Bước bấm Mở ở hộp chọn đúng 12 file bị automatic approval review từ chối vì cần xác nhận trực tiếp cho payload video và bucket đích đang bật public access. Không thử đường khác để truyền dữ liệu. Câu hỏi xác nhận upload đúng 12 file vào đúng prefix/account đã gửi Cha; chờ trả lời. Hộp chọn file đang giữ 12 file đã chọn. Ba video Stream mới ngoài phiên vẫn còn nguyên; thao tác xóa vĩnh viễn vẫn cần xác nhận riêng tại bước xóa. Không lấy/reveal API key.
+
+Tin Telegram cập nhật số liệu mới: PR65/v100 đã khôi phục 6 replay, R2 HEAD200 đủsize và Stream cũ404; còn 5 pending chưa đủ nguồn nên giữ nguyên. Backup local 3 bản mới (~289 phút/2,77 GB) đã full-decode và thử ghép/hash; prefix R2 bổ sung đã chuẩn bị nhưng chưa upload vì đang chờ Cha xác nhận payload/bucket public. Chưa tuyên bố live thật đã hoạt động lại.
