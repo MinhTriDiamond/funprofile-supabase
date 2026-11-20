@@ -1,0 +1,822 @@
+[
+  {
+    "uid": "1f2fa1ad3edcece1ac91c0bfd57b79e6",
+    "ok": true,
+    "verification_mode": "segments_structure_duration_sha256_and_three_decode_samples",
+    "bytes": 1077464791,
+    "sha256": "8662675149ca129bc4dc2921356442c72efc775463a6359f6f602913334dbac3",
+    "duration_seconds": 6537.0437,
+    "decode_samples": [
+      {
+        "offset_seconds": 0,
+        "exit_code": 0,
+        "log": ""
+      },
+      {
+        "offset_seconds": 3266.02185,
+        "exit_code": 0,
+        "log": ""
+      },
+      {
+        "offset_seconds": 6532.0437,
+        "exit_code": 0,
+        "log": "[null @ 0xc8901bc00] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 100 >= 100\n[null @ 0xc8901bc00] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 103 >= 103\n[null @ 0xc8901bc00] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 106 >= 106\n[null @ 0xc8901bc00] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 108 >= 108\n[null @ 0xc8901bc00] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 111 >= 111\n[null @ 0xc8901bc00] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 114 >= 114\n"
+      }
+    ]
+  },
+  {
+    "uid": "ef247d9971654b03e10e607529004c09",
+    "ok": true,
+    "verification_mode": "segments_structure_duration_sha256_and_three_decode_samples",
+    "bytes": 866883568,
+    "sha256": "03aed4651e73c28cf19c043661e0aac6aee11a2c6bd04c077088e56816aaccd9",
+    "duration_seconds": 5434.048594,
+    "decode_samples": [
+      {
+        "offset_seconds": 0,
+        "exit_code": 0,
+        "log": ""
+      },
+      {
+        "offset_seconds": 2714.524297,
+        "exit_code": 0,
+        "log": ""
+      },
+      {
+        "offset_seconds": 5429.048594,
+        "exit_code": 0,
+        "log": ""
+      }
+    ]
+  },
+  {
+    "uid": "fbf2bbefecb1d36d1c6aceae8613a211",
+    "ok": true,
+    "verification_mode": "segments_structure_duration_sha256_and_three_decode_samples",
+    "bytes": 821610037,
+    "sha256": "a48b8bf3c85a42c8c4a249f97abbf88519cba673ef8a5fe17f6813652a6f20ca",
+    "duration_seconds": 5370.286599,
+    "decode_samples": [
+      {
+        "offset_seconds": 0,
+        "exit_code": 0,
+        "log": ""
+      },
+      {
+        "offset_seconds": 2682.6432995,
+        "exit_code": 0,
+        "log": ""
+      },
+      {
+        "offset_seconds": 5365.286599,
+        "exit_code": 0,
+        "log": ""
+      }
+    ]
+  },
+  {
+    "uid": "99a6868308ebf1542719189efe3d0550",
+    "ok": true,
+    "exit_code": 0,
+    "bytes": 12795257,
+    "sha256": "53d9e5a8f964d4ff5ef06a8e3fa00a866e962a3cc44787da0cb0c1d99acd3772",
+    "duration_seconds": 499.998056,
+    "decode_log": "",
+    "verification_mode": "full_decode"
+  },
+  {
+    "uid": "cf46cc9b024cf556dab6805325662caa",
+    "ok": true,
+    "verification_mode": "segments_structure_duration_sha256_and_three_decode_samples",
+    "bytes": 188325700,
+    "sha256": "6203bbc0e358d0f3e8a94b13da51d071897bd0cce630940fdc6e2f12f1b2fadf",
+    "duration_seconds": 7358.333056,
+    "decode_samples": [
+      {
+        "offset_seconds": 0,
+        "exit_code": 0,
+        "log": ""
+      },
+      {
+        "offset_seconds": 3676.666528,
+        "exit_code": 0,
+        "log": ""
+      },
+      {
+        "offset_seconds": 7353.333056,
+        "exit_code": 0,
+        "log": ""
+      }
+    ]
+  },
+  {
+    "uid": "057f669d5a444afc29d5019bad0933e2",
+    "ok": true,
+    "verification_mode": "segments_structure_duration_sha256_and_three_decode_samples",
+    "bytes": 26358976,
+    "sha256": "c93a8763b6cbe5b59db3659d4c850d8225835d06fb8079396c45ae8544f9a049",
+    "duration_seconds": 181.158594,
+    "decode_samples": [
+      {
+        "offset_seconds": 0,
+        "exit_code": 0,
+        "log": ""
+      },
+      {
+        "offset_seconds": 88.079297,
+        "exit_code": 0,
+        "log": "[null @ 0x7ea807c00] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 17 >= 17\n[null @ 0x7ea807c00] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 20 >= 20\n"
+      },
+      {
+        "offset_seconds": 176.158594,
+        "exit_code": 0,
+        "log": ""
+      }
+    ]
+  },
+  {
+    "uid": "d8b127650ff8694f06fc58de429e24c4",
+    "ok": true,
+    "verification_mode": "segments_structure_duration_sha256_and_three_decode_samples",
+    "bytes": 451021457,
+    "sha256": "18eb590a078e23ce045651fe4d53e59cdd2b34f183aa096a7c25da4e6e9c8b04",
+    "duration_seconds": 3874.156922,
+    "decode_samples": [
+      {
+        "offset_seconds": 0,
+        "exit_code": 0,
+        "log": ""
+      },
+      {
+        "offset_seconds": 1934.578461,
+        "exit_code": 0,
+        "log": "[null @ 0xa3b41b700] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 64 >= 63\n"
+      },
+      {
+        "offset_seconds": 3869.156922,
+        "exit_code": 0,
+        "log": ""
+      }
+    ]
+  },
+  {
+    "uid": "9ed496abe78123422b6eda9abceae93f",
+    "ok": true,
+    "verification_mode": "segments_structure_duration_sha256_and_three_decode_samples",
+    "bytes": 428213045,
+    "sha256": "33524b86a5a436e7519898d51ca940c52cd3d9daafb86c5f1a801340abc5de12",
+    "duration_seconds": 2863.458244,
+    "decode_samples": [
+      {
+        "offset_seconds": 0,
+        "exit_code": 0,
+        "log": ""
+      },
+      {
+        "offset_seconds": 1429.229122,
+        "exit_code": 0,
+        "log": ""
+      },
+      {
+        "offset_seconds": 2858.458244,
+        "exit_code": 0,
+        "log": ""
+      }
+    ]
+  },
+  {
+    "uid": "da3935acaf9332c89c36eefadd8f6762",
+    "ok": true,
+    "exit_code": 0,
+    "bytes": 37910720,
+    "sha256": "e6dc2e322677c593599593cf07dd4dbf26957a2e184e8290c21ad6d9a9b1fc1e",
+    "duration_seconds": 213.36458,
+    "decode_log": "[null @ 0xb19413700] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 18 >= 18\n[null @ 0xb19413700] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 20 >= 20\n[null @ 0xb19413700] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 73 >= 73\n[null @ 0xb19413700] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 75 >= 75\n[null @ 0xb19413700] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 182 >= 182\n[null @ 0xb19413700] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 242 >= 242\n[null @ 0xb19413700] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 367 >= 367\n[null @ 0xb19413700] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 421 >= 421\n    Last message repeated 1 times\n[null @ 0xb19413700] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 481 >= 481\n    Last message repeated 1 times\n[null @ 0xb19413700] Application provided invalid, non monotonically increasing dts to ",
+    "verification_mode": "full_decode"
+  },
+  {
+    "uid": "7f6118195be3d034ea39e36acf59b0a7",
+    "ok": true,
+    "verification_mode": "segments_structure_duration_sha256_and_three_decode_samples",
+    "bytes": 757822518,
+    "sha256": "41881d0a9f08b7f5674bfaf4cd437fa54be5b354ecd7dd82d034db48ab9da808",
+    "duration_seconds": 5134.905011,
+    "decode_samples": [
+      {
+        "offset_seconds": 0,
+        "exit_code": 0,
+        "log": ""
+      },
+      {
+        "offset_seconds": 2564.9525055,
+        "exit_code": 0,
+        "log": ""
+      },
+      {
+        "offset_seconds": 5129.905011,
+        "exit_code": 0,
+        "log": ""
+      }
+    ]
+  },
+  {
+    "uid": "48cd79c55c7d34594fade71f305bda8b",
+    "ok": true,
+    "verification_mode": "segments_structure_duration_sha256_and_three_decode_samples",
+    "bytes": 49375340,
+    "sha256": "43d4239f7bfb4e4ba1551748f50577b13c123ef9a4ca223245990fc8a4b592b5",
+    "duration_seconds": 533.333189,
+    "decode_samples": [
+      {
+        "offset_seconds": 0,
+        "exit_code": 0,
+        "log": ""
+      },
+      {
+        "offset_seconds": 264.1665945,
+        "exit_code": 0,
+        "log": ""
+      },
+      {
+        "offset_seconds": 528.333189,
+        "exit_code": 0,
+        "log": ""
+      }
+    ]
+  },
+  {
+    "uid": "268ce211b14b61dc0fec8ee5c4688438",
+    "ok": true,
+    "verification_mode": "segments_structure_duration_sha256_and_three_decode_samples",
+    "bytes": 8498421,
+    "sha256": "f89f5422cd1ca3136d6bdaf8ba327c44fd8875ad9fefe6cd7fe0c3ea0ca23108",
+    "duration_seconds": 83.329789,
+    "decode_samples": [
+      {
+        "offset_seconds": 0,
+        "exit_code": 0,
+        "log": ""
+      },
+      {
+        "offset_seconds": 39.1648945,
+        "exit_code": 0,
+        "log": ""
+      },
+      {
+        "offset_seconds": 78.329789,
+        "exit_code": 0,
+        "log": ""
+      }
+    ]
+  },
+  {
+    "uid": "00e03d06fc960f2850c2e7844413b3f2",
+    "ok": true,
+    "verification_mode": "segments_structure_duration_sha256_and_three_decode_samples",
+    "bytes": 1584379,
+    "sha256": "59bc6c1a635e883d895a285ee308f3e9a57044a10c3c6102818e509559712b71",
+    "duration_seconds": 16.666667,
+    "decode_samples": [
+      {
+        "offset_seconds": 0,
+        "exit_code": 0,
+        "log": ""
+      },
+      {
+        "offset_seconds": 5.8333335,
+        "exit_code": 0,
+        "log": ""
+      },
+      {
+        "offset_seconds": 11.666667,
+        "exit_code": 0,
+        "log": ""
+      }
+    ]
+  },
+  {
+    "uid": "69fdca66ce2cfac3dfb76bf20d5730ea",
+    "ok": true,
+    "verification_mode": "segments_structure_duration_sha256_and_three_decode_samples",
+    "bytes": 2412056,
+    "sha256": "d714c2655fe3e8398ffeee6845120d98c7e38f277abc5af9e22ca05a0c612e63",
+    "duration_seconds": 24.998733,
+    "decode_samples": [
+      {
+        "offset_seconds": 0,
+        "exit_code": 0,
+        "log": ""
+      },
+      {
+        "offset_seconds": 9.9993665,
+        "exit_code": 0,
+        "log": ""
+      },
+      {
+        "offset_seconds": 19.998733,
+        "exit_code": 0,
+        "log": ""
+      }
+    ]
+  },
+  {
+    "uid": "2893a5fcd2fb1849ea4e9e4cead4775f",
+    "ok": true,
+    "verification_mode": "segments_structure_duration_sha256_and_three_decode_samples",
+    "bytes": 79967133,
+    "sha256": "e963653eb0a4ad1b0c722e4455a50d5efc0ad93816b77b2109bd5835bb5f3e82",
+    "duration_seconds": 529.388594,
+    "decode_samples": [
+      {
+        "offset_seconds": 0,
+        "exit_code": 0,
+        "log": ""
+      },
+      {
+        "offset_seconds": 262.194297,
+        "exit_code": 0,
+        "log": ""
+      },
+      {
+        "offset_seconds": 524.388594,
+        "exit_code": 0,
+        "log": ""
+      }
+    ]
+  },
+  {
+    "uid": "3aa3347ac0a9926be5915f821e5f46a8",
+    "ok": true,
+    "verification_mode": "segments_structure_duration_sha256_and_three_decode_samples",
+    "bytes": 835993,
+    "sha256": "00e0e81d2524c626a7dd975aed5cf22f02441edc7d6516050e5d508c9731a3b5",
+    "duration_seconds": 74.998789,
+    "decode_samples": [
+      {
+        "offset_seconds": 0,
+        "exit_code": 0,
+        "log": ""
+      },
+      {
+        "offset_seconds": 34.9993945,
+        "exit_code": 0,
+        "log": ""
+      },
+      {
+        "offset_seconds": 69.998789,
+        "exit_code": 0,
+        "log": ""
+      }
+    ]
+  },
+  {
+    "uid": "a28b0a70573a2a02df084c01739bcc7c",
+    "ok": true,
+    "verification_mode": "segments_structure_duration_sha256_and_three_decode_samples",
+    "bytes": 3292652,
+    "sha256": "1f73e8133c980af163554c7eee2b7327e9513adebd5916a8f803c6c4baade44f",
+    "duration_seconds": 20.129592,
+    "decode_samples": [
+      {
+        "offset_seconds": 0,
+        "exit_code": 0,
+        "log": ""
+      },
+      {
+        "offset_seconds": 7.564795999999999,
+        "exit_code": 0,
+        "log": "[null @ 0x97901f700] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 65 >= 65\n[null @ 0x97901f700] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 309 >= 307\n"
+      },
+      {
+        "offset_seconds": 15.129591999999999,
+        "exit_code": 0,
+        "log": ""
+      }
+    ]
+  },
+  {
+    "uid": "992cf7ad3e736483cea43e03625e3451",
+    "ok": true,
+    "verification_mode": "segments_structure_duration_sha256_and_three_decode_samples",
+    "bytes": 11100657,
+    "sha256": "d92af8752e061559864469ff5523252a3ccbcb8dbae24452669d908ceaa11a91",
+    "duration_seconds": 73.1312,
+    "decode_samples": [
+      {
+        "offset_seconds": 0,
+        "exit_code": 0,
+        "log": ""
+      },
+      {
+        "offset_seconds": 34.0656,
+        "exit_code": 0,
+        "log": ""
+      },
+      {
+        "offset_seconds": 68.1312,
+        "exit_code": 0,
+        "log": ""
+      }
+    ]
+  },
+  {
+    "uid": "931826d78b7b1e319285237c88b6b23e",
+    "ok": true,
+    "verification_mode": "segments_structure_duration_sha256_and_three_decode_samples",
+    "bytes": 16177927,
+    "sha256": "35e94a42dff1e4737d0709c916c5428b7011b2c07684525595caf105525ef93e",
+    "duration_seconds": 94.315544,
+    "decode_samples": [
+      {
+        "offset_seconds": 0,
+        "exit_code": 0,
+        "log": ""
+      },
+      {
+        "offset_seconds": 44.657772,
+        "exit_code": 0,
+        "log": ""
+      },
+      {
+        "offset_seconds": 89.315544,
+        "exit_code": 0,
+        "log": ""
+      }
+    ]
+  },
+  {
+    "uid": "55b434267b36b7c647f6f392257c9a13",
+    "ok": true,
+    "verification_mode": "segments_structure_duration_sha256_and_three_decode_samples",
+    "bytes": 5998601,
+    "sha256": "9d45cd58e67fc960017324407b612ec10e59aeda738af338b8510701064676f8",
+    "duration_seconds": 76.436544,
+    "decode_samples": [
+      {
+        "offset_seconds": 0,
+        "exit_code": 0,
+        "log": ""
+      },
+      {
+        "offset_seconds": 35.718272,
+        "exit_code": 0,
+        "log": ""
+      },
+      {
+        "offset_seconds": 71.436544,
+        "exit_code": 0,
+        "log": ""
+      }
+    ]
+  },
+  {
+    "uid": "1fe340eb57b578c30462ffdc9ec0af87",
+    "ok": true,
+    "verification_mode": "segments_structure_duration_sha256_and_three_decode_samples",
+    "bytes": 62732038,
+    "sha256": "17e6329a99fc0997a13ec21b0e706764fff712254ea4537cb79cad4b30fdd69e",
+    "duration_seconds": 1108.328833,
+    "decode_samples": [
+      {
+        "offset_seconds": 0,
+        "exit_code": 0,
+        "log": ""
+      },
+      {
+        "offset_seconds": 551.6644165,
+        "exit_code": 0,
+        "log": ""
+      },
+      {
+        "offset_seconds": 1103.328833,
+        "exit_code": 0,
+        "log": ""
+      }
+    ]
+  },
+  {
+    "uid": "5a1435172c0f94b890fccc317d73c3f3",
+    "ok": true,
+    "verification_mode": "segments_structure_duration_sha256_and_three_decode_samples",
+    "bytes": 152483135,
+    "sha256": "320eeb42ec90b943e7e33abdc91fc3ef2e33615902f528be2c4fcb377a3e4578",
+    "duration_seconds": 2308.328678,
+    "decode_samples": [
+      {
+        "offset_seconds": 0,
+        "exit_code": 0,
+        "log": ""
+      },
+      {
+        "offset_seconds": 1151.664339,
+        "exit_code": 0,
+        "log": ""
+      },
+      {
+        "offset_seconds": 2303.328678,
+        "exit_code": 0,
+        "log": ""
+      }
+    ]
+  },
+  {
+    "uid": "745fc6bf46b94bdf05e94debf7bf5207",
+    "ok": true,
+    "verification_mode": "segments_structure_duration_sha256_and_three_decode_samples",
+    "bytes": 31634441,
+    "sha256": "4dc64ea602693e97c01e376ca96f9ab7fa74233eb37cc67be37d480e7c3e4f01",
+    "duration_seconds": 470.92059,
+    "decode_samples": [
+      {
+        "offset_seconds": 0,
+        "exit_code": 0,
+        "log": ""
+      },
+      {
+        "offset_seconds": 232.960295,
+        "exit_code": 0,
+        "log": ""
+      },
+      {
+        "offset_seconds": 465.92059,
+        "exit_code": 0,
+        "log": "[null @ 0x77d013700] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 60 >= 59\n"
+      }
+    ]
+  },
+  {
+    "uid": "81859a0db82168bab2dea94f02106c62",
+    "ok": true,
+    "verification_mode": "segments_structure_duration_sha256_and_three_decode_samples",
+    "bytes": 1340996,
+    "sha256": "153e18e8095cbd29bf5bdc3e402a4f3296069d646d411d1c50c108cd3ebf6b8e",
+    "duration_seconds": 14.11458,
+    "decode_samples": [
+      {
+        "offset_seconds": 0,
+        "exit_code": 0,
+        "log": ""
+      },
+      {
+        "offset_seconds": 4.55729,
+        "exit_code": 0,
+        "log": ""
+      },
+      {
+        "offset_seconds": 9.11458,
+        "exit_code": 0,
+        "log": ""
+      }
+    ]
+  },
+  {
+    "uid": "d61db94a74fdaafda1ccd8377e1b1cdc",
+    "ok": true,
+    "verification_mode": "segments_structure_duration_sha256_and_three_decode_samples",
+    "bytes": 659773,
+    "sha256": "232974ea0efb2b7ef2395342a054d46f739da6177fbddcbcdaf3744c0ef4dcad",
+    "duration_seconds": 27.030011,
+    "decode_samples": [
+      {
+        "offset_seconds": 0,
+        "exit_code": 0,
+        "log": ""
+      },
+      {
+        "offset_seconds": 11.0150055,
+        "exit_code": 0,
+        "log": "[null @ 0xc38c0f700] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 4 >= 4\n[null @ 0xc38c0f700] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 10 >= 10\n[null @ 0xc38c0f700] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 16 >= 16\n[null @ 0xc38c0f700] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 22 >= 22\n[null @ 0xc38c0f700] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 28 >= 28\n[null @ 0xc38c0f700] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 33 >= 33\n[null @ 0xc38c0f700] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 36 >= 36\n[null @ 0xc38c0f700] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 40 >= 40\n[null @ 0xc38c0f700] Application provided invalid, non monotonically increasing dt"
+      },
+      {
+        "offset_seconds": 22.030011,
+        "exit_code": 0,
+        "log": ""
+      }
+    ]
+  },
+  {
+    "uid": "6528f8ac548393dc8794f6705414145c",
+    "ok": true,
+    "verification_mode": "segments_structure_duration_sha256_and_three_decode_samples",
+    "bytes": 591558,
+    "sha256": "f50ba0b5ca27894d2717fa3d4d81e137ce66d3556418b66a781a069834525b9e",
+    "duration_seconds": 33.330078,
+    "decode_samples": [
+      {
+        "offset_seconds": 0,
+        "exit_code": 0,
+        "log": ""
+      },
+      {
+        "offset_seconds": 14.165039,
+        "exit_code": 0,
+        "log": ""
+      },
+      {
+        "offset_seconds": 28.330078,
+        "exit_code": 0,
+        "log": ""
+      }
+    ]
+  },
+  {
+    "uid": "4157628d843983e3496cd6fce7a81164",
+    "ok": true,
+    "verification_mode": "segments_structure_duration_sha256_and_three_decode_samples",
+    "bytes": 2195685,
+    "sha256": "1ce0db77a788d47ea2cacaac6024f500f91e98b41befe2b8e337559371f55ee0",
+    "duration_seconds": 22.104656,
+    "decode_samples": [
+      {
+        "offset_seconds": 0,
+        "exit_code": 0,
+        "log": ""
+      },
+      {
+        "offset_seconds": 8.552328,
+        "exit_code": 0,
+        "log": ""
+      },
+      {
+        "offset_seconds": 17.104656,
+        "exit_code": 0,
+        "log": ""
+      }
+    ]
+  },
+  {
+    "uid": "78927c07ab731f8e235ea16a3a7149e2",
+    "ok": true,
+    "verification_mode": "segments_structure_duration_sha256_and_three_decode_samples",
+    "bytes": 3633781,
+    "sha256": "7fc22a8f6afb15ed35a7f3ef3c07fe7457f85e288574c5186e56b771ef97769b",
+    "duration_seconds": 28.001688,
+    "decode_samples": [
+      {
+        "offset_seconds": 0,
+        "exit_code": 0,
+        "log": ""
+      },
+      {
+        "offset_seconds": 11.500844,
+        "exit_code": 0,
+        "log": ""
+      },
+      {
+        "offset_seconds": 23.001688,
+        "exit_code": 0,
+        "log": ""
+      }
+    ]
+  },
+  {
+    "uid": "3ee8901d30012162b5d80dcd4ecb6894",
+    "ok": true,
+    "verification_mode": "segments_structure_duration_sha256_and_three_decode_samples",
+    "bytes": 2886475,
+    "sha256": "966e2d3aa32391b3443762d66277a42a62926f5291b60f3bbe26d030866440a0",
+    "duration_seconds": 18.003688,
+    "decode_samples": [
+      {
+        "offset_seconds": 0,
+        "exit_code": 0,
+        "log": ""
+      },
+      {
+        "offset_seconds": 6.501844,
+        "exit_code": 0,
+        "log": ""
+      },
+      {
+        "offset_seconds": 13.003688,
+        "exit_code": 0,
+        "log": ""
+      }
+    ]
+  },
+  {
+    "uid": "c1448cbdf906e7952ed288eb76106874",
+    "ok": true,
+    "verification_mode": "segments_structure_duration_sha256_and_three_decode_samples",
+    "bytes": 7595970,
+    "sha256": "ddcdfa7e62c58ffbc8dcd2a7a4845a156b93312a7249b15966e9d9a28395f18f",
+    "duration_seconds": 89.978211,
+    "decode_samples": [
+      {
+        "offset_seconds": 0,
+        "exit_code": 0,
+        "log": ""
+      },
+      {
+        "offset_seconds": 42.4891055,
+        "exit_code": 0,
+        "log": ""
+      },
+      {
+        "offset_seconds": 84.978211,
+        "exit_code": 0,
+        "log": ""
+      }
+    ]
+  },
+  {
+    "uid": "6c82508e8926d2b15183b645234a4aff",
+    "ok": true,
+    "verification_mode": "segments_structure_duration_sha256_and_three_decode_samples",
+    "bytes": 5323740,
+    "sha256": "d4a64c19b50984cb9b23b5fb0e6133b71512fabc0c01e40205f3823756df832f",
+    "duration_seconds": 61.997722,
+    "decode_samples": [
+      {
+        "offset_seconds": 0,
+        "exit_code": 0,
+        "log": ""
+      },
+      {
+        "offset_seconds": 28.498861,
+        "exit_code": 0,
+        "log": ""
+      },
+      {
+        "offset_seconds": 56.997722,
+        "exit_code": 0,
+        "log": ""
+      }
+    ]
+  },
+  {
+    "uid": "52acc3e21ca1e4b6abcf0a71e917b309",
+    "ok": true,
+    "verification_mode": "segments_structure_duration_sha256_and_three_decode_samples",
+    "bytes": 7257465,
+    "sha256": "27ea20dd33b24785fd576a65d292a8a145d180c4e01e68446e9d64c860eaa2c5",
+    "duration_seconds": 89.977889,
+    "decode_samples": [
+      {
+        "offset_seconds": 0,
+        "exit_code": 0,
+        "log": ""
+      },
+      {
+        "offset_seconds": 42.4889445,
+        "exit_code": 0,
+        "log": ""
+      },
+      {
+        "offset_seconds": 84.977889,
+        "exit_code": 0,
+        "log": ""
+      }
+    ]
+  },
+  {
+    "uid": "696a5296fcb829e847f800e5ea3e5631",
+    "ok": true,
+    "verification_mode": "segments_structure_duration_sha256_and_three_decode_samples",
+    "bytes": 3928905,
+    "sha256": "40f297feec6651d1b0c71db1d71b80f51c4088c60e5de4cd9feb8813b1c35f94",
+    "duration_seconds": 22.98,
+    "decode_samples": [
+      {
+        "offset_seconds": 0,
+        "exit_code": 0,
+        "log": ""
+      },
+      {
+        "offset_seconds": 8.99,
+        "exit_code": 0,
+        "log": ""
+      },
+      {
+        "offset_seconds": 17.98,
+        "exit_code": 0,
+        "log": ""
+      }
+    ]
+  },
+  {
+    "uid": "78ce7862122f1217bd49e2c6196e696e",
+    "ok": true,
+    "verification_mode": "segments_structure_duration_sha256_and_three_decode_samples",
+    "bytes": 777242,
+    "sha256": "7bb59e67548e6859df3ac96304f43e1da31e26805c37329d36772c48916fd61e",
+    "duration_seconds": 6.041678,
+    "decode_samples": [
+      {
+        "offset_seconds": 0,
+        "exit_code": 0,
+        "log": ""
+      },
+      {
+        "offset_seconds": 0.520839,
+        "exit_code": 0,
+        "log": ""
+      },
+      {
+        "offset_seconds": 1.041678,
+        "exit_code": 0,
+        "log": ""
+      }
+    ]
+  }
+]

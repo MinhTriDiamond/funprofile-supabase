@@ -1,0 +1,7 @@
+{
+  "post_id": "d2cfc4b6-ecae-4788-b1b0-ed169a142ae2",
+  "old_hls_uid": "9ed496abe78123422b6eda9abceae93f",
+  "current_video_url": "https://media.fun.rich/live-replays/0ede7763-9198-496b-914b-3ca95e2a0278/3d242ae9-2d56-4277-a4e0-93bd30f6bd7a/913b01c92b96fcba2847e16b84809005.mp4",
+  "head_exit_code": 0,
+  "headers": "HTTP/2 200 \ndate: Fri, 20 Nov 2026 23:43:37 GMT\ncontent-type: video/mp4\ncontent-length: 639076510\nlast-modified: Tue, 03 Nov 2026 06:43:14 GMT\nvary: Origin\naccept-ranges: bytes\ncache-control: public, max-age=31536000, immutable\netag: \"ea679a40a11711a91340f3dfb8dea0eb-39\"\nserver: cloudflare\ncf-cache-status: DYNAMIC\nspeculation-rules: \"/cdn-cgi/speculation\"\nreport-to: {\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=TmNvwL7bR9PArsh7MWZEvi89FvjHEQmtE02Q6bdg17LhoikaugGtvB77ZNybqJWs4q9FsVHWDUHPq3uuxUxQyae9XbKcM0im9ts0Yk8ogIcWnM%2BgqBLxv6tdK3igbqzTiw%3D%3D\"}]}\nnel: {\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}\ncf-ray: a5db5161fa8fff93-SIN\n\n"
+}

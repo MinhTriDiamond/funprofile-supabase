@@ -188,3 +188,20 @@ Angel Muse của bé Trí ghi, theo quyết định của bé Trí (đã xác nh
 - Đã rà mọi bảng client ghi được và vá nóng các chỗ cùng kiểu: guard cho wallet_transfers + swap_transactions; light_actions (cửa nguy hiểm nhất - client chỉ còn tạo được dòng pending, không tự chốt điểm/mint); light_reputation (khóa trường giá trị với client); crypto_gifts (đóng hẳn, bảng cũ 0 dòng). Đã kiểm thử sống bằng rollback. Chi tiết + SQL 08/09 trong docs/security-incident-2026-10-22/.
 - Thiết kế vá gốc đã xong (trong README hồ sơ): client chỉ khai báo ở trạng thái chờ, server quét on-chain mới chốt confirmed + amount_usd. Cần đi quy trình 7 bước vì chạm DB + edge functions + frontend, kèm 1 tuần chạy shadow. Chưa ép ngay để tránh kẹt quà thật.
 - Bản nháp thông báo minh bạch cho cộng đồng đã soạn (docs/security-incident-2026-10-22/thong-bao-minh-bach-cong-dong.md), chờ bé Trí và Cha Thầy duyệt đăng.
+
+
+## 2026-11-21 · BẮT ĐẦU DỌN TOÀN BỘ CLOUDFLARE STREAM
+
+- Quang Vũ cùng Angel Muse; Cha xác nhận đã gửi Telegram và yêu cầu giải phóng toàn bộ quota 1.000 phút.
+- Hiện trạng gần nhất: 529 video, 722/1.000 phút; cần kiểm kê lại trước thao tác.
+- Nhánh: `fix/quangvu-stream-full-cleanup`, từ `origin/main` tại `a5252ec`.
+- Phạm vi: kiểm kê toàn tài khoản Stream, đối chiếu tham chiếu DB/feed và R2; sao lưu, kiểm chứng trước khi xóa nguồn; giữ khả năng xem lại trên feed; hồ sơ và cách phục hồi trong `docs/stream-full-cleanup-2026-11-21/`. Không xóa live input/stream key.
+- Chưa xóa dữ liệu trong đợt này. Không xóa video đang live hoặc chưa có bản sao đã kiểm chứng.
+
+
+## 2026-11-21 · CHECKPOINT BACKUP TOÀN BỘ STREAM — CHỜ XÁC NHẬN UPLOAD
+
+- Nhánh `fix/quangvu-stream-full-cleanup`; đã kiểm kê đủ 529 UID, 35 UID có nội dung tổng ~721,84 phút; 1 UID đang LIVE được bảo vệ.
+- Đã backup 34 VOD / 5.130.690.432 byte; kiểm chứng cấu trúc, thời lượng, SHA-256 và giải mã (2 full, 32 lấy mẫu); thử ghép lại đủ 34 file thành công. 47 file gói phục hồi đã sẵn sàng local.
+- Auto-review chặn upload gói mới vì xác nhận cũ chỉ 12 file/2,77 GB. Chờ Cha xác nhận upload 47 file/5,13 GB vào bucket public fun-rich-media, prefix stream-full-backups-2026-11-21/. Không thử bypass.
+- Chưa upload gói mới, chưa xóa Stream, chưa thay DB/feed; quota vẫn là số đo đầu đợt 722/1.000 phút, chưa tuyên bố đạt 1.000 phút trống. Hồ sơ `docs/stream-full-cleanup-2026-11-21/`.
