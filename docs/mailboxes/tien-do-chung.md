@@ -1,3 +1,15 @@
+## 2026-11-21 — RTMP: quota về 722 phút, backup R2 đã xác minh
+
+Sau PR #65/v100, 6 replay đã lưu R2 và dọn nguồn. Dashboard tải mới giảm từ 1.023 xuống 722/1.000 phút (529 video), còn 278 phút trống. Cha xác nhận upload bổ sung; 12/12 file backup R2 của 3 recording ngoài phiên đã được đọc lại, size/SHA-256 khớp local. Chưa xóa thủ công 3 recording này, chưa live test. Hồ sơ/bằng chứng và tin Telegram: docs/rtmp-stream-cleanup-audit-2026-11-20/README.md; PR hồ sơ #66.
+
+## 2026-11-21 — RTMP: kiểm chứng 6 replay đã archive và xóa nguồn
+
+Sau PR #65/v100, 6/11 replay mục tiêu đã có R2 và dấu xóa Stream; HEAD cả 6 R2 HTTP200/size khớp, HLS Stream cũ 404. Còn 5 pending giữ nguyên strict guard. Backup 3 recording mới đã kiểm chứng local; chuẩn bị 12 file để lưu thêm R2 nhưng upload đang chờ Cha xác nhận vì bucket public, không xóa 3 nguồn mới. Hồ sơ RTMP ngày 20/11 có số liệu/bằng chứng chi tiết.
+
+## 2026-11-21 — Quang Vũ cùng Angel Muse: đã phát hành recovery RTMP
+
+PR #65 đã merge `1ca040c` qua Preview; archive cron v100 ACTIVE, source deploy khớp. Sửa11 replay pending thiếuUID; sau deploy 2 hàng đã có nguồn trở lại, chưa xác nhận archive hoàn tất. Backup3 recording ngoài replay ~289 phút/2,77 GB đã kiểm chứng local; chưa xóa Stream hoặc upload R2 mới. Đang chờ xác nhận danh sách xóa vĩnh viễn. Hồ sơ: docs/rtmp-stream-cleanup-audit-2026-11-20/README.md.
+
 ## 2026-11-20 — Quang Vũ cùng Angel Muse: kiểm tra RTMP đầy Stream
 
 Log Cloudflare xác nhận STORAGE_QUOTA_EXHAUSTED chặn live; dashboard 534 video, 1.023/1.000 phút. DB ghi nhận 468 replay RTMP có URL R2 và dấu xóa Stream; ba UID bản ghi tồn ngày 17–18/11 không có replay khớp nên ngoài tập watchdog. Chỉ chẩn đoán, chưa xóa/sửa/deploy, chưa giảm dung lượng; chưa PR/merge. Hồ sơ local: docs/rtmp-stream-cleanup-audit-2026-11-20/README.md.

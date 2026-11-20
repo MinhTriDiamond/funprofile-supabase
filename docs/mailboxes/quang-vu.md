@@ -2,11 +2,32 @@
 
 > Việc mới nhất nằm ở trên cùng. Vũ phản hồi trạng thái ngay dưới mỗi mục nhé.
 
+## 2026-11-21 — HOÀN TẤT UPLOAD BACKUP R2, QUOTA ĐÃ GIẢM
+
+- Cha đã xác nhận trực tiếp upload đúng 12 file vào bucket/prefix public đã nêu. Dashboard 12/12 thành công; đọc lại toàn bộ 10 phần video + manifest + script từ R2, SHA-256 và size cả 12 file khớp local. Manifest và bằng chứng tại `docs/rtmp-stream-cleanup-audit-2026-11-20/r2-remote-verification.json`.
+- Tải mới dashboard Stream: 529 video, 722/1.000 phút, giảm 301 phút so với 1.023/1.000; tại snapshot còn 278 phút trống. 6 replay khôi phục đã có R2 và nguồn Stream cũ 404; còn 5 replay không đủ nguồn giữ guard. Chưa mở live thử.
+- Ba recording ngoài phiên ngày 17–18/11 vẫn còn nguyên trên Stream, nay có backup local và R2 (~289 phút/2,77 GB). Xác nhận vừa rồi chỉ cho upload, chưa xóa thủ công thêm nguồn.
+- Source fix đã merge PR #65/deploy v100; cập nhật hồ sơ trong PR #66. README có rollback và tin Telegram để Cha copy. Không đổi secret/schema/cron hay quyền bucket.
+
+## 2026-11-21 — KIỂM CHỨNG SAU V100: 6 replay đã lưu R2 và dọn Stream
+
+- Trên đúng 11 replay backup: 6 hàng đã có nguồn/R2/dấu xóa, còn 5 pending chưa đủ nguồn. HEAD thật: cả 6 URL R2 HTTP200 và size khớp; 6 HLS Stream cũ HTTP404. Không ép map nguồn cho 5 hàng còn lại, chưa test live thật/đo lại quota dashboard.
+- Đã mở đúng bucket production `fun-rich-media`; tạo prefix trống `rtmp-stream-backups-2026-11-21/`. Chuẩn bị 10 phần video dưới 300 MB + manifest + script ghép, tổng 12 file ~2,77GB; thử ghép cả 3 video khớp SHA-256.
+- Upload chưa thực hiện: automatic approval review từ chối nút Mở do cần Cha xác nhận trực tiếp payload/bucket đang public. Đã hỏi đúng 12 file/account/prefix; đang chờ. Không bypass hoặc lấy secret. Ba bản Stream ngoài phiên chưa xóa.
+- Hồ sơ: `docs/rtmp-stream-cleanup-audit-2026-11-20/README.md`, manifest phần và runtime-media-verification.json. PR hồ sơ #66 đang cập nhật, nhánh `docs/quangvu-rtmp-recovery-release`.
+
+## 2026-11-21 — ĐÃ MERGE/DEPLOY: recovery RTMP, chờ xác nhận dọn3 recording
+
+- PR #65 https://github.com/MinhTriDiamond/funprofile-supabase/pull/65 merge squash `1ca040c`, nhánh code remote đã xóa. Preview head `34e17c1` SUCCESS https://fca9fa30.funprofile-supabase.pages.dev, HTML/JS200, link đã gửi Cha.
+- `live-replay-archive-cron` v100 ACTIVE trên production tljfqavndndfsvtazibe, tải lại source khớp mã review. Không đổi auth/secret/schema/cron. Backup source và11 replay/11 session đã lưu local trước deploy.
+- Sau deploy 2/11 replay pending đã có UID (trước 0), chưa có R2/dấu xóa mới. Ba recording ngoài replay đã backup local ~289 phút/2,77 GB, kiểm tra duration/audio/video/hash/full decode exit0; cảnh báo timestamp đã ghi rõ. Chưa upload R2 mới/chưa xóa3 nguồn/chưa xác nhận live thật hoạt động lại.
+- 36 test liên quan +tsgo+Deno đạt; full suite chưa pass như hồ sơ đã nêu. Review cuối không còn Critical/Important. Kết quả và rollback: `docs/rtmp-stream-cleanup-audit-2026-11-20/README.md`; danh sách3 UID+manifest đã sẵn để Cha xác nhận tại thao tác xóa vĩnh viễn. Nhánh hồ sơ: `docs/quangvu-rtmp-recovery-release`.
+
 ## 2026-11-21 — ĐÃ CHUẨN BỊ BẢN VÁ VÀ BACKUP RTMP
 
-- Ba recording mới ngày17–18/11 đã backup local đủ hình/tiếng, tổng2.765.958.396byte, thời lượng289phút1giây; SHA-256 tại `docs/rtmp-stream-cleanup-audit-2026-11-20/backup-manifest.json`. Full decode exit0; có cảnh báo timestamp ở null output muxer được ghi rõ. Chưa có bản sao R2 mới vì chưa truy cập đúng bucket production; không xóa nguồn.
-- Bản vá `rtmpReplayRecovery` giữ strict matching, phục hồi placeholder thiếuUID bằng CAS, giữ identity, quét keyset ưu tiên chưathử rồi retrycũ; tối đa5attempt/tick +deadline mềm15s, cooldownsession10phút. Recovery chạy sau archive/cleanup; lỗi từnghàng/batch không chặn job chính. Production có sẵn session.archive_next_retry_at, không migration.
-- 36 test liên quan /4file +tsgo +deno check đạt; review độc lập không còn Critical/Important. Fullsuite đã chạy và có23testfail/10file do nhóm REST/DNS, timeout và test giá; hồ sơ nêu chi tiết, không coi fullsuite pass. Chuẩn bị commit/PR/Preview; chưa merge/deploy.
+- Ba recording mới ngày 17–18/11 đã backup local đủ hình/tiếng, tổng2.765.958.396 byte, thời lượng289 phút 1 giây; SHA-256 tại `docs/rtmp-stream-cleanup-audit-2026-11-20/backup-manifest.json`. Full decode exit0; có cảnh báo timestamp ở null output muxer được ghi rõ. Chưa có bản sao R2 mới vì chưa truy cập đúng bucket production; không xóa nguồn.
+- Bản vá `rtmpReplayRecovery` giữ strict matching, phục hồi placeholder thiếuUID bằng CAS, giữ identity, quét keyset ưu tiên chưathử rồi retrycũ; tối đa5 lần thử/tick +deadline mềm15 giây, cooldownsession 10 phút. Recovery chạy sau archive/cleanup; lỗi từng hàng/batch không chặn job chính. Production có sẵn session.archive_next_retry_at, không migration.
+- 36 test liên quan /4file +tsgo +deno check đạt; review độc lập không còn Critical/Important. Fullsuite đã chạy và có23 test fail/10 file do nhóm REST/DNS, timeout và test giá; hồ sơ nêu chi tiết, không coi full suite pass. Chuẩn bị commit/PR/Preview; chưa merge/deploy.
 
 ## 2026-11-21 — BỔ SUNG PHẠM VI: sửa recovery replay RTMP thiếu UID
 
