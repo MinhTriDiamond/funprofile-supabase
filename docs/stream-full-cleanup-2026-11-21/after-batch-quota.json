@@ -1,0 +1,11 @@
+{
+  "observed_date": "2026-11-22",
+  "source": "Cloudflare dashboard full navigation after batch deletion",
+  "account_id": "c94ab2ffb5381cac3177eec3734467b4",
+  "videos_stored": 495,
+  "minutes_stored_display": 101,
+  "plan_minutes": 1000,
+  "free_minutes_display": 899,
+  "remaining_playable_uid": "ebbf09e0267c6f06aaf53f374fbd799d",
+  "remaining_playable_duration_seconds": 6046.101
+}

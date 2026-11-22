@@ -1,0 +1,65 @@
+{
+  "checked_at_unix": 1795328164.004137,
+  "bucket": "fun-rich-media",
+  "prefix": "stream-new-backup-2026-11-22/",
+  "base_url": "https://media.fun.rich/stream-new-backup-2026-11-22/",
+  "all_verified": true,
+  "verified_count": 6,
+  "file_count": 6,
+  "results": [
+    {
+      "filename": "ebbf09e0267c6f06aaf53f374fbd799d-hls-backup.mp4.part004",
+      "bytes": 51465831,
+      "sha256": "c41b2d152a6b1d23e72737626925f4d5c52dcfd31feaa0e9c3b8e81627ac123b",
+      "expected_bytes": 51465831,
+      "expected_sha256": "c41b2d152a6b1d23e72737626925f4d5c52dcfd31feaa0e9c3b8e81627ac123b",
+      "curl_exit": 0,
+      "verified": true
+    },
+    {
+      "filename": "manifest.json",
+      "bytes": 1313,
+      "sha256": "f547260fb0620fafdd2d2c35a00598d34ce6bb223fe33cce2761858dc1adbfb5",
+      "expected_bytes": 1313,
+      "expected_sha256": "f547260fb0620fafdd2d2c35a00598d34ce6bb223fe33cce2761858dc1adbfb5",
+      "curl_exit": 0,
+      "verified": true
+    },
+    {
+      "filename": "ebbf09e0267c6f06aaf53f374fbd799d-hls-backup.mp4.part001",
+      "bytes": 290000000,
+      "sha256": "409ba19c03a203fe265d51d069e37c29ca6ff63a2fab56e81c90ac57f6f10897",
+      "expected_bytes": 290000000,
+      "expected_sha256": "409ba19c03a203fe265d51d069e37c29ca6ff63a2fab56e81c90ac57f6f10897",
+      "curl_exit": 0,
+      "verified": true
+    },
+    {
+      "filename": "ebbf09e0267c6f06aaf53f374fbd799d-hls-backup.mp4.part003",
+      "bytes": 290000000,
+      "sha256": "6adb870ec6c2bb67f28939af838e056a562f040f43294f4c8e318ca42ada8c06",
+      "expected_bytes": 290000000,
+      "expected_sha256": "6adb870ec6c2bb67f28939af838e056a562f040f43294f4c8e318ca42ada8c06",
+      "curl_exit": 0,
+      "verified": true
+    },
+    {
+      "filename": "restore_backups.py",
+      "bytes": 1055,
+      "sha256": "93333d15b8fc2033fc904250fb91a6cb33bb72712974dc61461dc5bc4f2bfa94",
+      "expected_bytes": 1055,
+      "expected_sha256": "93333d15b8fc2033fc904250fb91a6cb33bb72712974dc61461dc5bc4f2bfa94",
+      "curl_exit": 0,
+      "verified": true
+    },
+    {
+      "filename": "ebbf09e0267c6f06aaf53f374fbd799d-hls-backup.mp4.part002",
+      "bytes": 290000000,
+      "sha256": "89e107e5887fe4a61fd3fe0b38a1ed6e66255351a198b6dd5b7758e2a6865def",
+      "expected_bytes": 290000000,
+      "expected_sha256": "89e107e5887fe4a61fd3fe0b38a1ed6e66255351a198b6dd5b7758e2a6865def",
+      "curl_exit": 0,
+      "verified": true
+    }
+  ]
+}

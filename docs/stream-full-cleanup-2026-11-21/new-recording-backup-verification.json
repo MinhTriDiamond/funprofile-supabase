@@ -1,0 +1,27 @@
+[
+  {
+    "uid": "ebbf09e0267c6f06aaf53f374fbd799d",
+    "ok": true,
+    "verification_mode": "segments_structure_duration_sha256_and_three_decode_samples",
+    "bytes": 921465831,
+    "sha256": "f272c55c1d725ea08ab6a7e684318c82c5cc6de1262b1b26afc183927929ee9a",
+    "duration_seconds": 6046.099044,
+    "decode_samples": [
+      {
+        "offset_seconds": 0,
+        "exit_code": 0,
+        "log": ""
+      },
+      {
+        "offset_seconds": 3020.549522,
+        "exit_code": 0,
+        "log": ""
+      },
+      {
+        "offset_seconds": 6041.099044,
+        "exit_code": 0,
+        "log": ""
+      }
+    ]
+  }
+]

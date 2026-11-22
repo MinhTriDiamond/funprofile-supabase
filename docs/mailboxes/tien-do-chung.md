@@ -188,3 +188,48 @@ Angel Muse của bé Trí ghi, theo quyết định của bé Trí (đã xác nh
 - Đã rà mọi bảng client ghi được và vá nóng các chỗ cùng kiểu: guard cho wallet_transfers + swap_transactions; light_actions (cửa nguy hiểm nhất - client chỉ còn tạo được dòng pending, không tự chốt điểm/mint); light_reputation (khóa trường giá trị với client); crypto_gifts (đóng hẳn, bảng cũ 0 dòng). Đã kiểm thử sống bằng rollback. Chi tiết + SQL 08/09 trong docs/security-incident-2026-10-22/.
 - Thiết kế vá gốc đã xong (trong README hồ sơ): client chỉ khai báo ở trạng thái chờ, server quét on-chain mới chốt confirmed + amount_usd. Cần đi quy trình 7 bước vì chạm DB + edge functions + frontend, kèm 1 tuần chạy shadow. Chưa ép ngay để tránh kẹt quà thật.
 - Bản nháp thông báo minh bạch cho cộng đồng đã soạn (docs/security-incident-2026-10-22/thong-bao-minh-bach-cong-dong.md), chờ bé Trí và Cha Thầy duyệt đăng.
+
+
+## 2026-11-21 · BẮT ĐẦU DỌN TOÀN BỘ CLOUDFLARE STREAM
+
+- Quang Vũ cùng Angel Muse; Cha xác nhận đã gửi Telegram và yêu cầu giải phóng toàn bộ quota 1.000 phút.
+- Hiện trạng gần nhất: 529 video, 722/1.000 phút; cần kiểm kê lại trước thao tác.
+- Nhánh: `fix/quangvu-stream-full-cleanup`, từ `origin/main` tại `a5252ec`.
+- Phạm vi: kiểm kê toàn tài khoản Stream, đối chiếu tham chiếu DB/feed và R2; sao lưu, kiểm chứng trước khi xóa nguồn; giữ khả năng xem lại trên feed; hồ sơ và cách phục hồi trong `docs/stream-full-cleanup-2026-11-21/`. Không xóa live input/stream key.
+- Chưa xóa dữ liệu trong đợt này. Không xóa video đang live hoặc chưa có bản sao đã kiểm chứng.
+
+
+## 2026-11-21 · CHECKPOINT BACKUP TOÀN BỘ STREAM — CHỜ XÁC NHẬN UPLOAD
+
+- Nhánh `fix/quangvu-stream-full-cleanup`; đã kiểm kê đủ 529 UID, 35 UID có nội dung tổng ~721,84 phút; 1 UID đang LIVE được bảo vệ.
+- Đã backup 34 VOD / 5.130.690.432 byte; kiểm chứng cấu trúc, thời lượng, SHA-256 và giải mã (2 full, 32 lấy mẫu); thử ghép lại đủ 34 file thành công. 47 file gói phục hồi đã sẵn sàng local.
+- Auto-review chặn upload gói mới vì xác nhận cũ chỉ 12 file/2,77 GB. Chờ Cha xác nhận upload 47 file/5,13 GB vào bucket public fun-rich-media, prefix stream-full-backups-2026-11-21/. Không thử bypass.
+- Chưa upload gói mới, chưa xóa Stream, chưa thay DB/feed; quota vẫn là số đo đầu đợt 722/1.000 phút, chưa tuyên bố đạt 1.000 phút trống. Hồ sơ `docs/stream-full-cleanup-2026-11-21/`.
+
+
+## 2026-11-22 · BACKUP R2 ĐÃ KIỂM CHỨNG — CHỜ XÁC NHẬN XÓA NGUỒN
+
+- Cha đã xác nhận gói mới; upload hoàn tất, GET kiểm chứng 47/47 file SHA-256/dung lượng khớp; kiểm tra HEAD mới đủ 47 file và manifest không đổi. 34 VOD / 5,13 GB có bản local, R2 và thử ghép phục hồi thành công.
+- Phiên Paper 23 cũ đã tự archived, bản R2 HEAD200 / Stream404. 34 nguồn còn lại có ~721,58 phút; kiểm tra lại 5 session đều ended, 0 replay tham chiếu, 1 post đang phát bằng R2 chỉ còn HLS cũ trong metadata.
+- Chưa xóa nguồn, chưa thay DB/feed, chưa đạt/tuyên bố 1.000 phút trống. Cần xác nhận tại bước xóa vĩnh viễn theo cảnh báo Cloudflare. PR nháp #67: https://github.com/MinhTriDiamond/funprofile-supabase/pull/67 . Hồ sơ và danh sách UID: docs/stream-full-cleanup-2026-11-21/.
+
+
+## 2026-11-22 · ĐÃ XÓA BATCH 34, TIẾP TỤC XỬ LÝ BẢN GHI PHÁT SINH
+
+- Cha xác nhận xóa vĩnh viễn batch 34; đã thực hiện đúng 34 UID qua dashboard, không xóa input hay mục lỗi. Đang kiểm chứng HTTP404 toàn batch.
+- Có bản ghi mới ngoài inventory ban đầu: ebbf09e0267c6f06aaf53f374fbd799d, 21 Nov 26 13:57 UTC, Ready, manifest 6.046,101 giây (~100,77 phút). Session theo UID không có kết quả. Chưa xóa nguồn mới.
+- Tiếp tục mục tiêu dọn toàn quota trên cùng nhánh fix/quangvu-stream-full-cleanup: đối chiếu tham chiếu và backup local nguồn phát sinh trước; xác nhận xóa 34 không được coi là xác nhận xóa UID mới.
+
+
+## 2026-11-22 · BATCH 34 ĐÃ XÓA VÀ KIỂM CHỨNG; CÒN 1 BẢN GHI MỚI
+
+- 34/34 nguồn được Cha xác nhận đã xóa và HEAD404; bản R2 của feed vẫn HEAD200. Quota hiện còn khoảng 101 phút do bản ghi phát sinh mới ngoài inventory/batch xác nhận.
+- Đã backup local UID ebbf09e0267c6f06aaf53f374fbd799d (100,77 phút / 921.465.831 byte), SHA-256 + mẫu giải mã đạt, thử ghép phục hồi khớp. 0 tham chiếu DB/feed. Gói bổ sung 6 file sẵn sàng cho prefix public stream-new-backup-2026-11-22/; chưa upload/chưa xóa UID mới.
+- Chờ xác nhận riêng phần phát sinh mới; PR67 vẫn nháp, không tuyên bố 1.000 phút trống khi còn nguồn mới.
+
+
+## 2026-11-22 · HOÀN TẤT DỌN QUOTA STREAM — TRỐNG ĐỦ 1.000 PHÚT
+
+- Dashboard tải mới sau nguồn cuối: **494 mục, 0/1.000 phút lưu trữ, 0% — trống đủ 1.000 phút**. Giữ nguyên 494 mục lỗi không phát được và live input/stream key.
+- Đã backup 35 VOD (~6,05 GB), thử ghép phục hồi local và GET kiểm chứng 53/53 file R2 khớp SHA-256/dung lượng, sau đó xóa đúng batch 34 + 1 UID bổ sung theo xác nhận của Cha. 34 nguồn cũ và nguồn bổ sung HTTP404; video R2 của feed vẫn HEAD200/639.076.510 byte.
+- Không thay DB/feed/cron/secrets trong đợt này. Hồ sơ, rollback và tin Telegram hoàn tất: docs/stream-full-cleanup-2026-11-21/README.md. PR hồ sơ #67: https://github.com/MinhTriDiamond/funprofile-supabase/pull/67 (kết quả production đã kiểm chứng; hồ sơ đi qua cổng Preview trước merge).

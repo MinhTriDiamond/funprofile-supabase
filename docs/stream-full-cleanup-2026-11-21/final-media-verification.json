@@ -1,0 +1,16 @@
+{
+  "checked_at_unix": 1795328303.118165,
+  "results": {
+    "deleted_new_source": {
+      "url": "https://customer-bsht0z0p42aa9o2u.cloudflarestream.com/ebbf09e0267c6f06aaf53f374fbd799d/manifest/video.m3u8",
+      "http_status": "404",
+      "curl_exit": 0
+    },
+    "feed_r2": {
+      "url": "https://media.fun.rich/live-replays/0ede7763-9198-496b-914b-3ca95e2a0278/3d242ae9-2d56-4277-a4e0-93bd30f6bd7a/913b01c92b96fcba2847e16b84809005.mp4",
+      "http_status": "200",
+      "curl_exit": 0,
+      "bytes": 639076510
+    }
+  }
+}
