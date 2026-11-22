@@ -44,3 +44,20 @@ Cha đã xác nhận trực tiếp trong chat “OK BÉ, CHA XÁC NHẬN” cho 
 - Chưa tuyên bố đạt 1.000 phút trống; cần đo lại dashboard sau khi xóa được xác nhận. PR #67 vẫn nháp, chờ hoàn tất bước production trước khi merge hồ sơ.
 
 Manifest backup public: https://media.fun.rich/stream-full-backups-2026-11-21/manifest.json . Các phần video là gói phục hồi, không phải URL phát trực tiếp cho feed.
+
+## 2026-11-22 · Xác nhận xóa tại thời điểm thao tác
+
+Cha trả lời “cha xác nhận” ngay sau câu hỏi xóa vĩnh viễn đúng 34 nguồn trong cleanup-plan.json. Bắt đầu dọn batch 34 UID đã backup, không xóa live input hay 494 mục lỗi ngoài danh sách.
+
+## 2026-11-22 · Batch 34 nguồn đã xóa; phát sinh bản ghi mới
+
+Sau xác nhận tại thời điểm xóa của Cha, đã xóa đúng 34 UID trong cleanup-plan qua dashboard, kiểm tra UID + Ready trước mỗi nguồn và nhập đúng tên để xác nhận. Không xóa live input hoặc 494 mục lỗi. Dashboard sau batch còn khoảng 101/1.000 phút và 496 mục (cần đo mới sau cập nhật), thay vì 0 phút vì có bản ghi mới `ebbf09e0267c6f06aaf53f374fbd799d`, tiêu đề 21 Nov 26 13:57 UTC, ngoài snapshot ban đầu. Dashboard nguồn mới là Ready; truy vấn session theo UID không có kết quả. Tiếp tục đối chiếu và sao lưu nguồn mới trong phạm vi yêu cầu giải phóng toàn bộ quota, chưa xóa nó.
+
+Kiểm chứng sau batch: toàn bộ 34 UID HTTP404 (`deleted-source-verification.json`); URL R2 mà feed đang dùng vẫn HEAD200 sau xóa. UID phát sinh mới có 0 session/replay/post/comment/profile tham chiếu, là VOD Ready dài 6.046,101 giây. Giữ nguyên nguồn mới trong lúc backup.
+
+## Bản ghi phát sinh mới đã backup local, chờ xử lý bổ sung
+
+- UID `ebbf09e0267c6f06aaf53f374fbd799d`, Ready, tiêu đề 21 Nov 26 13:57 UTC; thời lượng 6.046,099044 giây. Không có tham chiếu trong 5 nhóm session/replay/post/comment/profile.
+- Đã tải đủ 6.010 đoạn hình/tiếng, ghép MP4 921.465.831 byte, SHA-256 `f272c55c1d725ea08ab6a7e684318c82c5cc6de1262b1b26afc183927929ee9a`. Kiểm chứng cấu trúc từng đoạn, thời lượng, SHA-256 và giải mã mẫu đầu/giữa/cuối đạt; thử ghép phục hồi khớp toàn file.
+- Gói bổ sung: 4 phần video <=290 MB + manifest + script = 6 file; đích dự kiến bucket public `fun-rich-media`, prefix `stream-new-backup-2026-11-22/`, base `https://media.fun.rich/stream-new-backup-2026-11-22/`. Chưa upload gói mới và chưa xóa UID mới; xác nhận trước chỉ cho batch 34 nguồn/gói 47 file.
+- Cần xác nhận cụ thể cho phần phát sinh mới: upload gói 6 file (~921 MB), kiểm chứng remote SHA-256/dung lượng, rồi xóa vĩnh viễn đúng UID này sau khi bản R2 đạt kiểm chứng. Nếu kiểm chứng lỗi hoặc nguồn không còn Ready thì giữ nguồn. Không xóa input hay mục lỗi ngoài danh sách.

@@ -1,0 +1,11 @@
+[
+  {
+    "uid": "ebbf09e0267c6f06aaf53f374fbd799d",
+    "http_status": "200",
+    "curl_exit": 0,
+    "variants": 4,
+    "duration_seconds": 6046.101,
+    "completed": true,
+    "encrypted": false
+  }
+]

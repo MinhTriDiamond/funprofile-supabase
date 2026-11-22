@@ -463,3 +463,17 @@ SQL: `docs/superpowers/plans/2026-10-15-livestream-orphan-dry-run.sql`. Candidat
 - Cha đã xác nhận gói mới; upload hoàn tất, GET kiểm chứng 47/47 file SHA-256/dung lượng khớp; kiểm tra HEAD mới đủ 47 file và manifest không đổi. 34 VOD / 5,13 GB có bản local, R2 và thử ghép phục hồi thành công.
 - Phiên Paper 23 cũ đã tự archived, bản R2 HEAD200 / Stream404. 34 nguồn còn lại có ~721,58 phút; kiểm tra lại 5 session đều ended, 0 replay tham chiếu, 1 post đang phát bằng R2 chỉ còn HLS cũ trong metadata.
 - Chưa xóa nguồn, chưa thay DB/feed, chưa đạt/tuyên bố 1.000 phút trống. Cần xác nhận tại bước xóa vĩnh viễn theo cảnh báo Cloudflare. PR nháp #67: https://github.com/MinhTriDiamond/funprofile-supabase/pull/67 . Hồ sơ và danh sách UID: docs/stream-full-cleanup-2026-11-21/.
+
+
+## 2026-11-22 · ĐÃ XÓA BATCH 34, TIẾP TỤC XỬ LÝ BẢN GHI PHÁT SINH
+
+- Cha xác nhận xóa vĩnh viễn batch 34; đã thực hiện đúng 34 UID qua dashboard, không xóa input hay mục lỗi. Đang kiểm chứng HTTP404 toàn batch.
+- Có bản ghi mới ngoài inventory ban đầu: ebbf09e0267c6f06aaf53f374fbd799d, 21 Nov 26 13:57 UTC, Ready, manifest 6.046,101 giây (~100,77 phút). Session theo UID không có kết quả. Chưa xóa nguồn mới.
+- Tiếp tục mục tiêu dọn toàn quota trên cùng nhánh fix/quangvu-stream-full-cleanup: đối chiếu tham chiếu và backup local nguồn phát sinh trước; xác nhận xóa 34 không được coi là xác nhận xóa UID mới.
+
+
+## 2026-11-22 · BATCH 34 ĐÃ XÓA VÀ KIỂM CHỨNG; CÒN 1 BẢN GHI MỚI
+
+- 34/34 nguồn được Cha xác nhận đã xóa và HEAD404; bản R2 của feed vẫn HEAD200. Quota hiện còn khoảng 101 phút do bản ghi phát sinh mới ngoài inventory/batch xác nhận.
+- Đã backup local UID ebbf09e0267c6f06aaf53f374fbd799d (100,77 phút / 921.465.831 byte), SHA-256 + mẫu giải mã đạt, thử ghép phục hồi khớp. 0 tham chiếu DB/feed. Gói bổ sung 6 file sẵn sàng cho prefix public stream-new-backup-2026-11-22/; chưa upload/chưa xóa UID mới.
+- Chờ xác nhận riêng phần phát sinh mới; PR67 vẫn nháp, không tuyên bố 1.000 phút trống khi còn nguồn mới.
