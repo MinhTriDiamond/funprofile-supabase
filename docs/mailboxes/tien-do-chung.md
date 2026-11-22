@@ -226,3 +226,10 @@ Angel Muse của bé Trí ghi, theo quyết định của bé Trí (đã xác nh
 - 34/34 nguồn được Cha xác nhận đã xóa và HEAD404; bản R2 của feed vẫn HEAD200. Quota hiện còn khoảng 101 phút do bản ghi phát sinh mới ngoài inventory/batch xác nhận.
 - Đã backup local UID ebbf09e0267c6f06aaf53f374fbd799d (100,77 phút / 921.465.831 byte), SHA-256 + mẫu giải mã đạt, thử ghép phục hồi khớp. 0 tham chiếu DB/feed. Gói bổ sung 6 file sẵn sàng cho prefix public stream-new-backup-2026-11-22/; chưa upload/chưa xóa UID mới.
 - Chờ xác nhận riêng phần phát sinh mới; PR67 vẫn nháp, không tuyên bố 1.000 phút trống khi còn nguồn mới.
+
+
+## 2026-11-22 · HOÀN TẤT DỌN QUOTA STREAM — TRỐNG ĐỦ 1.000 PHÚT
+
+- Dashboard tải mới sau nguồn cuối: **494 mục, 0/1.000 phút lưu trữ, 0% — trống đủ 1.000 phút**. Giữ nguyên 494 mục lỗi không phát được và live input/stream key.
+- Đã backup 35 VOD (~6,05 GB), thử ghép phục hồi local và GET kiểm chứng 53/53 file R2 khớp SHA-256/dung lượng, sau đó xóa đúng batch 34 + 1 UID bổ sung theo xác nhận của Cha. 34 nguồn cũ và nguồn bổ sung HTTP404; video R2 của feed vẫn HEAD200/639.076.510 byte.
+- Không thay DB/feed/cron/secrets trong đợt này. Hồ sơ, rollback và tin Telegram hoàn tất: docs/stream-full-cleanup-2026-11-21/README.md. PR hồ sơ #67: https://github.com/MinhTriDiamond/funprofile-supabase/pull/67 (kết quả production đã kiểm chứng; hồ sơ đi qua cổng Preview trước merge).

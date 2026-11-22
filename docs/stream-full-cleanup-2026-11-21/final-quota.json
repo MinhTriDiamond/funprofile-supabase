@@ -1,0 +1,11 @@
+{
+  "observed_date": "2026-11-22",
+  "source": "Cloudflare dashboard full reload after final source deletion",
+  "account_id": "c94ab2ffb5381cac3177eec3734467b4",
+  "videos_stored": 494,
+  "minutes_stored_display": 0,
+  "plan_minutes": 1000,
+  "free_minutes_display": 1000,
+  "storage_percentage": 0,
+  "remaining_items": "Existing error/unplayable entries retained; no stored minutes"
+}

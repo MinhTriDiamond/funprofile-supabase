@@ -1,5 +1,5 @@
 {
-  "status": "batch_34_deleted_verified_404_new_recording_outside_batch_remains",
+  "status": "complete_zero_stored_minutes_verified",
   "account_id": "c94ab2ffb5381cac3177eec3734467b4",
   "uid_count": 34,
   "duration_seconds": 43294.620299,
@@ -47,7 +47,9 @@
     "Action-time confirmation before permanent deletion"
   ],
   "previous_live_status": "archived_r2_200_stream_404",
-  "deleted_count": 34,
+  "deleted_count": 35,
   "new_recording_uid": "ebbf09e0267c6f06aaf53f374fbd799d",
-  "new_recording_duration_seconds": 6046.101
+  "new_recording_duration_seconds": 6046.101,
+  "supplementary_deleted_uid": "ebbf09e0267c6f06aaf53f374fbd799d",
+  "free_minutes_display": 1000
 }

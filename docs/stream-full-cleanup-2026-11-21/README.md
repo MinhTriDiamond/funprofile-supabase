@@ -1,5 +1,19 @@
 # Dọn toàn bộ Cloudflare Stream — 2026-11-21
 
+## Kết quả cuối cùng — 2026-11-22
+
+**Cloudflare Stream đã về 0/1.000 phút lưu trữ, trống đủ 1.000 phút**, xác minh bằng dashboard tải lại toàn trang sau lần xóa cuối. Còn 494 mục lỗi/không phát được nhưng không chiếm phút lưu trữ; giữ nguyên các mục này và live input.
+
+Đã dọn 35 VOD theo xác nhận của Cha: batch 34 nguồn ban đầu và 1 recording phát sinh mới dài 100,77 phút. Trước khi xóa, đã lưu 35 MP4 (~6,05 GB) trên local và R2, thử ghép phục hồi toàn bộ và GET đối chiếu đủ 53/53 file R2 theo SHA-256/dung lượng. 34 nguồn cũ đã kiểm chứng HTTP404; nguồn bổ sung HTTP404; bản R2 mà bài feed liên quan đang phát vẫn HTTP200, đủ 639.076.510 byte. Không thay DB/feed/stream key/cron/secrets trong đợt dọn này.
+
+Bằng chứng: `final-quota.json`, `deleted-source-verification.json`, `final-media-verification.json`, `r2-remote-verification.json` (47 file), `new-recording-r2-verification.json` (6 file). Kiểm chứng giải mã: 2 bản full-decode, 33 bản kiểm tra mẫu đầu/giữa/cuối, cộng kiểm tra cấu trúc tất cả đoạn, thời lượng và hash/size; không tuyên bố full-decode cả 35.
+
+Backup public (gói phục hồi, không phải URL phát trực tiếp cho feed):
+- https://media.fun.rich/stream-full-backups-2026-11-21/manifest.json
+- https://media.fun.rich/stream-new-backup-2026-11-22/manifest.json
+
+PR hồ sơ: https://github.com/MinhTriDiamond/funprofile-supabase/pull/67 . Nội dung dưới đây là nhật ký theo từng checkpoint; các trạng thái chờ xác nhận ở checkpoint cũ đã được giải quyết theo kết quả cuối cùng này.
+
 Đã có xác nhận Telegram và yêu cầu của Cha giải phóng toàn bộ quota. Nhánh `fix/quangvu-stream-full-cleanup`.
 
 Thứ tự: kiểm kê → đối chiếu DB/feed → sao lưu đầy đủ → kiểm chứng → chuyển tham chiếu nếu cần → xóa nguồn đã xác minh → đo lại quota. Giữ nguyên live input.
@@ -61,3 +75,13 @@ Kiểm chứng sau batch: toàn bộ 34 UID HTTP404 (`deleted-source-verificatio
 - Đã tải đủ 6.010 đoạn hình/tiếng, ghép MP4 921.465.831 byte, SHA-256 `f272c55c1d725ea08ab6a7e684318c82c5cc6de1262b1b26afc183927929ee9a`. Kiểm chứng cấu trúc từng đoạn, thời lượng, SHA-256 và giải mã mẫu đầu/giữa/cuối đạt; thử ghép phục hồi khớp toàn file.
 - Gói bổ sung: 4 phần video <=290 MB + manifest + script = 6 file; đích dự kiến bucket public `fun-rich-media`, prefix `stream-new-backup-2026-11-22/`, base `https://media.fun.rich/stream-new-backup-2026-11-22/`. Chưa upload gói mới và chưa xóa UID mới; xác nhận trước chỉ cho batch 34 nguồn/gói 47 file.
 - Cần xác nhận cụ thể cho phần phát sinh mới: upload gói 6 file (~921 MB), kiểm chứng remote SHA-256/dung lượng, rồi xóa vĩnh viễn đúng UID này sau khi bản R2 đạt kiểm chứng. Nếu kiểm chứng lỗi hoặc nguồn không còn Ready thì giữ nguồn. Không xóa input hay mục lỗi ngoài danh sách.
+
+Cha đã trả lời “ok cha” cho batch bổ sung cụ thể: upload 6 file (~921 MB) vào prefix public stream-new-backup-2026-11-22/, kiểm chứng remote rồi xóa UID ebbf09e0267c6f06aaf53f374fbd799d. Điều kiện giữ nguyên: chỉ xóa sau remote hash/size đạt và nguồn vẫn Ready. Đang phối hợp phiên Chrome do công cụ liên tục báo cửa sổ thay đổi; chưa upload hay xóa UID bổ sung tại checkpoint này.
+
+## Hoàn tất batch bổ sung
+
+Cha xác nhận gói 6 file và thao tác xóa có điều kiện. Upload bằng Wrangler CLI sử dụng phiên OAuth hiện có, đúng account R2; không đăng nhập lại hay mở rộng quyền. GET kiểm chứng 6/6 file hash/size khớp rồi mới xóa UID ebbf09e0267c6f06aaf53f374fbd799d bằng dashboard, guard đúng UID + Ready và nhập đúng tên xác nhận. Sau xóa tải lại toàn trang thấy 494 mục, 0/1.000 phút, 0%; xác minh nguồn HTTP404 và video R2 của feed HTTP200.
+
+## Tin Telegram hoàn tất để Cha copy
+
+> Quang Vũ · Đã hoàn tất dọn quota Cloudflare Stream: dashboard tải mới về 0/1.000 phút, trống đủ 1.000 phút để dành cho live RTMP. Đã sao lưu 35 VOD (~6,05 GB), gồm 34 nguồn cũ và 1 bản ghi mới 100,77 phút, rồi mới xóa đúng nguồn được xác nhận. GET kiểm chứng 53/53 file backup R2 khớp SHA-256/dung lượng; đã thử ghép phục hồi MP4 trên local. Các nguồn đã dọn trả 404; video feed liên quan vẫn phát từ R2 (HTTP200). Giữ nguyên live input, stream key và 494 mục lỗi không chiếm phút; không đổi DB/feed/cron/secrets. Việc này giải phóng toàn bộ quota lưu trữ hiện tại và giữ bản sao phục hồi. Hồ sơ/PR: https://github.com/MinhTriDiamond/funprofile-supabase/pull/67 .
