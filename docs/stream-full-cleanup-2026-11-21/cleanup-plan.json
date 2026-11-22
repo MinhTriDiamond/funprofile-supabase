@@ -1,5 +1,5 @@
 {
-  "status": "awaiting_r2_upload_approval_not_deleted",
+  "status": "backup_uploaded_verified_awaiting_action_time_delete_confirmation",
   "account_id": "c94ab2ffb5381cac3177eec3734467b4",
   "uid_count": 34,
   "duration_seconds": 43294.620299,
@@ -39,11 +39,12 @@
     "696a5296fcb829e847f800e5ea3e5631",
     "78ce7862122f1217bd49e2c6196e696e"
   ],
-  "protected_live_uid": "34568217e9636bfd3e9ab924821e9c14",
+  "protected_live_uid": null,
   "conditions": [
     "Remote R2 read-back hashes match all 47 files",
     "Recheck source video is not live",
     "Recheck feed references and R2 playback",
     "Action-time confirmation before permanent deletion"
-  ]
+  ],
+  "previous_live_status": "archived_r2_200_stream_404"
 }

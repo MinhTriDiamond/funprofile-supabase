@@ -1,0 +1,42 @@
+{
+  "session_count": 5,
+  "session_statuses": [
+    {
+      "id": "18990126-c859-4d59-9972-71ea6dd794f5",
+      "status": "ended",
+      "ended_at": "2026-11-12T08:34:14.724+00:00"
+    },
+    {
+      "id": "72aaa865-cadc-4ca6-a762-968c32573775",
+      "status": "ended",
+      "ended_at": "2026-11-10T21:47:01.375+00:00"
+    },
+    {
+      "id": "cfbfbd01-5e07-417b-b847-f0b8f89205fc",
+      "status": "ended",
+      "ended_at": "2026-10-16T03:53:01.348+00:00"
+    },
+    {
+      "id": "1780ad84-704e-4486-a7d4-2e7ae08b8a29",
+      "status": "ended",
+      "ended_at": "2026-08-19T12:39:02.887+00:00"
+    },
+    {
+      "id": "5678bd4d-049b-4f7e-ac3b-09c65e895d77",
+      "status": "ended",
+      "ended_at": "2026-08-02T03:52:05.49+00:00"
+    }
+  ],
+  "replay_count": 0,
+  "post_count": 1,
+  "post_playback": [
+    {
+      "id": "d2cfc4b6-ecae-4788-b1b0-ed169a142ae2",
+      "video_url": "https://media.fun.rich/live-replays/0ede7763-9198-496b-914b-3ca95e2a0278/3d242ae9-2d56-4277-a4e0-93bd30f6bd7a/913b01c92b96fcba2847e16b84809005.mp4",
+      "playback_url": "https://media.fun.rich/live-replays/0ede7763-9198-496b-914b-3ca95e2a0278/3d242ae9-2d56-4277-a4e0-93bd30f6bd7a/913b01c92b96fcba2847e16b84809005.mp4",
+      "old_hls_url": "https://videodelivery.net/9ed496abe78123422b6eda9abceae93f/manifest/video.m3u8"
+    }
+  ],
+  "comments_count": 0,
+  "profiles_count": 0
+}

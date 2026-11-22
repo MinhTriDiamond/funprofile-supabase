@@ -29,3 +29,18 @@ Trạng thái: bắt đầu kiểm kê; chưa xóa dữ liệu.
 Tải đủ các file trong manifest về cùng thư mục với script, chạy `python3 restore_backups.py <thu-muc-dich-moi>`. Script từ chối ghi đè, kiểm tra hash/size từng phần và MP4 ghép lại. Nếu sau này xóa Stream thì không thể khôi phục UID cũ trong sản phẩm; có thể upload lại MP4 để tạo UID mới và cập nhật tham chiếu khi cần. Snapshot DB/media trước thao tác được giữ local bị ignore; không có thay đổi DB cần rollback ở checkpoint này.
 
 Một phiên còn LIVE cần được kết thúc hợp lệ trước khi có thể đạt toàn bộ 1.000 phút trống; chưa có xác nhận của Cha về trạng thái OBS. 494 mục trả manifest 404/424 được giữ nguyên vì chưa cần xóa để giải phóng số phút có nội dung.
+
+## Xác nhận upload bổ sung
+
+Cha đã xác nhận trực tiếp trong chat “OK BÉ, CHA XÁC NHẬN” cho gói mới 47 file/5,13 GB vào đúng bucket/prefix public đã nêu. Đã bắt đầu upload qua dashboard; chờ hoàn tất và kiểm chứng remote SHA-256/dung lượng. Xác nhận này áp dụng upload, chưa phải xác nhận tại thời điểm xóa vĩnh viễn nguồn Stream.
+
+## 2026-11-22 · Upload và kiểm chứng hoàn tất, chưa xóa nguồn
+
+- Sau xác nhận gói mới của Cha, đã upload đúng 47 file / 5.130.690.432 byte video vào bucket/prefix đã thông báo. GET đọc lại đủ 47/47 file từ R2, toàn bộ SHA-256/dung lượng khớp (`r2-remote-verification.json`). Một lần GET bị ngắt HTTP/2 đã được thử lại thành công; không chấp nhận kết quả đọc thiếu.
+- Kiểm tra mới: HEAD 47/47 file khớp dung lượng, GET manifest có SHA-256 trùng bản local (`r2-predelete-head-verification.json`). Bản sao local và bản ghép thử vẫn giữ nguyên.
+- Phiên LIVE được bảo vệ trước đó đã tự chuyển `archived`, có ended_at; R2 HEAD200 và nguồn Stream404. Bằng chứng `previous-live-autoarchive-verification.json`. Không tự kết thúc phiên qua dashboard.
+- Kiểm tra lại 34 nguồn: 34 HTTP200, tổng 43.294,2697 giây (~721,5778 phút); bản backup đã xác nhận đủ VOD. Có 5 session tham chiếu, tất cả status ended, 0 replay tham chiếu; 1 post chỉ giữ URL HLS cũ, video_url và playback_url đang dùng R2. Tóm tắt an toàn trong `predelete-reference-summary.json`; snapshot đầy đủ chỉ local.
+- Chưa xóa nguồn trong đợt này. Cần xác nhận tại thời điểm thao tác vì Cloudflare cảnh báo Delete Video là vĩnh viễn, không thể undo và UID cũ không phục hồi được dù có thể upload lại MP4. Danh sách cụ thể 34 UID ở `cleanup-plan.json`. Không xóa 494 mục lỗi không phát được trong đợt giải phóng phút này.
+- Chưa tuyên bố đạt 1.000 phút trống; cần đo lại dashboard sau khi xóa được xác nhận. PR #67 vẫn nháp, chờ hoàn tất bước production trước khi merge hồ sơ.
+
+Manifest backup public: https://media.fun.rich/stream-full-backups-2026-11-21/manifest.json . Các phần video là gói phục hồi, không phải URL phát trực tiếp cho feed.

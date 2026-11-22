@@ -1,0 +1,15 @@
+{
+  "checked_at_unix": 1795323795.892576,
+  "results": {
+    "archived_r2": {
+      "url": "https://media.fun.rich/live-replays/0ede7763-9198-496b-914b-3ca95e2a0278/54d8c6f7-7657-494d-a2b9-66cc9bfcf358/34568217e9636bfd3e9ab924821e9c14.mp4",
+      "http_status": "200",
+      "curl_exit": 0
+    },
+    "old_stream": {
+      "url": "https://customer-bsht0z0p42aa9o2u.cloudflarestream.com/34568217e9636bfd3e9ab924821e9c14/manifest/video.m3u8",
+      "http_status": "404",
+      "curl_exit": 0
+    }
+  }
+}

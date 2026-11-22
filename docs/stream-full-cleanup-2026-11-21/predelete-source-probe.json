@@ -1,0 +1,308 @@
+[
+  {
+    "uid": "1f2fa1ad3edcece1ac91c0bfd57b79e6",
+    "http_status": "200",
+    "curl_exit": 0,
+    "variants": 4,
+    "duration_seconds": 6537.045,
+    "completed": true,
+    "encrypted": false
+  },
+  {
+    "uid": "ef247d9971654b03e10e607529004c09",
+    "http_status": "200",
+    "curl_exit": 0,
+    "variants": 4,
+    "duration_seconds": 5434.044,
+    "completed": true,
+    "encrypted": false
+  },
+  {
+    "uid": "fbf2bbefecb1d36d1c6aceae8613a211",
+    "http_status": "200",
+    "curl_exit": 0,
+    "variants": 4,
+    "duration_seconds": 5370.288,
+    "completed": true,
+    "encrypted": false
+  },
+  {
+    "uid": "99a6868308ebf1542719189efe3d0550",
+    "http_status": "200",
+    "curl_exit": 0,
+    "variants": 4,
+    "duration_seconds": 499.999,
+    "completed": true,
+    "encrypted": false
+  },
+  {
+    "uid": "cf46cc9b024cf556dab6805325662caa",
+    "http_status": "200",
+    "curl_exit": 0,
+    "variants": 4,
+    "duration_seconds": 7358.333,
+    "completed": true,
+    "encrypted": false
+  },
+  {
+    "uid": "057f669d5a444afc29d5019bad0933e2",
+    "http_status": "200",
+    "curl_exit": 0,
+    "variants": 4,
+    "duration_seconds": 181.151,
+    "completed": true,
+    "encrypted": false
+  },
+  {
+    "uid": "d8b127650ff8694f06fc58de429e24c4",
+    "http_status": "200",
+    "curl_exit": 0,
+    "variants": 4,
+    "duration_seconds": 3874.159,
+    "completed": true,
+    "encrypted": false
+  },
+  {
+    "uid": "9ed496abe78123422b6eda9abceae93f",
+    "http_status": "200",
+    "curl_exit": 0,
+    "variants": 4,
+    "duration_seconds": 2863.431,
+    "completed": true,
+    "encrypted": false
+  },
+  {
+    "uid": "da3935acaf9332c89c36eefadd8f6762",
+    "http_status": "200",
+    "curl_exit": 0,
+    "variants": 4,
+    "duration_seconds": 213.368,
+    "completed": true,
+    "encrypted": false
+  },
+  {
+    "uid": "7f6118195be3d034ea39e36acf59b0a7",
+    "http_status": "200",
+    "curl_exit": 0,
+    "variants": 4,
+    "duration_seconds": 5134.903,
+    "completed": true,
+    "encrypted": false
+  },
+  {
+    "uid": "48cd79c55c7d34594fade71f305bda8b",
+    "http_status": "200",
+    "curl_exit": 0,
+    "variants": 4,
+    "duration_seconds": 533.332,
+    "completed": true,
+    "encrypted": false
+  },
+  {
+    "uid": "268ce211b14b61dc0fec8ee5c4688438",
+    "http_status": "200",
+    "curl_exit": 0,
+    "variants": 4,
+    "duration_seconds": 83.332,
+    "completed": true,
+    "encrypted": false
+  },
+  {
+    "uid": "00e03d06fc960f2850c2e7844413b3f2",
+    "http_status": "200",
+    "curl_exit": 0,
+    "variants": 4,
+    "duration_seconds": 16.666,
+    "completed": true,
+    "encrypted": false
+  },
+  {
+    "uid": "69fdca66ce2cfac3dfb76bf20d5730ea",
+    "http_status": "200",
+    "curl_exit": 0,
+    "variants": 4,
+    "duration_seconds": 24.999000000000002,
+    "completed": true,
+    "encrypted": false
+  },
+  {
+    "uid": "2893a5fcd2fb1849ea4e9e4cead4775f",
+    "http_status": "200",
+    "curl_exit": 0,
+    "variants": 4,
+    "duration_seconds": 529.37,
+    "completed": true,
+    "encrypted": false
+  },
+  {
+    "uid": "3aa3347ac0a9926be5915f821e5f46a8",
+    "http_status": "200",
+    "curl_exit": 0,
+    "variants": 4,
+    "duration_seconds": 74.999,
+    "completed": true,
+    "encrypted": false
+  },
+  {
+    "uid": "a28b0a70573a2a02df084c01739bcc7c",
+    "http_status": "200",
+    "curl_exit": 0,
+    "variants": 4,
+    "duration_seconds": 20.131,
+    "completed": true,
+    "encrypted": false
+  },
+  {
+    "uid": "992cf7ad3e736483cea43e03625e3451",
+    "http_status": "200",
+    "curl_exit": 0,
+    "variants": 4,
+    "duration_seconds": 73.133,
+    "completed": true,
+    "encrypted": false
+  },
+  {
+    "uid": "931826d78b7b1e319285237c88b6b23e",
+    "http_status": "200",
+    "curl_exit": 0,
+    "variants": 4,
+    "duration_seconds": 94.289,
+    "completed": true,
+    "encrypted": false
+  },
+  {
+    "uid": "55b434267b36b7c647f6f392257c9a13",
+    "http_status": "200",
+    "curl_exit": 0,
+    "variants": 4,
+    "duration_seconds": 76.409,
+    "completed": true,
+    "encrypted": false
+  },
+  {
+    "uid": "1fe340eb57b578c30462ffdc9ec0af87",
+    "http_status": "200",
+    "curl_exit": 0,
+    "variants": 4,
+    "duration_seconds": 1108.332,
+    "completed": true,
+    "encrypted": false
+  },
+  {
+    "uid": "5a1435172c0f94b890fccc317d73c3f3",
+    "http_status": "200",
+    "curl_exit": 0,
+    "variants": 4,
+    "duration_seconds": 2308.332,
+    "completed": true,
+    "encrypted": false
+  },
+  {
+    "uid": "745fc6bf46b94bdf05e94debf7bf5207",
+    "http_status": "200",
+    "curl_exit": 0,
+    "variants": 4,
+    "duration_seconds": 470.914,
+    "completed": true,
+    "encrypted": false
+  },
+  {
+    "uid": "81859a0db82168bab2dea94f02106c62",
+    "http_status": "200",
+    "curl_exit": 0,
+    "variants": 4,
+    "duration_seconds": 14.105,
+    "completed": true,
+    "encrypted": false
+  },
+  {
+    "uid": "d61db94a74fdaafda1ccd8377e1b1cdc",
+    "http_status": "200",
+    "curl_exit": 0,
+    "variants": 4,
+    "duration_seconds": 27.032,
+    "completed": true,
+    "encrypted": false
+  },
+  {
+    "uid": "6528f8ac548393dc8794f6705414145c",
+    "http_status": "200",
+    "curl_exit": 0,
+    "variants": 4,
+    "duration_seconds": 33.332,
+    "completed": true,
+    "encrypted": false
+  },
+  {
+    "uid": "4157628d843983e3496cd6fce7a81164",
+    "http_status": "200",
+    "curl_exit": 0,
+    "variants": 4,
+    "duration_seconds": 22.102999999999998,
+    "completed": true,
+    "encrypted": false
+  },
+  {
+    "uid": "78927c07ab731f8e235ea16a3a7149e2",
+    "http_status": "200",
+    "curl_exit": 0,
+    "variants": 3,
+    "duration_seconds": 28.011,
+    "completed": true,
+    "encrypted": false
+  },
+  {
+    "uid": "3ee8901d30012162b5d80dcd4ecb6894",
+    "http_status": "200",
+    "curl_exit": 0,
+    "variants": 3,
+    "duration_seconds": 18.009,
+    "completed": true,
+    "encrypted": false
+  },
+  {
+    "uid": "c1448cbdf906e7952ed288eb76106874",
+    "http_status": "200",
+    "curl_exit": 0,
+    "variants": 4,
+    "duration_seconds": 89.964,
+    "completed": true,
+    "encrypted": false
+  },
+  {
+    "uid": "6c82508e8926d2b15183b645234a4aff",
+    "http_status": "200",
+    "curl_exit": 0,
+    "variants": 4,
+    "duration_seconds": 61.999,
+    "completed": true,
+    "encrypted": false
+  },
+  {
+    "uid": "52acc3e21ca1e4b6abcf0a71e917b309",
+    "http_status": "200",
+    "curl_exit": 0,
+    "variants": 4,
+    "duration_seconds": 89.964,
+    "completed": true,
+    "encrypted": false
+  },
+  {
+    "uid": "696a5296fcb829e847f800e5ea3e5631",
+    "http_status": "200",
+    "curl_exit": 0,
+    "variants": 3,
+    "duration_seconds": 22.7917,
+    "completed": true,
+    "encrypted": false
+  },
+  {
+    "uid": "78ce7862122f1217bd49e2c6196e696e",
+    "http_status": "200",
+    "curl_exit": 0,
+    "variants": 2,
+    "duration_seconds": 6.0,
+    "completed": true,
+    "encrypted": false
+  }
+]

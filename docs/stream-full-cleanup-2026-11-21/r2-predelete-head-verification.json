@@ -1,0 +1,337 @@
+{
+  "checked_at_unix": 1795323767.134758,
+  "heads_ok": 47,
+  "file_count": 47,
+  "manifest_sha256_matches_local": true,
+  "results": [
+    {
+      "filename": "1f2fa1ad3edcece1ac91c0bfd57b79e6-hls-backup.mp4.part001",
+      "head_exit": 0,
+      "bytes": 290000000,
+      "expected_bytes": 290000000,
+      "ok": true
+    },
+    {
+      "filename": "1f2fa1ad3edcece1ac91c0bfd57b79e6-hls-backup.mp4.part002",
+      "head_exit": 0,
+      "bytes": 290000000,
+      "expected_bytes": 290000000,
+      "ok": true
+    },
+    {
+      "filename": "1f2fa1ad3edcece1ac91c0bfd57b79e6-hls-backup.mp4.part003",
+      "head_exit": 0,
+      "bytes": 290000000,
+      "expected_bytes": 290000000,
+      "ok": true
+    },
+    {
+      "filename": "1f2fa1ad3edcece1ac91c0bfd57b79e6-hls-backup.mp4.part004",
+      "head_exit": 0,
+      "bytes": 207464791,
+      "expected_bytes": 207464791,
+      "ok": true
+    },
+    {
+      "filename": "ef247d9971654b03e10e607529004c09-hls-backup.mp4.part001",
+      "head_exit": 0,
+      "bytes": 290000000,
+      "expected_bytes": 290000000,
+      "ok": true
+    },
+    {
+      "filename": "ef247d9971654b03e10e607529004c09-hls-backup.mp4.part002",
+      "head_exit": 0,
+      "bytes": 290000000,
+      "expected_bytes": 290000000,
+      "ok": true
+    },
+    {
+      "filename": "ef247d9971654b03e10e607529004c09-hls-backup.mp4.part003",
+      "head_exit": 0,
+      "bytes": 286883568,
+      "expected_bytes": 286883568,
+      "ok": true
+    },
+    {
+      "filename": "fbf2bbefecb1d36d1c6aceae8613a211-hls-backup.mp4.part001",
+      "head_exit": 0,
+      "bytes": 290000000,
+      "expected_bytes": 290000000,
+      "ok": true
+    },
+    {
+      "filename": "fbf2bbefecb1d36d1c6aceae8613a211-hls-backup.mp4.part002",
+      "head_exit": 0,
+      "bytes": 290000000,
+      "expected_bytes": 290000000,
+      "ok": true
+    },
+    {
+      "filename": "fbf2bbefecb1d36d1c6aceae8613a211-hls-backup.mp4.part003",
+      "head_exit": 0,
+      "bytes": 241610037,
+      "expected_bytes": 241610037,
+      "ok": true
+    },
+    {
+      "filename": "99a6868308ebf1542719189efe3d0550-hls-backup.mp4.part001",
+      "head_exit": 0,
+      "bytes": 12795257,
+      "expected_bytes": 12795257,
+      "ok": true
+    },
+    {
+      "filename": "cf46cc9b024cf556dab6805325662caa-hls-backup.mp4.part001",
+      "head_exit": 0,
+      "bytes": 188325700,
+      "expected_bytes": 188325700,
+      "ok": true
+    },
+    {
+      "filename": "057f669d5a444afc29d5019bad0933e2-hls-backup.mp4.part001",
+      "head_exit": 0,
+      "bytes": 26358976,
+      "expected_bytes": 26358976,
+      "ok": true
+    },
+    {
+      "filename": "d8b127650ff8694f06fc58de429e24c4-hls-backup.mp4.part001",
+      "head_exit": 0,
+      "bytes": 290000000,
+      "expected_bytes": 290000000,
+      "ok": true
+    },
+    {
+      "filename": "d8b127650ff8694f06fc58de429e24c4-hls-backup.mp4.part002",
+      "head_exit": 0,
+      "bytes": 161021457,
+      "expected_bytes": 161021457,
+      "ok": true
+    },
+    {
+      "filename": "9ed496abe78123422b6eda9abceae93f-hls-backup.mp4.part001",
+      "head_exit": 0,
+      "bytes": 290000000,
+      "expected_bytes": 290000000,
+      "ok": true
+    },
+    {
+      "filename": "9ed496abe78123422b6eda9abceae93f-hls-backup.mp4.part002",
+      "head_exit": 0,
+      "bytes": 138213045,
+      "expected_bytes": 138213045,
+      "ok": true
+    },
+    {
+      "filename": "da3935acaf9332c89c36eefadd8f6762-hls-backup.mp4.part001",
+      "head_exit": 0,
+      "bytes": 37910720,
+      "expected_bytes": 37910720,
+      "ok": true
+    },
+    {
+      "filename": "7f6118195be3d034ea39e36acf59b0a7-hls-backup.mp4.part001",
+      "head_exit": 0,
+      "bytes": 290000000,
+      "expected_bytes": 290000000,
+      "ok": true
+    },
+    {
+      "filename": "7f6118195be3d034ea39e36acf59b0a7-hls-backup.mp4.part002",
+      "head_exit": 0,
+      "bytes": 290000000,
+      "expected_bytes": 290000000,
+      "ok": true
+    },
+    {
+      "filename": "7f6118195be3d034ea39e36acf59b0a7-hls-backup.mp4.part003",
+      "head_exit": 0,
+      "bytes": 177822518,
+      "expected_bytes": 177822518,
+      "ok": true
+    },
+    {
+      "filename": "48cd79c55c7d34594fade71f305bda8b-hls-backup.mp4.part001",
+      "head_exit": 0,
+      "bytes": 49375340,
+      "expected_bytes": 49375340,
+      "ok": true
+    },
+    {
+      "filename": "268ce211b14b61dc0fec8ee5c4688438-hls-backup.mp4.part001",
+      "head_exit": 0,
+      "bytes": 8498421,
+      "expected_bytes": 8498421,
+      "ok": true
+    },
+    {
+      "filename": "00e03d06fc960f2850c2e7844413b3f2-hls-backup.mp4.part001",
+      "head_exit": 0,
+      "bytes": 1584379,
+      "expected_bytes": 1584379,
+      "ok": true
+    },
+    {
+      "filename": "69fdca66ce2cfac3dfb76bf20d5730ea-hls-backup.mp4.part001",
+      "head_exit": 0,
+      "bytes": 2412056,
+      "expected_bytes": 2412056,
+      "ok": true
+    },
+    {
+      "filename": "2893a5fcd2fb1849ea4e9e4cead4775f-hls-backup.mp4.part001",
+      "head_exit": 0,
+      "bytes": 79967133,
+      "expected_bytes": 79967133,
+      "ok": true
+    },
+    {
+      "filename": "3aa3347ac0a9926be5915f821e5f46a8-hls-backup.mp4.part001",
+      "head_exit": 0,
+      "bytes": 835993,
+      "expected_bytes": 835993,
+      "ok": true
+    },
+    {
+      "filename": "a28b0a70573a2a02df084c01739bcc7c-hls-backup.mp4.part001",
+      "head_exit": 0,
+      "bytes": 3292652,
+      "expected_bytes": 3292652,
+      "ok": true
+    },
+    {
+      "filename": "992cf7ad3e736483cea43e03625e3451-hls-backup.mp4.part001",
+      "head_exit": 0,
+      "bytes": 11100657,
+      "expected_bytes": 11100657,
+      "ok": true
+    },
+    {
+      "filename": "931826d78b7b1e319285237c88b6b23e-hls-backup.mp4.part001",
+      "head_exit": 0,
+      "bytes": 16177927,
+      "expected_bytes": 16177927,
+      "ok": true
+    },
+    {
+      "filename": "55b434267b36b7c647f6f392257c9a13-hls-backup.mp4.part001",
+      "head_exit": 0,
+      "bytes": 5998601,
+      "expected_bytes": 5998601,
+      "ok": true
+    },
+    {
+      "filename": "1fe340eb57b578c30462ffdc9ec0af87-hls-backup.mp4.part001",
+      "head_exit": 0,
+      "bytes": 62732038,
+      "expected_bytes": 62732038,
+      "ok": true
+    },
+    {
+      "filename": "5a1435172c0f94b890fccc317d73c3f3-hls-backup.mp4.part001",
+      "head_exit": 0,
+      "bytes": 152483135,
+      "expected_bytes": 152483135,
+      "ok": true
+    },
+    {
+      "filename": "745fc6bf46b94bdf05e94debf7bf5207-hls-backup.mp4.part001",
+      "head_exit": 0,
+      "bytes": 31634441,
+      "expected_bytes": 31634441,
+      "ok": true
+    },
+    {
+      "filename": "81859a0db82168bab2dea94f02106c62-hls-backup.mp4.part001",
+      "head_exit": 0,
+      "bytes": 1340996,
+      "expected_bytes": 1340996,
+      "ok": true
+    },
+    {
+      "filename": "d61db94a74fdaafda1ccd8377e1b1cdc-hls-backup.mp4.part001",
+      "head_exit": 0,
+      "bytes": 659773,
+      "expected_bytes": 659773,
+      "ok": true
+    },
+    {
+      "filename": "6528f8ac548393dc8794f6705414145c-hls-backup.mp4.part001",
+      "head_exit": 0,
+      "bytes": 591558,
+      "expected_bytes": 591558,
+      "ok": true
+    },
+    {
+      "filename": "4157628d843983e3496cd6fce7a81164-hls-backup.mp4.part001",
+      "head_exit": 0,
+      "bytes": 2195685,
+      "expected_bytes": 2195685,
+      "ok": true
+    },
+    {
+      "filename": "78927c07ab731f8e235ea16a3a7149e2-hls-backup.mp4.part001",
+      "head_exit": 0,
+      "bytes": 3633781,
+      "expected_bytes": 3633781,
+      "ok": true
+    },
+    {
+      "filename": "3ee8901d30012162b5d80dcd4ecb6894-hls-backup.mp4.part001",
+      "head_exit": 0,
+      "bytes": 2886475,
+      "expected_bytes": 2886475,
+      "ok": true
+    },
+    {
+      "filename": "c1448cbdf906e7952ed288eb76106874-hls-backup.mp4.part001",
+      "head_exit": 0,
+      "bytes": 7595970,
+      "expected_bytes": 7595970,
+      "ok": true
+    },
+    {
+      "filename": "6c82508e8926d2b15183b645234a4aff-hls-backup.mp4.part001",
+      "head_exit": 0,
+      "bytes": 5323740,
+      "expected_bytes": 5323740,
+      "ok": true
+    },
+    {
+      "filename": "52acc3e21ca1e4b6abcf0a71e917b309-hls-backup.mp4.part001",
+      "head_exit": 0,
+      "bytes": 7257465,
+      "expected_bytes": 7257465,
+      "ok": true
+    },
+    {
+      "filename": "696a5296fcb829e847f800e5ea3e5631-hls-backup.mp4.part001",
+      "head_exit": 0,
+      "bytes": 3928905,
+      "expected_bytes": 3928905,
+      "ok": true
+    },
+    {
+      "filename": "78ce7862122f1217bd49e2c6196e696e-hls-backup.mp4.part001",
+      "head_exit": 0,
+      "bytes": 777242,
+      "expected_bytes": 777242,
+      "ok": true
+    },
+    {
+      "filename": "manifest.json",
+      "head_exit": 0,
+      "bytes": 20178,
+      "expected_bytes": 20178,
+      "ok": true
+    },
+    {
+      "filename": "restore_backups.py",
+      "head_exit": 0,
+      "bytes": 1055,
+      "expected_bytes": 1055,
+      "ok": true
+    }
+  ]
+}

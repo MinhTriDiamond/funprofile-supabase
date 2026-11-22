@@ -205,3 +205,10 @@ Angel Muse của bé Trí ghi, theo quyết định của bé Trí (đã xác nh
 - Đã backup 34 VOD / 5.130.690.432 byte; kiểm chứng cấu trúc, thời lượng, SHA-256 và giải mã (2 full, 32 lấy mẫu); thử ghép lại đủ 34 file thành công. 47 file gói phục hồi đã sẵn sàng local.
 - Auto-review chặn upload gói mới vì xác nhận cũ chỉ 12 file/2,77 GB. Chờ Cha xác nhận upload 47 file/5,13 GB vào bucket public fun-rich-media, prefix stream-full-backups-2026-11-21/. Không thử bypass.
 - Chưa upload gói mới, chưa xóa Stream, chưa thay DB/feed; quota vẫn là số đo đầu đợt 722/1.000 phút, chưa tuyên bố đạt 1.000 phút trống. Hồ sơ `docs/stream-full-cleanup-2026-11-21/`.
+
+
+## 2026-11-22 · BACKUP R2 ĐÃ KIỂM CHỨNG — CHỜ XÁC NHẬN XÓA NGUỒN
+
+- Cha đã xác nhận gói mới; upload hoàn tất, GET kiểm chứng 47/47 file SHA-256/dung lượng khớp; kiểm tra HEAD mới đủ 47 file và manifest không đổi. 34 VOD / 5,13 GB có bản local, R2 và thử ghép phục hồi thành công.
+- Phiên Paper 23 cũ đã tự archived, bản R2 HEAD200 / Stream404. 34 nguồn còn lại có ~721,58 phút; kiểm tra lại 5 session đều ended, 0 replay tham chiếu, 1 post đang phát bằng R2 chỉ còn HLS cũ trong metadata.
+- Chưa xóa nguồn, chưa thay DB/feed, chưa đạt/tuyên bố 1.000 phút trống. Cần xác nhận tại bước xóa vĩnh viễn theo cảnh báo Cloudflare. PR nháp #67: https://github.com/MinhTriDiamond/funprofile-supabase/pull/67 . Hồ sơ và danh sách UID: docs/stream-full-cleanup-2026-11-21/.
