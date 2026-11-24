@@ -1,0 +1,44 @@
+{
+  "pr": 74,
+  "mergeCommit": "c23c44ecf8bc0f99be70b4067c0447f6c375358c",
+  "productionAsset": "/assets/index-CmHv55iG.js",
+  "productionDeploy": "https://8da68171.funprofile-supabase.pages.dev",
+  "functions": [
+    {
+      "slug": "multipart-upload",
+      "version": 88,
+      "status": "ACTIVE",
+      "verify_jwt": false
+    },
+    {
+      "slug": "create-post",
+      "version": 88,
+      "status": "ACTIVE",
+      "verify_jwt": false
+    },
+    {
+      "slug": "get-upload-url",
+      "version": 89,
+      "status": "ACTIVE",
+      "verify_jwt": true
+    }
+  ],
+  "sourceMatches": {
+    "multipart-upload": {
+      "supabase/functions/multipart-upload/index.ts": true,
+      "supabase/functions/_shared/mediaLimits.ts": true
+    },
+    "create-post": {
+      "supabase/functions/create-post/index.ts": true,
+      "supabase/functions/_shared/mediaLimits.ts": true
+    },
+    "get-upload-url": {
+      "supabase/functions/get-upload-url/index.ts": true,
+      "supabase/functions/_shared/mediaLimits.ts": true
+    }
+  },
+  "actualVideoBytes": 3399337725,
+  "actualUpload": "completed",
+  "actualObjectVerified": true,
+  "composerPostEnabled": true
+}

@@ -1,3 +1,10 @@
+## 2026-11-24 · HOÀN TẤT PHÁT HÀNH VIDEO 10 GiB VÀ THỬ TỆP LỖI THẬT
+
+- PR #74 đã merge c23c44e và lên fun.rich; bundle index-CmHv55iG.js. Backend multipart-upload v88, create-post v88, get-upload-url v89 ACTIVE; JWT false/false/true giữ nguyên, source tải lại khớp repo.
+- Đúng video MOV 6:08 trong ảnh, 3.399.337.725 byte, đã tải thành công 65/65 phần; server completed, giao diện hết lỗi và bật nút Post. HEAD R2 đúng dung lượng, GET Range 206 đúng 1.024 byte/tổng kích thước. Giữ bản nháp, không đăng bài.
+- 55/55 test, tsgo/build/review/Preview đạt; mô phỏng multipart 10 GiB và hash đầy đủ 10 GiB đạt. Chưa upload tệp 10 GiB thật qua mạng. Tài khoản Cha vốn có mức admin 10 GiB, không quy lỗi ban đầu cho hạn mức 2 GiB.
+- Hồ sơ kết quả/khôi phục: docs/video-upload-10gb-2026-11-24/README.md. PR code: https://github.com/MinhTriDiamond/funprofile-supabase/pull/74 . Nhánh docs/quangvu-video-upload-release chỉ bổ sung hồ sơ phát hành.
+
 ## 2026-11-24 · KẾT QUẢ CODE VIDEO 10 GiB — PR #74
 
 - Frontend/sharedbackend video bài viết2→10GiB cho tài khoản thường; giữchat2GiB/thời lượng4giờ. Hash đọc8MiB/lượt, giữresumeID, JWT theo sessionrefresh; lỗi đãphân loại hiển thị trongcomposer.

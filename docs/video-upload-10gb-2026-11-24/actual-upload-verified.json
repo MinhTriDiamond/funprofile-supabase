@@ -1,0 +1,14 @@
+{
+  "status": "completed",
+  "fileSize": 3399337725,
+  "parts": 65,
+  "totalParts": 65,
+  "updatedAt": "2026-11-24 15:17:25.12996+00",
+  "headSize": 3399337725,
+  "contentType": "video/quicktime",
+  "rangeStatus": 206,
+  "rangeBytes": 1024,
+  "rangeTotalBytes": 3399337725,
+  "postedToFeed": false,
+  "note": "Actual original MOV upload; object URL omitted from repository report."
+}

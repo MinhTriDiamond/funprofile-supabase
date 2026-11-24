@@ -525,3 +525,17 @@ SQL: `docs/superpowers/plans/2026-10-15-livestream-orphan-dry-run.sql`. Candidat
 - 55/55test11file, tsgo vàbuildlocal đạt; review codekhông cóblocker. Mô phỏng205part đúng10GiB; hashfull10GiB giảlập1280lượt, max8MiB, khớpnodeSHA256. Chưaupload10GiB thật.
 - Metadata bản nháp video6:08:3.399.337.725byte/MOV/3402×1916/progress0. Chưa xác định ngoại lệ gốc, chưa báo sửađược chính tệpnày.
 - PR https://github.com/MinhTriDiamond/funprofile-supabase/pull/74 ; Previewcode72a83eb đạt https://d04bf4e3.funprofile-supabase.pages.dev . Hồ sơ docs/video-upload-10gb-2026-11-24/. Cổng Preview đúnghead cuối trước merge; backend3function triển khai sau merge, giữ auth. Trạng thái merge/deploy cuối xem PR.
+
+
+## 2026-11-24 · BỔ SUNG HỒ SƠ PHÁT HÀNH VIDEO 10 GiB
+
+- Tiếp nối phạm vi upload đã báo Telegram và PR #74; nhánh docs/quangvu-video-upload-release từ main đã merge c23c44e.
+- Chỉ bổ sung hồ sơ xác minh production và thư kết quả: source tải lại 3 function khớp; auth giữ nguyên; theo dõi cùng lượt tải video 3.399.337.725 byte đã được Cha xác nhận tối đa 3 lượt kiểm tra. Không thay code/backend hoặc khởi tạo thêm upload trong nhánh hồ sơ.
+
+
+## 2026-11-24 · HOÀN TẤT PHÁT HÀNH VIDEO 10 GiB VÀ THỬ TỆP LỖI THẬT
+
+- PR #74 đã merge c23c44e và lên fun.rich; bundle index-CmHv55iG.js. Backend multipart-upload v88, create-post v88, get-upload-url v89 ACTIVE; JWT false/false/true giữ nguyên, source tải lại khớp repo.
+- Đúng video MOV 6:08 trong ảnh, 3.399.337.725 byte, đã tải thành công 65/65 phần; server completed, giao diện hết lỗi và bật nút Post. HEAD R2 đúng dung lượng, GET Range 206 đúng 1.024 byte/tổng kích thước. Giữ bản nháp, không đăng bài.
+- 55/55 test, tsgo/build/review/Preview đạt; mô phỏng multipart 10 GiB và hash đầy đủ 10 GiB đạt. Chưa upload tệp 10 GiB thật qua mạng. Tài khoản Cha vốn có mức admin 10 GiB, không quy lỗi ban đầu cho hạn mức 2 GiB.
+- Hồ sơ kết quả/khôi phục: docs/video-upload-10gb-2026-11-24/README.md. PR code: https://github.com/MinhTriDiamond/funprofile-supabase/pull/74 . Nhánh docs/quangvu-video-upload-release chỉ bổ sung hồ sơ phát hành.

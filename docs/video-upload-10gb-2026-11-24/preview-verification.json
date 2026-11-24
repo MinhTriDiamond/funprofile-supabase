@@ -1,0 +1,14 @@
+{
+  "preview": "https://d04bf4e3.funprofile-supabase.pages.dev",
+  "http200": true,
+  "assets": [
+    "/assets/index-CmHv55iG.js"
+  ],
+  "checks": {
+    "normal10GiB": true,
+    "typedErrors": true,
+    "boundedHash": true,
+    "sessionRefresh": true
+  },
+  "index": "/assets/index-CmHv55iG.js"
+}
