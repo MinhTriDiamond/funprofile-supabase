@@ -23,6 +23,15 @@ function isEmbedUrl(url: string): boolean {
   return EMBED_PATTERNS.some(p => url.includes(p));
 }
 
+function isYouTubeEmbedUrl(url: string): boolean {
+  try {
+    const { hostname, pathname } = new URL(url);
+    return /^(www\.)?youtube(-nocookie)?\.com$/.test(hostname) && pathname.startsWith('/embed/');
+  } catch {
+    return false;
+  }
+}
+
 function isDirectVideo(url: string): boolean {
   try {
     const pathname = new URL(url).pathname.toLowerCase();
@@ -71,7 +80,8 @@ const LinkPreviewCardComponent = ({ url }: LinkPreviewCardProps) => {
               className="w-full h-full"
               allowFullScreen
               allow="autoplay; encrypted-media; picture-in-picture"
-              referrerPolicy="no-referrer"
+              // YouTube requires an origin Referer; suppressing it causes player error 153.
+              referrerPolicy={isYouTubeEmbedUrl(videoUrl) ? 'strict-origin-when-cross-origin' : 'no-referrer'}
               onError={() => setVideoError(true)}
             />
           </div>
