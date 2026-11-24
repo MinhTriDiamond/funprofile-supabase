@@ -1,0 +1,10 @@
+{
+  "name": "funprofile-post-video-media",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-11-24",
+  "workers_dev": false,
+  "routes": [{ "pattern": "fun.rich/media-optimized/*", "zone_name": "fun.rich" }],
+  "r2_buckets": [{ "binding": "POST_VIDEO_OUTPUT_BUCKET", "bucket_name": "fun-rich-video-optimized" }],
+  "vars": { "POST_VIDEO_AUTH_URL": "https://tljfqavndndfsvtazibe.supabase.co/functions/v1/post-video-read" },
+  "observability": { "enabled": false }
+}
