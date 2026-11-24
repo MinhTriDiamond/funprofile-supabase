@@ -32,6 +32,7 @@ import { z } from 'zod';
 import { compressPostImage, getVideoDuration } from '@/utils/imageCompression';
 import { generateVideoPoster } from '@/utils/videoPoster';
 import { uploadToR2 } from '@/utils/r2Upload';
+import { getUploadErrorMessage } from '@/utils/uploadError';
 import {
   detectMediaKind,
   MEDIA_LIMIT_MESSAGES,
@@ -496,7 +497,7 @@ export const CreatePost = ({ onPostCreated, initialAction }: FacebookCreatePostP
       updater?.(draft.id, {
         uploadStatus: 'error',
         error: draft.kind === 'video'
-          ? t('fcpVideoUploadFailed')
+          ? getUploadErrorMessage(err, t('fcpVideoUploadFailed'))
           : (err?.message || t('uploadFailed')),
       });
     } finally {
@@ -858,7 +859,7 @@ export const CreatePost = ({ onPostCreated, initialAction }: FacebookCreatePostP
         const isVideo = attachment.kind === 'video';
         updateAttachment(attachment.id, {
           uploadStatus: 'error',
-          error: isVideo ? t('fcpVideoUploadFailed') : (error?.message || t('uploadFailed')),
+          error: isVideo ? getUploadErrorMessage(error, t('fcpVideoUploadFailed')) : (error?.message || t('uploadFailed')),
         });
         throw error;
       }

@@ -1,0 +1,44 @@
+[
+  {
+    "created_at": 1789730367630,
+    "entrypoint_path": "supabase/functions/get-upload-url/index.ts",
+    "ezbr_sha256": "45aecc524f9a328cbe4a52fa8244b9ca8d5ab1c91547cf5f9aa69a5d0fc5e359",
+    "id": "1188d6eb-0e96-4864-83cb-66da6c18f269",
+    "import_map": false,
+    "import_map_path": "",
+    "name": "get-upload-url",
+    "slug": "get-upload-url",
+    "status": "ACTIVE",
+    "updated_at": 1792728265268,
+    "verify_jwt": true,
+    "version": 88
+  },
+  {
+    "created_at": 1789730367630,
+    "entrypoint_path": "supabase/functions/multipart-upload/index.ts",
+    "ezbr_sha256": "e416167f90e8b557652722cce6ea017bcbe7ac499d272845c692b6a43f3b1170",
+    "id": "4852f0e8-dbe2-473f-b017-7fb4e8c1ccda",
+    "import_map": false,
+    "import_map_path": "",
+    "name": "multipart-upload",
+    "slug": "multipart-upload",
+    "status": "ACTIVE",
+    "updated_at": 1792728265268,
+    "verify_jwt": false,
+    "version": 87
+  },
+  {
+    "created_at": 1789730367630,
+    "entrypoint_path": "supabase/functions/create-post/index.ts",
+    "ezbr_sha256": "6c68ff30e9a395b06d25d523147877cd2043717bc53cddacb207009cba0ce102",
+    "id": "151a8691-6650-4bc1-8455-74213a2fa22c",
+    "import_map": false,
+    "import_map_path": "",
+    "name": "create-post",
+    "slug": "create-post",
+    "status": "ACTIVE",
+    "updated_at": 1792728265268,
+    "verify_jwt": false,
+    "version": 87
+  }
+]

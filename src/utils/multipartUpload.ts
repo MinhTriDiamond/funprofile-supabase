@@ -10,6 +10,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { VIDEO_LIMITS } from '@/config/uploadLimits';
 import { calculateFileHash } from './mediaUpload';
+import { UploadRequestError } from './uploadError';
 
 export interface MultipartUploadOptions {
   key: string;
@@ -41,24 +42,25 @@ async function fnCall<T = any>(token: string, body: Record<string, unknown>, sig
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
+      'Authorization': `Bearer ${await getToken(token)}`,
       'apikey': ANON,
     },
     body: JSON.stringify(body),
     signal,
   });
   if (!res.ok) {
-    const txt = await res.text().catch(() => '');
-    throw new Error(`multipart-upload ${body.action} ${res.status}: ${txt.slice(0, 200)}`);
+    const details = await res.json().catch(() => ({}));
+    throw new UploadRequestError(res.status, typeof details.code === 'string' ? details.code : undefined);
   }
   return res.json();
 }
 
 async function getToken(provided?: string): Promise<string> {
-  if (provided) return provided;
+  // Supabase refreshes its session during long uploads; do not pin the initial JWT.
   const { data: { session } } = await supabase.auth.getSession();
-  if (!session) throw new Error('Chưa đăng nhập');
-  return session.access_token;
+  const current = session?.access_token || provided;
+  if (!current) throw new Error('Chưa đăng nhập');
+  return current;
 }
 
 function sleep(ms: number, signal?: AbortSignal) {

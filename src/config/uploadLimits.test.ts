@@ -9,6 +9,8 @@ import {
   VIDEO_LIMITS,
 } from './uploadLimits';
 
+import { validateChatMediaUpload, validateUploadMedia } from '../../supabase/functions/_shared/mediaLimits';
+
 const MB = 1024 * 1024;
 
 function fileLike(name: string, type: string, size: number) {
@@ -42,10 +44,11 @@ describe('upload media limits', () => {
     });
   });
 
-  it('blocks normal user videos over 2GB', () => {
-    expect(validateVideoFile(fileLike('big.mp4', 'video/mp4', VIDEO_LIMITS.MAX_BYTES_USER + 1))).toMatchObject({
-      code: 'VIDEO_TOO_LARGE',
-    });
+  it('allows normal user videos from 2GB through the inclusive 10GiB boundary', () => {
+    for (const size of [2 * 1024 ** 3 + 1, 10 * 1024 ** 3]) {
+      expect(validateVideoFile(fileLike('big.mp4', 'video/mp4', size))).toBeNull();
+    }
+    expect(validateVideoFile(fileLike('too-big.mp4', 'video/mp4', 10 * 1024 ** 3 + 1))).toMatchObject({ code: 'VIDEO_TOO_LARGE' });
   });
 
   it('allows elevated account videos up to 10GB', () => {
@@ -69,5 +72,21 @@ describe('upload media limits', () => {
     expect(validateVideoFile(fileLike('clip.m4v', 'video/x-m4v', 1 * MB))).toMatchObject({
       code: 'UNSUPPORTED_MEDIA_TYPE',
     });
+  });
+});
+
+describe('server post upload limits', () => {
+  it('accepts 10GiB without an elevated role and rejects one byte over', () => {
+    const input = { key: 'videos/test.mp4', contentType: 'video/mp4', durationSeconds: 368 };
+    expect(validateUploadMedia({ ...input, fileSize: 10 * 1024 ** 3 })).toBeNull();
+    expect(validateUploadMedia({ ...input, fileSize: 10 * 1024 ** 3 + 1 })).toMatchObject({ code: 'VIDEO_TOO_LARGE' });
+  });
+});
+
+describe('unrelated chat upload policy', () => {
+  it('keeps chat videos limited to 2GiB', () => {
+    const input = { key: 'chat-media/test/video.mp4', userId: 'test', contentType: 'video/mp4' };
+    expect(validateChatMediaUpload({ ...input, fileSize: 2 * 1024 ** 3 })).toBeNull();
+    expect(validateChatMediaUpload({ ...input, fileSize: 2 * 1024 ** 3 + 1 })).toMatchObject({ code: 'CHAT_FILE_TOO_LARGE' });
   });
 });
