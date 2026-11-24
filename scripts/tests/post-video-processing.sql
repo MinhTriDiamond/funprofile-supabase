@@ -12,6 +12,7 @@ CREATE TABLE public.posts(id uuid PRIMARY KEY,user_id uuid NOT NULL,visibility t
 CREATE TABLE public.post_attachments(id uuid PRIMARY KEY DEFAULT gen_random_uuid(),post_id uuid REFERENCES posts(id) ON DELETE CASCADE,file_url text NOT NULL,storage_key text,file_type text,mime_type text,size_bytes bigint,width int,height int,transform_meta jsonb,sort_order int DEFAULT 0);
 CREATE TABLE public.video_upload_sessions(id uuid DEFAULT gen_random_uuid(),user_id uuid,r2_key text,status text,file_size bigint,file_hash text,created_at timestamptz DEFAULT now());
 \ir ../../supabase/migrations/20261125010000_post_video_processing.sql
+\ir ../../supabase/migrations/20261125020000_post_video_retry.sql
 UPDATE public.post_video_processing_control SET enabled=true,publish_enabled=true;
 INSERT INTO posts(id,user_id,video_url,media_urls) VALUES('10000000-0000-0000-0000-000000000001','20000000-0000-0000-0000-000000000001','https://media.fun.rich/videos/source.mov','[{"url":"https://media.fun.rich/videos/source.mov","type":"video"},{"url":"other.jpg","type":"image"}]');
 INSERT INTO video_upload_sessions(user_id,r2_key,status,file_size,file_hash) VALUES('20000000-0000-0000-0000-000000000001','videos/20000000-0000-0000-0000-000000000001/source.mov','completed',3399337725,'abc');
@@ -62,6 +63,17 @@ DO $$ BEGIN
 END $$;
 SELECT set_config('request.jwt.claim.sub','20000000-0000-0000-0000-000000000001',true);
 DO $$ BEGIN IF (SELECT count(*) FROM post_video_processing_jobs)<>1 THEN RAISE EXCEPTION 'owner cannot read status'; END IF; END $$;
+RESET ROLE;
+UPDATE post_video_processing_jobs SET phase='needs_review',runtime='{"retryPhase":"importing"}',lease_until=NULL;
+SET LOCAL ROLE authenticated;
+DO $$ BEGIN IF request_post_video_retry('30000000-0000-0000-0000-000000000001') THEN RAISE EXCEPTION 'owner recreated ambiguous import'; END IF; END $$;
+RESET ROLE;
+UPDATE post_video_processing_jobs SET runtime='{"retryPhase":"stream_delete_pending"}';
+SET LOCAL ROLE authenticated;
+SELECT set_config('request.jwt.claim.sub','20000000-0000-0000-0000-000000000002',true);
+DO $$ BEGIN IF request_post_video_retry('30000000-0000-0000-0000-000000000001') THEN RAISE EXCEPTION 'foreign owner retried'; END IF; END $$;
+SELECT set_config('request.jwt.claim.sub','20000000-0000-0000-0000-000000000001',true);
+DO $$ BEGIN IF NOT request_post_video_retry('30000000-0000-0000-0000-000000000001') THEN RAISE EXCEPTION 'owner cannot retry safe operation'; END IF; END $$;
 RESET ROLE;
 DELETE FROM posts;
 DO $$ BEGIN IF NOT (SELECT cancelled FROM post_video_processing_jobs LIMIT 1) THEN RAISE EXCEPTION 'deleted post did not tombstone job'; END IF; END $$;

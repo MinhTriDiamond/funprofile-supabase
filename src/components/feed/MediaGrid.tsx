@@ -1,3 +1,6 @@
+import { parsePostVideoLocator } from '@/utils/postVideoPlayback';
+import { downloadOptimizedPostVideo } from '@/utils/postVideoReadClient';
+import { OptimizedPostVideoPlayer } from './OptimizedPostVideoPlayer';
 import { useState, memo, useCallback, useRef, Suspense } from 'react';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { ImageViewer } from './ImageViewer';
@@ -430,7 +433,9 @@ const MediaGalleryViewer = memo(({ media, isOpen, onClose, currentIndex, onPrev,
           {/* Close + Download buttons */}
           <div className="absolute top-4 right-4 z-50 flex items-center gap-2">
             {currentMedia.type === 'video' && (
-              isChunkedManifestUrl(currentMedia.url) ? (
+              parsePostVideoLocator(currentMedia.url) ? (
+                <button onClick={() => { void downloadOptimizedPostVideo(currentMedia.url).catch(() => {}); }} className="rounded-full bg-secondary p-2 text-secondary-foreground" title={t('mdgDownloadVideo')}><Download className="h-5 w-5" /></button>
+              ) : isChunkedManifestUrl(currentMedia.url) ? (
                 <button
                   onClick={() => downloadChunkedVideo(currentMedia.url)}
                   className="w-10 h-10 bg-black/50 hover:bg-black/80 rounded-full flex items-center justify-center text-white transition-colors"
@@ -485,7 +490,9 @@ const MediaGalleryViewer = memo(({ media, isOpen, onClose, currentIndex, onPrev,
           {/* Media content */}
           <div className="max-w-full max-h-full flex items-center justify-center p-4 relative">
             {currentMedia.type === 'video' ? (
-              isHlsUrl(currentMedia.url) ? (
+              parsePostVideoLocator(currentMedia.url) ? (
+                <OptimizedPostVideoPlayer src={currentMedia.url} poster={currentMedia.poster} className="max-h-[85vh] max-w-full" />
+              ) : isHlsUrl(currentMedia.url) ? (
                 <Suspense fallback={<div className="w-full h-[85vh] bg-muted animate-pulse" />}>
                   <ReplayPlayer
                     src={currentMedia.url}

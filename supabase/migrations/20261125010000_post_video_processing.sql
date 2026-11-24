@@ -61,7 +61,7 @@ CREATE INDEX post_video_jobs_post ON public.post_video_processing_jobs(post_id);
 
 CREATE FUNCTION public.enqueue_post_video_job() RETURNS trigger
 LANGUAGE plpgsql SECURITY DEFINER SET search_path=public AS $$
-DECLARE owner_id uuid; post_visibility text; source_session record;
+DECLARE owner_id uuid; post_visibility text; source_session record; new_job_id uuid;
 BEGIN
   IF NEW.file_type<>'video' OR NOT coalesce((SELECT enabled FROM post_video_processing_control WHERE id),false) THEN RETURN NEW; END IF;
   SELECT user_id,visibility INTO owner_id,post_visibility FROM posts WHERE id=NEW.post_id AND deleted_at IS NULL;
@@ -74,7 +74,10 @@ BEGIN
   IF NOT FOUND OR source_session.file_hash IS NULL THEN RETURN NEW; END IF;
   INSERT INTO post_video_processing_jobs(user_id,post_id,attachment_id,source_key,source_url,source_size,source_hash)
     VALUES(owner_id,NEW.post_id,NEW.id,NEW.storage_key,NEW.file_url,NEW.size_bytes,source_session.file_hash)
-    ON CONFLICT(attachment_id,source_key,source_size,source_hash) DO NOTHING;
+    ON CONFLICT(attachment_id,source_key,source_size,source_hash) DO NOTHING RETURNING id INTO new_job_id;
+  IF new_job_id IS NOT NULL THEN
+    UPDATE posts SET metadata=jsonb_set(coalesce(metadata,'{}'),'{video_processing_by_attachment}',coalesce(metadata->'video_processing_by_attachment','{}')||jsonb_build_object(NEW.id::text,jsonb_build_object('phase','queued'))) WHERE id=NEW.post_id;
+  END IF;
   RETURN NEW;
 END $$;
 CREATE TRIGGER post_video_enqueue AFTER INSERT OR UPDATE OF file_url,storage_key,size_bytes ON public.post_attachments FOR EACH ROW EXECUTE FUNCTION public.enqueue_post_video_job();
@@ -132,7 +135,7 @@ BEGIN
   RETURNING * INTO j;
   IF j.id IS NULL THEN RETURN NULL; END IF;
   UPDATE posts SET metadata=jsonb_set(coalesce(metadata,'{}'),'{video_processing_by_attachment}',
-    coalesce(metadata->'video_processing_by_attachment','{}')||jsonb_build_object(j.attachment_id::text,jsonb_build_object('phase',CASE WHEN j.published_at IS NOT NULL THEN 'ready' ELSE j.phase END,'outcome',j.outcome))),updated_at=clock_timestamp()
+    coalesce(metadata->'video_processing_by_attachment','{}')||jsonb_build_object(j.attachment_id::text,jsonb_build_object('phase',CASE WHEN j.published_at IS NOT NULL THEN 'ready' ELSE j.phase END,'outcome',j.outcome,'retryable',j.phase='needs_review' AND j.runtime->>'retryPhase' IN ('encoding','mp4_wait','r2_upload','r2_verify','publishing','stream_delete_pending')))),updated_at=clock_timestamp()
     WHERE id=j.post_id AND EXISTS(SELECT 1 FROM post_attachments WHERE id=j.attachment_id AND post_id=j.post_id AND (file_url=j.source_url OR file_url=j.gateway_url));
   RETURN to_jsonb(j);
 END $$;

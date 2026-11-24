@@ -163,7 +163,7 @@ export async function processPostVideoJob(admin:Admin,jobId:string) {
  };
  try {await runPostVideoStep(j,c,ports);} catch {
   const attempts=j.attempts+1;
-  await save({attempts,phase:attempts>=5?'needs_review':j.phase,last_error:'Background operation failed; retry scheduled',next_attempt_at:later(Math.min(480,30*2**(attempts-1))),release_lease:true});
+  await save({attempts,runtime:{...j.runtime,retryPhase:j.phase},phase:attempts>=5?'needs_review':j.phase,last_error:'Background operation failed; retry scheduled',next_attempt_at:later(Math.min(480,30*2**(attempts-1))),release_lease:true});
  }
  return {phase:j!.phase};
 }

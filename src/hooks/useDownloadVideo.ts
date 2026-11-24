@@ -1,3 +1,5 @@
+import { parsePostVideoLocator } from '@/utils/postVideoPlayback';
+import { authorizePostVideoPlayback } from '@/utils/postVideoReadClient';
 import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -9,6 +11,7 @@ const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
 type Provider = 'stream' | 'r2' | 'storage' | 'external';
 
 function detectProvider(url: string): Provider {
+  if (parsePostVideoLocator(url)) return 'r2';
   if (isStreamUrl(url)) return 'stream';
   if (isR2Url(url)) return 'r2';
   if (isSupabaseStorageUrl(url)) return 'storage';
@@ -77,7 +80,9 @@ export function useDownloadVideo() {
 
       try {
         const filename = buildFilename({ id: postId, content: postContent });
-        const proxyUrl =
+        const optimized = parsePostVideoLocator(resolved);
+        if (optimized) await authorizePostVideoPlayback(optimized.url);
+        const proxyUrl = optimized ? optimized.url + '?download=1' :
           `${SUPABASE_URL}/functions/v1/replay-download?url=${encodeURIComponent(resolved)}&filename=${encodeURIComponent(filename)}`;
 
         // Telegram WebView + iOS Safari: <a download> bị chặn → dùng location.assign

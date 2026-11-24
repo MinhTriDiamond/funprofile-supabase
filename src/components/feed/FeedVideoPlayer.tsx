@@ -1,3 +1,5 @@
+import { parsePostVideoLocator } from '@/utils/postVideoPlayback';
+import { OptimizedPostVideoPlayer } from './OptimizedPostVideoPlayer';
 import { memo, useEffect, useId, useCallback, useMemo, useRef, useState, Suspense } from 'react';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { cn } from '@/lib/utils';
@@ -287,6 +289,8 @@ export const FeedVideoPlayer = memo(({
                 />
               </Suspense>
             </VideoErrorBoundary>
+          ) : parsePostVideoLocator(normalizedSrc) ? (
+            <OptimizedPostVideoPlayer src={normalizedSrc} poster={safePoster} className="h-full w-full" />
           ) : (
             <VideoErrorBoundary>
               <FacebookVideoPlayer
