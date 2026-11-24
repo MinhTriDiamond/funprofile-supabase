@@ -19,3 +19,11 @@ Bản sửa nhận diện hostname chính xác youtube.com / youtube-nocookie.co
 ## Khôi phục
 
 Nếu có regression, revert PR qua nhánh + Preview theo quy trình dự án. Không có migration hoặc thay đổi production backend cần phục hồi.
+
+## PR và tin Telegram hoàn tất
+
+PR: https://github.com/MinhTriDiamond/funprofile-supabase/pull/73 . Hồ sơ đi cùng bản sửa qua Cloudflare Pages Preview trước merge.
+
+Tin để Cha copy sau khi PR merge:
+
+> Quang Vũ · Đã merge PR #73 khắc phục YouTube Error153 trong feed. Iframe YouTube/youtube-nocookie gửi origin Referer để player nhận diện trang nhúng, vẫn bỏ đường dẫn/query của bài viết; các nền tảng khác giữ chính sách cũ. 35/35 kiểm thử feed và tsgo đạt, review không có lỗi quan trọng. Đã kiểm chứng request browser trước/sau và bấm phát thành công đúng video trong ảnh. Bản sửa giúp các bài chia sẻ YouTube xem video nhúng lại, không đổi nội dung bài/DB/backend. PR: https://github.com/MinhTriDiamond/funprofile-supabase/pull/73 .

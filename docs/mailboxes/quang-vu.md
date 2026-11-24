@@ -500,3 +500,9 @@ SQL: `docs/superpowers/plans/2026-10-15-livestream-orphan-dry-run.sql`. Candidat
 - 35/35 test feed (gồm 7 test mới) và tsgo đạt; test RED trước sửa đúng 4 ca YouTube + request browser không có Referer, GREEN sau sửa gửi đúng origin.
 - Đúng video PdNMiq0X2BI trong ảnh đã được bấm phát thành công trong browser fixture render component thật: currentTime >0 và paused=false. Review không có Critical/Important. Hồ sơ docs/youtube-error-153-2026-11-24/.
 - Bản sửa đang chuẩn bị PR và cổng Preview trước merge.
+
+
+## 2026-11-24 · HỒ SƠ KẾT QUẢ YOUTUBE ERROR153 — PR #73
+
+- Bản sửa và kiểm thử: https://github.com/MinhTriDiamond/funprofile-supabase/pull/73 . 35/35 test feed, tsgo và review đạt; video PdNMiq0X2BI đã phát thực trong browser fixture (currentTime>0, paused=false), request chỉ gửi origin Referer.
+- Hồ sơ và tin Telegram hoàn tất: docs/youtube-error-153-2026-11-24/README.md. Cổng Cloudflare Preview phải đạt trước merge; trạng thái merge/deploy xem PR. Không thay DB/backend hay headers toàn site.
