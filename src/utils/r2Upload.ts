@@ -1,6 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { multipartUploadToR2 } from './multipartUpload';
 import { VIDEO_LIMITS } from '@/config/uploadLimits';
+import { makeOwnedPostVideoKey } from '../../supabase/functions/_shared/postVideoSourceKey';
 
 export interface R2UploadResult {
   url: string;
@@ -135,13 +136,15 @@ export async function uploadToR2(
   const randomString = Math.random().toString(36).substring(2, 15);
   const extension = file.name.split('.').pop();
   const filename = customPath || `${timestamp}-${randomString}.${extension}`;
-  const key = `${bucket}/${filename}`;
+  let key = `${bucket}/${filename}`;
+  const ownedPostVideo = bucket === 'videos' && !customPath;
 
   let token = accessToken;
-  if (!token) {
+  if (!token || ownedPostVideo) {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) throw new Error('Chưa đăng nhập');
-    token = session.access_token;
+    token = token || session.access_token;
+    if (ownedPostVideo) key = makeOwnedPostVideoKey(session.user.id, filename);
   }
 
   // Multipart cho file lớn HOẶC mọi video (an toàn cho 10GB)
