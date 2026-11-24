@@ -1,5 +1,12 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
+// auto-backfill-donations: finds confirmed transactions with no donations row
+// and records the missing gifts. Fixed 2026-11-24: plain insert instead of
+// upsert on tx_hash (donations has no unique constraint there, so every upsert
+// failed with ON CONFLICT), dedupe by tx_hash preferring the non-self row,
+// notifications only for successful inserts, and celebration posts only for
+// this run's inserts (the old full re-scan of all donations each run timed out).
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
@@ -212,33 +219,62 @@ Deno.serve(async (req) => {
         tx_hash: tx.tx_hash, status: "confirmed", confirmed_at: tx.created_at,
         card_theme: "celebration", card_sound: "rich-1", message: null, light_score_earned: 0,
       });
-
-      if (tx.user_id && recipientId && tx.user_id !== recipientId) {
-        notifications.push({ user_id: recipientId, actor_id: tx.user_id, type: "donation", read: false });
-      }
     }
 
-    // Insert donations one by one with upsert to avoid batch failures
+    // Dedupe by tx_hash: one transfer can appear twice in transactions under
+    // two user_ids (one self row, one genuine gift row). Prefer the non-self
+    // record so a genuine gift is not lost to the self-transfer row.
+    const dedupedByHash = new Map<string, any>();
+    for (const record of toInsert) {
+      const prev = dedupedByHash.get(record.tx_hash);
+      if (!prev) { dedupedByHash.set(record.tx_hash, record); continue; }
+      const prevSelf = prev.sender_id === prev.recipient_id;
+      const nextSelf = record.sender_id === record.recipient_id;
+      if (prevSelf && !nextSelf) dedupedByHash.set(record.tx_hash, record);
+    }
+    const deduped = [...dedupedByHash.values()];
+
+    // Plain insert (no upsert): donations has no unique constraint on tx_hash,
+    // so onConflict: 'tx_hash' fails every time. The missing set is already
+    // filtered, and we re-check existence right before each insert to stay
+    // safe against overlapping runs.
     let insertedCount = 0;
     let errorCount = 0;
-    for (const record of toInsert) {
+    const insertedRecords: any[] = [];
+    for (const record of deduped) {
       // Skip self-donation (violates no_self_donation constraint)
       if (record.sender_id === record.recipient_id) {
         skipped.push(record.tx_hash);
         continue;
       }
+      const { data: existing } = await adminClient
+        .from("donations")
+        .select("id")
+        .eq("tx_hash", record.tx_hash)
+        .maybeSingle();
+      if (existing) { skipped.push(record.tx_hash); continue; }
       const { error: insertError } = await adminClient
         .from("donations")
-        .upsert(record, { onConflict: 'tx_hash', ignoreDuplicates: true });
+        .insert(record);
       if (insertError) {
         errorCount++;
         console.error(`Insert error for ${record.tx_hash}:`, insertError.message);
       } else {
         insertedCount++;
+        insertedRecords.push(record);
       }
     }
 
-    // Batch insert notifications
+    // Notifications ONLY for donations that were actually inserted. The old
+    // code notified for every attempt, creating thousands of false donation
+    // notifications a day for gifts that were never recorded.
+    if (insertedRecords.length > 0) {
+      for (const r of insertedRecords) {
+        if (r.sender_id && r.recipient_id && r.sender_id !== r.recipient_id) {
+          notifications.push({ user_id: r.recipient_id, actor_id: r.sender_id, type: "donation", read: false });
+        }
+      }
+    }
     if (notifications.length > 0) {
       for (let i = 0; i < notifications.length; i += BATCH_INSERT_SIZE) {
         const batch = notifications.slice(i, i + BATCH_INSERT_SIZE);
@@ -246,15 +282,18 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Re-fetch missing posts after new donations inserted
-    const updatedDonations = await fetchAllConfirmedDonations(adminClient);
-    const updatedDonTxHashes = updatedDonations.map((d) => d.tx_hash).filter(Boolean);
-    const updatedPostTxSet = await findMissingPostTxHashes(adminClient, updatedDonTxHashes);
-    const updatedMissingPosts = updatedDonations.filter(
-      (d) => d.tx_hash && d.sender_id && d.recipient_id && !updatedPostTxSet.has(d.tx_hash)
+    // Backfill celebration posts ONLY for the donations inserted in this run.
+    // The old code re-fetched ALL confirmed donations and checked posts for
+    // every one of them each run (37k rows + hundreds of lookups), which is
+    // what timed the run out before it could finish. There are currently 0
+    // donations missing a post, so scoping to this run changes nothing.
+    const insertedTxHashes = insertedRecords.map((d) => d.tx_hash).filter(Boolean);
+    const insertedPostTxSet = await findMissingPostTxHashes(adminClient, insertedTxHashes);
+    const insertedMissingPosts = insertedRecords.filter(
+      (d) => d.tx_hash && d.sender_id && d.recipient_id && !insertedPostTxSet.has(d.tx_hash)
     );
 
-    const postsResult = await backfillGiftCelebrationPosts(adminClient, updatedMissingPosts, profileMap);
+    const postsResult = await backfillGiftCelebrationPosts(adminClient, insertedMissingPosts, profileMap);
 
     console.log(`[auto-backfill] Scanned: ${allTx.length}, Missing: ${missingDonationTx.length}, Inserted: ${insertedCount}, Errors: ${errorCount}, Skipped: ${skipped.length}, Posts created: ${postsResult.posts_created}`);
 
