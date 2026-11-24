@@ -1,3 +1,4 @@
+import { collectPostVideoReferences, isPostVideoManagedStream } from '../_shared/postVideoReferences.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2';
 
 const corsHeaders = {
@@ -98,7 +99,8 @@ async function listAllStreamVideos(): Promise<StreamVideo[]> {
 
 // Get all video UIDs referenced in the database
 async function getDbVideoUids(supabase: any): Promise<Set<string>> {
-  const uids = new Set<string>();
+  const postVideoRefs = await collectPostVideoReferences(supabase);
+  const uids = new Set<string>(postVideoRefs.protectedStreamUids);
 
   const addUid = (value: unknown) => {
     if (!value) return;
@@ -117,11 +119,12 @@ async function getDbVideoUids(supabase: any): Promise<Set<string>> {
   };
   
   // Get video_url from posts
-  const { data: postsWithVideo } = await supabase
+  const { data: postsWithVideo, error: postsWithVideoError } = await supabase
     .from('posts')
     .select('video_url')
     .not('video_url', 'is', null);
   
+  if (postsWithVideoError) throw new Error('Reference lookup failed');
   if (postsWithVideo) {
     for (const post of postsWithVideo as { video_url: string }[]) {
       const uid = extractStreamUid(post.video_url);
@@ -130,11 +133,12 @@ async function getDbVideoUids(supabase: any): Promise<Set<string>> {
   }
   
   // Get videos from media_urls in posts
-  const { data: postsWithMedia } = await supabase
+  const { data: postsWithMedia, error: postsWithMediaError } = await supabase
     .from('posts')
     .select('media_urls')
     .not('media_urls', 'is', null);
   
+  if (postsWithMediaError) throw new Error('Reference lookup failed');
   if (postsWithMedia) {
     for (const post of postsWithMedia as { media_urls: any[] }[]) {
       if (Array.isArray(post.media_urls)) {
@@ -154,11 +158,12 @@ async function getDbVideoUids(supabase: any): Promise<Set<string>> {
   }
   
   // Get video_url from comments
-  const { data: commentsWithVideo } = await supabase
+  const { data: commentsWithVideo, error: commentsWithVideoError } = await supabase
     .from('comments')
     .select('video_url')
     .not('video_url', 'is', null);
   
+  if (commentsWithVideoError) throw new Error('Reference lookup failed');
   if (commentsWithVideo) {
     for (const comment of commentsWithVideo as { video_url: string }[]) {
       const uid = extractStreamUid(comment.video_url);
@@ -167,11 +172,12 @@ async function getDbVideoUids(supabase: any): Promise<Set<string>> {
   }
   
   // Get cover_url from profiles (in case videos are used as covers)
-  const { data: profilesWithCover } = await supabase
+  const { data: profilesWithCover, error: profilesWithCoverError } = await supabase
     .from('profiles')
     .select('cover_url')
     .not('cover_url', 'is', null);
   
+  if (profilesWithCoverError) throw new Error('Reference lookup failed');
   if (profilesWithCover) {
     for (const profile of profilesWithCover as { cover_url: string }[]) {
       const uid = extractStreamUid(profile.cover_url);
@@ -180,7 +186,7 @@ async function getDbVideoUids(supabase: any): Promise<Set<string>> {
   }
 
   // Protect Cloudflare Stream UIDs used by livestream/replay pipeline.
-  const { data: liveSessions } = await supabase
+  const { data: liveSessions, error: liveSessionsError } = await supabase
     .from('live_sessions')
     .select('cloudflare_video_uid, hls_url, playback_url')
     .or('cloudflare_video_uid.not.is.null,hls_url.not.is.null,playback_url.not.is.null');
@@ -190,7 +196,7 @@ async function getDbVideoUids(supabase: any): Promise<Set<string>> {
     addUid(row.playback_url);
   }
 
-  const { data: liveReplays } = await supabase
+  const { data: liveReplays, error: liveReplaysError } = await supabase
     .from('live_replays')
     .select('stream_uid, cloudflare_video_uid, playback_hls, playback_dash, playback_mp4, cloudflare_playback_url, last_cf_response')
     .or('stream_uid.not.is.null,cloudflare_video_uid.not.is.null,playback_hls.not.is.null,cloudflare_playback_url.not.is.null');
@@ -204,6 +210,7 @@ async function getDbVideoUids(supabase: any): Promise<Set<string>> {
     addUid(row.last_cf_response);
   }
 
+  if (liveSessionsError || liveReplaysError) throw new Error('Reference lookup failed');
   return uids;
 }
 
@@ -293,7 +300,7 @@ Deno.serve(async (req) => {
     
     // Find orphan videos
     const orphanVideos = streamVideos.filter(video => {
-      if (dbVideoUids.has(video.uid)) return false;
+      if (dbVideoUids.has(video.uid) || isPostVideoManagedStream(video)) return false;
       const createdMs = Date.parse(video.created || '') || 0;
       const state = String((video.status as any)?.state || '').toLowerCase();
       if (createdMs > minCreatedAt) return false;

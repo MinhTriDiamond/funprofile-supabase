@@ -30,10 +30,15 @@ Deno.serve(async(req:Request)=>{
   }
   let query=(admin as any).from('post_video_processing_jobs').select('id,phase,next_attempt_at').eq('cancelled',false).not('phase','in','(complete,cancelled,needs_review,failed)').lte('next_attempt_at',new Date().toISOString()).order('next_attempt_at').limit(1);
   if(body.jobId)query=query.eq('id',body.jobId);
-  const {data:jobs,error}=await query;if(error)throw error;
+  let {data:jobs,error}=await query;if(error)throw error;
+  let cleanup=false;
+  if(!jobs?.length){
+   const result=await (admin as any).from('post_video_processing_jobs').select('id,phase,next_attempt_at').eq('cancelled',true).eq('phase','cancelled').not('runtime','cs','{"cleanupDone":true}').lte('next_attempt_at',new Date().toISOString()).order('next_attempt_at').limit(1);
+   if(result.error)throw result.error;jobs=result.data;cleanup=true;
+  }
   if(body.action==='dry-run')return json({jobs:jobs||[]});
   const results=[];
-  for(const job of jobs||[])results.push({id:job.id,...await processPostVideoJob(admin,job.id)});
+  for(const job of jobs||[])results.push({id:job.id,...await processPostVideoJob(admin,job.id,cleanup)});
   return json({results});
  }catch(e){return json({error:e instanceof HttpError?e.message:'Background processing request failed'},e instanceof HttpError?e.status:500);}
 });

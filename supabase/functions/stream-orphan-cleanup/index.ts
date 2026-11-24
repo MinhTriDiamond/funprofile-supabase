@@ -1,3 +1,4 @@
+import { collectPostVideoReferences, isPostVideoManagedStream } from '../_shared/postVideoReferences.ts';
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * stream-orphan-cleanup
@@ -125,26 +126,30 @@ Deno.serve(async (req) => {
     return json({ error: 'cf_list_failed', detail: String(err) }, 502);
   }
 
+  let postVideoRefs;
+  try { postVideoRefs = await collectPostVideoReferences(admin); }
+  catch { return json({ error: 'reference_lookup_failed' }, 503); }
   // 2. Lấy whitelist UID từ DB
-  const { data: replays } = await (admin as any)
+  const { data: replays, error: replaysError } = await (admin as any)
     .from('live_replays')
     .select('stream_uid, cloudflare_video_uid, archive_status, r2_video_url, replay_post_id, live_session_id');
-  const { data: sessions } = await (admin as any)
+  const { data: sessions, error: sessionsError } = await (admin as any)
     .from('live_sessions')
     .select('cloudflare_video_uid, status, mode');
-  const { data: postRefs } = await (admin as any)
+  const { data: postRefs, error: postRefsError } = await (admin as any)
     .from('posts')
     .select('video_url, media_urls, metadata')
     .or('video_url.not.is.null,media_urls.not.is.null,metadata.not.is.null');
-  const { data: commentRefs } = await (admin as any)
+  const { data: commentRefs, error: commentRefsError } = await (admin as any)
     .from('comments')
     .select('video_url')
     .not('video_url', 'is', null);
-  const { data: profileRefs } = await (admin as any)
+  const { data: profileRefs, error: profileRefsError } = await (admin as any)
     .from('profiles')
     .select('cover_url')
     .not('cover_url', 'is', null);
 
+  if (replaysError || sessionsError || postRefsError || commentRefsError || profileRefsError) return json({ error: 'reference_lookup_failed' }, 503);
   // UID đang được "giữ" — KHÔNG xoá
   const protectStatuses = new Set([
     'pending', 'r2_ready', 'replay_posted', 'archiving', 'processing_stream',
@@ -156,7 +161,7 @@ Deno.serve(async (req) => {
     'replay_temp_ready', 'ended', 'processing', 'processing_stream',
   ]);
 
-  const protectedUids = new Set<string>();
+  const protectedUids = new Set<string>(postVideoRefs.protectedStreamUids);
   const archivedUids = new Set<string>();
   for (const r of (replays || []) as any[]) {
     const uids = [r.stream_uid, r.cloudflare_video_uid].filter(Boolean);
@@ -189,6 +194,7 @@ Deno.serve(async (req) => {
   const tooRecent: string[] = [];
 
   for (const v of cfVideos) {
+    if (isPostVideoManagedStream(v as any)) { keepProtected.push(v.uid); continue; }
     const createdMs = Date.parse(v.created || '') || 0;
     if (createdMs > minCreatedAt) {
       tooRecent.push(v.uid);

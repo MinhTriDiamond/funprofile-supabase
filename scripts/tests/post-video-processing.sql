@@ -13,7 +13,7 @@ CREATE TABLE public.post_attachments(id uuid PRIMARY KEY DEFAULT gen_random_uuid
 CREATE TABLE public.video_upload_sessions(id uuid DEFAULT gen_random_uuid(),user_id uuid,r2_key text,status text,file_size bigint,file_hash text,created_at timestamptz DEFAULT now());
 \ir ../../supabase/migrations/20261125010000_post_video_processing.sql
 \ir ../../supabase/migrations/20261125020000_post_video_retry.sql
-UPDATE public.post_video_processing_control SET enabled=true,publish_enabled=true;
+UPDATE public.post_video_processing_control SET enabled=true,publish_enabled=true,delete_enabled=true;
 INSERT INTO posts(id,user_id,video_url,media_urls) VALUES('10000000-0000-0000-0000-000000000001','20000000-0000-0000-0000-000000000001','https://media.fun.rich/videos/source.mov','[{"url":"https://media.fun.rich/videos/source.mov","type":"video"},{"url":"other.jpg","type":"image"}]');
 INSERT INTO video_upload_sessions(user_id,r2_key,status,file_size,file_hash) VALUES('20000000-0000-0000-0000-000000000001','videos/20000000-0000-0000-0000-000000000001/source.mov','completed',3399337725,'abc');
 INSERT INTO post_attachments(id,post_id,file_url,storage_key,file_type,size_bytes) VALUES('30000000-0000-0000-0000-000000000001','10000000-0000-0000-0000-000000000001','https://media.fun.rich/videos/source.mov','videos/20000000-0000-0000-0000-000000000001/source.mov','video',3399337725);
@@ -75,7 +75,23 @@ DO $$ BEGIN IF request_post_video_retry('30000000-0000-0000-0000-000000000001') 
 SELECT set_config('request.jwt.claim.sub','20000000-0000-0000-0000-000000000001',true);
 DO $$ BEGIN IF NOT request_post_video_retry('30000000-0000-0000-0000-000000000001') THEN RAISE EXCEPTION 'owner cannot retry safe operation'; END IF; END $$;
 RESET ROLE;
+\ir ../../supabase/migrations/20261125030000_post_video_cancel_cleanup.sql
+INSERT INTO posts(id,user_id) VALUES('10000000-0000-0000-0000-000000000003','20000000-0000-0000-0000-000000000001');
+INSERT INTO post_attachments(id,post_id,file_url,storage_key,file_type,size_bytes) VALUES('30000000-0000-0000-0000-000000000003','10000000-0000-0000-0000-000000000003','source','videos/20000000-0000-0000-0000-000000000001/source.mov','video',3399337725);
+UPDATE post_attachments SET file_url='replacement' WHERE id='30000000-0000-0000-0000-000000000003';
+DO $$ BEGIN IF EXISTS(SELECT 1 FROM post_video_processing_jobs WHERE attachment_id='30000000-0000-0000-0000-000000000003' AND NOT cancelled) THEN RAISE EXCEPTION 'source replacement did not cancel'; END IF; END $$;
+UPDATE posts SET deleted_at=now() WHERE id='10000000-0000-0000-0000-000000000001';
+DO $$ BEGIN IF EXISTS(SELECT 1 FROM post_video_processing_jobs WHERE post_id='10000000-0000-0000-0000-000000000001' AND NOT cancelled) THEN RAISE EXCEPTION 'soft deletion did not cancel'; END IF; END $$;
 DELETE FROM posts;
 DO $$ BEGIN IF NOT (SELECT cancelled FROM post_video_processing_jobs LIMIT 1) THEN RAISE EXCEPTION 'deleted post did not tombstone job'; END IF; END $$;
+DO $$ DECLARE j uuid; lease uuid:=gen_random_uuid(); BEGIN
+ SELECT id INTO j FROM post_video_processing_jobs WHERE attachment_id='30000000-0000-0000-0000-000000000001';
+ IF claim_post_video_cleanup(j,lease) IS NULL THEN RAISE EXCEPTION 'cancelled cleanup cannot claim'; END IF;
+ IF claim_post_video_cleanup(j,gen_random_uuid()) IS NOT NULL THEN RAISE EXCEPTION 'cancelled cleanup double claim'; END IF;
+ IF advance_post_video_job(j,lease,'cancelled','{"phase":"publishing"}') IS NOT NULL THEN RAISE EXCEPTION 'cancelled post resurrected'; END IF;
+ IF advance_post_video_cleanup(j,gen_random_uuid(),'{"runtime":{"cleanupDone":true}}') IS NOT NULL THEN RAISE EXCEPTION 'stale cleanup advanced'; END IF;
+ IF advance_post_video_cleanup(j,lease,'{"runtime":{"cleanupDone":true}}') IS NULL THEN RAISE EXCEPTION 'cleanup did not advance'; END IF;
+ IF (SELECT phase FROM post_video_processing_jobs WHERE id=j)<>'cancelled' THEN RAISE EXCEPTION 'cleanup resurrected phase'; END IF;
+END $$;
 COMMIT;
 \echo 'post-video SQL integration passed'

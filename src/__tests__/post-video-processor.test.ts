@@ -30,3 +30,20 @@ describe('durable post video processor',()=>{
   expect(query.update).toHaveBeenCalledTimes(2);
  });
 });
+
+import { runCancelledPostVideoStep } from '../../supabase/functions/_shared/postVideoProcessor';
+describe('cancelled post cleanup',()=>{
+ it('never republishes a deleted post and aborts only its known multipart',async()=>{
+  const s=setup('cancelled');s.job.cancelled=true;s.job.runtime={uploadId:'known'};
+  const abort=vi.fn();await runCancelledPostVideoStep(s.job,{...s.ports,abortMultipart:abort});
+  expect(s.ports.publish).not.toHaveBeenCalled();expect(abort).toHaveBeenCalledTimes(1);expect(s.ports.deleteStream).toHaveBeenCalled();expect(s.job.runtime.cleanupDone).toBe(true);
+ });
+ it('does not mark cleanup complete if abort fails',async()=>{
+  const s=setup('cancelled');s.job.cancelled=true;s.job.runtime={uploadId:'known'};
+  await expect(runCancelledPostVideoStep(s.job,{...s.ports,abortMultipart:vi.fn().mockRejectedValue(new Error('R2 unavailable'))})).rejects.toThrow();expect(s.job.runtime.cleanupDone).not.toBe(true);
+ });
+ it('retains an ambiguous unregistered import for operator reconciliation',async()=>{
+  const s=setup('cancelled');s.job.cancelled=true;s.job.stream_uid=null;s.job.runtime={createStarted:true};
+  await runCancelledPostVideoStep(s.job,{...s.ports,abortMultipart:vi.fn()});expect(s.ports.deleteStream).not.toHaveBeenCalled();expect(s.job.runtime.cleanupDone).not.toBe(true);
+ });
+});

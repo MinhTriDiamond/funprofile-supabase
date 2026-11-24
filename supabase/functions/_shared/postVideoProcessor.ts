@@ -1,8 +1,8 @@
 import type { PostVideoPhase } from './postVideoPolicy.ts';
 import { postVideoStreamConfig, postVideoStreamRequest, startPostVideoImport, readPostVideoStorageUsage, readPostVideoExport, readPostVideoTusOffset, uploadPostVideoTusPart } from './postVideoStream.ts';
 import { readExportSize, videoPartRange } from './postVideoTransfer.ts';
-import { readPostVideoSource, verifyPostVideoSource, verifyPostVideoOutput, transferPostVideoPart, POST_VIDEO_PRIVATE_BUCKET } from './postVideoR2.ts';
-import { createMultipartUpload, completeMultipartUpload, type UploadedPart } from './r2MultipartService.ts';
+import { readPostVideoSource, verifyPostVideoSource, verifyPostVideoOutput, transferPostVideoPart, POST_VIDEO_PRIVATE_BUCKET, assertPrivateVideoDestination } from './postVideoR2.ts';
+import { createMultipartUpload, completeMultipartUpload, signedR2Request, type UploadedPart } from './r2MultipartService.ts';
 
 export interface DurablePostVideoJob {
  id:string; user_id:string; post_id:string; attachment_id:string; source_generation:string;
@@ -18,7 +18,7 @@ export interface PostVideoPorts {
  createImport():Promise<{uid:string;location:string}>; tusOffset():Promise<number>; tusPart(offset:number):Promise<number>;
  video():Promise<Record<string,any>|null>; requestExport():Promise<unknown>; readExport():Promise<{ready:boolean;url:string|null}>;
  exportSize(url:string):Promise<number>; createR2():Promise<{uploadId:string}>; transfer():Promise<UploadedPart>; completeR2():Promise<unknown>;
- verifyOutput():Promise<void>; publish():Promise<unknown>; unreferenced():Promise<boolean>; deleteStream():Promise<number>;
+ verifyOutput():Promise<void>; publish():Promise<unknown>; unreferenced():Promise<boolean>; deleteStream():Promise<number>; abortMultipart():Promise<void>;
 }
 const later = (seconds=30) => new Date(Date.now()+seconds*1000).toISOString();
 export async function runPostVideoStep(j:DurablePostVideoJob, c:PostVideoControl, p:PostVideoPorts) {
@@ -126,20 +126,26 @@ export async function hasPostVideoStreamReferences(admin:Admin, uid:string, jobI
  }
  return false;
 }
-export async function processPostVideoJob(admin:Admin,jobId:string) {
+export async function processPostVideoJob(admin:Admin,jobId:string,cancelledCleanup=false) {
  const lease=crypto.randomUUID();
- let j=await checked(admin.rpc('claim_post_video_job',{p_job_id:jobId,p_lease_token:lease,p_lease_seconds:180})) as DurablePostVideoJob|null;
+ let j=await checked(admin.rpc(cancelledCleanup?'claim_post_video_cleanup':'claim_post_video_job',{p_job_id:jobId,p_lease_token:lease,...(cancelledCleanup?{}:{p_lease_seconds:180})})) as DurablePostVideoJob|null;
  if(!j)return {phase:'busy' as const};
  const c=await checked(admin.from('post_video_processing_control').select('*').eq('id',true).single()) as PostVideoControl;
  const config=postVideoStreamConfig();
  const save=async(patch:Patch)=>{
-  const next=await checked(admin.rpc('advance_post_video_job',{p_job_id:jobId,p_lease_token:lease,p_expected_phase:j!.phase,p_patch:patch}));
+  if(cancelledCleanup)delete patch.phase;
+  const next=await checked(admin.rpc(cancelledCleanup?'advance_post_video_cleanup':'advance_post_video_job',{p_job_id:jobId,p_lease_token:lease,...(cancelledCleanup?{}:{p_expected_phase:j!.phase}),p_patch:patch}));
   if(!next)throw new Error('Lost job lease');
   j=next;return next;
  };
  const identity=()=>{if(!j!.stream_uid || j!.stream_account_id!==config.accountId)throw new Error('Stream account mismatch');return j!.stream_uid;};
  const ports:PostVideoPorts={
   save,
+  abortMultipart:async()=>{
+   assertPrivateVideoDestination(j!.output_bucket,j!.output_key);
+   const r=await signedR2Request({bucket:j!.output_bucket,key:j!.output_key,method:'DELETE',query:{uploadId:j!.runtime.uploadId!}});
+   await r.body?.cancel();if(!r.ok&&r.status!==404)throw new Error('Multipart abort failed');
+  },
   current:async()=>{
    const post=await checked(admin.from('posts').select('id,user_id,visibility,deleted_at').eq('id',j!.post_id).maybeSingle());
    const attachment=await checked(admin.from('post_attachments').select('file_url,storage_key,size_bytes').eq('id',j!.attachment_id).eq('post_id',j!.post_id).maybeSingle());
@@ -161,7 +167,7 @@ export async function processPostVideoJob(admin:Admin,jobId:string) {
   unreferenced:()=>hasPostVideoStreamReferences(admin,identity(),j!.id).then(found=>!found),
   deleteStream:async()=>{try{const r=await postVideoStreamRequest(`/${identity()}`,{method:'DELETE'});await r.body?.cancel();return r.status;}catch(e){if(e instanceof Error&&e.message==='Stream request failed (404)')return 404;throw e;}},
  };
- try {await runPostVideoStep(j,c,ports);} catch {
+ try {if(cancelledCleanup){if(c.delete_enabled||j.canary)await runCancelledPostVideoStep(j,ports);else await save({next_attempt_at:later(120),release_lease:true});}else await runPostVideoStep(j,c,ports);} catch {
   const attempts=j.attempts+1;
   await save({attempts,runtime:{...j.runtime,retryPhase:j.phase},phase:attempts>=5?'needs_review':j.phase,last_error:'Background operation failed; retry scheduled',next_attempt_at:later(Math.min(480,30*2**(attempts-1))),release_lease:true});
  }
@@ -173,4 +179,18 @@ export async function handlePostVideoWebhook(admin:Admin,video:{uid?:string}|nul
  if(!job)return false;
  await checked(admin.from('post_video_processing_jobs').update({next_attempt_at:new Date().toISOString()}).eq('id',job.id));
  return true;
+}
+
+export async function runCancelledPostVideoStep(j:DurablePostVideoJob,p:PostVideoPorts) {
+ if(!j.cancelled||j.phase!=='cancelled')throw new Error('Cleanup requires cancelled job');
+ const runtime={...j.runtime};
+ if(runtime.uploadId&&!runtime.multipartAborted){await p.abortMultipart();runtime.multipartAborted=true;await p.save({runtime});}
+ if(!j.stream_uid&&runtime.createStarted){return p.save({runtime,last_error:'Unregistered import requires reconciliation',next_attempt_at:later(86400),release_lease:true});}
+ if(j.stream_uid) {
+  const video=await p.video();
+  if(video&&(video.liveInput||video.creator!==`post-video:${j.id}`))return p.save({runtime,last_error:'Stream identity requires reconciliation',next_attempt_at:later(86400),release_lease:true});
+  if(!await p.unreferenced())return p.save({runtime,next_attempt_at:later(120),release_lease:true});
+  const status=await p.deleteStream();if(status!==404&&(status<200||status>=300))throw new Error('Cancelled VOD deletion failed');
+ }
+ return p.save({runtime:{...runtime,cleanupDone:true},stream_deleted_at:j.stream_uid?new Date().toISOString():null,last_error:null,release_lease:true});
 }
