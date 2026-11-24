@@ -1,0 +1,14 @@
+{
+  "multipart-upload": {
+    "supabase/functions/multipart-upload/index.ts": true,
+    "supabase/functions/_shared/mediaLimits.ts": true
+  },
+  "create-post": {
+    "supabase/functions/create-post/index.ts": true,
+    "supabase/functions/_shared/mediaLimits.ts": true
+  },
+  "get-upload-url": {
+    "supabase/functions/get-upload-url/index.ts": true,
+    "supabase/functions/_shared/mediaLimits.ts": true
+  }
+}
