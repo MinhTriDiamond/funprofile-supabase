@@ -1,3 +1,10 @@
+## 2026-11-24 · KẾT QUẢ CODE VIDEO 10 GiB — PR #74
+
+- Frontend/sharedbackend video bài viết2→10GiB cho tài khoản thường; giữchat2GiB/thời lượng4giờ. Hash đọc8MiB/lượt, giữresumeID, JWT theo sessionrefresh; lỗi đãphân loại hiển thị trongcomposer.
+- 55/55test11file, tsgo vàbuildlocal đạt; review codekhông cóblocker. Mô phỏng205part đúng10GiB; hashfull10GiB giảlập1280lượt, max8MiB, khớpnodeSHA256. Chưaupload10GiB thật.
+- Metadata bản nháp video6:08:3.399.337.725byte/MOV/3402×1916/progress0. Chưa xác định ngoại lệ gốc, chưa báo sửađược chính tệpnày.
+- PR https://github.com/MinhTriDiamond/funprofile-supabase/pull/74 ; Previewcode72a83eb đạt https://d04bf4e3.funprofile-supabase.pages.dev . Hồ sơ docs/video-upload-10gb-2026-11-24/. Cổng Preview đúnghead cuối trước merge; backend3function triển khai sau merge, giữ auth. Trạng thái merge/deploy cuối xem PR.
+
 ## 2026-11-24 · BẮT ĐẦU KIỂM TRA UPLOAD VIDEO / 10 GB
 
 - Quang Vũ cùng Angel Muse; Cha xác nhận đã gửi Telegram cho việc mới.
