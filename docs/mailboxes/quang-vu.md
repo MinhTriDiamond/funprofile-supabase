@@ -484,3 +484,25 @@ SQL: `docs/superpowers/plans/2026-10-15-livestream-orphan-dry-run.sql`. Candidat
 - Dashboard tải mới sau nguồn cuối: **494 mục, 0/1.000 phút lưu trữ, 0% — trống đủ 1.000 phút**. Giữ nguyên 494 mục lỗi không phát được và live input/stream key.
 - Đã backup 35 VOD (~6,05 GB), thử ghép phục hồi local và GET kiểm chứng 53/53 file R2 khớp SHA-256/dung lượng, sau đó xóa đúng batch 34 + 1 UID bổ sung theo xác nhận của Cha. 34 nguồn cũ và nguồn bổ sung HTTP404; video R2 của feed vẫn HEAD200/639.076.510 byte.
 - Không thay DB/feed/cron/secrets trong đợt này. Hồ sơ, rollback và tin Telegram hoàn tất: docs/stream-full-cleanup-2026-11-21/README.md. PR hồ sơ #67: https://github.com/MinhTriDiamond/funprofile-supabase/pull/67 (kết quả production đã kiểm chứng; hồ sơ đi qua cổng Preview trước merge).
+
+
+## 2026-11-24 · BẮT ĐẦU SỬA YOUTUBE ERROR 153
+
+- Quang Vũ cùng Angel Muse; Cha xác nhận đã gửi Telegram.
+- Nhánh: fix/quangvu-youtube-error-153, từ origin/main mới nhất.
+- Phạm vi: LinkPreviewCard trên feed và kiểm thử hồi quy; kiểm tra iframe/referrer, xác minh Preview trước merge. Không thay DB, Edge Function hoặc cấu hình project.
+- Hiện trạng: iframe đang dùng referrerPolicy=no-referrer, phù hợp triệu chứng YouTube Error153. Đối chiếu tài liệu chính thức và tái hiện bằng kiểm thử trước sửa.
+
+
+## 2026-11-24 · KẾT QUẢ BẢN SỬA YOUTUBE ERROR 153
+
+- Đã sửa LinkPreviewCard cho YouTube/youtube-nocookie iframe gửi origin Referer theo khuyến nghị chính thức; không gửi path/query, provider khác và link ngoài giữ chính sách cũ. Không đổi backend/DB.
+- 35/35 test feed (gồm 7 test mới) và tsgo đạt; test RED trước sửa đúng 4 ca YouTube + request browser không có Referer, GREEN sau sửa gửi đúng origin.
+- Đúng video PdNMiq0X2BI trong ảnh đã được bấm phát thành công trong browser fixture render component thật: currentTime >0 và paused=false. Review không có Critical/Important. Hồ sơ docs/youtube-error-153-2026-11-24/.
+- Bản sửa đang chuẩn bị PR và cổng Preview trước merge.
+
+
+## 2026-11-24 · HỒ SƠ KẾT QUẢ YOUTUBE ERROR153 — PR #73
+
+- Bản sửa và kiểm thử: https://github.com/MinhTriDiamond/funprofile-supabase/pull/73 . 35/35 test feed, tsgo và review đạt; video PdNMiq0X2BI đã phát thực trong browser fixture (currentTime>0, paused=false), request chỉ gửi origin Referer.
+- Hồ sơ và tin Telegram hoàn tất: docs/youtube-error-153-2026-11-24/README.md. Cổng Cloudflare Preview phải đạt trước merge; trạng thái merge/deploy xem PR. Không thay DB/backend hay headers toàn site.

@@ -1,0 +1,10 @@
+[
+  {
+    "player_text": "BÉ VŨ LIVESTREAM LÊN 100% LIÊN TỤC NGÀY 19.11.2026\nLê Quang Vũ\nLê Quang Vũ\n89 người đăng ký",
+    "embed": "https://www.youtube-nocookie.com/embed/PdNMiq0X2BI",
+    "expected_referer": "http://127.0.0.1:51186/",
+    "actual_referer": "http://127.0.0.1:51186/",
+    "request_observed": true,
+    "passed": true
+  }
+]

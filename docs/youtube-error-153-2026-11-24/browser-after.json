@@ -1,0 +1,16 @@
+[
+  {
+    "embed": "https://www.youtube-nocookie.com/embed/PdNMiq0X2BI",
+    "expected_referer": "http://127.0.0.1:51068/",
+    "actual_referer": "http://127.0.0.1:51068/",
+    "request_observed": true,
+    "passed": true
+  },
+  {
+    "embed": "https://player.vimeo.com/video/123",
+    "expected_referer": null,
+    "actual_referer": null,
+    "request_observed": true,
+    "passed": true
+  }
+]

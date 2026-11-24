@@ -1,0 +1,12 @@
+[
+  {
+    "playback_started": true,
+    "playback_error": null,
+    "embed": "https://www.youtube-nocookie.com/embed/PdNMiq0X2BI",
+    "expected_referer": "http://127.0.0.1:51300/",
+    "actual_referer": "http://127.0.0.1:51300/",
+    "request_observed": true,
+    "passed": true,
+    "player_title": "BÉ VŨ LIVESTREAM LÊN 100% LIÊN TỤC NGÀY 19.11.2026"
+  }
+]
