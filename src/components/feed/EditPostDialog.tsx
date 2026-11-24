@@ -1,3 +1,5 @@
+import { parsePostVideoLocator } from '@/utils/postVideoPlayback';
+import { OptimizedPostVideoPlayer } from '@/components/feed/OptimizedPostVideoPlayer';
 import { useState, useEffect } from 'react';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -379,11 +381,9 @@ export const EditPostDialog = ({ post, isOpen, onClose, onPostUpdated, currentUs
               {/* Show uploaded video preview */}
               {(videoPreview || uppyVideoResult) && !pendingVideoFile && (
                 <div className="relative">
-                  <video 
-                    src={uppyVideoResult?.url || videoPreview || ''} 
-                    controls 
-                    className="w-full rounded-lg" 
-                  />
+                  {parsePostVideoLocator(uppyVideoResult?.url || videoPreview || '') ? (
+                    <OptimizedPostVideoPlayer src={uppyVideoResult?.url || videoPreview || ''} className="w-full rounded-lg" />
+                  ) : <video src={uppyVideoResult?.url || videoPreview || ''} controls className="w-full rounded-lg" />}
                   <Button
                     type="button"
                     variant="destructive"

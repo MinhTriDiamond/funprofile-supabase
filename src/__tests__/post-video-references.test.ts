@@ -18,3 +18,14 @@ describe('processing asset references',()=>{
   expect(isPostVideoManagedStream({liveInput:'rtmp'})).toBe(false);
  });
 });
+
+import { hasPostVideoStreamReferences } from '../../supabase/functions/_shared/postVideoProcessor';
+it.each([['live_sessions','hls_url'],['live_sessions','playback_url'],['live_replays','playback_mp4']])('retains VOD referenced only by %s.%s',async(table,column)=>{
+ const uid='c'.repeat(32);
+ const admin={from:(name:string)=>({select:(columns:string)=>({range:async()=>({data:name===table?[Object.fromEntries(columns.split(',').map(k=>[k,k===column?`https://videodelivery.net/${uid}/manifest/video.m3u8`:null]))]:[],error:null})})})};
+ expect(await hasPostVideoStreamReferences(admin,uid,'job')).toBe(true);
+});
+it('does not change ordinary image deletion through the video retention guard',async()=>{
+ const refs=await collectPostVideoReferences(adminFor({post_attachments:[{storage_key:'posts/photo.jpg',file_url:'https://media.fun.rich/posts/photo.jpg',file_type:'image'}]}));
+ expect(refs.protectedR2Keys.has('posts/photo.jpg')).toBe(false);
+});

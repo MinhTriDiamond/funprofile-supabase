@@ -17,7 +17,7 @@ UPDATE public.post_video_processing_control SET enabled=true,publish_enabled=tru
 INSERT INTO posts(id,user_id,video_url,media_urls) VALUES('10000000-0000-0000-0000-000000000001','20000000-0000-0000-0000-000000000001','https://media.fun.rich/videos/source.mov','[{"url":"https://media.fun.rich/videos/source.mov","type":"video"},{"url":"other.jpg","type":"image"}]');
 INSERT INTO video_upload_sessions(user_id,r2_key,status,file_size,file_hash) VALUES('20000000-0000-0000-0000-000000000001','videos/20000000-0000-0000-0000-000000000001/source.mov','completed',3399337725,'abc');
 INSERT INTO post_attachments(id,post_id,file_url,storage_key,file_type,size_bytes) VALUES('30000000-0000-0000-0000-000000000001','10000000-0000-0000-0000-000000000001','https://media.fun.rich/videos/source.mov','videos/20000000-0000-0000-0000-000000000001/source.mov','video',3399337725);
-DO $$ DECLARE j uuid; claimed jsonb; lease uuid := gen_random_uuid(); bad uuid := gen_random_uuid(); result jsonb; BEGIN
+DO $$ DECLARE j uuid; claimed jsonb; lease uuid := gen_random_uuid(); bad uuid := gen_random_uuid(); result jsonb; post_updated timestamptz; BEGIN
  SELECT id INTO j FROM post_video_processing_jobs;
  IF j IS NULL OR (SELECT count(*) FROM post_video_processing_jobs)<>1 THEN RAISE EXCEPTION 'expected one persistent job'; END IF;
  UPDATE post_attachments SET mime_type='video/quicktime';
@@ -31,6 +31,12 @@ DO $$ DECLARE j uuid; claimed jsonb; lease uuid := gen_random_uuid(); bad uuid :
  IF NOT reserve_post_video_capacity(j,lease,'test-account',0,1000) THEN RAISE EXCEPTION 'available quota rejected'; END IF;
  result := advance_post_video_job(j,lease,'queued','{"phase":"publishing","output_key":"optimized/test.mp4","output_bucket":"fun-rich-video-optimized","output_size":100000,"output_verified_at":"2026-11-25T00:00:00Z"}');
  IF result IS NULL THEN RAISE EXCEPTION 'advance failed'; END IF;
+ UPDATE post_video_processing_jobs SET lease_until=NULL WHERE id=j;
+ IF publish_post_video_output(j,lease) IS NOT NULL THEN RAISE EXCEPTION 'released lease published'; END IF;
+ UPDATE post_video_processing_jobs SET lease_until=clock_timestamp()+interval '180 seconds' WHERE id=j;
+ SELECT updated_at INTO post_updated FROM posts LIMIT 1;
+ PERFORM advance_post_video_job(j,lease,'publishing','{"runtime":{"checkpoint":1}}');
+ IF (SELECT updated_at FROM posts LIMIT 1) IS DISTINCT FROM post_updated THEN RAISE EXCEPTION 'internal checkpoint rewrote feed post'; END IF;
  UPDATE post_video_processing_jobs SET output_bucket='public-bucket' WHERE id=j;
  IF publish_post_video_output(j,lease) IS NOT NULL THEN RAISE EXCEPTION 'published to a public output bucket'; END IF;
  UPDATE post_video_processing_jobs SET output_bucket='fun-rich-video-optimized' WHERE id=j;
@@ -58,6 +64,7 @@ SET LOCAL ROLE authenticated;
 SELECT set_config('request.jwt.claim.sub','20000000-0000-0000-0000-000000000002',true);
 DO $$ BEGIN
  IF (SELECT count(*) FROM post_video_processing_jobs)<>0 THEN RAISE EXCEPTION 'RLS disclosed another owner'; END IF;
+ BEGIN PERFORM runtime FROM post_video_processing_jobs; RAISE EXCEPTION 'owner can select backend upload capability'; EXCEPTION WHEN insufficient_privilege THEN NULL; END;
  IF has_function_privilege(current_user,'public.claim_post_video_job(uuid,uuid,integer)','EXECUTE') THEN RAISE EXCEPTION 'client can claim jobs'; END IF;
  BEGIN INSERT INTO post_video_processing_jobs(user_id,post_id,attachment_id,source_key,source_url,source_size,source_hash) VALUES(auth.uid(),gen_random_uuid(),gen_random_uuid(),'x','x',1,'x'); RAISE EXCEPTION 'client inserted job'; EXCEPTION WHEN insufficient_privilege THEN NULL; END;
 END $$;
@@ -76,6 +83,19 @@ SELECT set_config('request.jwt.claim.sub','20000000-0000-0000-0000-000000000001'
 DO $$ BEGIN IF NOT request_post_video_retry('30000000-0000-0000-0000-000000000001') THEN RAISE EXCEPTION 'owner cannot retry safe operation'; END IF; END $$;
 RESET ROLE;
 \ir ../../supabase/migrations/20261125030000_post_video_cancel_cleanup.sql
+\ir ../../supabase/migrations/20261125040000_post_video_edit_consistency.sql
+INSERT INTO posts(id,user_id,video_url,media_urls) VALUES('10000000-0000-0000-0000-000000000004','20000000-0000-0000-0000-000000000001','source','[{"url":"source","type":"video"},{"url":"image.jpg","type":"image"}]');
+INSERT INTO post_attachments(id,post_id,file_url,storage_key,file_type,size_bytes) VALUES('30000000-0000-0000-0000-000000000004','10000000-0000-0000-0000-000000000004','source','videos/20000000-0000-0000-0000-000000000001/source.mov','video',3399337725);
+INSERT INTO video_upload_sessions(user_id,r2_key,status,file_size,file_hash) VALUES('20000000-0000-0000-0000-000000000001','videos/20000000-0000-0000-0000-000000000001/new.mov','completed',50,'new-hash');
+UPDATE posts SET video_url='https://media.fun.rich/videos/20000000-0000-0000-0000-000000000001/new.mov' WHERE id='10000000-0000-0000-0000-000000000004';
+DO $$ BEGIN
+ IF EXISTS(SELECT 1 FROM post_video_processing_jobs WHERE attachment_id='30000000-0000-0000-0000-000000000004' AND source_url='source' AND NOT cancelled) THEN RAISE EXCEPTION 'primary edit did not cancel stale job'; END IF;
+ IF (SELECT file_url FROM post_attachments WHERE id='30000000-0000-0000-0000-000000000004')<>'https://media.fun.rich/videos/20000000-0000-0000-0000-000000000001/new.mov' THEN RAISE EXCEPTION 'primary edit left stale attachment'; END IF;
+ IF (SELECT media_urls->0->>'url' FROM posts WHERE id='10000000-0000-0000-0000-000000000004')<>'https://media.fun.rich/videos/20000000-0000-0000-0000-000000000001/new.mov' THEN RAISE EXCEPTION 'primary edit left stale feed media'; END IF;
+ IF (SELECT count(*) FROM post_video_processing_jobs WHERE attachment_id='30000000-0000-0000-0000-000000000004' AND NOT cancelled AND source_size=50)<>1 THEN RAISE EXCEPTION 'primary replacement did not enqueue exact new source'; END IF;
+END $$;
+UPDATE posts SET visibility='private' WHERE id='10000000-0000-0000-0000-000000000004';
+DO $$ BEGIN IF EXISTS(SELECT 1 FROM post_video_processing_jobs WHERE post_id='10000000-0000-0000-0000-000000000004' AND NOT cancelled) THEN RAISE EXCEPTION 'private transition left an importing job active'; END IF; END $$;
 INSERT INTO posts(id,user_id) VALUES('10000000-0000-0000-0000-000000000003','20000000-0000-0000-0000-000000000001');
 INSERT INTO post_attachments(id,post_id,file_url,storage_key,file_type,size_bytes) VALUES('30000000-0000-0000-0000-000000000003','10000000-0000-0000-0000-000000000003','source','videos/20000000-0000-0000-0000-000000000001/source.mov','video',3399337725);
 UPDATE post_attachments SET file_url='replacement' WHERE id='30000000-0000-0000-0000-000000000003';

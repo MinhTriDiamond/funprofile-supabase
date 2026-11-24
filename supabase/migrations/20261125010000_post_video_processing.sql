@@ -27,6 +27,7 @@ CREATE TABLE public.post_video_processing_jobs (
   source_hash text NOT NULL,
   phase text NOT NULL DEFAULT 'queued' CHECK (phase IN ('queued','waiting_capacity','importing','encoding','mp4_wait','r2_init','r2_upload','r2_verify','publishing','stream_delete_pending','complete','failed','cancelled','needs_review','not_beneficial')),
   canary boolean NOT NULL DEFAULT false,
+  delete_approved boolean NOT NULL DEFAULT false,
   cancelled boolean NOT NULL DEFAULT false,
   stream_account_id text,
   stream_uid text,
@@ -51,12 +52,14 @@ CREATE TABLE public.post_video_processing_jobs (
   updated_at timestamptz NOT NULL DEFAULT now(),
   UNIQUE(attachment_id,source_key,source_size,source_hash)
 );
-GRANT SELECT,INSERT,UPDATE,DELETE ON public.post_video_processing_jobs TO authenticated;
+GRANT INSERT,UPDATE,DELETE ON public.post_video_processing_jobs TO authenticated;
+GRANT SELECT(id,post_id,attachment_id,phase,outcome,created_at,updated_at) ON public.post_video_processing_jobs TO authenticated;
 GRANT ALL ON public.post_video_processing_jobs TO service_role;
 ALTER TABLE public.post_video_processing_jobs ENABLE ROW LEVEL SECURITY;
 CREATE POLICY post_video_owner_status ON public.post_video_processing_jobs FOR SELECT TO authenticated USING(user_id=auth.uid());
 CREATE INDEX post_video_jobs_due ON public.post_video_processing_jobs(next_attempt_at) WHERE phase NOT IN ('complete','failed','cancelled','needs_review');
 CREATE UNIQUE INDEX post_video_jobs_stream_uid ON public.post_video_processing_jobs(stream_account_id,stream_uid) WHERE stream_uid IS NOT NULL;
+CREATE INDEX post_video_jobs_source_key ON public.post_video_processing_jobs(source_key);
 CREATE INDEX post_video_jobs_post ON public.post_video_processing_jobs(post_id);
 
 CREATE FUNCTION public.enqueue_post_video_job() RETURNS trigger
@@ -111,7 +114,7 @@ END $$;
 
 CREATE FUNCTION public.advance_post_video_job(p_job_id uuid,p_lease_token uuid,p_expected_phase text,p_patch jsonb) RETURNS jsonb
 LANGUAGE plpgsql SECURITY DEFINER SET search_path=public AS $$
-DECLARE j post_video_processing_jobs;
+DECLARE j post_video_processing_jobs; presentation jsonb;
 BEGIN
   IF p_patch-ARRAY['phase','runtime','next_attempt_at','attempts','stream_uid','stream_account_id','output_bucket','output_key','output_size','output_verified_at','published_at','stream_deleted_at','last_error','outcome','release_lease'] <> '{}'::jsonb THEN RAISE EXCEPTION 'Unsupported job patch'; END IF;
   UPDATE post_video_processing_jobs SET
@@ -134,9 +137,11 @@ BEGIN
   WHERE id=p_job_id AND lease_token=p_lease_token AND lease_until>clock_timestamp() AND phase=p_expected_phase AND NOT cancelled
   RETURNING * INTO j;
   IF j.id IS NULL THEN RETURN NULL; END IF;
+  presentation:=jsonb_build_object('phase',CASE WHEN j.published_at IS NOT NULL THEN 'ready' ELSE j.phase END,'outcome',j.outcome,'retryable',coalesce(j.phase='needs_review' AND j.runtime->>'retryPhase' IN ('encoding','mp4_wait','r2_upload','r2_verify','publishing','stream_delete_pending'),false));
   UPDATE posts SET metadata=jsonb_set(coalesce(metadata,'{}'),'{video_processing_by_attachment}',
-    coalesce(metadata->'video_processing_by_attachment','{}')||jsonb_build_object(j.attachment_id::text,jsonb_build_object('phase',CASE WHEN j.published_at IS NOT NULL THEN 'ready' ELSE j.phase END,'outcome',j.outcome,'retryable',j.phase='needs_review' AND j.runtime->>'retryPhase' IN ('encoding','mp4_wait','r2_upload','r2_verify','publishing','stream_delete_pending')))),updated_at=clock_timestamp()
-    WHERE id=j.post_id AND EXISTS(SELECT 1 FROM post_attachments WHERE id=j.attachment_id AND post_id=j.post_id AND (file_url=j.source_url OR file_url=j.gateway_url));
+    coalesce(metadata->'video_processing_by_attachment','{}')||jsonb_build_object(j.attachment_id::text,presentation)),updated_at=clock_timestamp()
+    WHERE id=j.post_id AND (metadata->'video_processing_by_attachment'->j.attachment_id::text) IS DISTINCT FROM presentation
+    AND EXISTS(SELECT 1 FROM post_attachments WHERE id=j.attachment_id AND post_id=j.post_id AND (file_url=j.source_url OR file_url=j.gateway_url));
   RETURN to_jsonb(j);
 END $$;
 
@@ -160,7 +165,7 @@ LANGUAGE plpgsql SECURITY DEFINER SET search_path=public AS $$
 DECLARE j post_video_processing_jobs; a post_attachments; p posts; base text; new_url text;
 BEGIN
   SELECT * INTO j FROM post_video_processing_jobs WHERE id=p_job_id FOR UPDATE;
-  IF j.id IS NULL OR j.cancelled OR j.lease_token IS DISTINCT FROM p_lease_token OR j.lease_until<=clock_timestamp() THEN RETURN NULL; END IF;
+  IF j.id IS NULL OR j.cancelled OR j.lease_token IS DISTINCT FROM p_lease_token OR j.lease_until IS NULL OR j.lease_until<=clock_timestamp() THEN RETURN NULL; END IF;
   SELECT * INTO p FROM posts WHERE id=j.post_id FOR UPDATE;
   SELECT * INTO a FROM post_attachments WHERE id=j.attachment_id AND post_id=j.post_id FOR UPDATE;
   IF p.id IS NULL OR p.deleted_at IS NOT NULL OR a.id IS NULL OR p.user_id<>j.user_id THEN RETURN NULL; END IF;

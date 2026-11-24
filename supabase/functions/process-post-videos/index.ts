@@ -1,5 +1,6 @@
+import { probePostVideoInfrastructure } from '../_shared/postVideoInfrastructure.ts';
 import { corsHeaders, json, requireUser, createAdminClient, HttpError } from '../_shared/httpAuth.ts';
-import { processPostVideoJob } from '../_shared/postVideoProcessor.ts';
+import { processPostVideoJob, inspectPostVideoCleanup } from '../_shared/postVideoProcessor.ts';
 
 function matchesSecret(actual:string|null,expected:string|undefined) {
  if(!actual||!expected||actual.length!==expected.length)return false;
@@ -18,8 +19,10 @@ Deno.serve(async(req:Request)=>{
    if(error||data!==true)return json({error:'Admin required'},403);
   }
   const body=await req.json();
-  if(!['tick','retry','dry-run'].includes(body.action))return json({error:'Invalid action'},400);
+  if(!['tick','retry','dry-run','probe-infra'].includes(body.action))return json({error:'Invalid action'},400);
   if(body.jobId!==undefined&&(typeof body.jobId!=='string'||!/^[a-f0-9-]{36}$/.test(body.jobId)))return json({error:'Invalid jobId'},400);
+  if(body.action==='probe-infra')return json({probe:await probePostVideoInfrastructure()});
+  if(body.action==='dry-run'&&body.jobId)return json({inspection:await inspectPostVideoCleanup(admin,body.jobId)});
   // Retry only wakes an eligible state; ambiguous side effects require operator reconciliation.
   if(body.action==='retry') {
    if(cron)return json({error:'Admin JWT required for retry'},403);
@@ -33,7 +36,9 @@ Deno.serve(async(req:Request)=>{
   let {data:jobs,error}=await query;if(error)throw error;
   let cleanup=false;
   if(!jobs?.length){
-   const result=await (admin as any).from('post_video_processing_jobs').select('id,phase,next_attempt_at').eq('cancelled',true).eq('phase','cancelled').not('runtime','cs','{"cleanupDone":true}').lte('next_attempt_at',new Date().toISOString()).order('next_attempt_at').limit(1);
+   let cleanupQuery=(admin as any).from('post_video_processing_jobs').select('id,phase,next_attempt_at').eq('cancelled',true).eq('phase','cancelled').not('runtime','cs','{"cleanupDone":true}').lte('next_attempt_at',new Date().toISOString()).order('next_attempt_at').limit(1);
+   if(body.jobId)cleanupQuery=cleanupQuery.eq('id',body.jobId);
+   const result=await cleanupQuery;
    if(result.error)throw result.error;jobs=result.data;cleanup=true;
   }
   if(body.action==='dry-run')return json({jobs:jobs||[]});

@@ -148,8 +148,8 @@ Deno.serve(async (req) => {
       throw new Error('Missing Cloudflare R2 configuration');
     }
 
-    const processingRefs = await collectPostVideoReferences(createAdminClient());
-    if (processingRefs.protectedR2Keys.has(key)) return new Response(JSON.stringify({ error: 'Video is protected by a processing or durable-media record' }),
+    const processingRefs = /^(videos|optimized)\//.test(key) ? await collectPostVideoReferences(createAdminClient()) : null;
+    if (processingRefs?.protectedR2Keys.has(key)) return new Response(JSON.stringify({ error: 'Video is protected by a processing or durable-media record' }),
       { status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     // Delete from R2
     const endpoint = `https://${CLOUDFLARE_ACCOUNT_ID}.r2.cloudflarestorage.com/${CLOUDFLARE_R2_BUCKET_NAME}/${key}`;

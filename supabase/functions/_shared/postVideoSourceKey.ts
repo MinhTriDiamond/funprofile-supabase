@@ -21,3 +21,11 @@ export function isOwnedPostVideoKey(key: string, userId: string): boolean {
   try { return makeOwnedPostVideoKey(userId, key.slice(prefix.length)) === key; }
   catch { return false; }
 }
+
+/** Once referenced by a job, an original is immutable through upload APIs. */
+export async function isPostVideoSourceLocked(admin:any,key:string):Promise<boolean> {
+ if(!hasOwnedPostVideoPrefix(key)&&!/^videos\/[^/]+$/.test(key))return false;
+ const {data,error}=await admin.from('post_video_processing_jobs').select('id').eq('source_key',key).limit(1);
+ if(error||!Array.isArray(data))throw new Error('Cannot verify video source version lock');
+ return data.length>0;
+}

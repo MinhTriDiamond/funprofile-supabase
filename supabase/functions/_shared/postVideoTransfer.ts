@@ -7,12 +7,25 @@ export function videoPartRange(total: number, partNumber: number) {
   return { start, end, length: end - start + 1 };
 }
 
+export function videoOffsetRange(total:number,offset:number) {
+ if(!Number.isSafeInteger(total)||total<=0||!Number.isSafeInteger(offset)||offset<0||offset>=total)throw new Error('Invalid TUS source offset');
+ const end=Math.min(total-1,offset+POST_VIDEO_PART_BYTES-1);return {start:offset,end,length:end-offset+1};
+}
+
 export function validateExportUrl(url: string, uid?: string): URL {
   const u = new URL(url);
   if (u.protocol !== 'https:' || u.username || u.password || u.port ||
-    !/^(customer-[a-z0-9-]+\.cloudflarestream\.com|videodelivery\.net)$/.test(u.hostname) ||
-    !/^\/[a-f0-9]{32}\/downloads\/default\.mp4$/.test(u.pathname) ||
-    (uid && u.pathname !== `/${uid}/downloads/default.mp4`)) throw new Error('Untrusted export URL');
+    !/^(customer-[a-z0-9-]+\.cloudflarestream\.com|videodelivery\.net)$/.test(u.hostname)) throw new Error('Untrusted export URL');
+  const match=/^\/([A-Za-z0-9_.-]+)\/downloads\/default\.mp4$/.exec(u.pathname);
+  if(!match)throw new Error('Untrusted export path');
+  const identity=match[1];
+  if(/^[a-f0-9]{32}$/.test(identity)) {
+    if(uid&&identity!==uid)throw new Error('Export UID mismatch');
+  }else {
+    const parts=identity.split('.');if(parts.length!==3)throw new Error('Invalid signed export');
+    let claims;try{claims=JSON.parse(atob(parts[1].replaceAll('-','+').replaceAll('_','/')));}catch{throw new Error('Invalid export claims');}
+    if(!/^[a-f0-9]{32}$/.test(claims.sub)||(uid&&claims.sub!==uid)||claims.downloadable!==true||!Number.isFinite(claims.exp)||claims.exp<=Date.now()/1000)throw new Error('Invalid export claims');
+  }
   return u;
 }
 

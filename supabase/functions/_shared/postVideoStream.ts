@@ -27,6 +27,7 @@ export async function readPostVideoStorageUsage() {
   return parsePostVideoUsage(data.result);
 }
 export function parsePostVideoExport(value: { default?: { status?: string; url?: string } }, uid: string) {
+  if (value.default?.status === 'error') throw new Error('Stream export failed');
   if (value.default?.status !== 'ready') return { ready: false, url: null, size: null };
   const url = value.default.url;
   if (!url) throw new Error('Missing ready export URL');
@@ -45,10 +46,10 @@ export async function startPostVideoImport(job: { id: string; attachment_id: str
   // Duration bound must be sent on CREATE; response fields do not establish a hard cap.
   const r = await postVideoStreamRequest('?direct_user=true'.replace(/^/, '/'), { method: 'POST', headers: {
     'Tus-Resumable': '1.0.0', 'Upload-Length': String(job.source_size), 'Upload-Creator': `post-video:${job.id}`,
-    'Upload-Metadata': `maxDurationSeconds ${btoa('14400')},name ${btoa(`post-video-${job.id}`)}`,
+    'Upload-Metadata': `maxDurationSeconds ${btoa('14400')},name ${btoa(`post-video-${job.id}`)},requiresignedurls,expiry ${btoa(new Date(Date.now()+6*60*60*1000).toISOString())}`,
   } }, config);
   const location = r.headers.get('location');
-  const uid = r.headers.get('stream-media-id') || location?.match(/\/([a-f0-9]{32})(?:\?|$)/)?.[1];
+  const uid = r.headers.get('stream-media-id');
   if (!location || !uid) throw new Error('TUS creation missing identity');
   assertStreamUid(uid);
   validateTusLocation(location, config.accountId, uid);
@@ -57,7 +58,7 @@ export async function startPostVideoImport(job: { id: string; attachment_id: str
 export function validateTusLocation(url: string, account: string, uid: string) {
   const u = new URL(url); assertStreamUid(uid);
   const api = u.hostname === 'api.cloudflare.com' && u.pathname === `/client/v4/accounts/${account}/stream/${uid}`;
-  const upload = /^(upload\.videodelivery\.net|upload\.cloudflarestream\.com)$/.test(u.hostname) && u.pathname === `/${uid}`;
+  const upload = /^(upload\.videodelivery\.net|upload\.cloudflarestream\.com)$/.test(u.hostname) && u.pathname.length>1 && url.length<=2048 && !u.hash;
   if (u.protocol !== 'https:' || u.username || u.password || u.port || (!api && !upload)) throw new Error('Untrusted TUS endpoint');
   return u;
 }
@@ -79,4 +80,13 @@ export async function uploadPostVideoTusPart(location: string, uid: string, offs
   if (!r.ok || r.headers.get('upload-offset') !== String(offset + bytes.length)) throw new Error('TUS part not acknowledged');
   await r.body?.cancel();
   return offset + bytes.length;
+}
+
+/** Private MP4 token lives only for this backend operation, never in persisted runtime or UI. */
+export async function authorizePostVideoExport(uid:string,baseUrl:string) {
+ assertStreamUid(uid);const url=validateExportUrl(baseUrl,uid);
+ const data=await(await postVideoStreamRequest(`/${uid}/token`,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({exp:Math.floor(Date.now()/1000)+600,downloadable:true})})).json();
+ const token=data.result?.token;
+ if(!data.success||typeof token!=='string'||token.split('.').length!==3)throw new Error('Private export authorization failed');
+ url.pathname=`/${token}/downloads/default.mp4`;validateExportUrl(url.href,uid);return url.href;
 }

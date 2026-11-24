@@ -49,3 +49,7 @@ it('limits chunked authorization bodies before buffering the full request',async
  await expect(readPostVideoJson(new Request('https://example.test',{method:'POST',body,duplex:'half'} as RequestInit))).rejects.toThrow('too large');
  expect(chunks).toBeLessThan(10);
 });
+it('clears a previous viewer permit without exposing it when the client loses access',async()=>{
+ const result=await worker.fetch(new Request('https://fun.rich/media-optimized/30000000-0000-0000-0000-000000000001/40000000-0000-0000-0000-000000000001.mp4',{method:'DELETE',headers:{origin:'https://fun.rich'}}),{} as any);
+ expect(result.status).toBe(204);expect(result.headers.get('set-cookie')).toContain('Max-Age=0');
+});

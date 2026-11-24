@@ -17,3 +17,9 @@ describe('owner scoped video sources', () => {
    expect(hasOwnedPostVideoPrefix(`videos/${other}/x.mp4`)).toBe(true);
  });
 });
+
+import { isPostVideoSourceLocked } from '../../supabase/functions/_shared/postVideoSourceKey';
+it('refuses overwriting an original pinned by a job even after completion',async()=>{
+ const query:any={select:()=>query,eq:()=>query,limit:async()=>({data:[{id:'job'}],error:null})};
+ expect(await isPostVideoSourceLocked({from:()=>query},`videos/${me}/source.mov`)).toBe(true);
+});

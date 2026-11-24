@@ -1,5 +1,6 @@
+import { runPostVideoCron, type PostVideoCronEnv } from './cron';
 import { signVideoMac, readPostVideoJson } from '../../../supabase/functions/_shared/postVideoRead';
-interface Env {
+interface Env extends PostVideoCronEnv {
  POST_VIDEO_OUTPUT_BUCKET:{get(key:string,options?:{range?:{offset:number;length:number}}):Promise<{body:ReadableStream<Uint8Array>;size:number;httpEtag:string}|null>};
  POST_VIDEO_GATEWAY_SECRET:string; POST_VIDEO_AUTH_URL:string;
  fetch?:typeof fetch; // Local harness only; Workers bindings never provide a fetch override.
@@ -16,14 +17,16 @@ function parseRange(value:string|null,size:number) {
  return {start,end,length:end-start+1};
 }
 export default {
+ scheduled(_event:unknown,env:Env,context:{waitUntil(promise:Promise<unknown>):void}) { context.waitUntil(runPostVideoCron(env)); },
  async fetch(request:Request,env:Env):Promise<Response> {
   const u=new URL(request.url), origin=request.headers.get('origin');
   const cors=allowedOrigin(origin)?{'Access-Control-Allow-Origin':origin!,'Access-Control-Allow-Credentials':'true','Vary':'Origin'}:{};
   const headers:Record<string,string>={...cors,'Cache-Control':'private, no-store','Referrer-Policy':'no-referrer','X-Content-Type-Options':'nosniff'};
   const respond=(status:number,message='')=>new Response(message||null,{status,headers});
-  if(request.method==='OPTIONS')return new Response(null,{status:204,headers:{...headers,'Access-Control-Allow-Methods':'POST, GET, HEAD, OPTIONS','Access-Control-Allow-Headers':'content-type,range'}});
+  if(request.method==='OPTIONS')return new Response(null,{status:204,headers:{...headers,'Access-Control-Allow-Methods':'POST, GET, HEAD, DELETE, OPTIONS','Access-Control-Allow-Headers':'content-type,range'}});
   const m=/^\/media-optimized\/([a-f0-9-]{36})\/([a-f0-9-]{36})\.mp4$/.exec(u.pathname);
   if(!m)return respond(404);
+  if(request.method==='DELETE'){if(!allowedOrigin(origin))return respond(403);return new Response(null,{status:204,headers:{...headers,'Set-Cookie':`post_video_permit=; Path=${u.pathname}; Max-Age=0; Secure; HttpOnly; SameSite=None`}});}
   if(!['GET','HEAD','POST'].includes(request.method))return respond(405);
   try {
    let permit:string|undefined;
@@ -55,6 +58,11 @@ export default {
    if(request.method==='HEAD'){await object.body.cancel();return new Response(null,{status:range?206:200,headers});}
    let transferred=0;
    const bounded=object.body.pipeThrough(new TransformStream<Uint8Array,Uint8Array>({transform(chunk,controller){transferred+=chunk.length;if(transferred>length)throw new Error('R2 body exceeds expected size');controller.enqueue(chunk);},flush(){if(transferred!==length)throw new Error('R2 body truncated');}}));
+   const FixedLength=(globalThis as unknown as {FixedLengthStream?:new(length:number)=>TransformStream<Uint8Array,Uint8Array>}).FixedLengthStream;
+   if(FixedLength){
+    const fixed=new FixedLength(length);void bounded.pipeTo(fixed.writable).catch(()=>{});
+    return new Response(fixed.readable,{status:range?206:200,headers});
+   }
    return new Response(bounded,{status:range?206:200,headers});
   }catch{return respond(503);}
  }

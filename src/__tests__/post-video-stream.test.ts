@@ -18,5 +18,14 @@ describe('temporary Stream adapter',()=>{
    const headers=new Headers(fetcher.mock.calls[0][1].headers);
    expect(headers.get('upload-length')).toBe('123');
    expect(headers.get('upload-metadata')).toContain('maxDurationSeconds '+btoa('14400'));
+   expect(headers.get('upload-metadata')).toContain('requiresignedurls');
  });
+});
+
+it('accepts opaque provider TUS paths using the official UID header',async()=>{
+ vi.stubGlobal('fetch',vi.fn().mockResolvedValue(new Response(null,{status:201,headers:{location:'https://upload.videodelivery.net/tus/opaque/upload?key=a','stream-media-id':uid}})));
+ expect((await startPostVideoImport({id:'job',attachment_id:'attachment',source_size:123},{accountId:account,token:'test'})).uid).toBe(uid);
+});
+it('treats terminal export errors as bounded failures instead of endless progress',()=>{
+ expect(()=>parsePostVideoExport({default:{status:'error'}},uid)).toThrow();
 });

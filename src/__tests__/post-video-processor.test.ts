@@ -7,7 +7,7 @@ function setup(phase:string) {
  const ports:any={current:vi.fn().mockResolvedValue({public:true,unchanged:true,exists:true}),
  save:vi.fn().mockImplementation(async(p:any)=>Object.assign(job,p)), verifySource:vi.fn().mockResolvedValue(undefined), reserve:vi.fn().mockResolvedValue(true),
  createImport:vi.fn().mockResolvedValue({uid,location:'location'}), tusOffset:vi.fn().mockResolvedValue(1000), tusPart:vi.fn(),
- video:vi.fn().mockResolvedValue({uid,creator:'post-video:job',liveInput:null,status:{state:'ready',pctComplete:100}}), requestExport:vi.fn(),
+ video:vi.fn().mockResolvedValue({uid,creator:'post-video:job',requireSignedURLs:true,liveInput:null,status:{state:'ready',pctComplete:100}}), requestExport:vi.fn(),
  readExport:vi.fn().mockResolvedValue({ready:false}), exportSize:vi.fn().mockResolvedValue(500), createR2:vi.fn(), transfer:vi.fn(), completeR2:vi.fn(),
  verifyOutput:vi.fn(),publish:vi.fn().mockResolvedValue({...job,phase:'stream_delete_pending'}), unreferenced:vi.fn().mockResolvedValue(true), deleteStream:vi.fn().mockResolvedValue(204)};
  return {job,ports,control:{enabled:true,import_enabled:true,publish_enabled:true,delete_enabled:true,output_bucket:'fun-rich-video-optimized'}};
@@ -46,4 +46,35 @@ describe('cancelled post cleanup',()=>{
   const s=setup('cancelled');s.job.cancelled=true;s.job.stream_uid=null;s.job.runtime={createStarted:true};
   await runCancelledPostVideoStep(s.job,{...s.ports,abortMultipart:vi.fn()});expect(s.ports.deleteStream).not.toHaveBeenCalled();expect(s.job.runtime.cleanupDone).not.toBe(true);
  });
+});
+
+describe('review regressions',()=>{
+ it('exports only when readyToStream and string completion both confirm full encoding',async()=>{
+  const s=setup('encoding');s.ports.video.mockResolvedValue({creator:'post-video:job',readyToStream:true,status:{state:'ready',pctComplete:'100.000000'}});
+  await runPostVideoStep(s.job,s.control,s.ports);expect(s.ports.requestExport).toHaveBeenCalledTimes(1);
+ });
+ it('waits if ready state lacks readyToStream confirmation',async()=>{
+  const s=setup('encoding');s.ports.video.mockResolvedValue({creator:'post-video:job',readyToStream:false,status:{state:'ready',pctComplete:100}});
+  await runPostVideoStep(s.job,s.control,s.ports);expect(s.ports.requestExport).not.toHaveBeenCalled();
+ });
+ it('never bypasses the delete switch for a canary',async()=>{
+  const s=setup('stream_delete_pending');s.job.canary=true;s.job.published_at='now';s.control.delete_enabled=false;
+  await runPostVideoStep(s.job,s.control,s.ports);expect(s.ports.deleteStream).not.toHaveBeenCalled();
+ });
+});
+it('rechecks admission immediately before creating a Stream upload',async()=>{
+ const s=setup('importing');s.job.stream_uid=null;s.job.runtime={createStarted:false};s.ports.reserve.mockResolvedValue(false);
+ await runPostVideoStep(s.job,s.control,s.ports);expect(s.ports.reserve).toHaveBeenCalled();expect(s.ports.createImport).not.toHaveBeenCalled();
+});
+it('requires per-job approval before canary DELETE even when cleanup is globally enabled',async()=>{
+ const s=setup('stream_delete_pending');s.job.canary=true;s.job.published_at='now';s.job.delete_approved=false;
+ await runPostVideoStep(s.job,s.control,s.ports);expect(s.ports.deleteStream).not.toHaveBeenCalled();
+});
+it('never uploads source bytes to a provisioned Stream video unless private mode is confirmed',async()=>{
+ const s=setup('importing');s.ports.tusOffset.mockResolvedValue(0);s.ports.video.mockResolvedValue({creator:'post-video:job',requireSignedURLs:false});
+ await runPostVideoStep(s.job,s.control,s.ports);expect(s.ports.tusPart).not.toHaveBeenCalled();expect(s.job.phase).toBe('needs_review');
+});
+it('resumes from a partially accepted TUS PATCH without restarting the upload',async()=>{
+ const s=setup('importing');s.job.source_size=40*1024*1024;s.job.runtime={privateVerified:true};s.ports.tusOffset.mockResolvedValue(1024*1024);s.ports.tusPart.mockResolvedValue(17*1024*1024);
+ await runPostVideoStep(s.job,s.control,s.ports);expect(s.ports.tusPart).toHaveBeenCalledWith(1024*1024);expect(s.job.runtime.tusOffset).toBe(17*1024*1024);
 });

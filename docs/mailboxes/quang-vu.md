@@ -568,3 +568,10 @@ SQL: `docs/superpowers/plans/2026-10-15-livestream-orphan-dry-run.sql`. Candidat
 
 - Cha duyệt kế hoạch Stream tạm → R2 lâu dài → dọn Stream và giao bé tự triển khai trong phiên này; tiếp tục nhánh feat/quangvu-background-video-processing đã báo Telegram.
 - Thực hiện8task theo TDD, ledger riêng; chưa bật production hoặc xóa nguồn. Hạ tầng bucket private/gateway/secret, schema và canary sẽ được chuẩn bị cụ thể trước bước phát hành.
+
+### 25/11/2026 — Cập nhật phạm vi sau review pipeline video nền
+
+- Nhánh: `feat/quangvu-background-video-processing`; tiếp tục việc Cha đã duyệt và thông báo Telegram.
+- Review toàn nhánh phát hiện các cổng cần siết trước canary: VOD Stream phải private, quyền đọc job chỉ gồm trạng thái, canary không vượt công tắc dọn, kiểm tra lại quota trước CREATE, khóa ETag nguồn và đồng bộ đường sửa video với attachment/media feed.
+- Phạm vi bổ sung cần thiết: tab Video ở `src/pages/Profile.tsx`, preview trong `EditPostDialog.tsx`, migration đồng bộ chỉnh sửa, kiểm thử runtime workerd thật. Hai điểm phát này cần cấp quyền như feed khi dùng bucket private.
+- Hiện trạng: chưa đổi production, chưa tạo import Stream thật, chưa dọn nguồn. Giữ các cổng hạ tầng/Preview/canary trước bật rộng; không có TTL cho R2 output hoặc tự xóa bản gốc.

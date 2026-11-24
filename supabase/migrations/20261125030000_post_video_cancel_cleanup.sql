@@ -31,7 +31,7 @@ CREATE FUNCTION public.cancel_changed_post_video_job() RETURNS trigger
 LANGUAGE plpgsql SECURITY DEFINER SET search_path=public AS $$
 BEGIN
  IF TG_TABLE_NAME='posts' THEN
-  IF NEW.deleted_at IS NOT NULL THEN UPDATE post_video_processing_jobs SET cancelled=true,phase='cancelled',next_attempt_at=clock_timestamp(),updated_at=clock_timestamp() WHERE post_id=NEW.id AND NOT cancelled; END IF;
+  IF NEW.deleted_at IS NOT NULL OR NEW.visibility IS DISTINCT FROM 'public' THEN UPDATE post_video_processing_jobs SET cancelled=true,phase='cancelled',next_attempt_at=clock_timestamp(),updated_at=clock_timestamp() WHERE post_id=NEW.id AND NOT cancelled AND (NEW.deleted_at IS NOT NULL OR published_at IS NULL); END IF;
  ELSE
   UPDATE post_video_processing_jobs SET cancelled=true,phase='cancelled',next_attempt_at=clock_timestamp(),updated_at=clock_timestamp()
   WHERE attachment_id=NEW.id AND NOT cancelled AND
@@ -41,6 +41,6 @@ BEGIN
  END IF;
  RETURN NEW;
 END $$;
-CREATE TRIGGER post_video_soft_deleted BEFORE UPDATE OF deleted_at ON public.posts FOR EACH ROW EXECUTE FUNCTION public.cancel_changed_post_video_job();
+CREATE TRIGGER post_video_soft_deleted BEFORE UPDATE OF deleted_at,visibility ON public.posts FOR EACH ROW EXECUTE FUNCTION public.cancel_changed_post_video_job();
 CREATE TRIGGER post_video_source_replaced BEFORE UPDATE OF file_url,storage_key,size_bytes ON public.post_attachments FOR EACH ROW EXECUTE FUNCTION public.cancel_changed_post_video_job();
 REVOKE ALL ON FUNCTION public.cancel_changed_post_video_job() FROM PUBLIC,anon,authenticated;

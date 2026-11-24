@@ -6,7 +6,7 @@ export async function authorizePostVideoPlayback(url:string,signal?:AbortSignal)
  const headers:Record<string,string>={'content-type':'application/json',apikey:import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY};
  if(session?.access_token)headers.Authorization=`Bearer ${session.access_token}`;
  const mint=await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/post-video-read`,{method:'POST',headers,body:JSON.stringify({action:'mint',attachmentId:locator.attachmentId,sourceGeneration:locator.sourceGeneration}),signal});
- if(!mint.ok)throw new Error('Không có quyền xem video hoặc phiên đăng nhập đã hết hạn');
+ if(!mint.ok){await fetch(locator.url,{method:'DELETE',credentials:'include',cache:'no-store',signal}).catch(()=>{});throw new Error('Không có quyền xem video hoặc phiên đăng nhập đã hết hạn');}
  const {permit,expiresAt}=await mint.json();
  if(typeof permit!=='string'||typeof expiresAt!=='number')throw new Error('Invalid video permission response');
  const install=await fetch(locator.url,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({permit}),credentials:'include',cache:'no-store',signal});
