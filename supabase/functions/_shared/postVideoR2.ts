@@ -1,0 +1,34 @@
+import { signedR2Request, uploadPart, type UploadedPart } from './r2MultipartService.ts';
+import { readExactRangeResponse, readExactVideoRange, videoPartRange } from './postVideoTransfer.ts';
+import { isOwnedPostVideoKey } from './postVideoSourceKey.ts';
+
+export const POST_VIDEO_PRIVATE_BUCKET = 'fun-rich-video-optimized';
+export function assertPrivateVideoDestination(bucket: string, key: string) {
+  if (bucket !== POST_VIDEO_PRIVATE_BUCKET || !/^optimized\/[a-f0-9-]+\/[a-f0-9-]+\.mp4$/.test(key)) throw new Error('Invalid private video destination');
+}
+export async function readPostVideoSource(job: { user_id: string; source_key: string; source_size: number }, start: number, end: number) {
+  if (!isOwnedPostVideoKey(job.source_key, job.user_id)) throw new Error('Unowned source key');
+  const r = await signedR2Request({ method: 'GET', key: job.source_key, bucket: Deno.env.get('R2_BUCKET_NAME') || Deno.env.get('CLOUDFLARE_R2_BUCKET_NAME'), headers: { Range: `bytes=${start}-${end}` } });
+  return readExactRangeResponse(r, start, end, job.source_size);
+}
+export async function verifyPostVideoSource(job: { user_id: string; source_key: string; source_size: number }) {
+  if (!isOwnedPostVideoKey(job.source_key, job.user_id)) throw new Error('Unowned source key');
+  const r = await signedR2Request({ method: 'HEAD', key: job.source_key, bucket: Deno.env.get('R2_BUCKET_NAME') || Deno.env.get('CLOUDFLARE_R2_BUCKET_NAME') });
+  if (r.status !== 200 || r.headers.get('content-length') !== String(job.source_size)) throw new Error('Source size mismatch');
+}
+export async function transferPostVideoPart(job: { output_key: string; output_bucket: string; output_size: number; runtime: { exportUrl: string; uploadId: string; parts: UploadedPart[] } }) {
+  assertPrivateVideoDestination(job.output_bucket, job.output_key);
+  const partNumber = job.runtime.parts.length + 1;
+  const { start, end, length } = videoPartRange(job.output_size, partNumber);
+  const bytes = await readExactVideoRange(job.runtime.exportUrl, start, end, job.output_size);
+  return uploadPart({ bucket: job.output_bucket, key: job.output_key, uploadId: job.runtime.uploadId, partNumber, body: bytes, contentLength: length });
+}
+export async function verifyPostVideoOutput(bucket: string, key: string, size: number) {
+  assertPrivateVideoDestination(bucket, key);
+  const r = await signedR2Request({ method: 'HEAD', bucket, key });
+  if (r.status !== 200 || r.headers.get('content-length') !== String(size) || r.headers.get('content-type')?.split(';')[0] !== 'video/mp4') throw new Error('Private video verification failed');
+  // Exact Range proves the object is readable through authenticated R2, not only a successful complete response.
+  const end = Math.min(size - 1, 1023);
+  const body = await readExactRangeResponse(await signedR2Request({ method: 'GET', bucket, key, headers: { Range: `bytes=0-${end}` } }), 0, end, size);
+  if (body.length < 12 || new TextDecoder().decode(body.slice(4, 8)) !== 'ftyp') throw new Error('Export does not contain an MP4 ftyp header');
+}
