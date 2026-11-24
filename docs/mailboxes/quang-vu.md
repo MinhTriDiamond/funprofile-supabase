@@ -539,3 +539,17 @@ SQL: `docs/superpowers/plans/2026-10-15-livestream-orphan-dry-run.sql`. Candidat
 - Đúng video MOV 6:08 trong ảnh, 3.399.337.725 byte, đã tải thành công 65/65 phần; server completed, giao diện hết lỗi và bật nút Post. HEAD R2 đúng dung lượng, GET Range 206 đúng 1.024 byte/tổng kích thước. Giữ bản nháp, không đăng bài.
 - 55/55 test, tsgo/build/review/Preview đạt; mô phỏng multipart 10 GiB và hash đầy đủ 10 GiB đạt. Chưa upload tệp 10 GiB thật qua mạng. Tài khoản Cha vốn có mức admin 10 GiB, không quy lỗi ban đầu cho hạn mức 2 GiB.
 - Hồ sơ kết quả/khôi phục: docs/video-upload-10gb-2026-11-24/README.md. PR code: https://github.com/MinhTriDiamond/funprofile-supabase/pull/74 . Nhánh docs/quangvu-video-upload-release chỉ bổ sung hồ sơ phát hành.
+
+
+## 2026-11-24 · BẮT ĐẦU KHẢO SÁT XỬ LÝ VIDEO NỀN
+
+- Quang Vũ cùng Angel Muse; Cha xác nhận đã gửi thông báo Coordinator cho tính năng mới.
+- Nhánh: feat/quangvu-background-video-processing từ origin/main mới nhất.
+- Phạm vi giai đoạn này: khảo sát upload R2/Create Post/player, luồng Stream hiện có, khả năng chạy chuyển mã và thiết kế hàng đợi/kiểm chứng/giữ bản gốc. Tài liệu thiết kế tại docs/superpowers/specs/.
+- Hiện trạng: video MOV 6:08, 3,40 GB đã upload thành công nhưng giữ nguyên dung lượng; cần bản phát nhẹ hơn. Quota Stream từng chặn RTMP nên phải tính riêng khả năng lưu/transcode.
+- Chưa sửa code sản phẩm, schema, secrets hoặc production; chưa xóa nguồn, chuyển video sang nhà cung cấp mới hay đăng ký dịch vụ trả phí. Chốt phương án và thiết kế trước triển khai.
+
+- Kết quả khảo sát: Create Post ghi URL/size gốc vào post_attachments; multipart chưa enqueue chuyển mã. videoCompression.ts dùng Canvas/MediaRecorder trong LiveHostPage, không phải dịch vụ nền độc lập. optimize-storage chỉ tối ưu ảnh. Chưa thấy worker FFmpeg bài viết hoặc cấu hình triển khai worker này trong repo.
+- Ràng buộc chính thức đã đối chiếu: Supabase Edge Functions memory256MB/CPU2s nên không làm encoder10GiB tại đây; Media Transformations giới hạn input100MB/output60s nên không phù hợp. Stream chuyển mã sẵn nhưng dùng quota phút chung và có phí phút lưu/phát. Hai hướng cần Cha chọn: worker chuyên dụng + R2, hoặc Stream managed. Chưa chọn nhà cung cấp, chưa bật dịch vụ trả phí, chưa thay production.
+
+- Cha đã chọn Cloudflare Stream. Đã viết bản thiết kế chờ duyệt tại docs/superpowers/specs/2026-11-24-background-video-processing-design.md; có builder-check độc lập. Đề xuất giữ upload R2 rồi nhập Stream, phát thích ứng, bảo vệ webhook/cleanup/ownership, quota RTMP dự trữ240phút; giữ gốc7ngày và backup MP4 tối ưu30ngày là đề xuất, dọn thật tách bước. Không code/triển khai trước khi duyệt thiết kế.
