@@ -562,3 +562,9 @@ SQL: `docs/superpowers/plans/2026-10-15-livestream-orphan-dry-run.sql`. Candidat
 - Phạm vi bổ sung cần thiết: export MP4 ready, transfer multipart có checkpoint, xác minh R2, publish đồng bộ và dọn Stream đúng thứ tự; lập kế hoạch tại docs/superpowers/plans/2026-11-24-background-video-processing.md. Chưa sửa code sản phẩm/production.
 
 - Builder-check bản R2 phát hiện đổi privacy sau publish. Bổ sung kế hoạch output luôn ở bucket R2 private và gateway kiểm quyền hiện tại cho mọi GET/HEAD/Range/download; không khóa thao tác đổi privacy, không đưa service-role key sang Worker. Provision bucket/route/secret là bước hạ tầng review riêng trước bật. Kế hoạch gồm8task, chưa code sản phẩm.
+
+
+## 2026-11-25 · CHA DUYỆT KẾ HOẠCH, BẮT ĐẦU TRIỂN KHAI NATIVE
+
+- Cha duyệt kế hoạch Stream tạm → R2 lâu dài → dọn Stream và giao bé tự triển khai trong phiên này; tiếp tục nhánh feat/quangvu-background-video-processing đã báo Telegram.
+- Thực hiện8task theo TDD, ledger riêng; chưa bật production hoặc xóa nguồn. Hạ tầng bucket private/gateway/secret, schema và canary sẽ được chuẩn bị cụ thể trước bước phát hành.
