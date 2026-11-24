@@ -553,3 +553,12 @@ SQL: `docs/superpowers/plans/2026-10-15-livestream-orphan-dry-run.sql`. Candidat
 - Ràng buộc chính thức đã đối chiếu: Supabase Edge Functions memory256MB/CPU2s nên không làm encoder10GiB tại đây; Media Transformations giới hạn input100MB/output60s nên không phù hợp. Stream chuyển mã sẵn nhưng dùng quota phút chung và có phí phút lưu/phát. Hai hướng cần Cha chọn: worker chuyên dụng + R2, hoặc Stream managed. Chưa chọn nhà cung cấp, chưa bật dịch vụ trả phí, chưa thay production.
 
 - Cha đã chọn Cloudflare Stream. Đã viết bản thiết kế chờ duyệt tại docs/superpowers/specs/2026-11-24-background-video-processing-design.md; có builder-check độc lập. Đề xuất giữ upload R2 rồi nhập Stream, phát thích ứng, bảo vệ webhook/cleanup/ownership, quota RTMP dự trữ240phút; giữ gốc7ngày và backup MP4 tối ưu30ngày là đề xuất, dọn thật tách bước. Không code/triển khai trước khi duyệt thiết kế.
+
+
+## 2026-11-24 · CHA CHỐT STREAM TẠM → R2 LÂU DÀI → DỌN STREAM
+
+- Cha xác nhận rõ bản tối ưu phải đưa về R2 để phát feed lâu dài, rồi dọn VOD tạm trên Stream sau xác minh. Cập nhật thiết kế thay cho bản lưu Stream lâu dài.
+- Output MP4 R2 là media chính, không TTL30ngày. Tệp gốc R2 chưa có chính sách xóa được duyệt nên mặc định giữ; không tự áp mốc7ngày. V1 canary/bài public, không quét video cũ hoặc đổi RTMP.
+- Phạm vi bổ sung cần thiết: export MP4 ready, transfer multipart có checkpoint, xác minh R2, publish đồng bộ và dọn Stream đúng thứ tự; lập kế hoạch tại docs/superpowers/plans/2026-11-24-background-video-processing.md. Chưa sửa code sản phẩm/production.
+
+- Builder-check bản R2 phát hiện đổi privacy sau publish. Bổ sung kế hoạch output luôn ở bucket R2 private và gateway kiểm quyền hiện tại cho mọi GET/HEAD/Range/download; không khóa thao tác đổi privacy, không đưa service-role key sang Worker. Provision bucket/route/secret là bước hạ tầng review riêng trước bật. Kế hoạch gồm8task, chưa code sản phẩm.

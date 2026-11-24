@@ -1,3 +1,9 @@
+## 2026-11-24 · CHA CHỐT STREAM TẠM → R2 LÂU DÀI → DỌN STREAM
+
+- Cha xác nhận rõ bản tối ưu phải đưa về R2 để phát feed lâu dài, rồi dọn VOD tạm trên Stream sau xác minh. Cập nhật thiết kế thay cho bản lưu Stream lâu dài.
+- Output MP4 R2 là media chính, không TTL30ngày. Tệp gốc R2 chưa có chính sách xóa được duyệt nên mặc định giữ; không tự áp mốc7ngày. V1 canary/bài public, không quét video cũ hoặc đổi RTMP.
+- Phạm vi bổ sung cần thiết: export MP4 ready, transfer multipart có checkpoint, xác minh R2, publish đồng bộ và dọn Stream đúng thứ tự; lập kế hoạch tại docs/superpowers/plans/2026-11-24-background-video-processing.md. Chưa sửa code sản phẩm/production.
+
 ## 2026-11-24 · BẮT ĐẦU KHẢO SÁT XỬ LÝ VIDEO NỀN
 
 - Quang Vũ cùng Angel Muse; Cha xác nhận đã gửi thông báo Coordinator cho tính năng mới.
