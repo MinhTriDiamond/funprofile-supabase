@@ -575,3 +575,8 @@ SQL: `docs/superpowers/plans/2026-10-15-livestream-orphan-dry-run.sql`. Candidat
 - Review toàn nhánh phát hiện các cổng cần siết trước canary: VOD Stream phải private, quyền đọc job chỉ gồm trạng thái, canary không vượt công tắc dọn, kiểm tra lại quota trước CREATE, khóa ETag nguồn và đồng bộ đường sửa video với attachment/media feed.
 - Phạm vi bổ sung cần thiết: tab Video ở `src/pages/Profile.tsx`, preview trong `EditPostDialog.tsx`, migration đồng bộ chỉnh sửa, kiểm thử runtime workerd thật. Hai điểm phát này cần cấp quyền như feed khi dùng bucket private.
 - Hiện trạng: chưa đổi production, chưa tạo import Stream thật, chưa dọn nguồn. Giữ các cổng hạ tầng/Preview/canary trước bật rộng; không có TTL cho R2 output hoặc tự xóa bản gốc.
+
+### 25/11/2026 — Bổ sung phạm vi fixture kiểm thử để qua cổng toàn repo
+
+- Nhánh giữ nguyên. Lượt toàn repo: 23 test lỗi/10 file, gồm các test LIVE không có DNS trong sandbox, một kiểm tra grep timeout khi chạy song song và fixture wallet thiếu `supabase.rpc` cho import chat hiện hữu.
+- Chỉ bổ sung mock còn thiếu trong `src/components/wallet/__tests__/prices-unavailable.render.test.tsx`, không đổi logic wallet/chat. Chạy lại bộ offline có giới hạn worker, báo riêng test online chưa chạy được; không gộp lỗi mạng vào kết quả chức năng video.

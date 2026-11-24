@@ -17,6 +17,7 @@ Ngày triển khai: 25/11/2026. Nhánh `feat/quangvu-background-video-processing
 
 ## Kiểm chứng trước phát hành
 
+- Bộ kiểm thử video/feed/RTMP: **222 test đạt, 28 file**. Toàn bộ lượt offline: **647 test đạt, 53 skip, 102 file đạt**; các suite LIVE bị loại rõ ràng vì sandbox không có DNS production. Đã sửa riêng mock RPC/i18n của fixture wallet cũ, không thay logic wallet.
 - Vitest: policy, nguồn/namespace, API Stream, range/transfer, processor/cancel, references, quyền private, cron, UI trạng thái, gia hạn giữ vị trí; kèm feed/RTMP regression. Số lượng cuối được ghi cùng receipt phát hành.
 - `scripts/test-post-video-db.ts`: PostgreSQL loopback, database dùng một lần; kiểm RLS/quyền cột, claim đồng thời, lease đã nhả/hết hạn, publish nguyên tử, retry, source/privacy/delete/edit lifecycle. Không chạy fixture trên production.
 - `scripts/test-post-video-media-browser.ts`: Chrome headless, MP4 tổng hợp 3 giây và R2/auth giả lập; phát, HEAD, Range, tải đủ, hết hạn/gia hạn và thu hồi yêu cầu kế tiếp.
