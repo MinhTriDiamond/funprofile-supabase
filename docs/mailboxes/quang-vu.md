@@ -506,3 +506,22 @@ SQL: `docs/superpowers/plans/2026-10-15-livestream-orphan-dry-run.sql`. Candidat
 
 - Bản sửa và kiểm thử: https://github.com/MinhTriDiamond/funprofile-supabase/pull/73 . 35/35 test feed, tsgo và review đạt; video PdNMiq0X2BI đã phát thực trong browser fixture (currentTime>0, paused=false), request chỉ gửi origin Referer.
 - Hồ sơ và tin Telegram hoàn tất: docs/youtube-error-153-2026-11-24/README.md. Cổng Cloudflare Preview phải đạt trước merge; trạng thái merge/deploy xem PR. Không thay DB/backend hay headers toàn site.
+
+
+## 2026-11-24 · BẮT ĐẦU KIỂM TRA UPLOAD VIDEO / 10 GB
+
+- Quang Vũ cùng Angel Muse; Cha xác nhận đã gửi Telegram cho việc mới.
+- Nhánh: fix/quangvu-video-upload-10gb từ origin/main mới nhất.
+- Hiện trạng: Create Post báo upload thất bại với video 6:08; ảnh chưa cung cấp kích thước/mã lỗi. Code đang giới hạn tài khoản thường 2 GiB, admin 10 GiB, frontend và backend cùng phân quyền.
+- Phạm vi: cấu hình/validation upload video bài viết, multipart R2, thông báo lỗi và kiểm thử hồi quy; chẩn đoán production chỉ đọc để phân biệt lỗi upload với giới hạn. Không xóa video, không đổi schema hoặc secrets; nếu cần mở rộng sẽ ghi nhận trước.
+- Mục tiêu: hỗ trợ tối đa 10 GiB/video (theo đơn vị 1024 của code hiện tại), giữ giới hạn thời lượng 4 giờ, kiểm chứng Preview trước merge; không coi ảnh là bằng chứng nguyên nhân.
+
+- Chẩn đoán thêm: không có phiên upload mới ngày24/11 cho user trong ảnh; lần retry UI theo xác nhận riêng vẫn trả lỗi chung, không chứng minh do size. Hàm calculateFileHash đang file.arrayBuffer() toàn tệp trước initiate; đây là điểm không đáp ứng10GiB. Giữ SHA256 đầy đủ/tương thích resume, đổi đọc từng chunk, không dùng hash lấy mẫu. Đồng bộ config frontend/backend10GiB cho bài viết; chat giữ2GiB ngoài phạm vi. Cần deploy lại các function tiêu thụ shared mediaLimits sau Preview; lưu bản production trước deploy/cách khôi phục. Không đổi schema/secrets.
+
+
+## 2026-11-24 · KẾT QUẢ CODE VIDEO 10 GiB — PR #74
+
+- Frontend/sharedbackend video bài viết2→10GiB cho tài khoản thường; giữchat2GiB/thời lượng4giờ. Hash đọc8MiB/lượt, giữresumeID, JWT theo sessionrefresh; lỗi đãphân loại hiển thị trongcomposer.
+- 55/55test11file, tsgo vàbuildlocal đạt; review codekhông cóblocker. Mô phỏng205part đúng10GiB; hashfull10GiB giảlập1280lượt, max8MiB, khớpnodeSHA256. Chưaupload10GiB thật.
+- Metadata bản nháp video6:08:3.399.337.725byte/MOV/3402×1916/progress0. Chưa xác định ngoại lệ gốc, chưa báo sửađược chính tệpnày.
+- PR https://github.com/MinhTriDiamond/funprofile-supabase/pull/74 ; Previewcode72a83eb đạt https://d04bf4e3.funprofile-supabase.pages.dev . Hồ sơ docs/video-upload-10gb-2026-11-24/. Cổng Preview đúnghead cuối trước merge; backend3function triển khai sau merge, giữ auth. Trạng thái merge/deploy cuối xem PR.

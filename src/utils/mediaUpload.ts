@@ -8,6 +8,7 @@
  * 4. URL hiển thị qua Cloudflare Resizing
  */
 
+import { sha256 } from '@noble/hashes/sha256';
 import { supabase } from '@/integrations/supabase/client';
 import { compressImage, FILE_LIMITS } from './imageCompression';
 import { CHAT_MEDIA_UPLOADS_ENABLED, CHAT_MEDIA_PAUSED_MESSAGE } from '../../supabase/functions/_shared/chatMediaRelease';
@@ -100,10 +101,14 @@ export function generateDocumentPath(
  * Calculate file hash (SHA-256) for deduplication
  */
 export async function calculateFileHash(file: File): Promise<string> {
-  const arrayBuffer = await file.arrayBuffer();
-  const hashBuffer = await crypto.subtle.digest('SHA-256', arrayBuffer);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('').substring(0, 16);
+  // Keep the full-content resume ID while bounding memory for multi-GB files.
+  const hash = sha256.create();
+  const chunkBytes = 8 * 1024 * 1024;
+  for (let offset = 0; offset < file.size; offset += chunkBytes) {
+    const chunk = await file.slice(offset, Math.min(offset + chunkBytes, file.size)).arrayBuffer();
+    hash.update(new Uint8Array(chunk));
+  }
+  return Array.from(hash.digest(), (byte) => byte.toString(16).padStart(2, '0')).join('').slice(0, 16);
 }
 
 /**

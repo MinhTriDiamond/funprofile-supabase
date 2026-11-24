@@ -3,7 +3,7 @@ const MB = 1024 * 1024;
 export const MEDIA_LIMIT_MESSAGES = {
   maxTotal: 'Bạn có thể đăng tối đa 30 file media trong một bài viết.',
   imageTooLarge: 'Ảnh này vượt quá 20MB. Vui lòng chọn ảnh nhẹ hơn.',
-  videoTooLarge: 'Video này vượt quá giới hạn dung lượng cho tài khoản của bạn.',
+  videoTooLarge: 'Video này vượt quá giới hạn 10 GB mỗi video.',
   videoTooLong: 'Video tối đa hiện được hỗ trợ là 4 giờ.',
   unsupportedType: 'Định dạng media này chưa được hỗ trợ.',
 } as const;
@@ -13,7 +13,7 @@ export const MEDIA_LIMITS = {
   maxImagesPerPost: 30,
   maxVideosPerPost: 10,
   maxImageSizeMB: 20,
-  maxVideoSizeMBUser: 2048,
+  maxVideoSizeMBUser: 10240,
   maxVideoSizeMBPremium: 10240,
   maxVideoDurationMinutes: 240,
   allowedImageExt: ['jpg', 'jpeg', 'png', 'webp'] as const,

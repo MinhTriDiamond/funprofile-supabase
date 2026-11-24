@@ -1,3 +1,18 @@
+## 2026-11-24 · KẾT QUẢ CODE VIDEO 10 GiB — PR #74
+
+- Frontend/sharedbackend video bài viết2→10GiB cho tài khoản thường; giữchat2GiB/thời lượng4giờ. Hash đọc8MiB/lượt, giữresumeID, JWT theo sessionrefresh; lỗi đãphân loại hiển thị trongcomposer.
+- 55/55test11file, tsgo vàbuildlocal đạt; review codekhông cóblocker. Mô phỏng205part đúng10GiB; hashfull10GiB giảlập1280lượt, max8MiB, khớpnodeSHA256. Chưaupload10GiB thật.
+- Metadata bản nháp video6:08:3.399.337.725byte/MOV/3402×1916/progress0. Chưa xác định ngoại lệ gốc, chưa báo sửađược chính tệpnày.
+- PR https://github.com/MinhTriDiamond/funprofile-supabase/pull/74 ; Previewcode72a83eb đạt https://d04bf4e3.funprofile-supabase.pages.dev . Hồ sơ docs/video-upload-10gb-2026-11-24/. Cổng Preview đúnghead cuối trước merge; backend3function triển khai sau merge, giữ auth. Trạng thái merge/deploy cuối xem PR.
+
+## 2026-11-24 · BẮT ĐẦU KIỂM TRA UPLOAD VIDEO / 10 GB
+
+- Quang Vũ cùng Angel Muse; Cha xác nhận đã gửi Telegram cho việc mới.
+- Nhánh: fix/quangvu-video-upload-10gb từ origin/main mới nhất.
+- Hiện trạng: Create Post báo upload thất bại với video 6:08; ảnh chưa cung cấp kích thước/mã lỗi. Code đang giới hạn tài khoản thường 2 GiB, admin 10 GiB, frontend và backend cùng phân quyền.
+- Phạm vi: cấu hình/validation upload video bài viết, multipart R2, thông báo lỗi và kiểm thử hồi quy; chẩn đoán production chỉ đọc để phân biệt lỗi upload với giới hạn. Không xóa video, không đổi schema hoặc secrets; nếu cần mở rộng sẽ ghi nhận trước.
+- Mục tiêu: hỗ trợ tối đa 10 GiB/video (theo đơn vị 1024 của code hiện tại), giữ giới hạn thời lượng 4 giờ, kiểm chứng Preview trước merge; không coi ảnh là bằng chứng nguyên nhân.
+
 ## 2026-11-21 — RTMP: quota về 722 phút, backup R2 đã xác minh
 
 Sau PR #65/v100, 6 replay đã lưu R2 và dọn nguồn. Dashboard tải mới giảm từ 1.023 xuống 722/1.000 phút (529 video), còn 278 phút trống. Cha xác nhận upload bổ sung; 12/12 file backup R2 của 3 recording ngoài phiên đã được đọc lại, size/SHA-256 khớp local. Chưa xóa thủ công 3 recording này, chưa live test. Hồ sơ/bằng chứng và tin Telegram: docs/rtmp-stream-cleanup-audit-2026-11-20/README.md; PR hồ sơ #66.
