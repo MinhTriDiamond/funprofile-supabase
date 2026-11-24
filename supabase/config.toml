@@ -285,3 +285,6 @@ verify_jwt = false
 
 [functions.agora-call-token]
 verify_jwt = false
+
+[functions.process-post-videos]
+verify_jwt = false

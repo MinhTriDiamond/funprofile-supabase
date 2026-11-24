@@ -61,11 +61,11 @@ CREATE INDEX post_video_jobs_post ON public.post_video_processing_jobs(post_id);
 
 CREATE FUNCTION public.enqueue_post_video_job() RETURNS trigger
 LANGUAGE plpgsql SECURITY DEFINER SET search_path=public AS $$
-DECLARE owner_id uuid; post_privacy text; source_session record;
+DECLARE owner_id uuid; post_visibility text; source_session record;
 BEGIN
   IF NEW.file_type<>'video' OR NOT coalesce((SELECT enabled FROM post_video_processing_control WHERE id),false) THEN RETURN NEW; END IF;
-  SELECT user_id,privacy INTO owner_id,post_privacy FROM posts WHERE id=NEW.post_id;
-  IF owner_id IS NULL OR post_privacy IS DISTINCT FROM 'public' OR NEW.size_bytes IS NULL OR NEW.size_bytes<=0 OR NEW.size_bytes>10737418240 THEN RETURN NEW; END IF;
+  SELECT user_id,visibility INTO owner_id,post_visibility FROM posts WHERE id=NEW.post_id AND deleted_at IS NULL;
+  IF owner_id IS NULL OR post_visibility IS DISTINCT FROM 'public' OR NEW.size_bytes IS NULL OR NEW.size_bytes<=0 OR NEW.size_bytes>10737418240 THEN RETURN NEW; END IF;
   -- New eligible uploads use an owner-scoped key; legacy files require an explicit admin canary.
   IF NEW.storage_key NOT LIKE 'videos/'||owner_id::text||'/%' OR NEW.storage_key ~ '(^|/)\.\.?(/|$)' OR NEW.storage_key ~ '[\\%]' THEN RETURN NEW; END IF;
   SELECT file_hash INTO source_session FROM video_upload_sessions
@@ -160,11 +160,11 @@ BEGIN
   IF j.id IS NULL OR j.cancelled OR j.lease_token IS DISTINCT FROM p_lease_token OR j.lease_until<=clock_timestamp() THEN RETURN NULL; END IF;
   SELECT * INTO p FROM posts WHERE id=j.post_id FOR UPDATE;
   SELECT * INTO a FROM post_attachments WHERE id=j.attachment_id AND post_id=j.post_id FOR UPDATE;
-  IF p.id IS NULL OR a.id IS NULL OR p.user_id<>j.user_id THEN RETURN NULL; END IF;
+  IF p.id IS NULL OR p.deleted_at IS NOT NULL OR a.id IS NULL OR p.user_id<>j.user_id THEN RETURN NULL; END IF;
   IF j.published_at IS NOT NULL THEN
     RETURN CASE WHEN a.file_url=j.gateway_url THEN to_jsonb(j) ELSE NULL END;
   END IF;
-  IF p.privacy IS DISTINCT FROM 'public' OR j.phase<>'publishing' OR a.file_url<>j.source_url OR a.storage_key IS DISTINCT FROM j.source_key OR a.size_bytes IS DISTINCT FROM j.source_size
+  IF p.visibility IS DISTINCT FROM 'public' OR j.phase<>'publishing' OR a.file_url<>j.source_url OR a.storage_key IS DISTINCT FROM j.source_key OR a.size_bytes IS DISTINCT FROM j.source_size
      OR j.output_bucket IS DISTINCT FROM (SELECT output_bucket FROM post_video_processing_control WHERE id)
      OR j.output_verified_at IS NULL OR j.output_key IS NULL OR j.output_size IS NULL OR j.output_size>=j.source_size THEN RETURN NULL; END IF;
   IF NOT (coalesce((SELECT publish_enabled FROM post_video_processing_control WHERE id),false) OR j.canary) THEN RETURN NULL; END IF;

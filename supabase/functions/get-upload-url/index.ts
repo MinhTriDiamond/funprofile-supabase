@@ -8,6 +8,7 @@
  */
 
 import { createClient } from 'npm:@supabase/supabase-js@2';
+import { hasOwnedPostVideoPrefix, isOwnedPostVideoKey } from '../_shared/postVideoSourceKey.ts';
 import { getChatMediaUploadDenial } from '../_shared/chatMediaRelease.ts';
 import {
   isElevatedMediaAccount,
@@ -127,6 +128,10 @@ Deno.serve(async (req) => {
 
     // Parse request
     const { key, contentType, fileSize, durationSeconds } = await req.json();
+    if (typeof key === 'string' && hasOwnedPostVideoPrefix(key) && !isOwnedPostVideoKey(key, user.id)) {
+      return new Response(JSON.stringify({ error: 'Video source does not belong to this account' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
 
     if (typeof key !== 'string' || typeof contentType !== 'string' || !key || !contentType) {
       return new Response(

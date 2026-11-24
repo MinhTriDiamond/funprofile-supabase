@@ -8,7 +8,7 @@ END $$;
 CREATE SCHEMA auth;
 CREATE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql STABLE AS $$ SELECT nullif(current_setting('request.jwt.claim.sub',true),'')::uuid $$;
 GRANT USAGE ON SCHEMA public,auth TO authenticated,service_role,anon;
-CREATE TABLE public.posts(id uuid PRIMARY KEY,user_id uuid NOT NULL,privacy text DEFAULT 'public',video_url text,media_urls jsonb,metadata jsonb DEFAULT '{}',updated_at timestamptz DEFAULT now());
+CREATE TABLE public.posts(id uuid PRIMARY KEY,user_id uuid NOT NULL,visibility text DEFAULT 'public',deleted_at timestamptz,moderation_status text DEFAULT 'approved',video_url text,media_urls jsonb,metadata jsonb DEFAULT '{}',updated_at timestamptz DEFAULT now());
 CREATE TABLE public.post_attachments(id uuid PRIMARY KEY DEFAULT gen_random_uuid(),post_id uuid REFERENCES posts(id) ON DELETE CASCADE,file_url text NOT NULL,storage_key text,file_type text,mime_type text,size_bytes bigint,width int,height int,transform_meta jsonb,sort_order int DEFAULT 0);
 CREATE TABLE public.video_upload_sessions(id uuid DEFAULT gen_random_uuid(),user_id uuid,r2_key text,status text,file_size bigint,file_hash text,created_at timestamptz DEFAULT now());
 \ir ../../supabase/migrations/20261125010000_post_video_processing.sql
@@ -33,9 +33,9 @@ DO $$ DECLARE j uuid; claimed jsonb; lease uuid := gen_random_uuid(); bad uuid :
  UPDATE post_video_processing_jobs SET output_bucket='public-bucket' WHERE id=j;
  IF publish_post_video_output(j,lease) IS NOT NULL THEN RAISE EXCEPTION 'published to a public output bucket'; END IF;
  UPDATE post_video_processing_jobs SET output_bucket='fun-rich-video-optimized' WHERE id=j;
- UPDATE posts SET privacy='friends';
+ UPDATE posts SET visibility='friends';
  IF publish_post_video_output(j,lease) IS NOT NULL THEN RAISE EXCEPTION 'published private post'; END IF;
- UPDATE posts SET privacy='public';
+ UPDATE posts SET visibility='public';
  UPDATE post_attachments SET size_bytes=NULL;
  IF publish_post_video_output(j,lease) IS NOT NULL THEN RAISE EXCEPTION 'published source with missing size'; END IF;
  UPDATE post_attachments SET size_bytes=3399337725;
@@ -48,9 +48,9 @@ DO $$ DECLARE j uuid; claimed jsonb; lease uuid := gen_random_uuid(); bad uuid :
  IF publish_post_video_output(j,lease) IS NULL THEN RAISE EXCEPTION 'publish not idempotent'; END IF;
 END $$;
 -- Eligibility: private, image, legacy unowned prefix or unmatched session must not enqueue.
-UPDATE posts SET privacy='friends';
+UPDATE posts SET visibility='friends';
 INSERT INTO post_attachments(post_id,file_url,storage_key,file_type,size_bytes) VALUES('10000000-0000-0000-0000-000000000001','private','videos/20000000-0000-0000-0000-000000000001/private.mov','video',20);
-UPDATE posts SET privacy='public';
+UPDATE posts SET visibility='public';
 INSERT INTO post_attachments(post_id,file_url,storage_key,file_type,size_bytes) VALUES('10000000-0000-0000-0000-000000000001','image','posts/photo.jpg','image',20),('10000000-0000-0000-0000-000000000001','legacy','videos/legacy.mov','video',20),('10000000-0000-0000-0000-000000000001','forged','videos/20000000-0000-0000-0000-000000000001/forged.mov','video',20);
 DO $$ BEGIN IF (SELECT count(*) FROM post_video_processing_jobs)<>1 THEN RAISE EXCEPTION 'ineligible job created'; END IF; END $$;
 SET LOCAL ROLE authenticated;

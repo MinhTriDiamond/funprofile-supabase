@@ -43,7 +43,7 @@ export async function readExactRangeResponse(response: Response, start: number, 
 export async function readExactVideoRange(url: string, start: number, end: number, total: number, signal?: AbortSignal) {
   validateExportUrl(url);
   const response = await fetch(url, { headers: { Range: `bytes=${start}-${end}` }, redirect: 'manual',
-    signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(60000)]) : AbortSignal.timeout(60000) });
+    signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(45000)]) : AbortSignal.timeout(45000) });
   return readExactRangeResponse(response, start, end, total);
 }
 

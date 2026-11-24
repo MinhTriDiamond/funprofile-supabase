@@ -110,7 +110,7 @@ export async function signedR2Request(opts: {
     method: opts.method,
     headers: { ...allHeaders, Authorization: authorization },
     body: opts.body,
-    ...(opts.bucket ? { redirect: 'manual' as const, signal: AbortSignal.timeout(60000) } : {}),
+    ...(opts.bucket ? { redirect: 'manual' as const, signal: AbortSignal.timeout(45000) } : {}),
   });
 }
 

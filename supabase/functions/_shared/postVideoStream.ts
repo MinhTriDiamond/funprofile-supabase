@@ -10,7 +10,7 @@ export async function postVideoStreamRequest(path: string, init: RequestInit = {
   if (!/^\/[a-zA-Z0-9/_?=&.-]*$/.test(path)) throw new Error('Invalid Stream path');
   const r = await fetch(`https://api.cloudflare.com/client/v4/accounts/${config.accountId}/stream${path}`, {
     ...init, headers: { ...Object.fromEntries(new Headers(init.headers)), Authorization: `Bearer ${config.token}` },
-    redirect: 'manual', signal: AbortSignal.timeout(60000),
+    redirect: 'manual', signal: AbortSignal.timeout(45000),
   });
   if (!r.ok) { await r.body?.cancel(); throw new Error(`Stream request failed (${r.status})`); }
   return r;
@@ -72,7 +72,7 @@ export async function readPostVideoTusOffset(location: string, uid: string, conf
 }
 export async function uploadPostVideoTusPart(location: string, uid: string, offset: number, bytes: Uint8Array, config = postVideoStreamConfig()) {
   const u = validateTusLocation(location, config.accountId, uid);
-  const r = await fetch(u, { method: 'PATCH', redirect: 'manual', signal: AbortSignal.timeout(60000), headers: {
+  const r = await fetch(u, { method: 'PATCH', redirect: 'manual', signal: AbortSignal.timeout(45000), headers: {
     'Tus-Resumable': '1.0.0', 'Upload-Offset': String(offset), 'Content-Type': 'application/offset+octet-stream',
     ...(u.hostname === 'api.cloudflare.com' ? { Authorization: `Bearer ${config.token}` } : {}),
   }, body: bytes as BodyInit });
