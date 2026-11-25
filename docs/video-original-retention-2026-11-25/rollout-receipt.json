@@ -1,0 +1,176 @@
+{
+  "date": "2026-11-25",
+  "pr": "https://github.com/MinhTriDiamond/funprofile-supabase/pull/85",
+  "runtimeCommit": "513e599",
+  "preview": {
+    "head": "d72bc67",
+    "url": "https://5716f193.funprofile-supabase.pages.dev",
+    "renderPassed": true
+  },
+  "status": "enabled; canary original scheduled, not yet due/deleted",
+  "control": {
+    "delete_enabled": true,
+    "enabled": true,
+    "import_enabled": true,
+    "live_reserve_minutes": 240,
+    "original_delete_enabled": true,
+    "publish_enabled": true,
+    "updated_at": "2026-11-25 09:46:03.835236+00"
+  },
+  "canary": {
+    "checked_at": "2026-11-25 09:47:12.969323+00",
+    "delete_enabled": true,
+    "due_at": "2026-11-26 05:28:33.042681+00",
+    "enabled": true,
+    "id": "02e100d1-e568-4ab0-a178-33a5ee791c46",
+    "import_enabled": true,
+    "live_reserve_minutes": 240,
+    "original_delete_enabled": true,
+    "phase": "complete",
+    "publication_current": true,
+    "publish_enabled": true,
+    "published_at": "2026-11-25 05:28:33.042681+00",
+    "source_cleanup_attempts": 0,
+    "source_delete_started_at": null,
+    "source_deleted_at": null
+  },
+  "preEnableDryRun": {
+    "jobId": "02e100d1-e568-4ab0-a178-33a5ee791c46",
+    "enabled": false,
+    "dueAt": "2026-11-26T05:28:33.042Z",
+    "due": false,
+    "phase": "complete",
+    "cancelled": false,
+    "sourceDeleted": false,
+    "deleteStarted": false,
+    "attempts": 0,
+    "nextAttemptAt": "2026-11-25T09:42:26.163741+00:00",
+    "leaseActive": false,
+    "currentPublication": true,
+    "referenced": false,
+    "outputVerified": true,
+    "sourceVerified": true,
+    "eligible": false
+  },
+  "syntheticProbe": {
+    "fixtureDeleted": true,
+    "bytes": 1024
+  },
+  "postEnableTick": {
+    "results": []
+  },
+  "output": {
+    "head": 200,
+    "size": 110367516,
+    "range": 206,
+    "bytes": 32,
+    "mp4": true
+  },
+  "schema": {
+    "control": {
+      "delete_enabled": true,
+      "enabled": true,
+      "import_enabled": true,
+      "live_reserve_minutes": 240,
+      "original_delete_enabled": false,
+      "publish_enabled": true
+    },
+    "functions": [
+      {
+        "anon_execute": false,
+        "config": [
+          "search_path=public",
+          "statement_timeout=55s"
+        ],
+        "name": "arm_post_video_source_cleanup",
+        "security_definer": true,
+        "service_execute": true,
+        "user_execute": false
+      },
+      {
+        "anon_execute": false,
+        "config": [
+          "search_path=public"
+        ],
+        "name": "claim_post_video_source_cleanup",
+        "security_definer": true,
+        "service_execute": true,
+        "user_execute": false
+      },
+      {
+        "anon_execute": false,
+        "config": [
+          "search_path=public"
+        ],
+        "name": "finish_post_video_source_cleanup",
+        "security_definer": true,
+        "service_execute": true,
+        "user_execute": false
+      },
+      {
+        "anon_execute": false,
+        "config": [
+          "search_path=public",
+          "statement_timeout=55s"
+        ],
+        "name": "has_post_video_source_references",
+        "security_definer": false,
+        "service_execute": true,
+        "user_execute": false
+      }
+    ],
+    "guard_triggers": 7,
+    "history_recorded": true
+  },
+  "functions": [
+    {
+      "name": "process-post-videos",
+      "version": 10,
+      "status": "ACTIVE",
+      "verify_jwt": false
+    },
+    {
+      "name": "post-video-read",
+      "version": 4,
+      "status": "ACTIVE",
+      "verify_jwt": false
+    },
+    {
+      "name": "stream-webhook",
+      "version": 97,
+      "status": "ACTIVE",
+      "verify_jwt": false
+    }
+  ],
+  "worker": {
+    "name": "funprofile-post-video-media",
+    "activeVersion": "cac49a22-2349-4918-bf95-22888eb8f02b",
+    "schedule": "* * * * *",
+    "cronSecretSynchronized": true,
+    "readAndGatewaySecretsUnchanged": true
+  },
+  "tests": {
+    "offlinePassed": 707,
+    "skipped": 53,
+    "files": 105,
+    "sqlLeaseAclRacePassed": true,
+    "typecheckPassed": true,
+    "denoPassed": true,
+    "buildPassed": true,
+    "review": "author self-review"
+  },
+  "queryBenchmarkMs": 32325.128,
+  "sourceRpcTimeoutSeconds": 55,
+  "httpDeadlineSeconds": 65,
+  "actualUserSourceDeleted": false,
+  "scheduledCronProof": {
+    "scheduledEvents": [
+      {
+        "outcome": "ok",
+        "cron": "* * * * *",
+        "scheduledTime": 1795600065000,
+        "scriptVersion": "cac49a22-2349-4918-bf95-22888eb8f02b"
+      }
+    ]
+  }
+}

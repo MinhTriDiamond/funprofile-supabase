@@ -1,6 +1,10 @@
 # Giữ nguồn video 24 giờ sau khi tối ưu
 
-Trạng thái: đang kiểm thử/phát hành, cờ dọn nguồn mặc định OFF. Cha đã duyệt chính sách và xác nhận thông báo Telegram. Nhánh `feat/quangvu-video-original-retention-24h`.
+Trạng thái: **đã bật lịch tự dọn nguồn trên production** ngày 25/11/2026 sau PR [#85](https://github.com/MinhTriDiamond/funprofile-supabase/pull/85), runtime `513e599`. Preview đúng commit `d72bc67` đã render thật tại https://5716f193.funprofile-supabase.pages.dev. Cờ mặc định của migration là OFF; đã bật sau khi kiểm chứng runtime. Hồ sơ kết quả ở nhánh riêng `docs/quangvu-original-retention-rollout`.
+
+Video canary 3,40 GB được publish bản tối ưu lúc 13:28 ngày 25/11 và **đủ 24 giờ từ 13:28 ngày 26/11/2026, giờ Kuala Lumpur**. Hiện nguồn chưa bắt đầu xóa, attempts=0; tick thực tế đã bỏ qua vì chưa tới hạn. Cron sẽ kiểm tra sau mốc này, không cam kết xóa đúng giây nếu có tham chiếu/lỗi. Bản MP4 110,37 MB vẫn HEAD200/Range206.
+
+Đã xác minh source-dry-run thật trong26,8s: nguồn/output tốt, publication hiện hành, không tham chiếu, due=false. Probe đúng tệp giả1024bytes đã xóa/404; không xóa sớm nguồn người dùng. Ba bundle/44file source khớp; ACLservice-only và7guard đúng. Chỉ khóa cron chuyên dụng được đồng bộ qua secretmanager, giữ nguyên khóa read/gateway. Xem `rollout-receipt.json`, `source-manifest.json`, `migration-manifest.json` để đối chiếu.
 
 Thời hạn tính từ `published_at` của bản tối ưu, theo database. Chỉ job hoàn tất tối ưu, đã dọn VOD Stream, có bản MP4 private đã xác minh và vẫn gắn vào bài hiện hành mới được dọn nguồn. Trước mỗi lần xóa phải kiểm tra lại HEAD/Range/MP4 output, ETag/kích thước/owner nguồn và mọi tham chiếu sống. Job lỗi, chưa publish, không có lợi ích hoặc còn tham chiếu giữ nguồn. Có tối đa năm lần thử, cách sáu giờ khi bị chặn; sau đó giữ để đối soát.
 
@@ -23,3 +27,5 @@ Tick cron hiện có chạy thêm tối đa một bước dọn nguồn mỗi ti
 Tắt `original_delete_enabled` để ngừng admission dọn nguồn mới; một bước đã arm có thể đang chạy. Giữ các cột/tombstone/receipt, không drop khi còn worker sử dụng, không phục hồi bằng cách mở lại key đã nghỉ. Revert consumer qua PR hoặc bundle trước triển khai; giữ RPC/guard để không tạo tham chiếu hỏng. Bản nguồn đã xóa không thể phục hồi chất lượng gốc từ metadata backup; MP4 tối ưu là bản lưu lâu dài. Metadata recovery backup chỉ chứa mục tiêu canary, key/size/ETag và locator, mode600 ngoài Git; không chứa token/TUS URL. Không copy thêm toàn bộ nguồn3,40GB để tránh vô hiệu mục tiêu tiết kiệm dung lượng đã được Cha duyệt.
 
 Đo truy vấn read-only trên production: bản chuyển đổi row JSON hai lần37,24s, bản `LIKE ANY` escaped chỉ chuyển đổi một lần32,33s. Timeout riêng source RPC/arm55s, HTTP65s; giới hạn này không sửa RPC Stream cũ hoặc timeout role/global. Tác vụ chưa tới hạn không chạy truy vấn quét.
+
+Worker scheduled event thực tế sau bật lịch có outcome `ok`, cron mỗi phút, đúng version sau đồng bộ khóa. Hồ sơ chỉ giữ metadata scheduled, không HTTP headers/cookie.
