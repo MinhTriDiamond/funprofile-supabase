@@ -629,3 +629,11 @@ SQL: `docs/superpowers/plans/2026-10-15-livestream-orphan-dry-run.sql`. Candidat
 - Kiểm tra local:707testofflinepass/53skip, SQL/RLS/lease/tombstone vàrace hai kết nối bằngtrigger thật đạt; tsgo/Deno/build đạt. Queryfullref read-only production đo32,33s sau tốiưu tránhJSON2lần; sourceRPC/arm timeoutriêng55s/HTTP65s, khôngđổi role/global. Self-reviewcủatácgiả theo checklist, khôngghi làreviewđộclập.
 - Canary hiện tại publish13:28ngày25/11, due13:28ngày26/11giờKualaLumpur. Cờ nguồn chưa bật; khôngxóa sớm. Metadata canary và3bundle production được snapshot trướcdeploy; khôngbackup toànfile gốc để tránh tốn dung lượng nhưChađãduyệt.
 - Tệp khóa cron tạm của phiên trước đã bị dọn. Trongrollout sẽ chỉ đồngbộ lại khóa cronchuyên dụng qua Supabase/Workersecretmanager, giữ nguyên read/gatewaysecret, khôngnớiquyền vàkhôngđưasecretvàoGit/chat/log.
+
+### 25/11/2026 — SAU: đã bật chính sách nguồn 24 giờ
+- PR85 merged runtime513e599; Previewd72bc67 thật đạt tại https://5716f193.funprofile-supabase.pages.dev. Migration25060000 đãapply/ghi history, ACLservice-only/7guards/timeout55s xácminh;3bundle44file source khớp.
+- Source-dry-run26,8s đạt: due=false, original/output verified, publication_current=true, referenced=false. Tệp giả1KiB xóa/404 đạt. MP4R2vẫnHEAD200/Range206; endpointretentiontừchốianon401. ĐồngbộduynhấtcronsecretquaSupabase+Worker, read/gatewaykhôngđổi.
+- Đã bật original_delete_enabled lúc17:46ngày25/11giờKualaLumpur;4cờtốiưucũvẫnTRUE,reserve240. Tickthậtbỏquacanarychưatớihạn, attempts0/source_delete_started_atNULL/source_deleted_atNULL. Video3,40GBđủ24h từ13:28ngày26/11/2026, khiđócònphảiquakiểmtra antoàn; khôngbáođãxóanguồnhiệntại.
+- Tests707offline/53skip/105files,SQLlease/ACL/tombstone/race2connection,tsgo/Deno/buildđạt. Selfreviewcủatácgiả, khôngreviewđộclập. Hồsơ/rollback:docs/video-original-retention-2026-11-25. Sau khi nguồn đã xóa khôngkhôiphụcchấtlượnggốctừmetadata;MP4tốiưulưu lâudài.
+
+- Quan sát Worker scheduled event sau đồng bộ khóa: cron `* * * * *`, outcome `ok`, đúng active version `cac49a22-2349-4918-bf95-22888eb8f02b`; không cần mở trình duyệt. Hồ sơ chỉ giữ trường scheduled, không giữ HTTP headers/cookie.
