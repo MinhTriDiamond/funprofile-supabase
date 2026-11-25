@@ -37,3 +37,9 @@ it('classifies provider redirect host and UID binding without exposing location 
  expect(report).toMatchObject({headStatus:302,redirect:{hostname:'videodelivery.net',sameOrigin:false,pathContainsUid:true,hasSignedQuery:true}});
  const out=JSON.stringify(report);expect(out).not.toContain(token);expect(out).not.toContain('private-query');expect(out).not.toContain('https://');expect(out).not.toContain('/downloads/');
 });
+it('proves resolved HEAD with the same bounded redirect reader used by transfer',async()=>{
+ const base=`https://customer-test.cloudflarestream.com/${uid}/downloads/default.mp4`,token=encode('{}')+'.'+encode(JSON.stringify({sub:uid,downloadable:true,exp:Math.floor(Date.now()/1000)+600}))+'.private-signature';
+ vi.stubGlobal('fetch',vi.fn().mockResolvedValueOnce(Response.json({success:true,result:{uid,creator:`post-video:${jobId}`,requireSignedURLs:true}})).mockResolvedValueOnce(Response.json({success:true,result:{default:{status:'ready',url:base}}})).mockResolvedValueOnce(Response.json({success:true,result:{token}})).mockResolvedValueOnce(new Response(null,{status:302,headers:{location:base+'?opaque=secret'}})).mockResolvedValueOnce(new Response(null,{status:302,headers:{location:base+'?opaque=secret'}})).mockResolvedValueOnce(new Response(null,{status:200,headers:{'content-length':'123'}})));
+ const report=await inspectPostVideoExport(job,{accountId:job.stream_account_id,token:'test'});
+ expect(report).toMatchObject({headStatus:302,redirectResolution:'resolved',resolvedHeadStatus:200,resolvedHeadLength:123});expect(JSON.stringify(report)).not.toContain('opaque');expect(JSON.stringify(report)).not.toContain(token);
+});

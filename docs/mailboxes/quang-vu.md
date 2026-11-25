@@ -596,3 +596,5 @@ SQL: `docs/superpowers/plans/2026-10-15-livestream-orphan-dry-run.sql`. Candidat
 ### 25/11/2026 — Token đã qua, phát hiện chuyển hướng MP4
 - PR78 merged main `01f6f5a`, Preview8d435bc render thật đạt; đã deploy process-post-videos. Probe thật xác nhận signedUrlValid=true với exp string.
 - Ranh giới kế tiếp: HEAD endpoint MP4 trả302 có Location, chưa có kích thước. Tác vụ chưa được resume/publish/delete. Nhánh `fix/quangvu-video-rollout-results` tiếp tục phạm vi canary: hỗ trợ chuyển hướng hữu hạn, giữ allowlist host/path/UID và timeout chung; nếu provider chuyển sang host ngoài allowlist phải dừng/đối soát, không nới quyền đoán.
+- PR79 merged main `8e5c1bd`, Preview837a0ad render thật đạt. Probe đích302 xác nhận cùng origin `customer-bsht0z0p42aa9o2u.cloudflarestream.com`, path chứa đúng UID; không xuất path/query/capability.
+- Nhánh `fix/quangvu-private-export-redirect`: sửa theo bằng chứng thực tế, tối đa3redirect, cùng origin ban đầu, mỗi hop validate host/path/UID, deadline chung20sHEAD/45sRange và không Referer. Host/path/UID khác sẽ fail closed; không tự mở bucket/CDN ngoài allowlist.

@@ -30,6 +30,25 @@ export function validateExportUrl(url: string, uid?: string): URL {
   return u;
 }
 
+/** Provider download redirects stay within the initial origin and the same video. */
+export async function fetchPostVideoExportResponse(url:string,options:{method?:'GET'|'HEAD';range?:string;signal?:AbortSignal}={}) {
+  const initial=validateExportUrl(url),identity=initial.pathname.split('/')[1];
+  const uid=/^[a-f0-9]{32}$/.test(identity)?identity:JSON.parse(atob(identity.split('.')[1].replaceAll('-','+').replaceAll('_','/'))).sub;
+  const method=options.method||'GET',deadline=AbortSignal.timeout(method==='HEAD'?20000:45000);
+  const signal=options.signal?AbortSignal.any([options.signal,deadline]):deadline;
+  let current=initial;
+  for(let redirects=0;redirects<=3;redirects++){
+    const response=await fetch(current.href,{method,headers:options.range?{Range:options.range}:undefined,redirect:'manual',referrerPolicy:'no-referrer',signal});
+    if(![301,302,303,307,308].includes(response.status))return response;
+    const location=response.headers.get('location');await response.body?.cancel();
+    if(!location||redirects===3)throw new Error('Invalid export redirect');
+    const target=validateExportUrl(new URL(location,current).href,uid);
+    if(target.origin!==initial.origin)throw new Error('Cross-origin export redirect denied');
+    current=target;
+  }
+  throw new Error('Export redirect limit exceeded');
+}
+
 /** Strict bounded reader: never buffer a server's fallback full-file response. */
 export async function readExactRangeResponse(response: Response, start: number, end: number, total: number): Promise<Uint8Array> {
   const length = end - start + 1;
@@ -55,15 +74,12 @@ export async function readExactRangeResponse(response: Response, start: number, 
 }
 
 export async function readExactVideoRange(url: string, start: number, end: number, total: number, signal?: AbortSignal) {
-  validateExportUrl(url);
-  const response = await fetch(url, { headers: { Range: `bytes=${start}-${end}` }, redirect: 'manual',
-    signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(45000)]) : AbortSignal.timeout(45000) });
+  const response = await fetchPostVideoExportResponse(url,{range:`bytes=${start}-${end}`,signal});
   return readExactRangeResponse(response, start, end, total);
 }
 
 export async function readExportSize(url: string): Promise<number> {
-  validateExportUrl(url);
-  const r = await fetch(url, { method: 'HEAD', redirect: 'manual', signal: AbortSignal.timeout(20000) });
+  const r = await fetchPostVideoExportResponse(url,{method:'HEAD'});
   const n = Number(r.headers.get('content-length'));
   if (!r.ok || r.status !== 200 || !Number.isSafeInteger(n) || n <= 0 || n > 30 * 1024 ** 3) throw new Error('Unknown export size');
   return n;

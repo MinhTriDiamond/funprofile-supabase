@@ -1,5 +1,5 @@
 import {postVideoStreamConfig,postVideoStreamRequest,type PostVideoStreamConfig,assertStreamUid} from './postVideoStream.ts';
-import {validateExportUrl} from './postVideoTransfer.ts';
+import {validateExportUrl,fetchPostVideoExportResponse} from './postVideoTransfer.ts';
 /** Operator-only canary probe. No provider URL, JWT, body, or error message is returned. */
 export async function inspectPostVideoExport(job:{id:string;canary:boolean;cancelled:boolean;phase:string;stream_uid:string|null;stream_account_id:string|null},config:PostVideoStreamConfig=postVideoStreamConfig()) {
  if(!job.canary||job.cancelled||!['mp4_wait','needs_review'].includes(job.phase)||job.stream_account_id!==config.accountId||!job.stream_uid)throw new Error('Canary export diagnostic unavailable');
@@ -31,7 +31,12 @@ export async function inspectPostVideoExport(job:{id:string;canary:boolean;cance
     redirect={hostname:knownProvider?target.hostname:'other',sameOrigin:target.origin===base.origin,pathContainsUid:target.pathname.includes(uid),hasSignedQuery:['token','Signature','X-Amz-Signature','X-Goog-Signature'].some(key=>target.searchParams.has(key))};
    }catch{redirect={invalid:true};}
   }
-  return {...report,stage,headStatus:response.status,headLength:Number.isSafeInteger(length)&&length>0?length:null,hasLocation:response.headers.has('location'),...(redirect?{redirect}:{})};
+  const result={...report,stage,headStatus:response.status,headLength:Number.isSafeInteger(length)&&length>0?length:null,hasLocation:response.headers.has('location'),...(redirect?{redirect}:{})};
+  if([301,302,303,307,308].includes(response.status)){
+   try{const resolved=await fetchPostVideoExportResponse(base.href,{method:'HEAD'});const size=Number(resolved.headers.get('content-length'));await resolved.body?.cancel();return {...result,redirectResolution:'resolved',resolvedHeadStatus:resolved.status,resolvedHeadLength:Number.isSafeInteger(size)&&size>0?size:null};}
+   catch{return {...result,redirectResolution:'rejected'};}
+  }
+  return result;
  }catch(error){
   if(stage==='video'&&report.privateOwnedVod!==true&&error instanceof Error&&error.message==='Private owned VOD required')throw error;
   const status=error instanceof Error?/^Stream request failed \((\d{3})\)$/.exec(error.message):null;
