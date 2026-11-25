@@ -209,5 +209,5 @@ export async function inspectPostVideoCleanup(admin:Admin,jobId:string) {
  }
  const approval=control.delete_enabled===true&&(!job.canary||job.delete_approved===true);
  const durable=job.phase==='not_beneficial'?sourceVerified:!!job.published_at&&outputVerified;
- return {jobId:job.id,phase:job.phase,uid:job.stream_uid,accountId:job.stream_account_id,canary:job.canary,deleteApproved:job.delete_approved===true,deleteEnabled:control.delete_enabled===true,originalRetained:true,outputVerified,sourceVerified,published:!!job.published_at,ownedVod,streamHttpStatus,referenced,readyToDelete:approval&&ownedVod&&!referenced&&durable};
+ return {jobId:job.id,phase:job.phase,uid:job.stream_uid,accountId:job.stream_account_id,canary:job.canary,deleteApproved:job.delete_approved===true,deleteEnabled:control.delete_enabled===true,originalRetained:!(job as any).source_deleted_at,outputVerified,sourceVerified,published:!!job.published_at,ownedVod,streamHttpStatus,referenced,readyToDelete:approval&&ownedVod&&!referenced&&durable};
 }

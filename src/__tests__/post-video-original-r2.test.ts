@@ -1,0 +1,15 @@
+import {afterEach,expect,it,vi} from 'vitest';
+import {deleteRetiredPostVideoSource,isPostVideoSourceMissing} from '../../supabase/functions/_shared/postVideoR2';
+const owner='10000000-0000-0000-0000-000000000001',job={user_id:owner,source_key:`videos/${owner}/source.mov`,source_size:100,runtime:{sourceEtag:'"source"'}};
+afterEach(()=>vi.unstubAllGlobals());
+function env(){const e:Record<string,string>={R2_ACCOUNT_ID:'a'.repeat(32),R2_ACCESS_KEY_ID:'test',R2_SECRET_ACCESS_KEY:'test',R2_BUCKET_NAME:'originals',R2_PUBLIC_DOMAIN:'https://media.example'};vi.stubGlobal('Deno',{env:{get:(k:string)=>e[k]}});}
+it('deletes only the original key after version verification, never the optimized bucket',async()=>{env();const f=vi.fn().mockResolvedValueOnce(new Response(null,{headers:{'content-length':'100',etag:'"source"'}})).mockResolvedValueOnce(new Response(null,{status:204}));vi.stubGlobal('fetch',f);await deleteRetiredPostVideoSource(job);expect(f.mock.calls.map(x=>x[1].method)).toEqual(['HEAD','DELETE']);for(const [url] of f.mock.calls){expect(url).toContain('/originals/videos/');expect(url).not.toContain('fun-rich-video-optimized');}});
+it('never deletes a changed source',async()=>{env();const f=vi.fn().mockResolvedValue(new Response(null,{headers:{'content-length':'100',etag:'"changed"'}}));vi.stubGlobal('fetch',f);await expect(deleteRetiredPostVideoSource(job)).rejects.toThrow();expect(f).toHaveBeenCalledTimes(1);});
+it.each([403,500])('does not treat HTTP%i as missing',async status=>{env();vi.stubGlobal('fetch',vi.fn().mockResolvedValue(new Response(null,{status})));await expect(isPostVideoSourceMissing(job)).rejects.toThrow();});
+it('recognizes404 as missing for crash recovery',async()=>{env();vi.stubGlobal('fetch',vi.fn().mockResolvedValue(new Response(null,{status:404})));expect(await isPostVideoSourceMissing(job)).toBe(true);});
+it('refuses foreign source keys before anyR2request',async()=>{env();const f=vi.fn();vi.stubGlobal('fetch',f);await expect(deleteRetiredPostVideoSource({...job,source_key:'videos/foreign/original.mov'})).rejects.toThrow();expect(f).not.toHaveBeenCalled();});
+it('probes retirement only on a unique synthetic1024byte source and confirms404',async()=>{
+ env();const {probeOriginalRetentionR2}=await import('../../supabase/functions/_shared/postVideoOriginalRetention');let exists=false;let key='';
+ const f=vi.fn().mockImplementation(async(url:string,init:RequestInit)=>{if(init.method==='PUT'){expect(new Headers(init.headers).get('if-none-match')).toBe('*');exists=true;key=url;return new Response(null);}expect(url).toBe(key);if(init.method==='HEAD')return exists?new Response(null,{headers:{'content-length':'1024',etag:'"fixture"'}}):new Response(null,{status:404});if(init.method==='DELETE'){exists=false;return new Response(null,{status:204});}throw new Error('Unexpected probe request');});vi.stubGlobal('fetch',f);
+ expect(await probeOriginalRetentionR2()).toEqual({fixtureDeleted:true,bytes:1024});expect(exists).toBe(false);expect(key).toContain('source-retention-probe-');expect(f.mock.calls.every(([u])=>!u.includes('fun-rich-video-optimized'))).toBe(true);
+});
