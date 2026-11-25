@@ -91,3 +91,25 @@ describe('Cloudflare private export NumericDate compatibility',()=>{
   expect(()=>validateExportUrl(signed(exp),id)).toThrow();
  });
 });
+
+describe('bounded same-origin MP4 redirects observed on canary',()=>{
+ const id='a'.repeat(32),base=`https://customer-test.cloudflarestream.com/${id}/downloads/default.mp4`;
+ it('resolves a same-origin same-video HEAD redirect',async()=>{
+  const {readExportSize}=await import('../../supabase/functions/_shared/postVideoTransfer');
+  const f=vi.fn().mockResolvedValueOnce(new Response(null,{status:302,headers:{location:base+'?opaque=local-test-only'}})).mockResolvedValueOnce(new Response(null,{status:200,headers:{'content-length':'123'}}));vi.stubGlobal('fetch',f);
+  expect(await readExportSize(base)).toBe(123);expect(f).toHaveBeenCalledTimes(2);
+  expect(f.mock.calls[0][1].signal).toBe(f.mock.calls[1][1].signal);expect(f.mock.calls[1][1]).toMatchObject({method:'HEAD',redirect:'manual',referrerPolicy:'no-referrer'});
+ });
+ it('preserves bounded Range over a same-video redirect',async()=>{
+  const f=vi.fn().mockResolvedValueOnce(new Response(null,{status:302,headers:{location:base+'?opaque=local-test-only'}})).mockResolvedValueOnce(new Response(new Uint8Array([7,8]),{status:206,headers:{'content-range':'bytes 0-1/10','content-length':'2'}}));vi.stubGlobal('fetch',f);
+  expect(await readExactVideoRange(base,0,1,10)).toEqual(new Uint8Array([7,8]));expect(new Headers(f.mock.calls[1][1].headers).get('range')).toBe('bytes=0-1');
+ });
+ it.each(['https://evil.invalid/a.mp4',`https://customer-other.cloudflarestream.com/${id}/downloads/default.mp4`,`https://customer-test.cloudflarestream.com/${'b'.repeat(32)}/downloads/default.mp4`])('rejects redirect before fetching an unbound target %s',async target=>{
+  const {readExportSize}=await import('../../supabase/functions/_shared/postVideoTransfer');const f=vi.fn().mockResolvedValue(new Response(null,{status:302,headers:{location:target}}));vi.stubGlobal('fetch',f);
+  await expect(readExportSize(base)).rejects.toThrow();expect(f).toHaveBeenCalledTimes(1);
+ });
+ it('stops redirect loops after at most three hops',async()=>{
+  const {readExportSize}=await import('../../supabase/functions/_shared/postVideoTransfer');const f=vi.fn().mockImplementation(()=>Promise.resolve(new Response(null,{status:302,headers:{location:base}})));vi.stubGlobal('fetch',f);
+  await expect(readExportSize(base)).rejects.toThrow();expect(f).toHaveBeenCalledTimes(4);
+ });
+});
