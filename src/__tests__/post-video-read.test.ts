@@ -53,3 +53,15 @@ it('clears a previous viewer permit without exposing it when the client loses ac
  const result=await worker.fetch(new Request('https://fun.rich/media-optimized/30000000-0000-0000-0000-000000000001/40000000-0000-0000-0000-000000000001.mp4',{method:'DELETE',headers:{origin:'https://fun.rich'}}),{} as any);
  expect(result.status).toBe(204);expect(result.headers.get('set-cookie')).toContain('Max-Age=0');
 });
+it('uses native fixed-length piping without a JavaScript per-chunk transform on Workers',async()=>{
+ const OriginalTransform=globalThis.TransformStream;let javascriptTransforms=0;
+ vi.stubGlobal('TransformStream',class extends OriginalTransform{constructor(transformer?:Transformer){super(transformer);if(transformer?.transform)javascriptTransforms++;}});
+ vi.stubGlobal('FixedLengthStream',class extends OriginalTransform{constructor(length:number){super();expect(length).toBe(10);}});
+ try{
+  const result=await worker.fetch(new Request('https://fun.rich/media-optimized/'+attachment+'/'+generation+'.mp4?download=1',{headers:{cookie:'post_video_permit=permit'}}),{
+   POST_VIDEO_GATEWAY_SECRET:'test',POST_VIDEO_AUTH_URL:'https://supabase.example/functions/v1/post-video-read',fetch:async()=>Response.json({allowed:true,key:`optimized/${attachment}/${generation}.mp4`,size:10}),
+   POST_VIDEO_OUTPUT_BUCKET:{get:async()=>({size:10,httpEtag:'"etag"',body:new Blob([new Uint8Array(10)]).stream()})},
+  });
+  expect((await result.arrayBuffer()).byteLength).toBe(10);expect(javascriptTransforms).toBe(0);
+ }finally{vi.unstubAllGlobals();}
+});

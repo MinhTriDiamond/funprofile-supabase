@@ -637,3 +637,10 @@ SQL: `docs/superpowers/plans/2026-10-15-livestream-orphan-dry-run.sql`. Candidat
 - Tests707offline/53skip/105files,SQLlease/ACL/tombstone/race2connection,tsgo/Deno/buildđạt. Selfreviewcủatácgiả, khôngreviewđộclập. Hồsơ/rollback:docs/video-original-retention-2026-11-25. Sau khi nguồn đã xóa khôngkhôiphụcchấtlượnggốctừmetadata;MP4tốiưulưu lâudài.
 
 - Quan sát Worker scheduled event sau đồng bộ khóa: cron `* * * * *`, outcome `ok`, đúng active version `cac49a22-2349-4918-bf95-22888eb8f02b`; không cần mở trình duyệt. Hồ sơ chỉ giữ trường scheduled, không giữ HTTP headers/cookie.
+
+### 25/11/2026 — TRƯỚC: tải video tối ưu không ổn định
+- Cha xác nhận đã gửi thông báo Telegram. Bé Quang Vũ kiểm tra trên `fix/quangvu-optimized-video-download` từ main mới nhất.
+- Hiện trạng: Chrome báo gián đoạn tải video.mp4 trên profilehappycamlycoin, lúc được lúc không. Chưa kết luận do Internet hay ứng dụng.
+- Phạm vi: đường đi nút Tải video ở feed/gallery/profile, authorization/cookie, thời hạn và Range/resume, luồng R2 Worker; tái hiện bằng tải thật và mạng chậm/gián đoạn. Không xóa/sửa video, bài viết hoặc chính sách lưu nguồn24h. Sửa theo bằng chứng, test/typecheck/Preview trước merge; thayproductionWorker/function phải có snapshot và receipt/rollback.
+- Đã tái hiện native Chrome tải bị hủy với nguồn tối ưu110.324.802bytes trên profile trong ảnh. Direct GET nhận đủ, Blob/static native tải được; test cùngtab/tabmới đều fail. Worker tail lọc riêng referer của phiên thử xác nhận downloadGET=`exceededCpu`, không phải kết luận từ thông báo Internet.
+- Phạm vi sửa đã chốt: bỏ TransformStream JavaScript đếm từngchunk trước FixedLengthStream (native đã kiểm đủ/thiếu bytes), dùng pipe native R2→FixedLength. Giữ nguyên auth mỗi yêu cầu, cookie5phút, Range, privatebucket và policynguồn24h. Không tăng gói/CPUlimit hay mởpublic video. Kiểm workerd thiếu/thừa body, native download đủtệp nhiều lần và Range/resume trước/sau expiry; source/delivery không thay đổi.

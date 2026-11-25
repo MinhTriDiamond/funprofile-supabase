@@ -56,13 +56,16 @@ export default {
    if(range)headers['Content-Range']=`bytes ${range.start}-${range.end}/${size}`;
    if(u.searchParams.get('download')==='1')headers['Content-Disposition']='attachment; filename="video.mp4"';
    if(request.method==='HEAD'){await object.body.cancel();return new Response(null,{status:range?206:200,headers});}
-   let transferred=0;
-   const bounded=object.body.pipeThrough(new TransformStream<Uint8Array,Uint8Array>({transform(chunk,controller){transferred+=chunk.length;if(transferred>length)throw new Error('R2 body exceeds expected size');controller.enqueue(chunk);},flush(){if(transferred!==length)throw new Error('R2 body truncated');}}));
    const FixedLength=(globalThis as unknown as {FixedLengthStream?:new(length:number)=>TransformStream<Uint8Array,Uint8Array>}).FixedLengthStream;
    if(FixedLength){
-    const fixed=new FixedLength(length);void bounded.pipeTo(fixed.writable).catch(()=>{});
+    // Workers validates the byte count natively. A JS transform per chunk can
+    // exhaust CPU during native browser downloads of large R2 objects.
+    const fixed=new FixedLength(length);void object.body.pipeTo(fixed.writable).catch(()=>{});
     return new Response(fixed.readable,{status:range?206:200,headers});
    }
+   // Test runtimes without FixedLengthStream still enforce the exact size.
+   let transferred=0;
+   const bounded=object.body.pipeThrough(new TransformStream<Uint8Array,Uint8Array>({transform(chunk,controller){transferred+=chunk.length;if(transferred>length)throw new Error('R2 body exceeds expected size');controller.enqueue(chunk);},flush(){if(transferred!==length)throw new Error('R2 body truncated');}}));
    return new Response(bounded,{status:range?206:200,headers});
   }catch{return respond(503);}
  }
