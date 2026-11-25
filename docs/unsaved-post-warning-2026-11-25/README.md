@@ -25,3 +25,9 @@ Chrome quyết định câu chữ của hộp cảnh báo rời trang. Cần tư
 ## Phát hành và khôi phục
 
 Đi qua PR và Preview đúng commit trước merge; Cloudflare Pages tự triển khai từ main. Có thể khôi phục bằng PR revert commit sửa này. Chỉ frontend/i18n/test, không có migration hay đổi secrets.
+
+## Kết quả phát hành
+
+PR [#89](https://github.com/MinhTriDiamond/funprofile-supabase/pull/89) đã merge `1ce86df`, nhánh sửa đã xóa. Preview đúng commit `fe843d6`: https://06e7457f.funprofile-supabase.pages.dev đã kiểm tra render bằng Chrome.
+
+Kiểm tra bổ sung đóng tab Chrome bằng `runBeforeUnload` trong context riêng đạt: có dialog loại beforeunload; dismiss giữ tab mở. Bộ harness chỉ giả lập backend/user local, không sử dụng phiên đăng nhập thật và không đăng bài trên production. Kết quả local không thay thế việc bảo đảm hành vi mọi trình duyệt/mobile.

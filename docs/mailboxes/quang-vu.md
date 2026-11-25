@@ -654,3 +654,10 @@ SQL: `docs/superpowers/plans/2026-10-15-livestream-orphan-dry-run.sql`. Candidat
 ### 25/11/2026 — TRƯỚC: cảnh báo rời bài đang soạn
 - Cha đã xác nhận gửi Telegram. Bé Quang Vũ thực hiện trên nhánh `fix/quangvu-unsaved-post-warning` từ main mới nhất.
 - Phạm vi: kiểm tra composer đăng bài/video; xác nhận đóng khi còn nội dung/media hoặc đang đăng, beforeunload khi đóng tab/reload; tránh cảnh báo khi trống/đã đăng thành công; giữ cơ chế nháp hiện có. Kiểm thử, typecheck và Preview trước merge. Không thay đổi backend hoặc tự đăng bài thật.
+
+### 25/11/2026 — SAU: cảnh báo rời bài đang soạn
+- PR https://github.com/MinhTriDiamond/funprofile-supabase/pull/89 đã merge `1ce86df`; nhánh sửa đã xóa. Preview đúng commit `fe843d6`: https://06e7457f.funprofile-supabase.pages.dev render bình thường trước merge. Cloudflare Pages phát hành từ main.
+- Giữ loading/cảnh báo đóng tab đến khi server xác nhận, kể cả dialog đã tự đóng để gửi nền; vẫn cảnh báo khi media tiếp tục upload sau lưu nháp/đóng. Không cảnh báo thừa khi trống hoặc đăng xong.
+- Đóng khi đang gửi có giải thích và lựa chọn ở lại; bản chưa đăng giữ lựa chọn tiếp tục/lưu nháp/bỏ, nói rõ nội dung sẽ mất nếu bỏ. Nút quay về nhiệm vụ qua cùng xác nhận; lưu nháp lỗi giữ nội dung và không báo thành công.
+- 6 test composer đạt; toàn bộ 714 test offline đạt/53 skip/106 file, tsgo và build đạt. Chrome local chạy composer thật/backend giả xác nhận reload, đóng tab rồi dismiss giữ trang, xác nhận đóng dialog, reload khi gửi nền, và gỡ cảnh báo sau thành công. Không đăng bài production. Self-review bởi tác giả, không review độc lập.
+- Cảnh báo native do Chrome quyết định nội dung; không bảo đảm khi OS buộc tắt app/mobile. Giữ cơ chế nháp hiện có. Hồ sơ và rollback: docs/unsaved-post-warning-2026-11-25; không thay backend/storage/secrets.
