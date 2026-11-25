@@ -592,3 +592,7 @@ SQL: `docs/superpowers/plans/2026-10-15-livestream-orphan-dry-run.sql`. Candidat
 - Bộ duyệt đã hoạt động lại; PR77 merged main `f671904`, Preview đúng commit `24534f8` render thật đạt tại https://83a5c253.funprofile-supabase.pages.dev. Đã deploy process-post-videos diagnostic.
 - Probe VOD canary xác nhận: private/owned=true, MP4ready, trusted URL, subjectMatches=true, downloadable=true; `exp` là string có giá trị thời gian tương lai, bị validator từ chối ở `signed-url-validation`. Không xuất token/URL.
 - Nhánh riêng tiếp theo `fix/quangvu-video-export-runtime`: chỉ chuẩn hóa NumericDate decimal-string có kiểm tra safe integer/future, giữ kiểm UID/downloadable/host; test lỗi thực tế RED→GREEN, Preview trước merge/deploy, tiếp tục đúng job cũ. Cờ đại trà/xóa vẫn OFF.
+
+### 25/11/2026 — Token đã qua, phát hiện chuyển hướng MP4
+- PR78 merged main `01f6f5a`, Preview8d435bc render thật đạt; đã deploy process-post-videos. Probe thật xác nhận signedUrlValid=true với exp string.
+- Ranh giới kế tiếp: HEAD endpoint MP4 trả302 có Location, chưa có kích thước. Tác vụ chưa được resume/publish/delete. Nhánh `fix/quangvu-video-rollout-results` tiếp tục phạm vi canary: hỗ trợ chuyển hướng hữu hạn, giữ allowlist host/path/UID và timeout chung; nếu provider chuyển sang host ngoài allowlist phải dừng/đối soát, không nới quyền đoán.

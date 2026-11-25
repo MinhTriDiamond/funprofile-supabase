@@ -30,3 +30,10 @@ it('normalizes unknown provider statuses instead of echoing response values',asy
  vi.stubGlobal('fetch',vi.fn().mockResolvedValueOnce(Response.json({success:true,result:{uid,creator:`post-video:${jobId}`,requireSignedURLs:true}})).mockResolvedValueOnce(Response.json({success:true,result:{default:{status:'https://capability.invalid/private'}}})));
  const report=await inspectPostVideoExport(job,{accountId:job.stream_account_id,token:'test'});expect(report.downloadStatus).toBe('unknown');expect(JSON.stringify(report)).not.toContain('capability.invalid');
 });
+it('classifies provider redirect host and UID binding without exposing location or query values',async()=>{
+ const token=encode('{}')+'.'+encode(JSON.stringify({sub:uid,downloadable:true,exp:Math.floor(Date.now()/1000)+600}))+'.private-signature';
+ vi.stubGlobal('fetch',vi.fn().mockResolvedValueOnce(Response.json({success:true,result:{uid,creator:`post-video:${jobId}`,requireSignedURLs:true}})).mockResolvedValueOnce(Response.json({success:true,result:{default:{status:'ready',url:`https://customer-test.cloudflarestream.com/${uid}/downloads/default.mp4`}}})).mockResolvedValueOnce(Response.json({success:true,result:{token}})).mockResolvedValueOnce(new Response(null,{status:302,headers:{location:`https://videodelivery.net/${uid}/downloads/default.mp4?token=private-query`}})));
+ const report=await inspectPostVideoExport(job,{accountId:job.stream_account_id,token:'test'});
+ expect(report).toMatchObject({headStatus:302,redirect:{hostname:'videodelivery.net',sameOrigin:false,pathContainsUid:true,hasSignedQuery:true}});
+ const out=JSON.stringify(report);expect(out).not.toContain(token);expect(out).not.toContain('private-query');expect(out).not.toContain('https://');expect(out).not.toContain('/downloads/');
+});
