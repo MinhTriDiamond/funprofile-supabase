@@ -131,11 +131,11 @@
   ],
   "canary": {
     "jobId": "02e100d1-e568-4ab0-a178-33a5ee791c46",
-    "state": "mp4_wait: export boundary failed; diagnostic not yet deployed",
+    "state": "needs_review: decimal-string expiration rejected; runtime fix pending",
     "originalRetained": true,
     "deleteApproved": false,
     "tusBytesCompleted": 3399337725,
-    "attemptsAtLastRead": 2,
+    "attemptsAtLastRead": 5,
     "published": false,
     "streamDeleted": false
   },
@@ -148,11 +148,24 @@
     "advancedBytes": 117440512,
     "lastError": null
   },
-  "pendingDiagnostic": {
-    "committed": false,
-    "deployed": false,
-    "offlineTestsPassed": 652,
-    "offlineSkipped": 53,
-    "reason": "Automatic approval review unavailable due to usage limit; commit was not executed"
+  "diagnosticRelease": {
+    "pr": "https://github.com/MinhTriDiamond/funprofile-supabase/pull/77",
+    "mainCommit": "f671904",
+    "preview": "https://83a5c253.funprofile-supabase.pages.dev",
+    "browserRenderPassed": true,
+    "deployed": true
+  },
+  "providerExportProbe": {
+    "privateOwnedVod": true,
+    "downloadStatus": "ready",
+    "baseUrlTrusted": true,
+    "token": {
+      "subjectMatches": true,
+      "downloadable": true,
+      "expirationType": "string",
+      "expirationNumericFuture": true
+    },
+    "stage": "signed-url-validation",
+    "signedUrlValid": false
   }
 }

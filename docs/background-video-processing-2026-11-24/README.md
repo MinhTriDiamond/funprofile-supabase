@@ -6,7 +6,7 @@ Ngày triển khai: 25/11/2026. PR [#76](https://github.com/MinhTriDiamond/funpr
 
 Cron production đã được kiểm chứng riêng: khi dừng tick thủ công và không dùng trình duyệt, offset canary tăng thêm **117.440.512 bytes**. Bucket output private, r2.dev tắt, không custom domain; probe multipart/HEAD/Range/MP4 đạt và file probe đã xóa. Trước canary Stream dùng **0,01/1.000 phút**. Bản gốc được giữ nguyên.
 
-Canary đã chuyển đủ **3.399.337.725 bytes**, Stream chuyển mã xong; `mp4_wait` gặp lỗi hai lần, chưa publish và chưa xóa VOD tại lần kiểm tra gần nhất. Đã hoãn lần thử tiếp theo một giờ để điều tra. Cron có thể thử lại sau mốc này; cờ xóa toàn cục và approval canary vẫn tắt. Bản chẩn đoán giới hạn theo canary đã được review và kiểm thử local nhưng **chưa commit/deploy**: bộ duyệt tự động báo hết hạn mức khi duyệt commit, lệnh không chạy. Không coi nguyên nhân hoặc việc sửa lỗi là đã được xác nhận.
+Canary đã chuyển đủ **3.399.337.725 bytes**, Stream chuyển mã xong. Các lần lấy MP4 thất bại đã dừng ở `needs_review`; chưa publish hoặc xóa VOD. Chẩn đoán được phát hành qua PR [#77](https://github.com/MinhTriDiamond/funprofile-supabase/pull/77), main `f671904`, Preview thật render đạt tại https://83a5c253.funprofile-supabase.pages.dev. Probe provider xác nhận lỗi nằm ở kiểm tra `exp`: Cloudflare trả chuỗi số, còn validator chỉ nhận kiểu number. Token đúng UID, downloadable=true và còn hạn; không xuất token/URL. Bản sửa tương thích đang kiểm thử trên `fix/quangvu-video-export-runtime`, chưa coi lỗi runtime đã hết cho đến khi canary tiếp tục đạt. Cờ đại trà/xóa vẫn OFF.
 
 ## Hành vi
 

@@ -1,3 +1,4 @@
+import {validateExportUrl} from '../../supabase/functions/_shared/postVideoTransfer';
 import { describe,it,expect,vi,afterEach } from 'vitest';
 import { readExactVideoRange, videoPartRange } from '../../supabase/functions/_shared/postVideoTransfer';
 afterEach(()=>vi.unstubAllGlobals());
@@ -78,4 +79,15 @@ it('allows only a server-attested legacy canary source',async()=>{
  expect(await verifyPostVideoSource(job)).toBe('"original"');
  await expect(verifyPostVideoSource({...job,canary:false})).rejects.toThrow();
  await expect(verifyPostVideoSource({...job,user_id:'20000000-0000-0000-0000-000000000002'})).rejects.toThrow();
+});
+
+describe('Cloudflare private export NumericDate compatibility',()=>{
+ const id='a'.repeat(32),encode=(s:string)=>btoa(s).replaceAll('=','').replaceAll('+','-').replaceAll('/','_');
+ const signed=(exp:unknown)=>`https://customer-test.cloudflarestream.com/${encode('{}')}.${encode(JSON.stringify({sub:id,downloadable:true,exp}))}.test-signature/downloads/default.mp4`;
+ it('accepts the decimal-string expiration observed on the real canary token',()=>{
+  expect(()=>validateExportUrl(signed(String(Math.floor(Date.now()/1000)+600)),id)).not.toThrow();
+ });
+ it.each(['', 'Infinity', '1e30', '0xFFFFFFFF', ' 9999999999', '9999999999 ', '999999999999999999999', String(Math.floor(Date.now()/1000)-1),null,true,[]])('rejects invalid or expired claim %j',exp=>{
+  expect(()=>validateExportUrl(signed(exp),id)).toThrow();
+ });
 });
