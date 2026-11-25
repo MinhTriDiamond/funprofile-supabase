@@ -1,7 +1,7 @@
 {
   "date": "2026-11-25",
   "pr": "https://github.com/MinhTriDiamond/funprofile-supabase/pull/76",
-  "mainCommit": "3bee820",
+  "mainCommit": "ed6f0de",
   "preview": {
     "head": "35c69e0c90d7c6973ba0989ddfb6f736a7601faf",
     "url": "https://ffd3ac44.funprofile-supabase.pages.dev",
@@ -131,18 +131,18 @@
   ],
   "canary": {
     "jobId": "02e100d1-e568-4ab0-a178-33a5ee791c46",
-    "state": "R2 publication/delivery/privacy/quality passed; reference RPC fix pending",
+    "state": "complete",
     "originalRetained": true,
     "deleteApproved": false,
     "tusBytesCompleted": 3399337725,
     "attemptsAtLastRead": 5,
     "published": true,
-    "streamDeleted": false,
+    "streamDeleted": true,
     "outputBytes": 110367516,
     "sourceBytes": 3399337725,
     "reductionPercent": 96.7533
   },
-  "rolloutEnabled": false,
+  "rolloutEnabled": true,
   "cronProof": {
     "manualTicksPaused": true,
     "browserNotRequired": true,
@@ -206,12 +206,120 @@
     "unrelatedContentAndMediaPreserved": true
   },
   "referenceProbe": {
-    "status": "migration/consumer not deployed yet",
+    "status": "deployed and verified through service-role API",
     "hostedRows": 408411,
     "oldClientTimeoutSeconds": 145,
     "equivalentServerExplainMs": 12070.461,
     "functionTimeoutSeconds": 30,
     "clientDeadlineSeconds": 45,
-    "serviceOnly": true
+    "serviceOnly": true,
+    "dryRunMs": 7695
+  },
+  "flags": {
+    "delete_enabled": true,
+    "enabled": true,
+    "import_enabled": true,
+    "live_reserve_minutes": 240,
+    "output_bucket": "fun-rich-video-optimized",
+    "publish_enabled": true,
+    "updated_at": "2026-11-25 07:26:51.240601+00"
+  },
+  "cleanup": {
+    "jobId": "02e100d1-e568-4ab0-a178-33a5ee791c46",
+    "phase": "complete",
+    "uid": "40126473def1d9dba4f7f21ea252733b",
+    "accountId": "c94ab2ffb5381cac3177eec3734467b4",
+    "canary": true,
+    "deleteApproved": true,
+    "deleteEnabled": true,
+    "originalRetained": true,
+    "outputVerified": true,
+    "sourceVerified": false,
+    "published": true,
+    "ownedVod": false,
+    "streamHttpStatus": 404,
+    "referenced": false,
+    "readyToDelete": false
+  },
+  "quotaAfterCleanup": {
+    "usedMinutes": 0.01,
+    "limitMinutes": 1000
+  },
+  "releaseGates": {
+    "mode": "post-enable",
+    "checks": [
+      {
+        "name": "exact canary404 and durable output",
+        "passed": true
+      },
+      {
+        "name": "predelete owned unreferenced approved proof",
+        "passed": true
+      },
+      {
+        "name": "original retained",
+        "passed": true
+      },
+      {
+        "name": "private R2HEAD/Range after deletion",
+        "passed": true
+      },
+      {
+        "name": "full download/expiry/renewal",
+        "passed": true
+      },
+      {
+        "name": "private visibility enforcement",
+        "passed": true
+      },
+      {
+        "name": "friends visibility enforcement",
+        "passed": true
+      },
+      {
+        "name": "desktop production component playback/renewal",
+        "passed": true
+      },
+      {
+        "name": "mobile production component playback/renewal",
+        "passed": true
+      },
+      {
+        "name": "duration/audio",
+        "passed": true
+      },
+      {
+        "name": "full decode clean",
+        "passed": true
+      },
+      {
+        "name": "production admission and10GiB rollback-only",
+        "passed": true
+      },
+      {
+        "name": "source recovery rehearsal",
+        "passed": true
+      },
+      {
+        "name": "service-only bounded RPC",
+        "passed": true
+      },
+      {
+        "name": "exact deployed source",
+        "passed": true
+      },
+      {
+        "name": "quota/R2probe",
+        "passed": true
+      },
+      {
+        "name": "scheduled background independent",
+        "passed": true
+      },
+      {
+        "name": "normal rollout active",
+        "passed": true
+      }
+    ]
   }
 }
