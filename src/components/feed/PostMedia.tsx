@@ -1,3 +1,4 @@
+import { PostVideoProcessing } from './PostVideoProcessing';
 import { useMemo, memo } from 'react';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { MediaGrid } from './MediaGrid';
@@ -457,6 +458,9 @@ export const PostMedia = memo(function PostMedia({
           <Radio className="h-3 w-3 animate-pulse" />
           <span>{optimizingText}</span>
         </div>
+      )}
+      {!isLive && metadata?.video_processing_by_attachment && typeof metadata.video_processing_by_attachment === 'object' && Object.keys(metadata.video_processing_by_attachment).length > 0 && (
+        <PostVideoProcessing metadata={metadata} ownerId={post.user_id} />
       )}
       <HeartAnimation show={showHeartAnimation} onComplete={onHeartComplete} />
     </div>

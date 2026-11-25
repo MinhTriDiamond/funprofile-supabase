@@ -1,3 +1,17 @@
+## 2026-11-24 · CHA CHỐT STREAM TẠM → R2 LÂU DÀI → DỌN STREAM
+
+- Cha xác nhận rõ bản tối ưu phải đưa về R2 để phát feed lâu dài, rồi dọn VOD tạm trên Stream sau xác minh. Cập nhật thiết kế thay cho bản lưu Stream lâu dài.
+- Output MP4 R2 là media chính, không TTL30ngày. Tệp gốc R2 chưa có chính sách xóa được duyệt nên mặc định giữ; không tự áp mốc7ngày. V1 canary/bài public, không quét video cũ hoặc đổi RTMP.
+- Phạm vi bổ sung cần thiết: export MP4 ready, transfer multipart có checkpoint, xác minh R2, publish đồng bộ và dọn Stream đúng thứ tự; lập kế hoạch tại docs/superpowers/plans/2026-11-24-background-video-processing.md. Chưa sửa code sản phẩm/production.
+
+## 2026-11-24 · BẮT ĐẦU KHẢO SÁT XỬ LÝ VIDEO NỀN
+
+- Quang Vũ cùng Angel Muse; Cha xác nhận đã gửi thông báo Coordinator cho tính năng mới.
+- Nhánh: feat/quangvu-background-video-processing từ origin/main mới nhất.
+- Phạm vi giai đoạn này: khảo sát upload R2/Create Post/player, luồng Stream hiện có, khả năng chạy chuyển mã và thiết kế hàng đợi/kiểm chứng/giữ bản gốc. Tài liệu thiết kế tại docs/superpowers/specs/.
+- Hiện trạng: video MOV 6:08, 3,40 GB đã upload thành công nhưng giữ nguyên dung lượng; cần bản phát nhẹ hơn. Quota Stream từng chặn RTMP nên phải tính riêng khả năng lưu/transcode.
+- Chưa sửa code sản phẩm, schema, secrets hoặc production; chưa xóa nguồn, chuyển video sang nhà cung cấp mới hay đăng ký dịch vụ trả phí. Chốt phương án và thiết kế trước triển khai.
+
 ## 2026-11-24 · HOÀN TẤT PHÁT HÀNH VIDEO 10 GiB VÀ THỬ TỆP LỖI THẬT
 
 - PR #74 đã merge c23c44e và lên fun.rich; bundle index-CmHv55iG.js. Backend multipart-upload v88, create-post v88, get-upload-url v89 ACTIVE; JWT false/false/true giữ nguyên, source tải lại khớp repo.

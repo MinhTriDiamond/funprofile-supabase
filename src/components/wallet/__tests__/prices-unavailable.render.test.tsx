@@ -15,11 +15,13 @@ import { WalletCard } from '@/components/wallet/WalletCard';
 import { ClaimRewardsSection } from '@/components/wallet/ClaimRewardsSection';
 import type { TokenBalance } from '@/hooks/useTokenBalances';
 
-vi.mock('@/i18n/LanguageContext', () => ({
-  useLanguage: () => ({ t: (k: string) => k, language: 'vi', setLanguage: () => {} }),
-}));
+vi.mock('@/i18n/LanguageContext', async () => {
+  const { default: strings } = await import('@/i18n/locales/chunks/vi-p11');
+  return { useLanguage: () => ({ t: (k: string) => (strings as Record<string, string>)[k] ?? k, language: 'vi', setLanguage: () => {} }) };
+});
 vi.mock('@/integrations/supabase/client', () => ({
   supabase: {
+    rpc: vi.fn().mockResolvedValue({ data: [], error: null }),
     auth: { getSession: async () => ({ data: { session: null } }) },
     from: () => ({ select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: null }) }) }) }),
   },

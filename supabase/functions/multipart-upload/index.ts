@@ -6,6 +6,7 @@
  */
 
 import { createClient } from 'npm:@supabase/supabase-js@2';
+import { hasOwnedPostVideoPrefix, isOwnedPostVideoKey, isPostVideoSourceLocked } from '../_shared/postVideoSourceKey.ts';
 import {
   isElevatedMediaAccount,
   validateUploadMedia,
@@ -365,6 +366,12 @@ Deno.serve(async (req) => {
 
     const body = await req.json();
     const { action } = body;
+    if (typeof body.key === 'string' && hasOwnedPostVideoPrefix(body.key) && !isOwnedPostVideoKey(body.key, user.id)) {
+      return new Response(JSON.stringify({ error: 'Video source does not belong to this account' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
+    if (typeof body.key === 'string' && action !== 'abort' && await isPostVideoSourceLocked(supabaseAdmin, body.key)) return new Response(JSON.stringify({ error: 'Video source is immutable; upload using a new key' }),
+      { status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     const config = getR2Config();
 
     switch (action) {

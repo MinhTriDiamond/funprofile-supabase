@@ -524,7 +524,7 @@ export const useFeedPosts = () => {
         'postgres_changes',
         { event: '*', schema: 'public', table: 'posts' },
         (payload: any) => {
-          if (isLiveLikePostPayload(payload?.new) || isLiveLikePostPayload(payload?.old)) schedule();
+          if (isLiveLikePostPayload(payload?.new) || isLiveLikePostPayload(payload?.old) || payload?.new?.metadata?.video_processing_by_attachment || payload?.old?.metadata?.video_processing_by_attachment) schedule();
         }
       )
       .on(

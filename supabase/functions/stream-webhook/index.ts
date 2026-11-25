@@ -1,3 +1,4 @@
+import { handlePostVideoWebhook } from '../_shared/postVideoProcessor.ts';
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import { detectRtmpLiveConnection, getRtmpSessionWindowStart, getStreamLiveInput, getStreamPlaybackUrls, getStreamVideo, isLiveInputConnected, isStreamVideoActivelyLive, listStreamLiveInputVideos, selectActiveLiveVideo, selectRtmpReplayVideoForSession, setStreamLiveInputEnabled } from '../_shared/cloudflareStreamService.ts';
@@ -659,6 +660,7 @@ Deno.serve(async (req) => {
     if (!uid) return json({ ok: true, ignored: 'missing uid' });
 
     const video = await getStreamVideo(uid);
+    if (await handlePostVideoWebhook(admin, { uid }, event)) return json({ ok: true, postVideoScheduled: true });
     const replay = await findOrCreateReplayForVideo(admin as any, uid, event, video);
     if (!replay) return json({ ok: true, ignored: 'replay not found' });
     if (replay.cloudflare_vod_enabled === false) {

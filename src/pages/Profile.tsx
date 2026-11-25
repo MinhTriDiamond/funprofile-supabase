@@ -1,3 +1,5 @@
+import { parsePostVideoLocator } from '@/utils/postVideoPlayback';
+import { OptimizedPostVideoPlayer } from '@/components/feed/OptimizedPostVideoPlayer';
 import { useNavigate } from 'react-router-dom';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -398,7 +400,7 @@ const Profile = () => {
                           <h3 className="font-bold text-xl mb-4 text-foreground">{t('reels')}</h3>
                           <div className="grid grid-cols-2 gap-4">
                             {originalPosts.filter(p => p.video_url).map((post, i) => (
-                              <video key={i} src={post.video_url} className="w-full aspect-video object-cover rounded-lg" controls />
+                              parsePostVideoLocator(post.video_url!) ? <OptimizedPostVideoPlayer key={post.id} src={post.video_url!} className="w-full aspect-video rounded-lg" /> : <video key={i} src={post.video_url} className="w-full aspect-video object-cover rounded-lg" controls />
                             ))}
                           </div>
                           {originalPosts.filter(p => p.video_url).length === 0 && <p className="text-center text-muted-foreground py-8">{t('noReelsYet')}</p>}

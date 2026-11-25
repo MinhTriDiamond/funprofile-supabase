@@ -16,7 +16,7 @@ interface R2Config {
   host: string;
 }
 
-function getR2Config(): R2Config {
+function getR2Config(bucketOverride?: string): R2Config {
   const accountId = Deno.env.get('R2_ACCOUNT_ID') || Deno.env.get('CLOUDFLARE_ACCOUNT_ID');
   const accessKeyId = Deno.env.get('R2_ACCESS_KEY_ID') || Deno.env.get('CLOUDFLARE_ACCESS_KEY_ID');
   const secretAccessKey = Deno.env.get('R2_SECRET_ACCESS_KEY') || Deno.env.get('CLOUDFLARE_SECRET_ACCESS_KEY');
@@ -31,7 +31,7 @@ function getR2Config(): R2Config {
     accountId,
     accessKeyId,
     secretAccessKey,
-    bucketName,
+    bucketName: bucketOverride || bucketName,
     publicUrl: publicUrl.replace(/\/$/, ''),
     host: endpointHost || `${accountId}.r2.cloudflarestorage.com`,
   };
@@ -56,14 +56,15 @@ async function getSignatureKey(key: string, dateStamp: string): Promise<ArrayBuf
 /**
  * SigV4 cho request có query string + body (UNSIGNED-PAYLOAD ok với R2).
  */
-async function signedR2Request(opts: {
+export async function signedR2Request(opts: {
+  bucket?: string;
   method: string;
   key: string; // object key trong bucket; rỗng = bucket-level (vd: list multipart)
   query?: Record<string, string>;
   headers?: Record<string, string>;
   body?: BodyInit;
 }): Promise<Response> {
-  const r2 = getR2Config();
+  const r2 = getR2Config(opts.bucket);
   const now = new Date();
   const amzDate = now.toISOString().replace(/[:-]|\.\d{3}/g, '');
   const dateStamp = amzDate.slice(0, 8);
@@ -109,6 +110,7 @@ async function signedR2Request(opts: {
     method: opts.method,
     headers: { ...allHeaders, Authorization: authorization },
     body: opts.body,
+    ...(opts.bucket ? { redirect: 'manual' as const, signal: AbortSignal.timeout(45000) } : {}),
   });
 }
 
@@ -121,15 +123,15 @@ export interface MultipartInitResult {
 /**
  * CreateMultipartUpload: trả về uploadId để dùng cho mỗi part.
  */
-export async function createMultipartUpload(key: string, contentType = 'video/mp4'): Promise<MultipartInitResult> {
-  const r2 = getR2Config();
+export async function createMultipartUpload(key: string, contentType = 'video/mp4', bucket?: string): Promise<MultipartInitResult> {
+  const r2 = getR2Config(bucket);
   const resp = await signedR2Request({
-    method: 'POST',
+    bucket, method: 'POST',
     key,
     query: { uploads: '' },
     headers: {
       'content-type': contentType,
-      'cache-control': 'public, max-age=31536000, immutable',
+      'cache-control': bucket ? 'private, no-store' : 'public, max-age=31536000, immutable',
     },
   });
   if (!resp.ok) {
@@ -153,6 +155,7 @@ export interface UploadedPart {
  * Body có thể là Uint8Array hoặc ReadableStream — content-length BẮT BUỘC để R2 chấp nhận.
  */
 export async function uploadPart(opts: {
+  bucket?: string;
   key: string;
   uploadId: string;
   partNumber: number;
@@ -163,7 +166,7 @@ export async function uploadPart(opts: {
     throw new Error(`Invalid partNumber ${opts.partNumber} (must be 1..10000)`);
   }
   const resp = await signedR2Request({
-    method: 'PUT',
+    bucket: opts.bucket, method: 'PUT',
     key: opts.key,
     query: { partNumber: String(opts.partNumber), uploadId: opts.uploadId },
     headers: { 'content-length': String(opts.contentLength) },
@@ -184,11 +187,12 @@ export async function uploadPart(opts: {
  * CompleteMultipartUpload: gửi danh sách parts theo thứ tự. R2 sẽ ghép thành object cuối.
  */
 export async function completeMultipartUpload(opts: {
+  bucket?: string;
   key: string;
   uploadId: string;
   parts: UploadedPart[];
 }): Promise<{ url: string; key: string; bucket: string }> {
-  const r2 = getR2Config();
+  const r2 = getR2Config(opts.bucket);
   const sorted = [...opts.parts].sort((a, b) => a.partNumber - b.partNumber);
   const xmlBody =
     `<?xml version="1.0" encoding="UTF-8"?>` +
@@ -198,7 +202,7 @@ export async function completeMultipartUpload(opts: {
     ).join('') +
     `</CompleteMultipartUpload>`;
   const resp = await signedR2Request({
-    method: 'POST',
+    bucket: opts.bucket, method: 'POST',
     key: opts.key,
     query: { uploadId: opts.uploadId },
     headers: { 'content-type': 'application/xml' },
@@ -218,9 +222,9 @@ export async function completeMultipartUpload(opts: {
 /**
  * AbortMultipartUpload: xoá uploadId + tất cả parts đã upload (giải phóng quota).
  */
-export async function abortMultipartUpload(key: string, uploadId: string): Promise<void> {
+export async function abortMultipartUpload(key: string, uploadId: string, bucket?: string): Promise<void> {
   const resp = await signedR2Request({
-    method: 'DELETE',
+    bucket, method: 'DELETE',
     key,
     query: { uploadId },
   });

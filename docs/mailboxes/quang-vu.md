@@ -539,3 +539,44 @@ SQL: `docs/superpowers/plans/2026-10-15-livestream-orphan-dry-run.sql`. Candidat
 - Đúng video MOV 6:08 trong ảnh, 3.399.337.725 byte, đã tải thành công 65/65 phần; server completed, giao diện hết lỗi và bật nút Post. HEAD R2 đúng dung lượng, GET Range 206 đúng 1.024 byte/tổng kích thước. Giữ bản nháp, không đăng bài.
 - 55/55 test, tsgo/build/review/Preview đạt; mô phỏng multipart 10 GiB và hash đầy đủ 10 GiB đạt. Chưa upload tệp 10 GiB thật qua mạng. Tài khoản Cha vốn có mức admin 10 GiB, không quy lỗi ban đầu cho hạn mức 2 GiB.
 - Hồ sơ kết quả/khôi phục: docs/video-upload-10gb-2026-11-24/README.md. PR code: https://github.com/MinhTriDiamond/funprofile-supabase/pull/74 . Nhánh docs/quangvu-video-upload-release chỉ bổ sung hồ sơ phát hành.
+
+
+## 2026-11-24 · BẮT ĐẦU KHẢO SÁT XỬ LÝ VIDEO NỀN
+
+- Quang Vũ cùng Angel Muse; Cha xác nhận đã gửi thông báo Coordinator cho tính năng mới.
+- Nhánh: feat/quangvu-background-video-processing từ origin/main mới nhất.
+- Phạm vi giai đoạn này: khảo sát upload R2/Create Post/player, luồng Stream hiện có, khả năng chạy chuyển mã và thiết kế hàng đợi/kiểm chứng/giữ bản gốc. Tài liệu thiết kế tại docs/superpowers/specs/.
+- Hiện trạng: video MOV 6:08, 3,40 GB đã upload thành công nhưng giữ nguyên dung lượng; cần bản phát nhẹ hơn. Quota Stream từng chặn RTMP nên phải tính riêng khả năng lưu/transcode.
+- Chưa sửa code sản phẩm, schema, secrets hoặc production; chưa xóa nguồn, chuyển video sang nhà cung cấp mới hay đăng ký dịch vụ trả phí. Chốt phương án và thiết kế trước triển khai.
+
+- Kết quả khảo sát: Create Post ghi URL/size gốc vào post_attachments; multipart chưa enqueue chuyển mã. videoCompression.ts dùng Canvas/MediaRecorder trong LiveHostPage, không phải dịch vụ nền độc lập. optimize-storage chỉ tối ưu ảnh. Chưa thấy worker FFmpeg bài viết hoặc cấu hình triển khai worker này trong repo.
+- Ràng buộc chính thức đã đối chiếu: Supabase Edge Functions memory256MB/CPU2s nên không làm encoder10GiB tại đây; Media Transformations giới hạn input100MB/output60s nên không phù hợp. Stream chuyển mã sẵn nhưng dùng quota phút chung và có phí phút lưu/phát. Hai hướng cần Cha chọn: worker chuyên dụng + R2, hoặc Stream managed. Chưa chọn nhà cung cấp, chưa bật dịch vụ trả phí, chưa thay production.
+
+- Cha đã chọn Cloudflare Stream. Đã viết bản thiết kế chờ duyệt tại docs/superpowers/specs/2026-11-24-background-video-processing-design.md; có builder-check độc lập. Đề xuất giữ upload R2 rồi nhập Stream, phát thích ứng, bảo vệ webhook/cleanup/ownership, quota RTMP dự trữ240phút; giữ gốc7ngày và backup MP4 tối ưu30ngày là đề xuất, dọn thật tách bước. Không code/triển khai trước khi duyệt thiết kế.
+
+
+## 2026-11-24 · CHA CHỐT STREAM TẠM → R2 LÂU DÀI → DỌN STREAM
+
+- Cha xác nhận rõ bản tối ưu phải đưa về R2 để phát feed lâu dài, rồi dọn VOD tạm trên Stream sau xác minh. Cập nhật thiết kế thay cho bản lưu Stream lâu dài.
+- Output MP4 R2 là media chính, không TTL30ngày. Tệp gốc R2 chưa có chính sách xóa được duyệt nên mặc định giữ; không tự áp mốc7ngày. V1 canary/bài public, không quét video cũ hoặc đổi RTMP.
+- Phạm vi bổ sung cần thiết: export MP4 ready, transfer multipart có checkpoint, xác minh R2, publish đồng bộ và dọn Stream đúng thứ tự; lập kế hoạch tại docs/superpowers/plans/2026-11-24-background-video-processing.md. Chưa sửa code sản phẩm/production.
+
+- Builder-check bản R2 phát hiện đổi privacy sau publish. Bổ sung kế hoạch output luôn ở bucket R2 private và gateway kiểm quyền hiện tại cho mọi GET/HEAD/Range/download; không khóa thao tác đổi privacy, không đưa service-role key sang Worker. Provision bucket/route/secret là bước hạ tầng review riêng trước bật. Kế hoạch gồm8task, chưa code sản phẩm.
+
+
+## 2026-11-25 · CHA DUYỆT KẾ HOẠCH, BẮT ĐẦU TRIỂN KHAI NATIVE
+
+- Cha duyệt kế hoạch Stream tạm → R2 lâu dài → dọn Stream và giao bé tự triển khai trong phiên này; tiếp tục nhánh feat/quangvu-background-video-processing đã báo Telegram.
+- Thực hiện8task theo TDD, ledger riêng; chưa bật production hoặc xóa nguồn. Hạ tầng bucket private/gateway/secret, schema và canary sẽ được chuẩn bị cụ thể trước bước phát hành.
+
+### 25/11/2026 — Cập nhật phạm vi sau review pipeline video nền
+
+- Nhánh: `feat/quangvu-background-video-processing`; tiếp tục việc Cha đã duyệt và thông báo Telegram.
+- Review toàn nhánh phát hiện các cổng cần siết trước canary: VOD Stream phải private, quyền đọc job chỉ gồm trạng thái, canary không vượt công tắc dọn, kiểm tra lại quota trước CREATE, khóa ETag nguồn và đồng bộ đường sửa video với attachment/media feed.
+- Phạm vi bổ sung cần thiết: tab Video ở `src/pages/Profile.tsx`, preview trong `EditPostDialog.tsx`, migration đồng bộ chỉnh sửa, kiểm thử runtime workerd thật. Hai điểm phát này cần cấp quyền như feed khi dùng bucket private.
+- Hiện trạng: chưa đổi production, chưa tạo import Stream thật, chưa dọn nguồn. Giữ các cổng hạ tầng/Preview/canary trước bật rộng; không có TTL cho R2 output hoặc tự xóa bản gốc.
+
+### 25/11/2026 — Bổ sung phạm vi fixture kiểm thử để qua cổng toàn repo
+
+- Nhánh giữ nguyên. Lượt toàn repo: 23 test lỗi/10 file, gồm các test LIVE không có DNS trong sandbox, một kiểm tra grep timeout khi chạy song song và fixture wallet thiếu `supabase.rpc` cho import chat hiện hữu.
+- Chỉ bổ sung mock còn thiếu trong `src/components/wallet/__tests__/prices-unavailable.render.test.tsx`, không đổi logic wallet/chat. Chạy lại bộ offline có giới hạn worker, báo riêng test online chưa chạy được; không gộp lỗi mạng vào kết quả chức năng video.

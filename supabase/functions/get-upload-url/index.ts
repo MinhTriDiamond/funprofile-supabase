@@ -8,6 +8,7 @@
  */
 
 import { createClient } from 'npm:@supabase/supabase-js@2';
+import { hasOwnedPostVideoPrefix, isOwnedPostVideoKey, isPostVideoSourceLocked } from '../_shared/postVideoSourceKey.ts';
 import { getChatMediaUploadDenial } from '../_shared/chatMediaRelease.ts';
 import {
   isElevatedMediaAccount,
@@ -127,6 +128,10 @@ Deno.serve(async (req) => {
 
     // Parse request
     const { key, contentType, fileSize, durationSeconds } = await req.json();
+    if (typeof key === 'string' && hasOwnedPostVideoPrefix(key) && !isOwnedPostVideoKey(key, user.id)) {
+      return new Response(JSON.stringify({ error: 'Video source does not belong to this account' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
 
     if (typeof key !== 'string' || typeof contentType !== 'string' || !key || !contentType) {
       return new Response(
@@ -144,6 +149,8 @@ Deno.serve(async (req) => {
     }
 
     // ✅ VALIDATE CONTENT TYPE
+    if (typeof key === 'string' && await isPostVideoSourceLocked(supabaseAdmin, key)) return new Response(JSON.stringify({ error: 'Video source is immutable; upload using a new key' }),
+      { status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     const elevatedMediaAccount = await isElevatedMediaAccount(supabaseAdmin as any, user.id).catch(() => false);
     const chatMediaKey = key.startsWith('chat-media/');
     const mediaValidation = chatMediaKey
