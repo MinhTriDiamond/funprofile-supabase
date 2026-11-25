@@ -1,0 +1,56 @@
+{
+  "workerVersion": "03b86c2f-1c7a-4047-b2db-9ca491ce2734",
+  "mainCommit": "0467b923ccd88496f5f48645f2d19ca668c38145",
+  "nativeDownloads": [
+    {
+      "mode": "same-tab",
+      "install": 204,
+      "head": 200,
+      "size": "110324802",
+      "failure": null,
+      "bytes": 110324802
+    },
+    {
+      "mode": "new-tab",
+      "install": 204,
+      "head": 200,
+      "size": "110324802",
+      "failure": null,
+      "bytes": 110324802
+    },
+    {
+      "mode": "new-tab",
+      "install": 204,
+      "head": 200,
+      "size": "110324802",
+      "failure": null,
+      "bytes": 110324802
+    }
+  ],
+  "actualFeedButton": {
+    "failure": null,
+    "bytes": 110324802
+  },
+  "rangeContinuation": [
+    {
+      "range": "bytes=0-8388607",
+      "status": 206,
+      "expected": 8388608,
+      "bytes": 8388608,
+      "complete": true,
+      "contentRange": "bytes 0-8388607/110324802",
+      "etagMatches": true,
+      "timeMs": 1012
+    },
+    {
+      "range": "bytes=8388608-16777215",
+      "status": 206,
+      "expected": 8388608,
+      "bytes": 8388608,
+      "complete": true,
+      "contentRange": "bytes 8388608-16777215/110324802",
+      "etagMatches": true,
+      "timeMs": 999
+    }
+  ]
+}
