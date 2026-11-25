@@ -212,6 +212,7 @@ type ComposerMode = 'composer' | 'focus' | 'afterWriting';
 type AiAssistAction = 'continue' | 'polish' | 'gratitude' | 'caption' | 'hashtag' | 'shorter';
 type CloseComposerOptions = {
   forcePrompt?: boolean;
+  destination?: string;
 };
 
 const AI_ACTIONS: Array<{ labelKey: string; action: AiAssistAction; icon: typeof PenLine }> = [
@@ -270,6 +271,8 @@ export const CreatePost = ({ onPostCreated, initialAction }: FacebookCreatePostP
   const [content, setContent] = useState('');
   const [privacy, setPrivacy] = useState('public');
   const [loading, setLoading] = useState(false);
+  const [savingDraft, setSavingDraft] = useState(false);
+  const closeDestinationRef = useRef<string | undefined>();
   const [isDragging, setIsDragging] = useState(false);
   const [selectedInspirationChip, setSelectedInspirationChip] = useState<string | null>(null);
   const [aiAssistOpen, setAiAssistOpen] = useState(false);
@@ -869,6 +872,7 @@ export const CreatePost = ({ onPostCreated, initialAction }: FacebookCreatePostP
   }, [attachments, t, updateAttachment]);
 
   const handleSubmit = useCallback(async () => {
+    if (loading) return;
     if (!content.trim() && attachments.length === 0) {
       toast.error(t('pleaseAddContent'));
       return;
@@ -972,7 +976,7 @@ export const CreatePost = ({ onPostCreated, initialAction }: FacebookCreatePostP
 
     addOptimisticGhost(ghost);
     setIsDialogOpen(false);
-    setLoading(false);
+    // Keep the leave warning and submit lock until the server confirms the post.
     if (composeParam || prefillParam || backParam) {
       const next = new URLSearchParams(searchParams);
       next.delete('compose');
@@ -1058,8 +1062,12 @@ export const CreatePost = ({ onPostCreated, initialAction }: FacebookCreatePostP
       removeOptimisticGhost(tempId);
       toast.error(error?.message || t('cannotPost'));
       setIsDialogOpen(true);
+    } finally {
+      closeDestinationRef.current = undefined;
+      setLoading(false);
+      setConfirmDiscardOpen(false);
     }
-  }, [content, attachments, privacy, taggedFriends, location, feeling, composerMeta, profile, buildMediaPayloads, resetComposer, onPostCreated, t, evaluateAsync, isInnerWorkMode, composeParam, prefillParam, backParam, decodedBack, navigate, searchParams, setSearchParams, setIsDialogOpen, userId]);
+  }, [loading, content, attachments, privacy, taggedFriends, location, feeling, composerMeta, profile, buildMediaPayloads, resetComposer, onPostCreated, t, evaluateAsync, isInnerWorkMode, composeParam, prefillParam, backParam, decodedBack, navigate, searchParams, setSearchParams, setIsDialogOpen, userId]);
 
   const handleEmojiSelect = (emoji: string) => setContent((prev) => prev + emoji);
   const insertComposerText = useCallback((text: string) => {
@@ -1206,17 +1214,31 @@ export const CreatePost = ({ onPostCreated, initialAction }: FacebookCreatePostP
     setAiAssistOpen(false);
     setIsDialogOpen(false);
     clearComposeParam();
+    const destination = closeDestinationRef.current;
+    closeDestinationRef.current = undefined;
+    if (destination) navigate(destination);
     if (discard) {
       resetComposer();
       void clearPostDraft(userId);
     }
-  }, [clearComposeParam, resetComposer, setIsDialogOpen, userId]);
+  }, [clearComposeParam, navigate, resetComposer, setIsDialogOpen, userId]);
 
   const saveDraftAndClose = useCallback(async () => {
-    await saveCurrentDraft();
-    toast.success(t('fcpDraftSaved'));
-    closeComposerNow(false);
-  }, [closeComposerNow, saveCurrentDraft]);
+    if (savingDraft) return;
+    setSavingDraft(true);
+    try {
+      if (!await saveCurrentDraft()) {
+        toast.error(t('fcpDraftSaveFailed'));
+        return;
+      }
+      toast.success(t('fcpDraftSaved'));
+      closeComposerNow(false);
+    } catch {
+      toast.error(t('fcpDraftSaveFailed'));
+    } finally {
+      setSavingDraft(false);
+    }
+  }, [closeComposerNow, saveCurrentDraft, savingDraft, t]);
 
   const restorePendingDraft = useCallback(() => {
     if (!pendingRestoreDraft) return;
@@ -1253,7 +1275,11 @@ export const CreatePost = ({ onPostCreated, initialAction }: FacebookCreatePostP
   }, [isDialogOpen, setIsDialogOpen, shouldAutoOpenComposer, userId]);
 
   const requestCloseComposer = useCallback((options: CloseComposerOptions = {}) => {
-    if (loading) return;
+    closeDestinationRef.current = options.destination;
+    if (loading) {
+      setConfirmDiscardOpen(true);
+      return;
+    }
     if (composerMode === 'focus' && !options.forcePrompt) {
       setComposerMode(content.trim() || attachments.length > 0 ? 'afterWriting' : 'composer');
       textareaRef.current?.blur();
@@ -1296,10 +1322,11 @@ export const CreatePost = ({ onPostCreated, initialAction }: FacebookCreatePostP
   }, [attachments.length, content, haptic]);
 
   useEffect(() => {
-    if (!isDialogOpen || !hasUnsavedChanges) return;
+    // Uploads and optimistic publishing can continue after the dialog closes.
+    if (!(isDialogOpen && hasUnsavedChanges) && !hasMediaBusy && !loading) return;
 
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
-      void saveCurrentDraft();
+      void saveCurrentDraft().catch(() => null);
       event.preventDefault();
       event.returnValue = '';
       return '';
@@ -1307,7 +1334,7 @@ export const CreatePost = ({ onPostCreated, initialAction }: FacebookCreatePostP
 
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, [hasUnsavedChanges, isDialogOpen, saveCurrentDraft]);
+  }, [hasUnsavedChanges, isDialogOpen, hasMediaBusy, loading, saveCurrentDraft]);
 
   // ─── Guest mode ───
   if (!profile) {
@@ -1457,7 +1484,7 @@ export const CreatePost = ({ onPostCreated, initialAction }: FacebookCreatePostP
                   size="sm"
                   variant="ghost"
                   className="h-7 shrink-0 px-2 text-[12px] font-semibold text-amber-900 hover:bg-amber-100 dark:text-amber-200 dark:hover:bg-amber-900/40"
-                  onClick={() => { closeComposerNow(false); setTimeout(() => navigate(decodedBack), 50); }}
+                  onClick={() => requestCloseComposer({ forcePrompt: true, destination: decodedBack })}
                 >
                   {t('fcpQuestBackButton')}
                 </Button>
@@ -1902,31 +1929,39 @@ export const CreatePost = ({ onPostCreated, initialAction }: FacebookCreatePostP
         </DrawerContent>
       </Drawer>
 
-      <AlertDialog open={confirmDiscardOpen} onOpenChange={setConfirmDiscardOpen}>
+      <AlertDialog open={confirmDiscardOpen} onOpenChange={(open) => {
+        if (savingDraft) return;
+        setConfirmDiscardOpen(open);
+        if (!open) closeDestinationRef.current = undefined;
+      }}>
         <AlertDialogContent className="z-[260] max-w-[calc(100vw-2rem)] rounded-3xl sm:max-w-md">
           <AlertDialogHeader>
-            <AlertDialogTitle>{t('fcpSaveDraftTitle')}</AlertDialogTitle>
+            <AlertDialogTitle>{t(loading ? 'fcpPostingLeaveTitle' : 'fcpSaveDraftTitle')}</AlertDialogTitle>
             <AlertDialogDescription>
-              {t('fcpSaveDraftDesc')}
+              {t(loading ? 'fcpPostingLeaveDesc' : hasMediaBusy ? 'fcpUploadingLeaveDesc' : 'fcpSaveDraftDesc')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="gap-2 sm:gap-2">
-            <AlertDialogCancel className="rounded-full">{t('fcpContinueEditing')}</AlertDialogCancel>
-            <AlertDialogAction
-              className="rounded-full bg-primary text-primary-foreground hover:bg-primary/90"
-              onClick={(event) => {
-                event.preventDefault();
-                void saveDraftAndClose();
-              }}
-            >
-              {t('fcpSaveDraft')}
-            </AlertDialogAction>
-            <AlertDialogAction
-              className="rounded-full bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              onClick={() => closeComposerNow(true)}
-            >
-              {t('fcpDiscardPost')}
-            </AlertDialogAction>
+            <AlertDialogCancel disabled={savingDraft} className="rounded-full">{t(loading ? 'fcpStayOnPage' : 'fcpContinueEditing')}</AlertDialogCancel>
+            {!loading && <>
+              <AlertDialogAction
+                className="rounded-full bg-primary text-primary-foreground hover:bg-primary/90"
+                disabled={savingDraft}
+                onClick={(event) => {
+                  event.preventDefault();
+                  void saveDraftAndClose();
+                }}
+              >
+                {t('fcpSaveDraft')}
+              </AlertDialogAction>
+              <AlertDialogAction
+                className="rounded-full bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                disabled={savingDraft}
+                onClick={() => closeComposerNow(true)}
+              >
+                {t('fcpDiscardPost')}
+              </AlertDialogAction>
+            </>}
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
