@@ -1,3 +1,4 @@
+import { inspectPostVideoExport } from '../_shared/postVideoExportDiagnostics.ts';
 import { probePostVideoInfrastructure } from '../_shared/postVideoInfrastructure.ts';
 import { corsHeaders, json, requireUser, createAdminClient, HttpError } from '../_shared/httpAuth.ts';
 import { processPostVideoJob, inspectPostVideoCleanup } from '../_shared/postVideoProcessor.ts';
@@ -21,7 +22,14 @@ Deno.serve(async(req:Request)=>{
   const body=await req.json();
   if(!['tick','retry','dry-run','probe-infra'].includes(body.action))return json({error:'Invalid action'},400);
   if(body.jobId!==undefined&&(typeof body.jobId!=='string'||!/^[a-f0-9-]{36}$/.test(body.jobId)))return json({error:'Invalid jobId'},400);
-  if(body.action==='probe-infra')return json({probe:await probePostVideoInfrastructure()});
+  if(body.action==='probe-infra'){
+   if(body.jobId){
+    const {data:job,error} = await (admin as any).from('post_video_processing_jobs').select('id,canary,cancelled,phase,stream_uid,stream_account_id').eq('id',body.jobId).maybeSingle();
+    if(error||!job)return json({error:'Canary unavailable'},404);
+    return json({inspection:await inspectPostVideoExport(job)});
+   }
+   return json({probe:await probePostVideoInfrastructure()});
+  }
   if(body.action==='dry-run'&&body.jobId)return json({inspection:await inspectPostVideoCleanup(admin,body.jobId)});
   // Retry only wakes an eligible state; ambiguous side effects require operator reconciliation.
   if(body.action==='retry') {

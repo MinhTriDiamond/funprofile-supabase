@@ -1,0 +1,158 @@
+{
+  "date": "2026-11-25",
+  "pr": "https://github.com/MinhTriDiamond/funprofile-supabase/pull/76",
+  "mainCommit": "3bee820",
+  "preview": {
+    "head": "35c69e0c90d7c6973ba0989ddfb6f736a7601faf",
+    "url": "https://ffd3ac44.funprofile-supabase.pages.dev",
+    "observedBy": "Coordinator",
+    "result": "normal display confirmed"
+  },
+  "productionPages": {
+    "commit": "3bee820",
+    "url": "https://ffa98299.funprofile-supabase.pages.dev",
+    "check": "SUCCESS"
+  },
+  "worker": {
+    "name": "funprofile-post-video-media",
+    "activeVersion": "333eeaec-3de0-4dbc-8ade-d130c42339ad",
+    "route": "fun.rich/media-optimized/*",
+    "schedule": "* * * * *",
+    "maxSequentialTicks": 6
+  },
+  "bucket": {
+    "name": "fun-rich-video-optimized",
+    "r2Dev": false,
+    "customDomains": []
+  },
+  "functions": [
+    {
+      "name": "stream-orphan-cleanup",
+      "version": 89,
+      "status": "ACTIVE",
+      "verify_jwt": false,
+      "ezbr_sha256": "5bd6263f0a8dabe0427937af3396da765f2cb9526790ff7e2c3e5891363b0b3f"
+    },
+    {
+      "name": "post-video-read",
+      "version": 1,
+      "status": "ACTIVE",
+      "verify_jwt": false,
+      "ezbr_sha256": "cbb32c61d3375f2f3ccb5fbe6cb487be68743c77a70f5813e70ef36dd71adc1d"
+    },
+    {
+      "name": "stream-webhook",
+      "version": 93,
+      "status": "ACTIVE",
+      "verify_jwt": false,
+      "ezbr_sha256": "363d08c7be03d624878b6c42a5bc0953b0015eec78ac1bbbcfae515c3603a917"
+    },
+    {
+      "name": "delete-from-r2",
+      "version": 90,
+      "status": "ACTIVE",
+      "verify_jwt": true,
+      "ezbr_sha256": "946e63a5533b304dc32d08d4a36482e0eb39a46034d5fd70f8cd6c53c922ea66"
+    },
+    {
+      "name": "get-upload-url",
+      "version": 91,
+      "status": "ACTIVE",
+      "verify_jwt": true,
+      "ezbr_sha256": "ba6068890a659233d7515e2c65cda854feb7ea1e10df77adab685e3ee8f21b53"
+    },
+    {
+      "name": "process-post-videos",
+      "version": 1,
+      "status": "ACTIVE",
+      "verify_jwt": false,
+      "ezbr_sha256": "60843240fd055c62392b0a138834c50431aef63dae75979184567c7e7bb383e3"
+    },
+    {
+      "name": "cleanup-orphan-videos",
+      "version": 89,
+      "status": "ACTIVE",
+      "verify_jwt": false,
+      "ezbr_sha256": "81eb165d8e176c38187b029885229dc6f5ba5588c83d83cc66e9255f7230706e"
+    },
+    {
+      "name": "multipart-upload",
+      "version": 90,
+      "status": "ACTIVE",
+      "verify_jwt": false,
+      "ezbr_sha256": "141789bab5f748d1c8c20f4766d6bcb005c48ebf8ea216510d34efd3be4e46aa"
+    }
+  ],
+  "sourceAudit": {
+    "indexFiles": 8,
+    "sharedFiles": 52,
+    "mismatches": 0
+  },
+  "infraProbe": {
+    "multipart": true,
+    "head": true,
+    "range206": true,
+    "mp4Magic": true,
+    "syntheticObjectDeleted": true,
+    "streamBefore": {
+      "usedMinutes": 0.01,
+      "limitMinutes": 1000
+    }
+  },
+  "unauthorizedRequests": [
+    {
+      "name": "process-post-videos",
+      "action": "tick",
+      "status": 401,
+      "want": 401,
+      "passed": true
+    },
+    {
+      "name": "post-video-read",
+      "action": "authorize",
+      "status": 401,
+      "want": 401,
+      "passed": true
+    },
+    {
+      "name": "post-video-read",
+      "action": "mint",
+      "status": 403,
+      "want": 403,
+      "passed": true
+    },
+    {
+      "name": "gateway",
+      "action": "no-cookie",
+      "status": 401,
+      "want": 401,
+      "passed": true
+    }
+  ],
+  "canary": {
+    "jobId": "02e100d1-e568-4ab0-a178-33a5ee791c46",
+    "state": "mp4_wait: export boundary failed; diagnostic not yet deployed",
+    "originalRetained": true,
+    "deleteApproved": false,
+    "tusBytesCompleted": 3399337725,
+    "attemptsAtLastRead": 2,
+    "published": false,
+    "streamDeleted": false
+  },
+  "rolloutEnabled": false,
+  "cronProof": {
+    "manualTicksPaused": true,
+    "browserNotRequired": true,
+    "beforeOffset": 1828716544,
+    "afterOffset": 1946157056,
+    "advancedBytes": 117440512,
+    "lastError": null
+  },
+  "pendingDiagnostic": {
+    "committed": false,
+    "deployed": false,
+    "offlineTestsPassed": 652,
+    "offlineSkipped": 53,
+    "reason": "Automatic approval review unavailable due to usage limit; commit was not executed"
+  }
+}

@@ -580,3 +580,10 @@ SQL: `docs/superpowers/plans/2026-10-15-livestream-orphan-dry-run.sql`. Candidat
 
 - Nhánh giữ nguyên. Lượt toàn repo: 23 test lỗi/10 file, gồm các test LIVE không có DNS trong sandbox, một kiểm tra grep timeout khi chạy song song và fixture wallet thiếu `supabase.rpc` cho import chat hiện hữu.
 - Chỉ bổ sung mock còn thiếu trong `src/components/wallet/__tests__/prices-unavailable.render.test.tsx`, không đổi logic wallet/chat. Chạy lại bộ offline có giới hạn worker, báo riêng test online chưa chạy được; không gộp lỗi mạng vào kết quả chức năng video.
+
+### 25/11/2026 — Canary phát hiện lỗi tại bước lấy MP4 xuất
+- Bé Quang Vũ tiếp tục phạm vi background video trên nhánh `fix/quangvu-background-video-rollout`; PR76 đã merge/main3bee820, hạ tầng triển khai và cờ đại trà OFF.
+- Canary đúng video đã được Cha duyệt đã chuyển đủ3.399.337.725bytes, Stream chuyển mã xong; bước `mp4_wait` gặp lỗi và có retry. Chưa publish locators mới, chưa xóa VOD, giữ original.
+- Phạm vi tiếp theo: bổ sung chẩn đoán an toàn theo từng ranh giới export/API/HEAD, không log token/TUS URL/nguồn; tìm nguyên nhân thực tế rồi test RED→GREEN và qua Preview trước deploy bản sửa. Không bật rollout khi cổng runtime chưa đạt.
+- Cập nhật cổng công cụ: automatic approval review từ chối khởi chạy lệnh commit vì hết hạn mức, báo thử lại11:05; đây là review failure, không phải kết luận hành động unsafe. Commit/push/deploy diagnostic CHƯA thực hiện. Không đi vòng cổng duyệt.
+- Kiểm chứng local patch:652test offline pass/53skip,103files; tsgo/Deno check/build pass; reviewer không có Critical/Important, allowlist status đã có RED→GREEN. Code/metadata phát hành hiện có chưa giải quyết lỗi canary; không báo hoàn tất.
