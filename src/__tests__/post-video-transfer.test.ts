@@ -113,3 +113,6 @@ describe('bounded same-origin MP4 redirects observed on canary',()=>{
   await expect(readExportSize(base)).rejects.toThrow();expect(f).toHaveBeenCalledTimes(4);
  });
 });
+it.each(['toString','constructor','https://private.invalid/capability'])('normalizes unknown diagnostic errors without echoing %s',async message=>{
+ const {postVideoExportFailureCode}=await import('../../supabase/functions/_shared/postVideoTransfer');expect(postVideoExportFailureCode(new Error(message))).toBe('request');
+});
