@@ -30,8 +30,21 @@ export function validateExportUrl(url: string, uid?: string): URL {
   return u;
 }
 
+/** Diagnostic metadata contains no opaque path segment, query value or capability. */
+export function describePostVideoRedirect(target:URL,uid:string,origin:string) {
+  const known=/^(?:[a-z0-9-]+\.)*(?:videodelivery\.net|cloudflarestream\.com|cloudflarestorage\.com|r2\.dev|googleapis\.com|amazonaws\.com)$/.test(target.hostname);
+  const segments=target.pathname.split('/');
+  const shape=segments.length>16?'<complex-path>':segments.map(segment=>!segment?'':segment===uid?'<video>':segment===uid+'.mp4'?'<video>.mp4':['downloads','download','default.mp4','video','mp4','v1','v2'].includes(segment)?segment:segment.endsWith('.mp4')?'<opaque>.mp4':'<opaque>').join('/');
+  return {hostname:known?target.hostname:'other',sameOrigin:target.origin===origin,pathContainsUid:target.pathname.includes(uid),hasSignedQuery:['token','Signature','X-Amz-Signature','X-Goog-Signature'].some(key=>target.searchParams.has(key)),pathnameShape:shape};
+}
+export function postVideoExportFailureCode(error:unknown) {
+  if(!(error instanceof Error))return 'request';
+  const codes:Record<string,string>={'Untrusted export URL':'host','Untrusted export path':'path','Export UID mismatch':'uid','Invalid signed export':'claims','Invalid export claims':'claims','Cross-origin export redirect denied':'origin','Invalid export redirect':'redirect','Export redirect limit exceeded':'limit'};
+  return Object.prototype.hasOwnProperty.call(codes,error.message)?codes[error.message]:(['TimeoutError','AbortError'].includes(error.name)?'timeout':'request');
+}
+
 /** Provider download redirects stay within the initial origin and the same video. */
-export async function fetchPostVideoExportResponse(url:string,options:{method?:'GET'|'HEAD';range?:string;signal?:AbortSignal}={}) {
+export async function fetchPostVideoExportResponse(url:string,options:{method?:'GET'|'HEAD';range?:string;signal?:AbortSignal;onRedirect?:(metadata:ReturnType<typeof describePostVideoRedirect>&{status:number;validation:string})=>void}={}) {
   const initial=validateExportUrl(url),identity=initial.pathname.split('/')[1];
   const uid=/^[a-f0-9]{32}$/.test(identity)?identity:JSON.parse(atob(identity.split('.')[1].replaceAll('-','+').replaceAll('_','/'))).sub;
   const method=options.method||'GET',deadline=AbortSignal.timeout(method==='HEAD'?20000:45000);
@@ -42,9 +55,10 @@ export async function fetchPostVideoExportResponse(url:string,options:{method?:'
     if(![301,302,303,307,308].includes(response.status))return response;
     const location=response.headers.get('location');await response.body?.cancel();
     if(!location||redirects===3)throw new Error('Invalid export redirect');
-    const target=validateExportUrl(new URL(location,current).href,uid);
-    if(target.origin!==initial.origin)throw new Error('Cross-origin export redirect denied');
-    current=target;
+    const target=new URL(location,current),metadata=describePostVideoRedirect(target,uid,initial.origin);
+    try{validateExportUrl(target.href,uid);if(target.origin!==initial.origin)throw new Error('Cross-origin export redirect denied');}
+    catch(error){options.onRedirect?.({...metadata,status:response.status,validation:postVideoExportFailureCode(error)});throw error;}
+    options.onRedirect?.({...metadata,status:response.status,validation:'accepted'});current=target;
   }
   throw new Error('Export redirect limit exceeded');
 }
