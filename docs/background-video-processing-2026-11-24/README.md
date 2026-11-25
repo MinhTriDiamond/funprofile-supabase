@@ -1,8 +1,12 @@
 # Video nền: Stream tạm → R2 private → dọn Stream
 
-Ngày triển khai: 25/11/2026. Nhánh `feat/quangvu-background-video-processing`.
+Ngày triển khai: 25/11/2026. PR [#76](https://github.com/MinhTriDiamond/funprofile-supabase/pull/76), main `3bee820`; hồ sơ tiếp tục trên `fix/quangvu-background-video-rollout`.
 
-**Trạng thái hiện tại: đang chuẩn bị Preview và phát hành, chưa bật production.** Chỉ code/test đạt không được coi là tính năng đang hoạt động. Hồ sơ này sẽ bổ sung commit/PR, phiên bản function, canary và trạng thái cờ thực tế sau rollout.
+**Trạng thái: code và hạ tầng đã triển khai; canary gặp lỗi tại bước lấy MP4 xuất, các cờ xử lý đại trà vẫn tắt.** Chưa coi là hoàn thành tính năng. Preview đúng commit đã được Coordinator xác nhận, bản Pages production build thành công. Bốn migration đã áp dụng; tám function và Worker đã deploy. Xem `rollout-receipt.json`, `migration-manifest.json` và `function-source-manifest.json` để đối chiếu phiên bản/hash. Các tệp này không chứa secret hoặc payload bài viết.
+
+Cron production đã được kiểm chứng riêng: khi dừng tick thủ công và không dùng trình duyệt, offset canary tăng thêm **117.440.512 bytes**. Bucket output private, r2.dev tắt, không custom domain; probe multipart/HEAD/Range/MP4 đạt và file probe đã xóa. Trước canary Stream dùng **0,01/1.000 phút**. Bản gốc được giữ nguyên.
+
+Canary đã chuyển đủ **3.399.337.725 bytes**, Stream chuyển mã xong; `mp4_wait` gặp lỗi hai lần, chưa publish và chưa xóa VOD tại lần kiểm tra gần nhất. Đã hoãn lần thử tiếp theo một giờ để điều tra. Cron có thể thử lại sau mốc này; cờ xóa toàn cục và approval canary vẫn tắt. Bản chẩn đoán giới hạn theo canary đã được review và kiểm thử local nhưng **chưa commit/deploy**: bộ duyệt tự động báo hết hạn mức khi duyệt commit, lệnh không chạy. Không coi nguyên nhân hoặc việc sửa lỗi là đã được xác nhận.
 
 ## Hành vi
 
