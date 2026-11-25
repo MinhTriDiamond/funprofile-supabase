@@ -43,6 +43,14 @@ export function postVideoExportFailureCode(error:unknown) {
   return Object.prototype.hasOwnProperty.call(codes,error.message)?codes[error.message]:(['TimeoutError','AbortError'].includes(error.name)?'timeout':'request');
 }
 
+function isPrivateProviderDownloadRedirect(target:URL,uid:string,signedInitial:boolean) {
+  if(!signedInitial||target.protocol!=='https:'||target.username||target.password||target.port||target.hash)return false;
+  const parts=target.pathname.split('/');
+  if(parts.length!==4||parts[1]!==uid||parts[3]!=='default.mp4'||parts[2].length>6144)return false;
+  let opaque:string;try{opaque=decodeURIComponent(parts[2]);}catch{return false;}
+  return opaque.length>0&&opaque.length<=2048&&opaque!=='.'&&opaque!=='..'&&/^[A-Za-z0-9_.~+=-]+$/.test(opaque);
+}
+
 /** Provider download redirects stay within the initial origin and the same video. */
 export async function fetchPostVideoExportResponse(url:string,options:{method?:'GET'|'HEAD';range?:string;signal?:AbortSignal;onRedirect?:(metadata:ReturnType<typeof describePostVideoRedirect>&{status:number;validation:string})=>void}={}) {
   const initial=validateExportUrl(url),identity=initial.pathname.split('/')[1];
@@ -56,7 +64,10 @@ export async function fetchPostVideoExportResponse(url:string,options:{method?:'
     const location=response.headers.get('location');await response.body?.cancel();
     if(!location||redirects===3)throw new Error('Invalid export redirect');
     const target=new URL(location,current),metadata=describePostVideoRedirect(target,uid,initial.origin);
-    try{validateExportUrl(target.href,uid);if(target.origin!==initial.origin)throw new Error('Cross-origin export redirect denied');}
+    try{
+      if(target.origin!==initial.origin)throw new Error('Cross-origin export redirect denied');
+      try{validateExportUrl(target.href,uid);}catch(error){if(!isPrivateProviderDownloadRedirect(target,uid,!/^[a-f0-9]{32}$/.test(identity)))throw error;}
+    }
     catch(error){options.onRedirect?.({...metadata,status:response.status,validation:postVideoExportFailureCode(error)});throw error;}
     options.onRedirect?.({...metadata,status:response.status,validation:'accepted'});current=target;
   }
