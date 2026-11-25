@@ -20,10 +20,15 @@ describe('processing asset references',()=>{
 });
 
 import { hasPostVideoStreamReferences } from '../../supabase/functions/_shared/postVideoProcessor';
-it.each([['live_sessions','hls_url'],['live_sessions','playback_url'],['live_replays','playback_mp4']])('retains VOD referenced only by %s.%s',async(table,column)=>{
- const uid='c'.repeat(32);
- const admin={from:(name:string)=>({select:(columns:string)=>({range:async()=>({data:name===table?[Object.fromEntries(columns.split(',').map(k=>[k,k===column?`https://videodelivery.net/${uid}/manifest/video.m3u8`:null]))]:[],error:null})})})};
- expect(await hasPostVideoStreamReferences(admin,uid,'job')).toBe(true);
+it.each([true,false])('uses one bounded boolean database reference probe (%s)',async referenced=>{
+ const abortSignal=vi.fn().mockResolvedValue({data:referenced,error:null}),rpc=vi.fn().mockReturnValue({abortSignal});
+ const admin={rpc,from:()=>{throw new Error('Full row export forbidden');}};
+ expect(await hasPostVideoStreamReferences(admin,'c'.repeat(32),'10000000-0000-0000-0000-000000000001')).toBe(referenced);
+ expect(rpc).toHaveBeenCalledWith('has_post_video_stream_references',{p_stream_uid:'c'.repeat(32),p_excluded_job_id:'10000000-0000-0000-0000-000000000001'});expect(abortSignal).toHaveBeenCalledWith(expect.any(AbortSignal));
+});
+it.each([{data:null,error:null},{data:false,error:{message:'database unavailable'}},{data:[],error:null}])('fails closed on an invalid reference probe %j',async result=>{
+ const admin={rpc:()=>({abortSignal:async()=>result}),from:()=>{throw new Error('Full row export forbidden');}};
+ await expect(hasPostVideoStreamReferences(admin,'c'.repeat(32),'10000000-0000-0000-0000-000000000001')).rejects.toThrow();
 });
 it('does not change ordinary image deletion through the video retention guard',async()=>{
  const refs=await collectPostVideoReferences(adminFor({post_attachments:[{storage_key:'posts/photo.jpg',file_url:'https://media.fun.rich/posts/photo.jpg',file_type:'image'}]}));

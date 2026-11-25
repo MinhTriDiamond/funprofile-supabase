@@ -131,13 +131,16 @@
   ],
   "canary": {
     "jobId": "02e100d1-e568-4ab0-a178-33a5ee791c46",
-    "state": "needs_review: decimal-string expiration rejected; runtime fix pending",
+    "state": "R2 publication/delivery/privacy/quality passed; reference RPC fix pending",
     "originalRetained": true,
     "deleteApproved": false,
     "tusBytesCompleted": 3399337725,
     "attemptsAtLastRead": 5,
-    "published": false,
-    "streamDeleted": false
+    "published": true,
+    "streamDeleted": false,
+    "outputBytes": 110367516,
+    "sourceBytes": 3399337725,
+    "reductionPercent": 96.7533
   },
   "rolloutEnabled": false,
   "cronProof": {
@@ -167,5 +170,48 @@
     },
     "stage": "signed-url-validation",
     "signedUrlValid": false
+  },
+  "delivery": {
+    "publicHead": 200,
+    "publicRange": 206,
+    "fullDownloadBytes": 110367516,
+    "expiredPermitDenied": 403,
+    "privateGuestDenied": 403,
+    "ownerRange": 206,
+    "friendsGuestDenied": 403,
+    "acceptedFriendRange": 206,
+    "restoredVisibility": "public",
+    "identityTests": "operator-signed permits against actual ownership/friendship; no user login impersonation",
+    "browser": "fresh Chrome desktop and Android mobile emulation; actual post component",
+    "seekAndRenewalPositionRetained": true,
+    "physicalSafariTested": false
+  },
+  "media": {
+    "sourceDurationSeconds": 367.596188,
+    "outputDurationSeconds": 367.552,
+    "video": "H264 1916x1080",
+    "audio": "AAC stereo48000Hz",
+    "fullDecodeErrors": 0,
+    "sampleFramesSeconds": [
+      10,
+      180,
+      350
+    ],
+    "sourceMeanVolumeDb": -15.6,
+    "outputMeanVolumeDb": -15.6
+  },
+  "recovery": {
+    "type": "hosted transaction ROLLBACK-only rehearsal",
+    "passed": true,
+    "unrelatedContentAndMediaPreserved": true
+  },
+  "referenceProbe": {
+    "status": "migration/consumer not deployed yet",
+    "hostedRows": 408411,
+    "oldClientTimeoutSeconds": 145,
+    "equivalentServerExplainMs": 12070.461,
+    "functionTimeoutSeconds": 30,
+    "clientDeadlineSeconds": 45,
+    "serviceOnly": true
   }
 }

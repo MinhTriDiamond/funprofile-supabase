@@ -90,3 +90,16 @@ export async function authorizePostVideoExport(uid:string,baseUrl:string) {
  if(!data.success||typeof token!=='string'||token.split('.').length!==3)throw new Error('Private export authorization failed');
  url.pathname=`/${token}/downloads/default.mp4`;validateExportUrl(url.href,uid);return url.href;
 }
+
+/** Cleanup audit distinguishes a missing VOD from denied access or an unknown request failure. */
+export async function probePostVideoVodIdentity(uid:string,jobId:string,config=postVideoStreamConfig()) {
+ assertStreamUid(uid);
+ try{
+  const response=await postVideoStreamRequest(`/${uid}`,{},config),data=await response.json();
+  return {httpStatus:response.status,ownedVod:data.success===true&&data.result?.uid===uid&&data.result?.creator===`post-video:${jobId}`&&!data.result?.liveInput};
+ }catch(error){
+  const status=error instanceof Error?/^Stream request failed \((\d{3})\)$/.exec(error.message):null;
+  if(status)return {httpStatus:Number(status[1]),ownedVod:false};
+  throw error;
+ }
+}

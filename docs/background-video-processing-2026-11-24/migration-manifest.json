@@ -3,25 +3,36 @@
     {
       "file": "supabase/migrations/20261125010000_post_video_processing.sql",
       "sha256": "491c9db2d2f82ef33ff8c11ca5bc85683a6c4e3f4233974cfb163e8bd604e766",
-      "version": "20261125010000"
+      "version": "20261125010000",
+      "applied": true
     },
     {
       "file": "supabase/migrations/20261125020000_post_video_retry.sql",
       "sha256": "2190aeef19303d5d11b8cbff9e5ce807d0dba9c4fceba34a0d8fb1f385bb67d9",
-      "version": "20261125020000"
+      "version": "20261125020000",
+      "applied": true
     },
     {
       "file": "supabase/migrations/20261125030000_post_video_cancel_cleanup.sql",
       "sha256": "b83a931fb13d7aca371a64e14fc37553b3006f76da10f737a87bc57d0ebe19c9",
-      "version": "20261125030000"
+      "version": "20261125030000",
+      "applied": true
     },
     {
       "file": "supabase/migrations/20261125040000_post_video_edit_consistency.sql",
       "sha256": "bdf25bba2375a6b668574d4f8231d720a839b8b85d05bb23d541eb990047baf2",
-      "version": "20261125040000"
+      "version": "20261125040000",
+      "applied": true
+    },
+    {
+      "file": "supabase/migrations/20261125050000_post_video_reference_probe.sql",
+      "sha256": "80202036405a8286f654f4d5a010eef865ea498483b7c69de7df1f97f1ba9749",
+      "version": "20261125050000",
+      "applied": false
     }
   ],
   "transactionSha256": "2435c182582e5d8d8927e8ca485875ad43bf03685d0e3dbf44c8d093bba0e2de",
-  "applied": true,
-  "mainCommit": "3bee820"
+  "applied": false,
+  "mainCommit": "3bee820",
+  "note": "Initial four applied; fifth service-only reference probe pending reviewed release"
 }

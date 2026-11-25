@@ -605,3 +605,13 @@ SQL: `docs/superpowers/plans/2026-10-15-livestream-orphan-dry-run.sql`. Candidat
 - PR81 merged main `7473284`, Previewfabc38d render thật đạt. Đã deploy trace/Range diagnostic.
 - Trace thật xác nhận cả HEAD và GET bị validator path chặn ngay hop đầu: cùng origin Stream, đúng UID, hình dạng `/<video>/<opaque>/default.mp4`. Không ghi đoạn opaque/query/capability.
 - Nhánh `fix/quangvu-export-provider-path` hỗ trợ riêng Location do yêu cầu ký hợp lệ trả về: cùng origin, UID segment chính xác, chỉ một đoạn opaque URI an toàn/giới hạn, basename `default.mp4`. Giữ tối đa3hop, deadline chung; URL opaque không được chấp nhận làm nguồn đầu vào hay lưu vào DB/log. Sẽ kiểm token/HEAD/Range thật trước resume job cũ.
+
+### 25/11/2026 — Canary đã qua export, chuyển đủ MP4 R2
+- PR82 merged main `5c38266`, Preview7db6375 render thật đạt. Probe thật: resolvedHEAD200/110.367.516bytes, GETRange206 đúng1byte; tokenprivate/UID/downloadable đều đạt. Nguồn3.399.337.725bytes, MP4giảm96,75%.
+- Đã resume riêng job02e100d1... từmp4_wait bằng guard owner/post/source/UID/phase; không tạo import. Đang R2verify, deleteOFF.
+- Source audit phát hiện2bundle phụ thuộc còn bản postVideoTransfer cũ: post-video-read và stream-webhook. Đồng bộ đúng source đãmerge5c38266 trong phạm vi8function đãđăngký, kiểmDeno trước deploy; không đổisecret/config/flags.
+
+### 25/11/2026 — Sửa cổng tham chiếu theo quy mô production
+- Canary MP4R2 đã phát/tua/gia hạn và tải đủ110.367.516bytes; full decode không lỗi, thời lượng367,552s/H2641916x1080/AACstereo48kHz. Testprivate/friends đạt và đã trảpublic; rehearsal khôi phục rollback-only đạt.
+- Dry-run trướcxóa timeout145s. Counts production:209.807posts,62.167attachments,112.068comments,1.767profiles,11.273replays,11.329sessions. Hàm hiện tại phântrang toàn bộ để tìmUID, gây hàngtrămHTTPcalls.
+- Nhánh `fix/quangvu-video-release-evidence`: bổ sung migration `20261125050000_post_video_reference_probe.sql`, RPC SECURITYINVOKER chỉservice_role trảboolean, giữ toàn bộ trường thamchiếu/own-job exclusion; Edge gọi mộtRPC bounded45s, lỗi/NULL vẫnfailclosed. Thêm statusHTTPStream và probeownership rõ404≠403 để kiểm hậu xóa. Đã thấy RED fullrowexport/undefinedSQLfunction/missingstatushelper; fixtureloopback và unit hiện GREEN; chưaapply/deploy. Không xóaVOD khi cổng chưađạt.

@@ -29,3 +29,11 @@ it('accepts opaque provider TUS paths using the official UID header',async()=>{
 it('treats terminal export errors as bounded failures instead of endless progress',()=>{
  expect(()=>parsePostVideoExport({default:{status:'error'}},uid)).toThrow();
 });
+it.each([404,403])('reports actual Stream HTTP%i without treating it as owned',async status=>{
+ const {probePostVideoVodIdentity}=await import('../../supabase/functions/_shared/postVideoStream');vi.stubGlobal('fetch',vi.fn().mockResolvedValue(new Response(null,{status})));
+ expect(await probePostVideoVodIdentity(uid,'10000000-0000-0000-0000-000000000001',{accountId:account,token:'test'})).toEqual({httpStatus:status,ownedVod:false});
+});
+it('binds a successful identity probe to both UID and managed creator',async()=>{
+ const {probePostVideoVodIdentity}=await import('../../supabase/functions/_shared/postVideoStream');const id='10000000-0000-0000-0000-000000000001';vi.stubGlobal('fetch',vi.fn().mockResolvedValue(Response.json({success:true,result:{uid,creator:'post-video:'+id}})));
+ expect(await probePostVideoVodIdentity(uid,id,{accountId:account,token:'test'})).toEqual({httpStatus:200,ownedVod:true});
+});

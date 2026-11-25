@@ -27,9 +27,9 @@
   ],
   "after": [
     {
-      "function": "get-upload-url",
-      "indexSha256": "995f10c36397e99e19e0d01cb1ab53fa241048fcf57931b93a883e659469159e",
-      "deployedIndexSha256": "995f10c36397e99e19e0d01cb1ab53fa241048fcf57931b93a883e659469159e",
+      "function": "process-post-videos",
+      "indexSha256": "ba111422d7bd6159947a283744ccd62e431cb9f1e43733948c0e2b71a4c9d7e4",
+      "deployedIndexSha256": "ba111422d7bd6159947a283744ccd62e431cb9f1e43733948c0e2b71a4c9d7e4",
       "match": true
     },
     {
@@ -39,15 +39,9 @@
       "match": true
     },
     {
-      "function": "process-post-videos",
-      "indexSha256": "d150a8079144d06a952be45ccfb018187cac8e8a1dc23ffc7fc54ac37bcfed20",
-      "deployedIndexSha256": "d150a8079144d06a952be45ccfb018187cac8e8a1dc23ffc7fc54ac37bcfed20",
-      "match": true
-    },
-    {
-      "function": "stream-orphan-cleanup",
-      "indexSha256": "dc95ddbc282377fe009153eb585418454eb7b7bb97af977c67d01cf1c37ebe82",
-      "deployedIndexSha256": "dc95ddbc282377fe009153eb585418454eb7b7bb97af977c67d01cf1c37ebe82",
+      "function": "get-upload-url",
+      "indexSha256": "995f10c36397e99e19e0d01cb1ab53fa241048fcf57931b93a883e659469159e",
+      "deployedIndexSha256": "995f10c36397e99e19e0d01cb1ab53fa241048fcf57931b93a883e659469159e",
       "match": true
     },
     {
@@ -60,6 +54,12 @@
       "function": "stream-webhook",
       "indexSha256": "d98c8765f74fffdf18489dd05b75ac09bad59aa71570a32bcb106e7cc59acf1e",
       "deployedIndexSha256": "d98c8765f74fffdf18489dd05b75ac09bad59aa71570a32bcb106e7cc59acf1e",
+      "match": true
+    },
+    {
+      "function": "stream-orphan-cleanup",
+      "indexSha256": "dc95ddbc282377fe009153eb585418454eb7b7bb97af977c67d01cf1c37ebe82",
+      "deployedIndexSha256": "dc95ddbc282377fe009153eb585418454eb7b7bb97af977c67d01cf1c37ebe82",
       "match": true
     },
     {
@@ -121,8 +121,8 @@
     {
       "function": "post-video-read",
       "file": "postVideoTransfer.ts",
-      "sha256": "0dc39a278c1b47b83690d36dbb5a8666290b09ba074a9354d2bf91559f9c5231",
-      "deployedSha256": "0dc39a278c1b47b83690d36dbb5a8666290b09ba074a9354d2bf91559f9c5231",
+      "sha256": "283686332abb1a9573d9ec333c3e09d485ea26b388dc7effd0d23b536330c5d8",
+      "deployedSha256": "283686332abb1a9573d9ec333c3e09d485ea26b388dc7effd0d23b536330c5d8",
       "match": true
     },
     {
@@ -137,6 +137,13 @@
       "file": "httpAuth.ts",
       "sha256": "130f6d3cbeb258420f59c811f14cdaeaea9d829672fdd31cbf1fa47036765771",
       "deployedSha256": "130f6d3cbeb258420f59c811f14cdaeaea9d829672fdd31cbf1fa47036765771",
+      "match": true
+    },
+    {
+      "function": "process-post-videos",
+      "file": "postVideoExportDiagnostics.ts",
+      "sha256": "62051cae65cfd86d3a46e8e9e42d1d061397e7637a7c5f9cf17f222c71458865",
+      "deployedSha256": "62051cae65cfd86d3a46e8e9e42d1d061397e7637a7c5f9cf17f222c71458865",
       "match": true
     },
     {
@@ -205,8 +212,8 @@
     {
       "function": "process-post-videos",
       "file": "postVideoTransfer.ts",
-      "sha256": "0dc39a278c1b47b83690d36dbb5a8666290b09ba074a9354d2bf91559f9c5231",
-      "deployedSha256": "0dc39a278c1b47b83690d36dbb5a8666290b09ba074a9354d2bf91559f9c5231",
+      "sha256": "283686332abb1a9573d9ec333c3e09d485ea26b388dc7effd0d23b536330c5d8",
+      "deployedSha256": "283686332abb1a9573d9ec333c3e09d485ea26b388dc7effd0d23b536330c5d8",
       "match": true
     },
     {
@@ -331,8 +338,8 @@
     {
       "function": "stream-webhook",
       "file": "postVideoTransfer.ts",
-      "sha256": "0dc39a278c1b47b83690d36dbb5a8666290b09ba074a9354d2bf91559f9c5231",
-      "deployedSha256": "0dc39a278c1b47b83690d36dbb5a8666290b09ba074a9354d2bf91559f9c5231",
+      "sha256": "283686332abb1a9573d9ec333c3e09d485ea26b388dc7effd0d23b536330c5d8",
+      "deployedSha256": "283686332abb1a9573d9ec333c3e09d485ea26b388dc7effd0d23b536330c5d8",
       "match": true
     },
     {
@@ -440,5 +447,7 @@
       "deployedSha256": "84bd3a5d475b81a7dff70f36500fe4cc063e8ea74d8bad560bc691331b0cd451",
       "match": true
     }
-  ]
+  ],
+  "auditedCommit": "5c38266",
+  "auditScope": "deployed bundles before reference RPC release"
 }
