@@ -116,3 +116,22 @@ describe('bounded same-origin MP4 redirects observed on canary',()=>{
 it.each(['toString','constructor','https://private.invalid/capability'])('normalizes unknown diagnostic errors without echoing %s',async message=>{
  const {postVideoExportFailureCode}=await import('../../supabase/functions/_shared/postVideoTransfer');expect(postVideoExportFailureCode(new Error(message))).toBe('request');
 });
+
+describe('private provider opaque download redirects',()=>{
+ const id='a'.repeat(32),encode=(s:string)=>btoa(s).replaceAll('=','').replaceAll('+','-').replaceAll('/','_');
+ const signed=`https://customer-test.cloudflarestream.com/${encode('{}')}.${encode(JSON.stringify({sub:id,downloadable:true,exp:Math.floor(Date.now()/1000)+600}))}.test-signature/downloads/default.mp4`;
+ const target=(middle:string,video=id)=>`https://customer-test.cloudflarestream.com/${video}/${middle}/default.mp4`;
+ it('accepts the observed opaque path only after a signed same-video request',async()=>{
+  const {readExportSize}=await import('../../supabase/functions/_shared/postVideoTransfer');const f=vi.fn().mockResolvedValueOnce(new Response(null,{status:302,headers:{location:target('opaque-local-capability%3D')}})).mockResolvedValueOnce(new Response(null,{status:200,headers:{'content-length':'123'}}));vi.stubGlobal('fetch',f);
+  expect(await readExportSize(signed)).toBe(123);expect(f).toHaveBeenCalledTimes(2);
+ });
+ it('does not accept opaque provider URLs as an initial caller-supplied source',async()=>{
+  const {readExportSize}=await import('../../supabase/functions/_shared/postVideoTransfer');const f=vi.fn();vi.stubGlobal('fetch',f);await expect(readExportSize(target('opaque-local-capability'))).rejects.toThrow();expect(f).not.toHaveBeenCalled();
+ });
+ it('rejects an opaque redirect from an unsigned initial URL',async()=>{
+  const {readExportSize}=await import('../../supabase/functions/_shared/postVideoTransfer');const f=vi.fn().mockResolvedValue(new Response(null,{status:302,headers:{location:target('opaque-local-capability')}}));vi.stubGlobal('fetch',f);await expect(readExportSize(`https://customer-test.cloudflarestream.com/${id}/downloads/default.mp4`)).rejects.toThrow();expect(f).toHaveBeenCalledTimes(1);
+ });
+ it.each([target('%2fprivate'),target('%5cprivate'),target('x'.repeat(2049)),target('opaque','b'.repeat(32)),`https://user:pass@customer-test.cloudflarestream.com/${id}/opaque/default.mp4`,`https://customer-other.cloudflarestream.com/${id}/opaque/default.mp4`])('rejects an unsafe or unbound opaque redirect before fetch',async location=>{
+  const {readExportSize}=await import('../../supabase/functions/_shared/postVideoTransfer');const f=vi.fn().mockResolvedValue(new Response(null,{status:302,headers:{location}}));vi.stubGlobal('fetch',f);await expect(readExportSize(signed)).rejects.toThrow();expect(f).toHaveBeenCalledTimes(1);
+ });
+});

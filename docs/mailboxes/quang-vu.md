@@ -600,3 +600,8 @@ SQL: `docs/superpowers/plans/2026-10-15-livestream-orphan-dry-run.sql`. Candidat
 - Nhánh `fix/quangvu-private-export-redirect`: sửa theo bằng chứng thực tế, tối đa3redirect, cùng origin ban đầu, mỗi hop validate host/path/UID, deadline chung20sHEAD/45sRange và không Referer. Host/path/UID khác sẽ fail closed; không tự mở bucket/CDN ngoài allowlist.
 - PR80 merged main `60e100e`, Preview677c8ae render thật đạt, đã deploy. Probe vẫn fail closed ở resolution; bản chẩn đoán trước chỉ ghi hop đầu nên chưa chỉ ra hop/path nào bị chặn. Chưa resume/publish/delete.
 - Nhánh `fix/quangvu-video-canary-results` bổ sung trace tối đa3hop đã che toàn bộ đoạn path opaque/UID/query và mã lỗi allowlist; không đổi chính sách chuyển hướng. Sẽ dùng bằng chứng hop thật trước khi sửa ranh giới kế tiếp.
+
+### 25/11/2026 — Chốt ranh giới đường dẫn opaque của provider
+- PR81 merged main `7473284`, Previewfabc38d render thật đạt. Đã deploy trace/Range diagnostic.
+- Trace thật xác nhận cả HEAD và GET bị validator path chặn ngay hop đầu: cùng origin Stream, đúng UID, hình dạng `/<video>/<opaque>/default.mp4`. Không ghi đoạn opaque/query/capability.
+- Nhánh `fix/quangvu-export-provider-path` hỗ trợ riêng Location do yêu cầu ký hợp lệ trả về: cùng origin, UID segment chính xác, chỉ một đoạn opaque URI an toàn/giới hạn, basename `default.mp4`. Giữ tối đa3hop, deadline chung; URL opaque không được chấp nhận làm nguồn đầu vào hay lưu vào DB/log. Sẽ kiểm token/HEAD/Range thật trước resume job cũ.
