@@ -1,5 +1,5 @@
 import type { PostVideoPhase } from './postVideoPolicy.ts';
-import { postVideoStreamConfig, postVideoStreamRequest, startPostVideoImport, readPostVideoStorageUsage, readPostVideoExport, readPostVideoTusOffset, uploadPostVideoTusPart, authorizePostVideoExport } from './postVideoStream.ts';
+import { postVideoStreamConfig, probePostVideoVodIdentity, postVideoStreamRequest, startPostVideoImport, readPostVideoStorageUsage, readPostVideoExport, readPostVideoTusOffset, uploadPostVideoTusPart, authorizePostVideoExport } from './postVideoStream.ts';
 import { readExportSize, videoOffsetRange } from './postVideoTransfer.ts';
 import { readPostVideoSource, verifyPostVideoSource, verifyPostVideoOutput, transferPostVideoPart, POST_VIDEO_PRIVATE_BUCKET, assertPrivateVideoDestination } from './postVideoR2.ts';
 import { createMultipartUpload, completeMultipartUpload, signedR2Request, type UploadedPart } from './r2MultipartService.ts';
@@ -121,16 +121,10 @@ export async function runPostVideoStep(j:DurablePostVideoJob, c:PostVideoControl
 type Admin = any;
 async function checked(result:PromiseLike<{data:any;error:any}>) {const r=await result;if(r.error)throw new Error('Post video database operation failed');return r.data;}
 export async function hasPostVideoStreamReferences(admin:Admin, uid:string, jobId:string):Promise<boolean> {
- const sources:[string,string][]=[['live_replays','stream_uid,cloudflare_video_uid,playback_hls,playback_dash,playback_mp4,cloudflare_playback_url'],['live_sessions','cloudflare_video_uid,hls_url,playback_url'],['posts','video_url,media_urls,metadata'],['post_attachments','file_url'],['comments','video_url'],['profiles','cover_url'],['post_video_processing_jobs','id,stream_uid']];
- for(const [table,columns] of sources) {
-  for(let offset=0;;offset+=500) {
-   const rows=await checked(admin.from(table).select(columns).range(offset,offset+499));
-   if(!Array.isArray(rows)) throw new Error('Missing reference scan');
-   if(rows.some(row=>(table!=='post_video_processing_jobs'||row.id!==jobId)&&JSON.stringify(row).includes(uid)))return true;
-   if(rows.length<500)break;
-  }
- }
- return false;
+ if(!/^[a-f0-9]{32}$/.test(uid))throw new Error('Invalid Stream UID');
+ const referenced=await checked(admin.rpc('has_post_video_stream_references',{p_stream_uid:uid,p_excluded_job_id:jobId}).abortSignal(AbortSignal.timeout(45000)));
+ if(typeof referenced!=='boolean')throw new Error('Missing reference proof');
+ return referenced;
 }
 export async function processPostVideoJob(admin:Admin,jobId:string,cancelledCleanup=false) {
  const lease=crypto.randomUUID();
@@ -206,14 +200,14 @@ export async function inspectPostVideoCleanup(admin:Admin,jobId:string) {
  if(!job)return {jobId,readyToDelete:false,reason:'not_found'};
  const control=await checked(admin.from('post_video_processing_control').select('*').eq('id',true).single());
  const config=postVideoStreamConfig();
- let outputVerified=false,sourceVerified=false,ownedVod=false,referenced=true;
+ let outputVerified=false,sourceVerified=false,ownedVod=false,referenced=true,streamHttpStatus:number|null=null;
  if(job.output_bucket&&job.output_key&&job.output_size){try{await verifyPostVideoOutput(job.output_bucket,job.output_key,job.output_size);outputVerified=true;}catch{/* audit records failed verification */}}
  if(job.phase==='not_beneficial'){try{await verifyPostVideoSource(job);sourceVerified=true;}catch{/* audit records failed verification */}}
  if(job.stream_uid&&job.stream_account_id===config.accountId){
-  try{const data=await(await postVideoStreamRequest(`/${job.stream_uid}`)).json();ownedVod=data.success&&data.result?.creator===`post-video:${job.id}`&&!data.result?.liveInput;}catch{/* no deletion without identity proof */}
+  try{const identity=await probePostVideoVodIdentity(job.stream_uid,job.id,config);ownedVod=identity.ownedVod;streamHttpStatus=identity.httpStatus;}catch{/* no deletion without identity proof */}
   referenced=await hasPostVideoStreamReferences(admin,job.stream_uid,job.id);
  }
  const approval=control.delete_enabled===true&&(!job.canary||job.delete_approved===true);
  const durable=job.phase==='not_beneficial'?sourceVerified:!!job.published_at&&outputVerified;
- return {jobId:job.id,phase:job.phase,uid:job.stream_uid,accountId:job.stream_account_id,canary:job.canary,deleteApproved:job.delete_approved===true,deleteEnabled:control.delete_enabled===true,originalRetained:true,outputVerified,sourceVerified,published:!!job.published_at,ownedVod,referenced,readyToDelete:approval&&ownedVod&&!referenced&&durable};
+ return {jobId:job.id,phase:job.phase,uid:job.stream_uid,accountId:job.stream_account_id,canary:job.canary,deleteApproved:job.delete_approved===true,deleteEnabled:control.delete_enabled===true,originalRetained:true,outputVerified,sourceVerified,published:!!job.published_at,ownedVod,streamHttpStatus,referenced,readyToDelete:approval&&ownedVod&&!referenced&&durable};
 }

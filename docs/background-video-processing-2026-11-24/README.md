@@ -2,11 +2,15 @@
 
 Ngày triển khai: 25/11/2026. PR [#76](https://github.com/MinhTriDiamond/funprofile-supabase/pull/76), main `3bee820`; hồ sơ tiếp tục trên `fix/quangvu-background-video-rollout`.
 
-**Trạng thái: code và hạ tầng đã triển khai; canary gặp lỗi tại bước lấy MP4 xuất, các cờ xử lý đại trà vẫn tắt.** Chưa coi là hoàn thành tính năng. Preview đúng commit đã được Coordinator xác nhận, bản Pages production build thành công. Bốn migration đã áp dụng; tám function và Worker đã deploy. Xem `rollout-receipt.json`, `migration-manifest.json` và `function-source-manifest.json` để đối chiếu phiên bản/hash. Các tệp này không chứa secret hoặc payload bài viết.
+**Trạng thái: canary đã publish MP4 R2 và qua delivery/privacy/quality; đang hoàn thiện cổng dọn Stream, chưa bật xử lý đại trà.** Code provider fixes đã lên main `5c38266` qua PR76–82, mỗi PR đã qua Preview đúng head và render thật. Bản gốc vẫn được giữ.
 
-Cron production đã được kiểm chứng riêng: khi dừng tick thủ công và không dùng trình duyệt, offset canary tăng thêm **117.440.512 bytes**. Bucket output private, r2.dev tắt, không custom domain; probe multipart/HEAD/Range/MP4 đạt và file probe đã xóa. Trước canary Stream dùng **0,01/1.000 phút**. Bản gốc được giữ nguyên.
+- Nguồn **3.399.337.725 bytes** → MP4 **110.367.516 bytes**, giảm **96,753%**. Output367,552s/H2641916×1080/AACstereo48kHz; full decode không lỗi, ba khung hình đối chiếu và mẫu âm thanh có meanvolume-15,6dB như nguồn.
+- Trang bài thật phát ở Chrome desktop và Android mô phỏng; tua180s và cấp lại cookie giữ vị trí. HEAD200/Range206, download đủ110.367.516bytes; permit hết hạn bị403. Chưa kiểm Safari hoặc điện thoại vật lý.
+- Đổi private chặn guest403/owner206; friends chặn guest403/acceptedfriend206; đã trả public. Test owner/friend dùng permit do operator ký theo quan hệ DB thật, không phải đăng nhập tài khoản người khác. Rehearsal khôi phục nguồn chạy trong transaction ROLLBACK-only, không làm mất nội dung/media khác.
+- Cron tự chuyển thêm117.440.512bytes khi tạm dừng tick thủ công, không cần trình duyệt. Bucket private, r2.dev tắt/không custom domain. Source audit8index+53shared khớp commit5c38266.
+- Dry-run dọn bị timeout145s do phân trang408.411rows qua hàng trăm HTTPcalls. Bản sửa đang review/phát hành một RPC service-only trảboolean, giữ đủ trường tham chiếu, timeout30s riêng function/HTTP45s. Truy vấn tương đương trên production đo12.070,461ms. Không đổi timeout role/global; [Supabase hỗ trợ timeout riêng function qua Data API](https://supabase.com/docs/guides/database/postgres/timeouts).
 
-Canary đã chuyển đủ **3.399.337.725 bytes**, Stream chuyển mã xong. Các lần lấy MP4 thất bại đã dừng ở `needs_review`; chưa publish hoặc xóa VOD. Chẩn đoán được phát hành qua PR [#77](https://github.com/MinhTriDiamond/funprofile-supabase/pull/77), main `f671904`, Preview thật render đạt tại https://83a5c253.funprofile-supabase.pages.dev. Probe provider xác nhận lỗi nằm ở kiểm tra `exp`: Cloudflare trả chuỗi số, còn validator chỉ nhận kiểu number. Token đúng UID, downloadable=true và còn hạn; không xuất token/URL. Bản sửa tương thích đang kiểm thử trên `fix/quangvu-video-export-runtime`, chưa coi lỗi runtime đã hết cho đến khi canary tiếp tục đạt. Cờ đại trà/xóa vẫn OFF.
+Bốn migration đầu đã áp dụng; migration `20261125050000` và consumer mới **chưa triển khai** tại thời điểm hồ sơ này. VOD canary chưa xóa, cờ đại trà/xóa vẫn OFF. Không coi tính năng hoàn thành chỉ từ unit test hoặc MP4 đã publish. Các receipt/manifest không chứa token, URL capability hoặc payload bài viết.
 
 ## Hành vi
 
@@ -21,7 +25,7 @@ Canary đã chuyển đủ **3.399.337.725 bytes**, Stream chuyển mã xong. C�
 
 ## Kiểm chứng trước phát hành
 
-- Bộ kiểm thử video/feed/RTMP: **222 test đạt, 28 file**. Toàn bộ lượt offline: **647 test đạt, 53 skip, 102 file đạt**; các suite LIVE bị loại rõ ràng vì sandbox không có DNS production. Đã sửa riêng mock RPC/i18n của fixture wallet cũ, không thay logic wallet.
+- Toàn bộ lượt offline hiện tại: **691 test đạt, 53 skip, 103 file đạt**; các suite LIVE bị loại rõ ràng vì sandbox không có DNS production. Đã sửa riêng mock RPC/i18n của fixture wallet cũ, không thay logic wallet.
 - Vitest: policy, nguồn/namespace, API Stream, range/transfer, processor/cancel, references, quyền private, cron, UI trạng thái, gia hạn giữ vị trí; kèm feed/RTMP regression. Số lượng cuối được ghi cùng receipt phát hành.
 - `scripts/test-post-video-db.ts`: PostgreSQL loopback, database dùng một lần; kiểm RLS/quyền cột, claim đồng thời, lease đã nhả/hết hạn, publish nguyên tử, retry, source/privacy/delete/edit lifecycle. Không chạy fixture trên production.
 - `scripts/test-post-video-media-browser.ts`: Chrome headless, MP4 tổng hợp 3 giây và R2/auth giả lập; phát, HEAD, Range, tải đủ, hết hạn/gia hạn và thu hồi yêu cầu kế tiếp.
@@ -33,7 +37,7 @@ Canary đã chuyển đủ **3.399.337.725 bytes**, Stream chuyển mã xong. C�
 
 1. Chốt commit, PR và Preview đúng head; kiểm tra các đường cũ còn chạy. Reader frontend phải lên production trước khi canary publish locator mới.
 2. Sao lưu source/config sáu function hiện hữu và snapshot đúng post/attachment canary vào `.local-backups/` (không commit dữ liệu/token).
-3. Chỉ áp dụng bốn migration `20261125010000`–`20261125040000` đã review, theo transaction qua Management API/CLI; giữ cờ off và ghi migration history đúng bốn phiên bản. **Không chạy lại toàn bộ lịch sử:** trước rollout có 768 local-only và 6 remote versions; không repair lịch sử cũ trong việc này. Không dùng admin-sql cho DDL.
+3. Chỉ áp dụng bốn migration `20261125010000`–`20261125040000` đã review, theo transaction qua Management API/CLI; giữ cờ off và ghi migration history đúng bốn phiên bản. Bổ sung migration `20261125050000_post_video_reference_probe.sql` sau review để chuyển kiểm tra tham chiếu về database, áp dụng trước consumer. **Không chạy lại toàn bộ lịch sử:** trước rollout có 768 local-only và 6 remote versions; không repair lịch sử cũ trong việc này. Không dùng admin-sql cho DDL.
 4. Tạo/kiểm bucket private: r2.dev disabled, không public custom domain. Secret mới chỉ ở secret manager, không qua chat/log/repo: POST_VIDEO_READ_SECRET, POST_VIDEO_GATEWAY_SECRET, POST_VIDEO_CRON_SECRET. Không mở rộng credential hoặc mua gói mới.
 5. Deploy Worker và tám Edge Functions liên quan. Worker chỉ có bucket binding và secret chuyên dụng; không Supabase service-role key. Cron Worker mỗi phút, tối đa sáu tick có giới hạn; idle chỉ một tick. Không đưa secret vào SQL hoặc đụng schema vault.
 6. Kiểm đúng source/version triển khai, auth từ chối caller không đủ quyền, private R2 read/write, quota còn chừa RTMP 240 phút. Sai một cổng thì giữ cờ off.
@@ -56,3 +60,7 @@ Canary đã chuyển đủ **3.399.337.725 bytes**, Stream chuyển mã xong. C�
 - Mất CREATE response cần operator đối soát theo creator/job; không phát sinh import thứ hai để đoán.
 
 Nguồn kỹ thuật: [TUS/Direct creator uploads](https://developers.cloudflare.com/stream/uploading-videos/direct-creator-uploads/), [private Stream](https://developers.cloudflare.com/stream/viewing-videos/securing-your-stream/), [MP4 download](https://developers.cloudflare.com/stream/viewing-videos/download-videos/), [Workers FixedLengthStream](https://developers.cloudflare.com/workers/runtime-apis/response/).
+
+## Rollback probe tham chiếu
+
+Migration25050000 chỉ tạo RPC đọc boolean cho service_role. Khi cần rollback consumer: giữ các cờ OFF, phục hồi đúng bundle processor/webhook đã sao lưu ở `.local-backups/.../before-reference-rpc/` hoặc revert qua PR. Không drop RPC khi còn consumer sử dụng; có thể giữ RPC đọc không được gọi. Không thay timeout role/global, không drop jobs hoặc xóa original/output trong rollback. Schema probe và consumer phải được phát hành theo thứ tự migration trước, consumer sau; canary API thực tế phải đạt trước khi dọn VOD.

@@ -14,6 +14,8 @@ await sql(raw, `CREATE DATABASE "${name}"`);
 try {
   const p = Bun.spawn(['psql', test.href, '-X', '-v', 'ON_ERROR_STOP=1', '-f', 'scripts/tests/post-video-processing.sql'], { stdout: 'inherit', stderr: 'inherit' });
   if (await p.exited) throw new Error('SQL fixtures failed');
+  const refs=Bun.spawn(['psql',test.href,'-X','-v','ON_ERROR_STOP=1','-f','scripts/tests/post-video-reference-probe.sql'],{stdout:'inherit',stderr:'inherit'});
+  if(await refs.exited)throw new Error('Reference SQL fixtures failed');
   await sql(test.href, `INSERT INTO posts(id,user_id) VALUES('10000000-0000-0000-0000-000000000002','20000000-0000-0000-0000-000000000001'); INSERT INTO post_attachments(post_id,file_url,storage_key,file_type,size_bytes) VALUES('10000000-0000-0000-0000-000000000002','https://media.fun.rich/videos/source.mov','videos/20000000-0000-0000-0000-000000000001/source.mov','video',3399337725);`);
   const id = await sql(test.href, "SELECT id FROM post_video_processing_jobs WHERE phase='queued' LIMIT 1");
   const claims = await Promise.all([sql(test.href, `SELECT claim_post_video_job('${id}',gen_random_uuid(),180) IS NOT NULL`), sql(test.href, `SELECT claim_post_video_job('${id}',gen_random_uuid(),180) IS NOT NULL`)]);
