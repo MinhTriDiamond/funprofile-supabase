@@ -2,7 +2,7 @@
 
 Ngày triển khai: 25/11/2026. PR [#76](https://github.com/MinhTriDiamond/funprofile-supabase/pull/76), main `3bee820`; hồ sơ tiếp tục trên `fix/quangvu-background-video-rollout`.
 
-**Trạng thái: canary đã publish MP4 R2 và qua delivery/privacy/quality; đang hoàn thiện cổng dọn Stream, chưa bật xử lý đại trà.** Code provider fixes đã lên main `5c38266` qua PR76–82, mỗi PR đã qua Preview đúng head và render thật. Bản gốc vẫn được giữ.
+**Trạng thái: đã bật production ngày25/11/2026 sau18cổng kiểm chứng.** Canary hoàn tất, StreamUIDtrả404; MP4R2HEAD200/Range206, originalgiữnguyên. Cả enabled/import_enabled/publish_enabled/delete_enabled=true, dựtrữRTMP240phút. Streamcòn0,01/1.000phút sửdụng. RPCthamchiếu đãdeploy/ACLservice-only/timeout30s, dry-runthật7,7s. MãruntimeđếnPR83/main`ed6f0de`; hồsơkếtquảchốt trênnhánh riêng.
 
 - Nguồn **3.399.337.725 bytes** → MP4 **110.367.516 bytes**, giảm **96,753%**. Output367,552s/H2641916×1080/AACstereo48kHz; full decode không lỗi, ba khung hình đối chiếu và mẫu âm thanh có meanvolume-15,6dB như nguồn.
 - Trang bài thật phát ở Chrome desktop và Android mô phỏng; tua180s và cấp lại cookie giữ vị trí. HEAD200/Range206, download đủ110.367.516bytes; permit hết hạn bị403. Chưa kiểm Safari hoặc điện thoại vật lý.
@@ -10,7 +10,7 @@ Ngày triển khai: 25/11/2026. PR [#76](https://github.com/MinhTriDiamond/funpr
 - Cron tự chuyển thêm117.440.512bytes khi tạm dừng tick thủ công, không cần trình duyệt. Bucket private, r2.dev tắt/không custom domain. Source audit8index+53shared khớp commit5c38266.
 - Dry-run dọn bị timeout145s do phân trang408.411rows qua hàng trăm HTTPcalls. Bản sửa đang review/phát hành một RPC service-only trảboolean, giữ đủ trường tham chiếu, timeout30s riêng function/HTTP45s. Truy vấn tương đương trên production đo12.070,461ms. Không đổi timeout role/global; [Supabase hỗ trợ timeout riêng function qua Data API](https://supabase.com/docs/guides/database/postgres/timeouts).
 
-Bốn migration đầu đã áp dụng; migration `20261125050000` và consumer mới **chưa triển khai** tại thời điểm hồ sơ này. VOD canary chưa xóa, cờ đại trà/xóa vẫn OFF. Không coi tính năng hoàn thành chỉ từ unit test hoặc MP4 đã publish. Các receipt/manifest không chứa token, URL capability hoặc payload bài viết.
+Cả năm migration đã áp dụng và đối chiếu history/ACL. Canary VODđãxóa sauproof; sourceR2vàMP4R2đều giữlại. Chi tiết trong receipt/manifest; không chứa capability hoặc payload bài viết.
 
 ## Hành vi
 

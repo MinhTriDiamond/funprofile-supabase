@@ -27,6 +27,12 @@
   ],
   "after": [
     {
+      "function": "get-upload-url",
+      "indexSha256": "995f10c36397e99e19e0d01cb1ab53fa241048fcf57931b93a883e659469159e",
+      "deployedIndexSha256": "995f10c36397e99e19e0d01cb1ab53fa241048fcf57931b93a883e659469159e",
+      "match": true
+    },
+    {
       "function": "process-post-videos",
       "indexSha256": "ba111422d7bd6159947a283744ccd62e431cb9f1e43733948c0e2b71a4c9d7e4",
       "deployedIndexSha256": "ba111422d7bd6159947a283744ccd62e431cb9f1e43733948c0e2b71a4c9d7e4",
@@ -36,12 +42,6 @@
       "function": "post-video-read",
       "indexSha256": "ffb4372ef624ce373c2c0bb20023646453bae6d03e25863b42c804599898cefd",
       "deployedIndexSha256": "ffb4372ef624ce373c2c0bb20023646453bae6d03e25863b42c804599898cefd",
-      "match": true
-    },
-    {
-      "function": "get-upload-url",
-      "indexSha256": "995f10c36397e99e19e0d01cb1ab53fa241048fcf57931b93a883e659469159e",
-      "deployedIndexSha256": "995f10c36397e99e19e0d01cb1ab53fa241048fcf57931b93a883e659469159e",
       "match": true
     },
     {
@@ -177,8 +177,8 @@
     {
       "function": "process-post-videos",
       "file": "postVideoStream.ts",
-      "sha256": "7e1e31a139e3262f520035b2873ab312a9fef6e3aee832964ec1dc6f9e0e8ed8",
-      "deployedSha256": "7e1e31a139e3262f520035b2873ab312a9fef6e3aee832964ec1dc6f9e0e8ed8",
+      "sha256": "3f4168e87e1906fcf21834911462c15e3675e02eededf61f31d655b5843c861e",
+      "deployedSha256": "3f4168e87e1906fcf21834911462c15e3675e02eededf61f31d655b5843c861e",
       "match": true
     },
     {
@@ -205,8 +205,8 @@
     {
       "function": "process-post-videos",
       "file": "postVideoProcessor.ts",
-      "sha256": "09903d962792accf552b63e1e130de945c9968f97239c723a99cbf443e336fe6",
-      "deployedSha256": "09903d962792accf552b63e1e130de945c9968f97239c723a99cbf443e336fe6",
+      "sha256": "4e1d09120c853ae0bfa05158606356f3c8fb2d133fa3ab7b0ec1f228a4ae8b9d",
+      "deployedSha256": "4e1d09120c853ae0bfa05158606356f3c8fb2d133fa3ab7b0ec1f228a4ae8b9d",
       "match": true
     },
     {
@@ -303,8 +303,8 @@
     {
       "function": "stream-webhook",
       "file": "postVideoStream.ts",
-      "sha256": "7e1e31a139e3262f520035b2873ab312a9fef6e3aee832964ec1dc6f9e0e8ed8",
-      "deployedSha256": "7e1e31a139e3262f520035b2873ab312a9fef6e3aee832964ec1dc6f9e0e8ed8",
+      "sha256": "3f4168e87e1906fcf21834911462c15e3675e02eededf61f31d655b5843c861e",
+      "deployedSha256": "3f4168e87e1906fcf21834911462c15e3675e02eededf61f31d655b5843c861e",
       "match": true
     },
     {
@@ -331,8 +331,8 @@
     {
       "function": "stream-webhook",
       "file": "postVideoProcessor.ts",
-      "sha256": "09903d962792accf552b63e1e130de945c9968f97239c723a99cbf443e336fe6",
-      "deployedSha256": "09903d962792accf552b63e1e130de945c9968f97239c723a99cbf443e336fe6",
+      "sha256": "4e1d09120c853ae0bfa05158606356f3c8fb2d133fa3ab7b0ec1f228a4ae8b9d",
+      "deployedSha256": "4e1d09120c853ae0bfa05158606356f3c8fb2d133fa3ab7b0ec1f228a4ae8b9d",
       "match": true
     },
     {
@@ -448,6 +448,6 @@
       "match": true
     }
   ],
-  "auditedCommit": "5c38266",
-  "auditScope": "deployed bundles before reference RPC release"
+  "auditedCommit": "ed6f0de",
+  "auditScope": "all eight deployed indexes and53shared files match after reference RPC deployment"
 }

@@ -615,3 +615,9 @@ SQL: `docs/superpowers/plans/2026-10-15-livestream-orphan-dry-run.sql`. Candidat
 - Canary MP4R2 đã phát/tua/gia hạn và tải đủ110.367.516bytes; full decode không lỗi, thời lượng367,552s/H2641916x1080/AACstereo48kHz. Testprivate/friends đạt và đã trảpublic; rehearsal khôi phục rollback-only đạt.
 - Dry-run trướcxóa timeout145s. Counts production:209.807posts,62.167attachments,112.068comments,1.767profiles,11.273replays,11.329sessions. Hàm hiện tại phântrang toàn bộ để tìmUID, gây hàngtrămHTTPcalls.
 - Nhánh `fix/quangvu-video-release-evidence`: bổ sung migration `20261125050000_post_video_reference_probe.sql`, RPC SECURITYINVOKER chỉservice_role trảboolean, giữ toàn bộ trường thamchiếu/own-job exclusion; Edge gọi mộtRPC bounded45s, lỗi/NULL vẫnfailclosed. Thêm statusHTTPStream và probeownership rõ404≠403 để kiểm hậu xóa. Đã thấy RED fullrowexport/undefinedSQLfunction/missingstatushelper; fixtureloopback và unit hiện GREEN; chưaapply/deploy. Không xóaVOD khi cổng chưađạt.
+
+### 25/11/2026 — Kết quả production background video
+- PR76–83 đãmerge; runtime mained6f0de, từngcổngPreviewđúngcommit renderđạt. Năm migration/támfunction/Workercron đãtriểnkhai; source8index+53shared khớp.
+- Canary3.399.337.725→110.367.516bytes (-96,753%),367,552s1080p/AAC. Desktop/mobilemôphỏng,seek/renew/downloadđủ,private/friends/recoveryđạt. VODStreamđúngjob đãxóa/404; R2HEAD200/Range206,originalcòn. Stream6,13→0,01/1.000phút.
+- Cổngthamchiếu đãchuyển thànhRPCservice-only30s, dry-run7,7s thaytimeout145s. Admission10GiB/overlimit vàcronđộc lập đãkiểm.
+- Đãbật4cờproduction lúc15:26ngày25/11giờAsia/Kuala_Lumpur, reserve240phút. 18releasegatesđạt. Chỉvideo publicmới đủđiềukiện; khôngbatchbàicũ/khôngxóaoriginal. Hồsơ docs/background-video-processing-2026-11-24; rollbacktắtcờ/giữR2/phục hồinguồnselective.

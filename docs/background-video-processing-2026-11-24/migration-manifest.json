@@ -28,11 +28,11 @@
       "file": "supabase/migrations/20261125050000_post_video_reference_probe.sql",
       "sha256": "80202036405a8286f654f4d5a010eef865ea498483b7c69de7df1f97f1ba9749",
       "version": "20261125050000",
-      "applied": false
+      "applied": true
     }
   ],
   "transactionSha256": "2435c182582e5d8d8927e8ca485875ad43bf03685d0e3dbf44c8d093bba0e2de",
-  "applied": false,
+  "applied": true,
   "mainCommit": "3bee820",
-  "note": "Initial four applied; fifth service-only reference probe pending reviewed release"
+  "note": "All five scoped migrations applied; fifth ACL/30s/history verified"
 }
