@@ -23,7 +23,15 @@ export async function inspectPostVideoExport(job:{id:string;canary:boolean;cance
   try{validateExportUrl(base.href,uid);report.signedUrlValid=true;}catch{return {...report,stage,signedUrlValid:false};}
   stage='head';const response=await fetch(base,{method:'HEAD',redirect:'manual',signal:AbortSignal.timeout(20000)});
   const length=Number(response.headers.get('content-length'));await response.body?.cancel();
-  return {...report,stage,headStatus:response.status,headLength:Number.isSafeInteger(length)&&length>0?length:null,hasLocation:response.headers.has('location')};
+  let redirect;
+  if(response.headers.has('location')){
+   try{
+    const target=new URL(response.headers.get('location')!,base);
+    const knownProvider=/^(?:[a-z0-9-]+\.)*(?:videodelivery\.net|cloudflarestream\.com|cloudflarestorage\.com|r2\.dev|googleapis\.com|amazonaws\.com)$/.test(target.hostname);
+    redirect={hostname:knownProvider?target.hostname:'other',sameOrigin:target.origin===base.origin,pathContainsUid:target.pathname.includes(uid),hasSignedQuery:['token','Signature','X-Amz-Signature','X-Goog-Signature'].some(key=>target.searchParams.has(key))};
+   }catch{redirect={invalid:true};}
+  }
+  return {...report,stage,headStatus:response.status,headLength:Number.isSafeInteger(length)&&length>0?length:null,hasLocation:response.headers.has('location'),...(redirect?{redirect}:{})};
  }catch(error){
   if(stage==='video'&&report.privateOwnedVod!==true&&error instanceof Error&&error.message==='Private owned VOD required')throw error;
   const status=error instanceof Error?/^Stream request failed \((\d{3})\)$/.exec(error.message):null;
