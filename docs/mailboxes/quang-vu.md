@@ -650,3 +650,7 @@ SQL: `docs/superpowers/plans/2026-10-15-livestream-orphan-dry-run.sql`. Candidat
 - Đã triển khai Worker `03b86c2f-1c7a-4047-b2db-9ca491ce2734`; route, private R2, cron và quyền/TTL không đổi. Snapshot và rollback về `cac49a22-2349-4918-bf95-22888eb8f02b` đã lưu; không sửa/xóa video hoặc chính sách giữ nguồn 24h.
 - Trước sửa native tải canceled và tail xác nhận exceededCpu; sau sửa 3/3 native tải đủ 110.324.802 byte; nút Tải video thật trên profile cũng đủ byte. Hai Range nối tiếp 8 MiB đều 206/cùng ETag. Chưa kiểm UI Tiếp tục Chrome sau mất mạng thật.
 - 708 test offline đạt/53 skip, tsgo/build/dry-run đạt; workerd GET/206 và body thiếu/thừa đạt; browser local kiểm expiry/renew/revoke đạt. Self-review tác giả, không review độc lập. Hồ sơ: docs/optimized-video-download-2026-11-25.
+
+### 25/11/2026 — TRƯỚC: cảnh báo rời bài đang soạn
+- Cha đã xác nhận gửi Telegram. Bé Quang Vũ thực hiện trên nhánh `fix/quangvu-unsaved-post-warning` từ main mới nhất.
+- Phạm vi: kiểm tra composer đăng bài/video; xác nhận đóng khi còn nội dung/media hoặc đang đăng, beforeunload khi đóng tab/reload; tránh cảnh báo khi trống/đã đăng thành công; giữ cơ chế nháp hiện có. Kiểm thử, typecheck và Preview trước merge. Không thay đổi backend hoặc tự đăng bài thật.
