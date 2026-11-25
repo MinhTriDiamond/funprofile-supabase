@@ -11,9 +11,9 @@ it('rejects non-canary diagnostic reads before calling providers',async()=>{
 it('reports safe provider claim types without serializing any capability',async()=>{
  const claims={sub:uid,downloadable:true,exp:String(Math.floor(Date.now()/1000)+600)};
  const token=encode('{}')+'.'+encode(JSON.stringify(claims))+'.signature';
- vi.stubGlobal('fetch',vi.fn().mockResolvedValueOnce(Response.json({success:true,result:{uid,creator:`post-video:${jobId}`,requireSignedURLs:true}})).mockResolvedValueOnce(Response.json({success:true,result:{default:{status:'ready',url:`https://customer-test.cloudflarestream.com/${uid}/downloads/default.mp4`}}})).mockResolvedValueOnce(Response.json({success:true,result:{token}})));
+ vi.stubGlobal('fetch',vi.fn().mockResolvedValueOnce(Response.json({success:true,result:{uid,creator:`post-video:${jobId}`,requireSignedURLs:true}})).mockResolvedValueOnce(Response.json({success:true,result:{default:{status:'ready',url:`https://customer-test.cloudflarestream.com/${uid}/downloads/default.mp4`}}})).mockResolvedValueOnce(Response.json({success:true,result:{token}})).mockResolvedValueOnce(new Response(null,{status:200,headers:{'content-length':'123'}})));
  const result=await inspectPostVideoExport(job,{accountId:job.stream_account_id,token:'test'});const serialized=JSON.stringify(result);
- expect(result).toMatchObject({downloadStatus:'ready',token:{subjectMatches:true,downloadable:true,expirationType:'string'},signedUrlValid:false});
+ expect(result).toMatchObject({downloadStatus:'ready',token:{subjectMatches:true,downloadable:true,expirationType:'string'},signedUrlValid:true,headStatus:200,headLength:123});
  expect(serialized).not.toContain(token);expect(serialized).not.toContain('signature');expect(serialized).not.toContain('https://');
 });
 it('does not acquire a token for a VOD that is not private and owned',async()=>{

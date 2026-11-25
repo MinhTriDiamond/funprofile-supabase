@@ -24,7 +24,8 @@ export function validateExportUrl(url: string, uid?: string): URL {
   }else {
     const parts=identity.split('.');if(parts.length!==3)throw new Error('Invalid signed export');
     let claims;try{claims=JSON.parse(atob(parts[1].replaceAll('-','+').replaceAll('_','/')));}catch{throw new Error('Invalid export claims');}
-    if(!/^[a-f0-9]{32}$/.test(claims.sub)||(uid&&claims.sub!==uid)||claims.downloadable!==true||!Number.isFinite(claims.exp)||claims.exp<=Date.now()/1000)throw new Error('Invalid export claims');
+    const expiration=typeof claims.exp==='string'&&/^\d+$/.test(claims.exp)?Number(claims.exp):claims.exp;
+    if(!/^[a-f0-9]{32}$/.test(claims.sub)||(uid&&claims.sub!==uid)||claims.downloadable!==true||!Number.isSafeInteger(expiration)||expiration<=Date.now()/1000)throw new Error('Invalid export claims');
   }
   return u;
 }

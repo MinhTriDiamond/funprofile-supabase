@@ -587,3 +587,8 @@ SQL: `docs/superpowers/plans/2026-10-15-livestream-orphan-dry-run.sql`. Candidat
 - Phạm vi tiếp theo: bổ sung chẩn đoán an toàn theo từng ranh giới export/API/HEAD, không log token/TUS URL/nguồn; tìm nguyên nhân thực tế rồi test RED→GREEN và qua Preview trước deploy bản sửa. Không bật rollout khi cổng runtime chưa đạt.
 - Cập nhật cổng công cụ: automatic approval review từ chối khởi chạy lệnh commit vì hết hạn mức, báo thử lại11:05; đây là review failure, không phải kết luận hành động unsafe. Commit/push/deploy diagnostic CHƯA thực hiện. Không đi vòng cổng duyệt.
 - Kiểm chứng local patch:652test offline pass/53skip,103files; tsgo/Deno check/build pass; reviewer không có Critical/Important, allowlist status đã có RED→GREEN. Code/metadata phát hành hiện có chưa giải quyết lỗi canary; không báo hoàn tất.
+
+### 25/11/2026 — Xác nhận nguyên nhân export canary, sửa tương thích exp
+- Bộ duyệt đã hoạt động lại; PR77 merged main `f671904`, Preview đúng commit `24534f8` render thật đạt tại https://83a5c253.funprofile-supabase.pages.dev. Đã deploy process-post-videos diagnostic.
+- Probe VOD canary xác nhận: private/owned=true, MP4ready, trusted URL, subjectMatches=true, downloadable=true; `exp` là string có giá trị thời gian tương lai, bị validator từ chối ở `signed-url-validation`. Không xuất token/URL.
+- Nhánh riêng tiếp theo `fix/quangvu-video-export-runtime`: chỉ chuẩn hóa NumericDate decimal-string có kiểm tra safe integer/future, giữ kiểm UID/downloadable/host; test lỗi thực tế RED→GREEN, Preview trước merge/deploy, tiếp tục đúng job cũ. Cờ đại trà/xóa vẫn OFF.
