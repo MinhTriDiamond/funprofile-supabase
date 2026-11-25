@@ -1,0 +1,11 @@
+# Dọn nguồn video sau 24 giờ
+
+Cha đã duyệt và xác nhận thông báo Telegram. Thời hạn tính từ `published_at` của bản MP4 tối ưu đã xác minh, theo đồng hồ database. Chỉ job `complete`, outcome optimized, không cancelled, đã dọn VOD, có output private/gateway hiện hành mới được dọn nguồn. Bản MP4 tối ưu giữ lâu dài. Job lỗi/not_beneficial hoặc nguồn còn được dùng sẽ giữ nguồn.
+
+Cron hiện có gọi tối đa một bước dọn nguồn mỗi tick; có cờ riêng mặc định OFF, không bỏ đói vì hàng encode. RPC service-only lease/fence, kiểm tham chiếu tại database (toàn bộ live row posts/attachments/comments/profiles/live_sessions/live_replays; job khác source/output). Advisory transaction lock theo source key: reference-write triggers chỉ lấy shared lock cho nguồn khớp; arm cleanup lấy exclusive của đúng key trước kiểm tham chiếu và ghi intent. Sau intent, trigger chặn mọi tham chiếu mới đến key/URL nguồn. Không giữ khóa database trong HTTP I/O. Sessions upload được đánh dấu aborted khi arm để không resume URL đã nghỉ; API upload đã khóa source key theo mọi job và URL ký chỉ 15 phút, ngắn hơn24h.
+
+Backend xác minh namespace/legacy attestation, ETag/size nguồn và HEAD/Range/ftyp output trước arm; lưu receipt bucket/key/size/ETag/gateway tại job trước DELETE. Kiểm lại nguồn ngay trước DELETE, output cũng kiểm lại. R2 tài liệu không liệt kê conditional DeleteObject; không giả định If-Match DELETE nguyên tử. Bảo đảm ở cấp app bằng source immutable sau job, ETag HEAD kiểm tra, và không mở lại key sau intent. Ghi ngoài ứng dụng bằng credential quản trị vẫn cần phối hợp vận hành.
+
+DELETE xong phải HEAD404 mới ghi source_deleted_at. Nếu mất phản hồi, lần sau kiểm404 và hoàn tất idempotent, không tạo/tải bản sao. Lỗi hữu hạn, backoff và needs_review; không bỏ qua kiểm output/ref khi retry. Không sửa metadata bài hoặc quyền playback khi dọn nguồn; originalRetained audit phải phản ánh trạng thái thật.
+
+Triển khai: test logic/SQL race/RLS/retention/time/ref/error; PR+Preview; migration trước consumer; cờOFF; dry-run canary hiện tại phải báo chưađủ24h và dueAt chínhxác; probeR2 fixture thử xóa đúng object tạm; rồi bật lịch. Không ép canary xóa sớm. Metadata backup/proofs giữ local; sau xóa không khôi phục chất lượng nguồn, output là bản lưu lâu dài. Rollback tắt cờ dọn nguồn, không drop intent/tombstone hay xóa output.

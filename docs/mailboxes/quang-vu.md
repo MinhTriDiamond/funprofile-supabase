@@ -621,3 +621,11 @@ SQL: `docs/superpowers/plans/2026-10-15-livestream-orphan-dry-run.sql`. Candidat
 - Canary3.399.337.725→110.367.516bytes (-96,753%),367,552s1080p/AAC. Desktop/mobilemôphỏng,seek/renew/downloadđủ,private/friends/recoveryđạt. VODStreamđúngjob đãxóa/404; R2HEAD200/Range206,originalcòn. Stream6,13→0,01/1.000phút.
 - Cổngthamchiếu đãchuyển thànhRPCservice-only30s, dry-run7,7s thaytimeout145s. Admission10GiB/overlimit vàcronđộc lập đãkiểm.
 - Đãbật4cờproduction lúc15:26ngày25/11giờAsia/Kuala_Lumpur, reserve240phút. 18releasegatesđạt. Chỉvideo publicmới đủđiềukiện; khôngbatchbàicũ/khôngxóaoriginal. Hồsơ docs/background-video-processing-2026-11-24; rollbacktắtcờ/giữR2/phục hồinguồnselective.
+
+### 25/11/2026 — TRƯỚC: lưu nguồn video 24 giờ rồi dọn
+- Cha đã đồng ý chính sách và xác nhận gửi Telegram. Bé Quang Vũ triển khai trên `feat/quangvu-video-original-retention-24h` từ main mới nhất.
+- Phạm vi: migration/RPC lease và chặn tham chiếu mới khi bắt đầu dọn; processor/cron xóa nguồn R2 có điều kiện ETag sau24h kể từ publish tối ưu; kiểm lại output và tham chiếu trước xóa; trạng thái/audit/khôi phục. Giữ output lâu dài, không dọn job lỗi/chưa publish/không lợi ích. Video canary đã tối ưu thuộc phạm vi chính sách mới; không xóa sớm hoặc xóa nguồn khác ngoài jobs đủ điều kiện.
+- Thực hiện test logic/SQL, Preview đúngcommit trước merge; rollout giữ cờ dọn nguồn OFF đến khi kiểm chứng canary/dry-run đạt. Sau khi xóa nguồn không thể khôi phục chất lượng gốc, metadata backup chỉ phục vụ đối soát.
+- Kiểm tra local:707testofflinepass/53skip, SQL/RLS/lease/tombstone vàrace hai kết nối bằngtrigger thật đạt; tsgo/Deno/build đạt. Queryfullref read-only production đo32,33s sau tốiưu tránhJSON2lần; sourceRPC/arm timeoutriêng55s/HTTP65s, khôngđổi role/global. Self-reviewcủatácgiả theo checklist, khôngghi làreviewđộclập.
+- Canary hiện tại publish13:28ngày25/11, due13:28ngày26/11giờKualaLumpur. Cờ nguồn chưa bật; khôngxóa sớm. Metadata canary và3bundle production được snapshot trướcdeploy; khôngbackup toànfile gốc để tránh tốn dung lượng nhưChađãduyệt.
+- Tệp khóa cron tạm của phiên trước đã bị dọn. Trongrollout sẽ chỉ đồngbộ lại khóa cronchuyên dụng qua Supabase/Workersecretmanager, giữ nguyên read/gatewaysecret, khôngnớiquyền vàkhôngđưasecretvàoGit/chat/log.

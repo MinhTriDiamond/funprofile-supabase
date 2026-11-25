@@ -42,3 +42,15 @@ export async function verifyPostVideoOutput(bucket: string, key: string, size: n
   const body = await readExactRangeResponse(await signedR2Request({ method: 'GET', bucket, key, headers: { Range: `bytes=0-${end}` } }), 0, end, size);
   if (body.length < 12 || new TextDecoder().decode(body.slice(4, 8)) !== 'ftyp') throw new Error('Export does not contain an MP4 ftyp header');
 }
+
+/** Sources are write-frozen by upload APIs; HEAD/ETag is checked again before DELETE. */
+export async function deleteRetiredPostVideoSource(job:SourceIdentity) {
+ assertSourceIdentity(job);await verifyPostVideoSource(job);
+ const response=await signedR2Request({method:'DELETE',key:job.source_key,bucket:Deno.env.get('R2_BUCKET_NAME')||Deno.env.get('CLOUDFLARE_R2_BUCKET_NAME')});
+ await response.body?.cancel();if(!response.ok&&response.status!==404)throw new Error('Source deletion failed');
+}
+export async function isPostVideoSourceMissing(job:SourceIdentity) {
+ assertSourceIdentity(job);
+ const r=await signedR2Request({method:'HEAD',key:job.source_key,bucket:Deno.env.get('R2_BUCKET_NAME')||Deno.env.get('CLOUDFLARE_R2_BUCKET_NAME')});await r.body?.cancel();
+ if(r.status===404)return true;if(r.status===200)return false;throw new Error('Unknown source state');
+}
