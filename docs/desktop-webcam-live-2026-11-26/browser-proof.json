@@ -1,0 +1,69 @@
+[
+  {
+    "case": "setup geometry",
+    "width": 1024,
+    "height": 768,
+    "overflow": false,
+    "ratio": 1.7777777777777777,
+    "startVisible": true
+  },
+  {
+    "case": "setup geometry",
+    "width": 1920,
+    "height": 1080,
+    "overflow": false,
+    "ratio": 1.7777777777777777,
+    "startVisible": true
+  },
+  {
+    "case": "mic remains muted after quality change",
+    "passed": true
+  },
+  {
+    "case": "desktop/mobile resize retains camera",
+    "passed": true
+  },
+  {
+    "case": "host preview overrides SDK inline cover",
+    "passed": true
+  },
+  {
+    "case": "host mic/chat/end callbacks",
+    "passed": true
+  },
+  {
+    "case": "start payload keeps description and quality",
+    "passed": true
+  },
+  {
+    "case": "host geometry",
+    "width": 1024,
+    "height": 768,
+    "overflow": false,
+    "ratio": 1.7777777777777777,
+    "chatRight": 1008,
+    "chatBottom": 752
+  },
+  {
+    "case": "host geometry",
+    "width": 1440,
+    "height": 900,
+    "overflow": false,
+    "ratio": 1.7777777777777777,
+    "chatRight": 1424,
+    "chatBottom": 884
+  },
+  {
+    "case": "host geometry",
+    "width": 1920,
+    "height": 1080,
+    "overflow": false,
+    "ratio": 1.7777777777777777,
+    "chatRight": 1904,
+    "chatBottom": 1064
+  },
+  {
+    "case": "host resize no React hook errors",
+    "passed": true
+  }
+]

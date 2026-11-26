@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Eye, Heart, MessageCircle, MessageSquareOff, MessagesSquare, TrendingUp } from 'lucide-react';
 import { HostLiveChatPanel } from './HostLiveChatPanel';
 import { HostControlDock } from './HostControlDock';
@@ -8,22 +8,8 @@ import { LiveEndSummaryCard } from './LiveEndSummaryCard';
 import { ReplayProcessingStatus } from './ReplayProcessingStatus';
 import { WebcamPreviewPlayer } from './WebcamPreviewPlayer';
 import { MobileWebcamHostStage } from './MobileWebcamHostStage';
+import { useDesktopLiveViewport } from '../../hooks/useDesktopLiveViewport';
 import type { HostLiveCommonProps } from './hostLiveTypes';
-
-function useIsMobileViewport() {
-  const [isMobile, setIsMobile] = useState(() => {
-    if (typeof window === 'undefined') return false;
-    return window.matchMedia('(max-width: 1023px)').matches;
-  });
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const mq = window.matchMedia('(max-width: 1023px)');
-    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
-    mq.addEventListener('change', handler);
-    return () => mq.removeEventListener('change', handler);
-  }, []);
-  return isMobile;
-}
 
 function CompactAnalyticsRow({
   currentViewers,
@@ -37,13 +23,13 @@ function CompactAnalyticsRow({
   comments: number;
 }) {
   const items = [
-    { label: 'Đang xem', value: currentViewers, icon: Eye, tone: 'text-emerald-700' },
+    { label: 'Đang xem', value: currentViewers, icon: Eye, tone: 'text-primary' },
     { label: 'Bình luận', value: comments, icon: MessageCircle, tone: 'text-primary' },
-    { label: 'Tương tác', value: reactions, icon: Heart, tone: 'text-rose-600' },
-    { label: 'Đỉnh điểm', value: peakViewers, icon: TrendingUp, tone: 'text-amber-700' },
+    { label: 'Tương tác', value: reactions, icon: Heart, tone: 'text-reaction-love' },
+    { label: 'Đỉnh điểm', value: peakViewers, icon: TrendingUp, tone: 'text-primary' },
   ];
   return (
-    <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-gold/15 bg-white/80 px-3 py-2 shadow-sm backdrop-blur">
+    <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-border bg-card px-3 py-2 shadow-sm backdrop-blur">
       {items.map((item) => {
         const Icon = item.icon;
         return (
@@ -59,9 +45,10 @@ function CompactAnalyticsRow({
 }
 
 export function WebcamHostLivePage(props: HostLiveCommonProps) {
-  const isMobile = useIsMobileViewport();
+  const desktop = useDesktopLiveViewport();
+  const [chatOverlayOn, setChatOverlayOn] = useState(false);
 
-  if (isMobile) {
+  if (!desktop) {
     return <MobileWebcamHostStage {...props} />;
   }
 
@@ -85,39 +72,42 @@ export function WebcamHostLivePage(props: HostLiveCommonProps) {
     previewStats,
     setLocalContainerRef,
     onViewPost,
-    onRequestEnd,
   } = props;
 
   const peakViewers = Math.max(session.viewer_count || 0, viewers.length);
-  const [chatOverlayOn, setChatOverlayOn] = useState(false);
   const showSummary = uiState === 'ending' || uiState === 'processing_replay' || uiState === 'replay_ready' || uiState === 'failed';
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-background via-emerald-50/25 to-gold/10 px-4 pb-8 pt-16 md:px-6">
-      <div className="mx-auto grid max-w-[1540px] grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_360px] 2xl:grid-cols-[minmax(0,1fr)_380px]">
-        <section className="min-w-0 space-y-3">
-          <HostLiveTopBar
-            session={session}
-            uiState={uiState}
-            liveDuration={liveDuration}
-            durationLimit={durationLimit}
-            viewerCount={viewers.length}
-            reactionCount={reactionCount}
-            recording={recording}
-            liveHealth={liveHealth}
-            networkQuality={networkQuality}
-            previewStats={previewStats}
-            statusText={statusText}
-            hasPost={!!session.post_id}
-            onViewPost={onViewPost}
-            onRequestEnd={onRequestEnd}
-            isEnding={isEnding}
-          />
+    <main data-testid="desktop-webcam-host" className="fixed inset-x-0 bottom-0 top-[var(--header-h)] grid grid-rows-[auto_minmax(0,1fr)] gap-4 bg-background p-4">
 
-          {!showSummary && <ReplayProcessingStatus uiState={uiState} recording={recording} />}
+      <HostLiveTopBar
+        session={session}
+        uiState={uiState}
+        liveDuration={liveDuration}
+        durationLimit={durationLimit}
+        viewerCount={viewers.length}
+        reactionCount={reactionCount}
+        recording={recording}
+        liveHealth={liveHealth}
+        networkQuality={networkQuality}
+        previewStats={previewStats}
+        statusText={statusText}
+        hasPost={!!session.post_id}
+        onViewPost={onViewPost}
+        isEnding={isEnding}
+      />
+
+      <div className="grid min-h-0 grid-cols-[220px_minmax(0,1fr)_280px] gap-4 xl:grid-cols-[240px_minmax(0,1fr)_320px]">
+        <aside aria-label="Điều khiển buổi live" className="min-h-0 space-y-4 overflow-y-auto rounded-xl border border-border bg-card p-4">
+          <div><h2 className="font-bold">Bảng điều khiển</h2><p className="mt-1 text-xs leading-relaxed text-muted-foreground">Điều chỉnh thiết bị và quản lý buổi phát trực tiếp.</p></div>
+          {!showSummary && <HostControlDock {...props} />}
+          <ReplayProcessingStatus uiState={uiState} recording={recording} />
+        </aside>
+        <section aria-label="Xem trước và số liệu live" className="min-h-0 min-w-0 space-y-4 overflow-y-auto">
+          <div><h2 className="font-bold">Xem trước buổi live</h2><p className="mt-1 text-xs text-muted-foreground">Webcam của bạn · Hình ảnh được giữ đúng tỉ lệ</p></div>
 
           {durationLimit.warningLevel === 'urgent' && session.status === 'live' && (
-            <div className="rounded-lg border border-red-300 bg-red-50 px-4 py-2.5 text-sm font-bold text-red-800 shadow-sm">
+            <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-2.5 text-sm font-bold text-destructive shadow-sm">
               Livestream sẽ tự động kết thúc sau {Math.ceil((durationLimit.remainingSeconds || 0) / 60)} phút để đảm bảo chất lượng hệ thống.
             </div>
           )}
@@ -154,7 +144,7 @@ export function WebcamHostLivePage(props: HostLiveCommonProps) {
               <button
                 type="button"
                 onClick={() => setChatOverlayOn((v) => !v)}
-                className="absolute right-4 bottom-4 z-30 inline-flex items-center gap-1.5 rounded-full bg-black/55 px-3 py-2 text-xs font-bold text-white shadow-lg backdrop-blur-md transition hover:bg-black/70"
+                className="absolute right-4 bottom-4 z-30 inline-flex items-center gap-1.5 rounded-full bg-media/80 px-3 py-2 text-xs font-bold text-media-foreground shadow-lg backdrop-blur-md transition hover:bg-media"
                 aria-label={chatOverlayOn ? 'Ẩn chat trên video' : 'Hiện chat trên video'}
                 title={chatOverlayOn ? 'Ẩn chat trên video' : 'Hiện chat trên video'}
               >
@@ -163,8 +153,6 @@ export function WebcamHostLivePage(props: HostLiveCommonProps) {
               </button>
             </div>
           )}
-
-          {!showSummary && <HostControlDock {...props} />}
 
           <CompactAnalyticsRow
             currentViewers={viewers.length}

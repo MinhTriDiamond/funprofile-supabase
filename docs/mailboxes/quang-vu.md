@@ -661,3 +661,7 @@ SQL: `docs/superpowers/plans/2026-10-15-livestream-orphan-dry-run.sql`. Candidat
 - Đóng khi đang gửi có giải thích và lựa chọn ở lại; bản chưa đăng giữ lựa chọn tiếp tục/lưu nháp/bỏ, nói rõ nội dung sẽ mất nếu bỏ. Nút quay về nhiệm vụ qua cùng xác nhận; lưu nháp lỗi giữ nội dung và không báo thành công.
 - 6 test composer đạt; toàn bộ 714 test offline đạt/53 skip/106 file, tsgo và build đạt. Chrome local chạy composer thật/backend giả xác nhận reload, đóng tab rồi dismiss giữ trang, xác nhận đóng dialog, reload khi gửi nền, và gỡ cảnh báo sau thành công. Không đăng bài production. Self-review bởi tác giả, không review độc lập.
 - Cảnh báo native do Chrome quyết định nội dung; không bảo đảm khi OS buộc tắt app/mobile. Giữ cơ chế nháp hiện có. Hồ sơ và rollback: docs/unsaved-post-warning-2026-11-25; không thay backend/storage/secrets.
+
+### 26/11/2026 — TRƯỚC: giao diện webcam live desktop
+- Cha xác nhận đã gửi Telegram. Bé Quang Vũ thực hiện nhánh `feat/quangvu-desktop-webcam-live` từ main mới nhất.
+- Phạm vi: màn hình chuẩn bị và host webcam trên desktop theo ảnh Facebook Live Producer: cột thiết lập, preview đúng tỉ lệ, điều khiển/bình luận riêng; giữ mobile. Không tự phát live production; không đổi pipeline RTMP/backend/quota/lưu video. Kiểm chứng responsive, camera/mic với fixture local, typecheck/build và Preview trước merge.

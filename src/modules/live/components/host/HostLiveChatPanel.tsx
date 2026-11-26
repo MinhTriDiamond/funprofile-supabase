@@ -37,14 +37,14 @@ export function HostLiveChatPanel({
   };
 
   return (
-    <aside className="sticky top-16 flex h-[calc(100vh-80px)] min-h-[600px] flex-col overflow-hidden rounded-[28px] border border-gold/20 bg-white/90 shadow-[0_22px_70px_rgba(15,23,42,0.14)] backdrop-blur-xl">
-      <div className="border-b border-gold/15 bg-gradient-to-br from-primary/10 via-white to-gold/10 px-4 py-3.5">
+    <aside className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+      <div className="border-b border-border bg-gradient-to-br from-primary/10 via-card to-card px-4 py-3.5">
         <div className="flex items-start justify-between gap-3">
           <div>
             <h2 className="text-base font-black">Live chat</h2>
             <p className="mt-0.5 text-xs font-medium text-muted-foreground">Bình luận, tương tác và người xem mới</p>
           </div>
-          <div className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-black text-emerald-700 shadow-sm">
+          <div className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-black text-primary shadow-sm">
             <Eye className="h-3.5 w-3.5" />
             {viewers.length}
           </div>
@@ -52,11 +52,11 @@ export function HostLiveChatPanel({
 
         <div className="mt-3 flex gap-1.5 overflow-x-auto pb-1">
           {viewers.length === 0 ? (
-            <div className="rounded-full bg-white/80 px-3 py-1.5 text-xs font-semibold text-muted-foreground shadow-sm">Đang chờ người xem đầu tiên</div>
+            <div className="rounded-full bg-card px-3 py-1.5 text-xs font-semibold text-muted-foreground shadow-sm">Đang chờ người xem đầu tiên</div>
           ) : (
             viewers.slice(0, 10).map((viewer) => (
-              <div key={viewer.userId} className="flex shrink-0 items-center gap-1.5 rounded-full bg-white/85 px-2 py-1 text-xs font-semibold shadow-sm">
-                <span className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(34,197,94,0.8)]" />
+              <div key={viewer.userId} className="flex shrink-0 items-center gap-1.5 rounded-full bg-card px-2 py-1 text-xs font-semibold shadow-sm">
+                <span className="h-2 w-2 rounded-full bg-primary/100 shadow-[0_0_8px_rgba(34,197,94,0.8)]" />
                 <Avatar className="h-5 w-5">
                   <AvatarImage src={viewer.avatar_url} />
                   <AvatarFallback className="text-[9px]">{viewer.username?.charAt(0)?.toUpperCase() || '?'}</AvatarFallback>
@@ -68,11 +68,11 @@ export function HostLiveChatPanel({
         </div>
 
         <div className="mt-3 grid grid-cols-3 gap-2">
-          <Button variant="outline" size="sm" className="h-9 gap-1.5 rounded-full bg-white/80 text-xs font-bold" disabled title="Pin comment sắp ra mắt">
+          <Button variant="outline" size="sm" className="h-9 gap-1.5 rounded-full bg-card text-xs font-bold" disabled title="Pin comment sắp ra mắt">
             <Pin className="h-3.5 w-3.5" />
             Pin
           </Button>
-          <Button variant="outline" size="sm" className="h-9 gap-1.5 rounded-full bg-white/80 text-xs font-bold" disabled title="Highlight comment sắp ra mắt">
+          <Button variant="outline" size="sm" className="h-9 gap-1.5 rounded-full bg-card text-xs font-bold" disabled title="Highlight comment sắp ra mắt">
             <Star className="h-3.5 w-3.5" />
             Highlight
           </Button>
@@ -88,12 +88,12 @@ export function HostLiveChatPanel({
         liveStartedAt={session.started_at}
       />
 
-      <div className="border-t border-gold/15 bg-background/90 p-3">
+      <div className="border-t border-border bg-background/90 p-3">
         <div className="mb-2 flex items-center gap-2 rounded-2xl bg-primary/5 px-3 py-2 text-xs font-semibold text-muted-foreground">
           <Sparkles className="h-3.5 w-3.5 text-gold" />
           Lời chào của host sẽ giúp live có năng lượng hơn.
         </div>
-        <div className="flex items-center gap-2 rounded-full border border-gold/15 bg-white p-1.5 shadow-inner">
+        <div className="flex items-center gap-2 rounded-full border border-border bg-card p-1.5 shadow-inner">
           <Input
             value={text}
             onChange={(event) => setText(event.target.value)}

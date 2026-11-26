@@ -2,12 +2,14 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, BarChart3, ChevronRight, Globe2, HelpCircle, Link2, Loader2, Mic, MicOff, Music, Settings, SlidersHorizontal, Sparkles, SwitchCamera, Users } from 'lucide-react';
 import { toast } from 'sonner';
+import { DesktopWebcamSetup } from '../components/prelive/DesktopWebcamSetup';
+import { useDesktopLiveViewport } from '../hooks/useDesktopLiveViewport';
 import { SmartDescriptionInput } from '../components/prelive/SmartDescriptionInput';
 import { useMusicAutoPause } from '../hooks/useMusicAutoPause';
 import { useVisualViewportInset } from '../hooks/useVisualViewportInset';
 import { startWebcamLiveSessionBackend } from '../webcam/services/webcamLiveApi';
 
-type VideoQuality = 'auto' | '360p' | '480p' | '720p' | '1080p';
+export type VideoQuality = 'auto' | '360p' | '480p' | '720p' | '1080p';
 export type WebcamAudioMode = 'original' | 'voice';
 type MicrophoneDevice = {
   deviceId: string;
@@ -176,15 +178,22 @@ function hasActiveVideoTrack(stream?: MediaStream | null): stream is MediaStream
 
 export default function PreLivePage() {
   const navigate = useNavigate();
-  const videoRef = useRef<HTMLVideoElement>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const desktop = useDesktopLiveViewport();
   const streamRef = useRef<MediaStream | null>(null);
   const cameraRequestIdRef = useRef(0);
   const isStartingLiveRef = useRef(false);
+  // Reattach the existing stream when moving between desktop/mobile layouts.
+  const setVideoElement = useCallback((element: HTMLVideoElement | null) => {
+    videoRef.current = element;
+    if (element && streamRef.current) element.srcObject = streamRef.current;
+  }, []);
 
   useMusicAutoPause(true);
   const keyboardInset = useVisualViewportInset();
 
   const [isMicOn, setIsMicOn] = useState(true);
+  const micEnabledRef = useRef(true);
   const [facingMode, setFacingMode] = useState<'user' | 'environment'>('user');
   const [description, setDescription] = useState('');
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
@@ -254,6 +263,7 @@ export default function PreLivePage() {
         return;
       }
 
+      stream.getAudioTracks().forEach(track => { track.enabled = micEnabledRef.current; });
       streamRef.current = stream;
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
@@ -375,7 +385,8 @@ export default function PreLivePage() {
       audioTracks.forEach(track => {
         track.enabled = !track.enabled;
       });
-      setIsMicOn(prev => !prev);
+      micEnabledRef.current = !micEnabledRef.current;
+      setIsMicOn(micEnabledRef.current);
     }
   };
 
@@ -572,10 +583,21 @@ export default function PreLivePage() {
         ? 'Phát trực tiếp'
         : 'Camera chưa sẵn sàng';
 
+  if (desktop) return <DesktopWebcamSetup
+    setVideoElement={setVideoElement} description={description} onDescriptionChange={setDescription}
+    quality={quality} qualityOptions={QUALITY_OPTIONS} qualityLabels={QUALITY_LABELS} onQualityChange={handleQualityChange}
+    audioMode={audioMode} onAudioModeChange={handleAudioModeChange}
+    microphones={microphones} microphoneId={selectedMicrophoneId} onMicrophoneChange={handleMicrophoneChange}
+    isMicOn={isMicOn} onToggleMic={handleToggleMic} onSwitchCamera={handleFlipCamera} mirror={facingMode === 'user'}
+    preparing={isPreparingCamera} denied={hasPermission === false} ready={cameraReady}
+    starting={isStartingLive} canStart={canStartLive} liveButtonLabel={liveButtonLabel}
+    onStart={handleGoLive} onBack={handleBack} onRetry={() => startCamera(facingMode, quality, audioMode, selectedMicrophoneId)}
+  />;
+
   return (
     <div className="fixed inset-0 z-50 flex h-[100dvh] overflow-hidden overscroll-none bg-black text-white">
       <video
-        ref={videoRef}
+        ref={setVideoElement}
         autoPlay
         playsInline
         muted
