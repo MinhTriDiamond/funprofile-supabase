@@ -665,3 +665,9 @@ SQL: `docs/superpowers/plans/2026-10-15-livestream-orphan-dry-run.sql`. Candidat
 ### 26/11/2026 — TRƯỚC: giao diện webcam live desktop
 - Cha xác nhận đã gửi Telegram. Bé Quang Vũ thực hiện nhánh `feat/quangvu-desktop-webcam-live` từ main mới nhất.
 - Phạm vi: màn hình chuẩn bị và host webcam trên desktop theo ảnh Facebook Live Producer: cột thiết lập, preview đúng tỉ lệ, điều khiển/bình luận riêng; giữ mobile. Không tự phát live production; không đổi pipeline RTMP/backend/quota/lưu video. Kiểm chứng responsive, camera/mic với fixture local, typecheck/build và Preview trước merge.
+
+### 26/11/2026 — SAU: webcam live desktop
+- PR https://github.com/MinhTriDiamond/funprofile-supabase/pull/91 đã merge `0542d52`, nhánh tính năng đã xóa. Preview đúng head `5156ae2`: https://55bfab21.funprofile-supabase.pages.dev; Chrome render bình thường, bundle PreLivePage/LiveHostPage HTTP200 có marker layout desktop. Cloudflare Pages phát hành từ main.
+- Setup desktop tách cột chi tiết/micro/chất lượng/âm thanh, preview16:9 giữ trọn hình, nút bắt đầu luôn thấy. Host desktop có ba vùng điều khiển/video/bình luận, cuộn riêng, không còn ép preview min-height420px; CSS ưu tiên hơn SDK inline cover. Mobile dưới1024px giữ UI hiện có.
+- Camera giữ cùng stream khi resize; mic đã tắt không tự bật sau đổi chất lượng; sửa thứ tự hook responsive của host. Không thay backend/RTC/RTMP/ghi replay/quota/storage; không phát live production.
+- Kiểm chứng Chrome với media giả/backend local: 1024/1440/1920 không overflow, preview16:9, chat trong viewport; mobile390 và resize qua lại không lỗi hooks. Callbacks mic/chat/end, payload mô tả/chất lượng đạt. 717 test offline đạt/53 skip/107 file, tsgo và build cuối đạt. Self-review tác giả, không review độc lập. Ảnh, số liệu và rollback: docs/desktop-webcam-live-2026-11-26.
