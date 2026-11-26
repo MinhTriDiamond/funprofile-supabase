@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { isLiveCommentSubmitKey, useLiveCommentSubmit } from '../../hooks/useLiveCommentSubmit';
 import { Gift, Laugh, Send, Share2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -29,13 +30,16 @@ export function LiveChatComposer({
   const [text, setText] = useState('');
   const haptic = useHaptics();
 
+  const { isSending, submit } = useLiveCommentSubmit(text, setText, async value => {
+    haptic('medium');
+    await onSendMessage(value);
+  });
+
   const handleSend = async () => {
     const value = text.trim();
     if (!value) return;
     try {
-      haptic('medium');
-      await onSendMessage(value);
-      setText('');
+      await submit();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Không thể gửi bình luận');
     }
@@ -99,10 +103,10 @@ export function LiveChatComposer({
           placeholder="Viết bình luận tích cực…"
           className={dark ? 'h-11 rounded-full border-white/10 bg-white/10 text-white placeholder:text-white/50 focus-visible:ring-emerald-300/70' : 'h-11 rounded-full bg-muted/70'}
           onKeyDown={(event) => {
-            if (event.key === 'Enter') handleSend();
+            if (isLiveCommentSubmitKey(event)) { event.preventDefault(); void handleSend(); }
           }}
         />
-        <Button size="icon" className="h-11 w-11 shrink-0 rounded-full" onClick={handleSend} disabled={!text.trim()} aria-label="Gửi bình luận">
+        <Button size="icon" className="h-11 w-11 shrink-0 rounded-full" onClick={handleSend} disabled={isSending || !text.trim()} aria-busy={isSending} aria-label="Gửi bình luận">
           <Send className="h-4 w-4" />
         </Button>
       </div>

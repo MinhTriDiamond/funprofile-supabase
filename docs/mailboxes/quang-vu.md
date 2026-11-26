@@ -671,3 +671,7 @@ SQL: `docs/superpowers/plans/2026-10-15-livestream-orphan-dry-run.sql`. Candidat
 - Setup desktop tách cột chi tiết/micro/chất lượng/âm thanh, preview16:9 giữ trọn hình, nút bắt đầu luôn thấy. Host desktop có ba vùng điều khiển/video/bình luận, cuộn riêng, không còn ép preview min-height420px; CSS ưu tiên hơn SDK inline cover. Mobile dưới1024px giữ UI hiện có.
 - Camera giữ cùng stream khi resize; mic đã tắt không tự bật sau đổi chất lượng; sửa thứ tự hook responsive của host. Không thay backend/RTC/RTMP/ghi replay/quota/storage; không phát live production.
 - Kiểm chứng Chrome với media giả/backend local: 1024/1440/1920 không overflow, preview16:9, chat trong viewport; mobile390 và resize qua lại không lỗi hooks. Callbacks mic/chat/end, payload mô tả/chất lượng đạt. 717 test offline đạt/53 skip/107 file, tsgo và build cuối đạt. Self-review tác giả, không review độc lập. Ảnh, số liệu và rollback: docs/desktop-webcam-live-2026-11-26.
+
+### 26/11/2026 — TRƯỚC: bình luận live bị trùng
+- Cha xác nhận đã gửi Telegram. Bé Quang Vũ thực hiện nhánh `fix/quangvu-live-comment-duplicate` từ main mới nhất.
+- Phạm vi: luồng gửi, phản hồi/realtime, optimistic state và hiển thị chat host/viewer; chống gửi trùng do Enter/nút gửi, kiểm thử đua dữ liệu. Không tự gửi bình luận lên live production, không xóa bình luận hoặc ngắt live. Typecheck/build/Preview trước merge.

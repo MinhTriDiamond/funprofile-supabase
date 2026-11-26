@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useLiveCommentSubmit } from '../../hooks/useLiveCommentSubmit';
 import {
   ArrowLeft,
   Heart,
@@ -92,14 +93,14 @@ export function MobileWebcamHostStage(props: HostLiveCommonProps) {
     };
   }, []);
 
+  const { isSending, submit } = useLiveCommentSubmit(composer, setComposer, onSendMessage);
+
   const handleSubmitComment = async (e: React.FormEvent) => {
     e.preventDefault();
     const value = composer.trim();
     if (!value) return;
     try {
-      await onSendMessage(value);
-      setComposer('');
-      composerRef.current?.blur();
+      if (await submit()) composerRef.current?.blur();
     } catch {
       // toast đã được xử lý ở caller
     }
@@ -323,6 +324,8 @@ export function MobileWebcamHostStage(props: HostLiveCommonProps) {
             {composer.trim() && (
               <button
                 type="submit"
+                disabled={isSending || !composer.trim()}
+                aria-busy={isSending}
                 className="rounded-full bg-primary p-1.5 text-primary-foreground"
                 aria-label="Gửi"
               >

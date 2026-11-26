@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { isLiveCommentSubmitKey, useLiveCommentSubmit } from '../../hooks/useLiveCommentSubmit';
 import { Eye, Pin, Send, Sparkles, Star } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -29,12 +30,7 @@ export function HostLiveChatPanel({
 }: HostLiveChatPanelProps) {
   const [text, setText] = useState('');
 
-  const handleSend = async () => {
-    const value = text.trim();
-    if (!value) return;
-    await onSendMessage(value);
-    setText('');
-  };
+  const { isSending, submit: handleSend } = useLiveCommentSubmit(text, setText, onSendMessage);
 
   return (
     <aside className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden rounded-xl border border-border bg-card shadow-sm">
@@ -98,7 +94,7 @@ export function HostLiveChatPanel({
             value={text}
             onChange={(event) => setText(event.target.value)}
             onKeyDown={(event) => {
-              if (event.key === 'Enter') {
+              if (isLiveCommentSubmitKey(event)) {
                 event.preventDefault();
                 handleSend().catch(() => undefined);
               }
@@ -106,7 +102,7 @@ export function HostLiveChatPanel({
             placeholder="Viết bình luận với khán giả..."
             className="h-10 rounded-full border-0 bg-transparent px-3 shadow-none focus-visible:ring-0"
           />
-          <Button size="icon" className="h-10 w-10 shrink-0 rounded-full" onClick={() => handleSend().catch(() => undefined)} disabled={!text.trim()}>
+          <Button size="icon" className="h-10 w-10 shrink-0 rounded-full" onClick={() => handleSend().catch(() => undefined)} disabled={isSending || !text.trim()} aria-busy={isSending} aria-label="Gửi bình luận">
             <Send className="h-4 w-4" />
           </Button>
         </div>

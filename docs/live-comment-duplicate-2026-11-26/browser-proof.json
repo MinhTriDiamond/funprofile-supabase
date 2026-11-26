@@ -1,0 +1,12 @@
+{
+  "singleSubmission": {
+    "writes": 1,
+    "visibleRows": 1,
+    "counter": "1",
+    "errors": []
+  },
+  "intentionalRepeat": {
+    "writes": 2,
+    "counter": "2"
+  }
+}
