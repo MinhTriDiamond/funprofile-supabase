@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { isLiveCommentSubmitKey, useLiveCommentSubmit } from '../hooks/useLiveCommentSubmit';
 import { useLiveMessages } from '../hooks/useLiveMessages';
 import { type LiveViewer } from '../hooks/useLivePresence';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
@@ -30,12 +31,13 @@ export function LiveChatPanel({ sessionId, className, isHost = false, liveTitle,
     endRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  const { isSending, submit } = useLiveCommentSubmit(text, setText, sendMessage);
+
   const handleSend = async () => {
     const value = text.trim();
     if (!value) return;
     try {
-      await sendMessage(value);
-      setText('');
+      await submit();
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : '';
       if (msg.includes('quá nhanh')) {
@@ -138,10 +140,10 @@ export function LiveChatPanel({ sessionId, className, isHost = false, liveTitle,
               onChange={(e) => setText(e.target.value)}
               placeholder="Viết bình luận..."
               onKeyDown={(e) => {
-                if (e.key === 'Enter') handleSend();
+                if (isLiveCommentSubmitKey(e)) { e.preventDefault(); void handleSend(); }
               }}
             />
-            <Button size="icon" variant="ghost" onClick={handleSend}>
+            <Button size="icon" variant="ghost" onClick={handleSend} disabled={isSending || !text.trim()} aria-busy={isSending} aria-label="Gửi bình luận">
               <Send className="h-4 w-4" />
             </Button>
           </div>

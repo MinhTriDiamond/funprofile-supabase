@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { reconcileLiveMessage } from './liveMessageState';
 import type { LiveMessageRow } from '@/types/realtimeRows';
 
 export interface LiveMessage {
@@ -78,10 +79,15 @@ async function enrichProfiles(rows: Array<{ user_id: string }>) {
 export function useLiveMessages(sessionId?: string) {
   const [messages, setMessages] = useState<LiveMessage[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const currentSessionRef = useRef(sessionId);
+  currentSessionRef.current = sessionId;
+  const pendingSends = useRef(new Map<string, Promise<void>>());
+  const optimisticSequence = useRef(0);
   const channelSuffix = useRef(Math.random().toString(36).slice(2));
 
   useEffect(() => {
-    if (!sessionId) return;
+    setMessages([]);
+    if (!sessionId) { setIsLoading(false); return; }
     let active = true;
 
     const load = async () => {
@@ -95,7 +101,6 @@ export function useLiveMessages(sessionId?: string) {
 
       if (!active) return;
       if (error || !data) {
-        setMessages([]);
         setIsLoading(false);
         return;
       }
@@ -103,20 +108,13 @@ export function useLiveMessages(sessionId?: string) {
       await enrichProfiles(data as Array<{ user_id: string }>);
       if (!active) return;
 
-      setMessages(
-        (data as Array<{ id: number; session_id: string; user_id: string; content: string; created_at: string }>).map((row) => ({
-          id: row.id,
-          session_id: row.session_id,
-          user_id: row.user_id,
-          content: row.content,
-          created_at: row.created_at,
-          profile: getCachedProfile(row.user_id),
-        }))
-      );
+      const loaded = (data as LiveMessage[]).map(row => ({ ...row, profile: getCachedProfile(row.user_id) }));
+      // A realtime insert or local send can finish while the initial read is pending.
+      setMessages(current => loaded.reduce((all, row) => reconcileLiveMessage(all, row), current));
       setIsLoading(false);
     };
 
-    load().catch(() => setIsLoading(false));
+    load().catch(() => { if (active) setIsLoading(false); });
 
     return () => {
       active = false;
@@ -126,6 +124,7 @@ export function useLiveMessages(sessionId?: string) {
   useEffect(() => {
     if (!sessionId) return;
 
+    let active = true;
     const channel = supabase
       .channel(`live-messages:${sessionId}:${channelSuffix.current}`)
       .on(
@@ -141,6 +140,7 @@ export function useLiveMessages(sessionId?: string) {
 
           // Use batched profile cache instead of individual query
           await requestProfile(row.user_id);
+          if (!active || currentSessionRef.current !== sessionId) return;
 
           const newMsg: LiveMessage = {
             id: row.id,
@@ -151,18 +151,13 @@ export function useLiveMessages(sessionId?: string) {
             profile: getCachedProfile(row.user_id),
           };
 
-          setMessages((prev) => {
-            if (prev.some((m) => m.id === row.id)) return prev;
-            const withoutOptimistic = prev.filter(
-              (m) => !(m.id < 0 && m.user_id === row.user_id && m.content === row.content)
-            );
-            return [...withoutOptimistic, newMsg];
-          });
+          setMessages(prev => reconcileLiveMessage(prev, newMsg));
         }
       )
       .subscribe();
 
     return () => {
+      active = false;
       supabase.removeChannel(channel);
     };
   }, [sessionId]);
@@ -172,30 +167,45 @@ export function useLiveMessages(sessionId?: string) {
       const value = content.trim();
       if (!sessionId || !value) return;
 
-      // Use getSession (local cache) instead of getUser (network call)
-      const { data: { session } } = await supabase.auth.getSession();
-      const user = session?.user;
-      if (!user) return;
+      // Lock synchronously, before getSession or INSERT can yield. Enter and
+      // click/repeated key events must share one in-flight write, not create two.
+      const key = JSON.stringify([sessionId, value]);
+      const existing = pendingSends.current.get(key);
+      if (existing) return existing;
+      const task = (async () => {
+        const { data: { session } } = await supabase.auth.getSession();
+        const user = session?.user;
+        if (!user) throw new Error('Vui lòng đăng nhập để gửi bình luận.');
+        if (currentSessionRef.current !== sessionId) return;
+        const optimisticMsg: LiveMessage = {
+          id: --optimisticSequence.current,
+          session_id: sessionId,
+          user_id: user.id,
+          content: value,
+          created_at: new Date().toISOString(),
+          profile: getCachedProfile(user.id),
+        };
+        setMessages(prev => [...prev, optimisticMsg]);
+        try {
+          const { data, error } = await supabase.from('live_messages').insert({
+            session_id: sessionId,
+            user_id: user.id,
+            content: value,
+          }).select('*').single();
+          if (error) throw error;
+          if (!data) throw new Error('Chưa xác nhận được bình luận. Vui lòng thử lại.');
+          if (currentSessionRef.current === sessionId) {
+            setMessages(prev => reconcileLiveMessage(prev, { ...data, profile: getCachedProfile(user.id) }, optimisticMsg.id));
+          }
+        } catch (error) {
+          if (currentSessionRef.current === sessionId) setMessages(prev => prev.filter(message => message.id !== optimisticMsg.id));
+          throw error;
+        }
+      })();
+      pendingSends.current.set(key, task);
+      try { await task; }
+      finally { if (pendingSends.current.get(key) === task) pendingSends.current.delete(key); }
 
-      const optimisticMsg: LiveMessage = {
-        id: -Date.now(),
-        session_id: sessionId,
-        user_id: user.id,
-        content: value,
-        created_at: new Date().toISOString(),
-        profile: getCachedProfile(user.id),
-      };
-      setMessages((prev) => [...prev, optimisticMsg]);
-
-      const { error } = await supabase.from('live_messages').insert({
-        session_id: sessionId,
-        user_id: user.id,
-        content: value,
-      });
-      if (error) {
-        setMessages((prev) => prev.filter((m) => m.id !== optimisticMsg.id));
-        throw error;
-      }
     },
     [sessionId]
   );
