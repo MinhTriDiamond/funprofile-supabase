@@ -15,6 +15,10 @@
     --card: 45 40% 99%;
     --card-foreground: 142 50% 15%;
 
+    /* Stable dark canvas for camera/video previews in either theme. */
+    --media-surface: 222 47% 6%;
+    --media-foreground: 0 0% 100%;
+
     --popover: 45 40% 99%;
     --popover-foreground: 142 50% 15%;
 

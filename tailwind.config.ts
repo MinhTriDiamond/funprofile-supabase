@@ -28,6 +28,7 @@ export default {
         body: ['Lora', 'Georgia', 'serif'],
       },
       colors: {
+        media: { DEFAULT: "hsl(var(--media-surface))", foreground: "hsl(var(--media-foreground))" },
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
