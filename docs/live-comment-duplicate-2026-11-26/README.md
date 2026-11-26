@@ -24,3 +24,7 @@ Luồng gửi trước sửa không có khóa trong lúc getSession/INSERT đang
 ## Phát hành / rollback
 
 PR→Preview đúng commit→merge; Cloudflare Pages phát hành từ main. Khôi phục bằng PR revert commit sửa. Dữ liệu production hiện có không thay đổi; không có backend/secrets cần phục hồi.
+
+## Ghi nhận sau merge
+
+PR [#93](https://github.com/MinhTriDiamond/funprofile-supabase/pull/93) đã merge `009d196`, nhánh sửa đã xóa. Preview đúng head `f7b3b59`: https://3b828e95.funprofile-supabase.pages.dev, Chrome render bình thường. Shared live bundle HTTP200 chứa logic xác nhận canonical và khóa gửi mới; kiểm thử chức năng dùng backend giả như mô tả ở trên.
