@@ -6,7 +6,7 @@
 
 Từ 1024px, setup có cột chi tiết/cấu hình 320–360px, footer nút bắt đầu luôn thấy, preview ngang 16:9 với object-contain. Micro, chất lượng và chế độ âm thanh dùng controller hiện có; đổi camera dùng thao tác hiện có. Công khai là trạng thái thực hiện tại, không tạo dropdown quyền riêng tư giả.
 
-Host desktop: trạng thái trên cùng; điều khiển bên trái, video/số liệu giữa, bình luận bên phải ngay từ 1024px. Chat và các vùng điều khiển cuộn riêng khi cần. Preview bỏ min-height420px, không ép phóng/cắt webcam dọc; chat overlay tùy chọn mặc định tắt. Bỏ hai nút Analytics/Feed post vốn disabled, không thay các tính năng đã hoạt động.
+Host desktop: trạng thái trên cùng; điều khiển bên trái, video/số liệu giữa, bình luận bên phải ngay từ 1024px. Chat và các vùng điều khiển cuộn riêng khi cần. Preview bỏ min-height420px, CSS object-contain ưu tiên hơn inline cover từ SDK, không ép phóng/cắt webcam dọc; chat overlay tùy chọn mặc định tắt. Bỏ hai nút Analytics/Feed post vốn disabled, không thay các tính năng đã hoạt động.
 
 Dưới 1024px dùng UI mobile hiện có. Setup tái gắn cùng stream vào phần tử video khi đổi bố cục, không khởi động lại camera chỉ vì resize. Mic đã tắt tiếp tục tắt khi chọn chất lượng/micro mới. Hook state chat được gọi trước nhánh responsive để không lỗi thứ tự hooks khi resize.
 

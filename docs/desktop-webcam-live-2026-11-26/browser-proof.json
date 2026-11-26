@@ -24,6 +24,10 @@
     "passed": true
   },
   {
+    "case": "host preview overrides SDK inline cover",
+    "passed": true
+  },
+  {
     "case": "host mic/chat/end callbacks",
     "passed": true
   },
