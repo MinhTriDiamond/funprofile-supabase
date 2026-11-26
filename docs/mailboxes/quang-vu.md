@@ -675,3 +675,9 @@ SQL: `docs/superpowers/plans/2026-10-15-livestream-orphan-dry-run.sql`. Candidat
 ### 26/11/2026 — TRƯỚC: bình luận live bị trùng
 - Cha xác nhận đã gửi Telegram. Bé Quang Vũ thực hiện nhánh `fix/quangvu-live-comment-duplicate` từ main mới nhất.
 - Phạm vi: luồng gửi, phản hồi/realtime, optimistic state và hiển thị chat host/viewer; chống gửi trùng do Enter/nút gửi, kiểm thử đua dữ liệu. Không tự gửi bình luận lên live production, không xóa bình luận hoặc ngắt live. Typecheck/build/Preview trước merge.
+
+### 26/11/2026 — SAU: bình luận live bị trùng
+- PR https://github.com/MinhTriDiamond/funprofile-supabase/pull/93 đã merge `009d196`; nhánh sửa đã xóa. Preview đúng head `f7b3b59`: https://3b828e95.funprofile-supabase.pages.dev render bình thường, shared live bundle HTTP200 có phần xác nhận canonical mới. Cloudflare Pages phát hành từ main.
+- Read-only đúng live trong ảnh xác nhận2row khác ID/cùng người và text, lệch34ms. Thêm khóa đồng bộ trước auth/INSERT và nút chờ, lọc Enter IME/repeat ở host desktop/viewer/chat. Hòa giải optimistic/response/realtime theo server ID, history chậm không ghi đè row mới; không đưa phản hồi session cũ vào live mới.
+- Chrome với chat/hook thật và backend giả: Enter liên tiếp+realtime lặp→1write/1dòng/count1; gửi lại có chủ ý sau hoàn tất→2write/count2. 10 regression test, toàn bộ727 test offline đạt/53 skip/109 file, tsgo/build đạt. Self-review tác giả, không review độc lập.
+- Không gửi/xóa bình luận production, không ngắt live, không sửa schema/quyền/backend. Hai row cũ vẫn là hai bình luận đã lưu; không gộp theo text làm mất bình luận lặp chủ ý. Hồ sơ/receipt/rollback: docs/live-comment-duplicate-2026-11-26.
