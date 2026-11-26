@@ -31,3 +31,7 @@ Camera xanh là thiết bị giả của Chrome, không phải webcam người d
 ## Phát hành / rollback
 
 Qua PR và Preview đúng commit trước merge; Cloudflare Pages tự triển khai từ main. Kiểm thử layout không thay thế kiểm chứng chất lượng đường truyền RTC thật. Khôi phục giao diện bằng PR revert commit tính năng; không có migration hoặc secrets cần khôi phục.
+
+## Ghi nhận sau merge
+
+PR [#91](https://github.com/MinhTriDiamond/funprofile-supabase/pull/91) đã merge `0542d52`; nhánh tính năng đã xóa. Preview đúng head `5156ae2`: https://55bfab21.funprofile-supabase.pages.dev. Đã kiểm Chrome render bình thường và hai bundle PreLivePage/LiveHostPage HTTP200 chứa marker desktop mới. Build cuối sau chỉnh CSS inline-cover đạt; toàn bộ kiểm thử nêu trên đạt.
