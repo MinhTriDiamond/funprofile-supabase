@@ -1101,3 +1101,39 @@ html {
   }
   .fun-reaction-item { transition: none !important; }
 }
+
+/* Desktop composer: one editor state, separate read-only post preview. */
+.composer-preview { display: none; }
+@media (min-width: 1024px) {
+  .desktop-post-composer[role="dialog"] {
+    inset: 0; width: 100vw; height: 100dvh; max-width: none; max-height: 100dvh;
+    transform: none; border-radius: 0; padding: 0; overflow: hidden;
+  }
+  .desktop-post-composer .composer-header { position: relative; padding: 12px 24px; }
+  .desktop-post-composer .composer-header > .relative { justify-content: flex-start; }
+  .desktop-post-composer .composer-innerwork-toggle { position: absolute; top: 18px; right: 80px; margin: 0; max-width: 60%; }
+  .desktop-post-composer .composer-workspace { display: grid; grid-template-columns: minmax(420px, min(42%, 640px)) minmax(0, 1fr); overflow: hidden; }
+  .desktop-post-composer .composer-editor { min-height: 0; padding: 24px; background: hsl(var(--background)); }
+  .desktop-post-composer .composer-author { border: 0; padding: 0; margin-bottom: 20px; box-shadow: none; background: transparent; }
+  .desktop-post-composer .composer-text-box { border-radius: 12px; padding: 16px; box-shadow: none; background: transparent; }
+  .desktop-post-composer .composer-repeat-avatar { display: none; }
+  .desktop-post-composer .composer-text-box textarea { min-height: 200px; font-size: 18px; }
+  .desktop-post-composer .composer-preview { display: block; min-height: 0; overflow-y: auto; border-left: 1px solid hsl(var(--border)); background: hsl(var(--muted) / .4); padding: 32px clamp(24px, 4vw, 80px); }
+  .desktop-post-composer .composer-tools > div { border: 0; padding: 0; box-shadow: none; background: transparent; }
+  .desktop-post-composer .composer-tools > div > div:last-child { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); overflow: visible; }
+  .desktop-post-composer .composer-tools button { min-width: 0; justify-content: center; padding: 8px; border-radius: 10px; }
+  .desktop-post-composer .composer-tools button span:last-child { white-space: normal; }
+  .desktop-post-composer .composer-footer { padding: 12px 24px; }
+  .desktop-post-composer .composer-footer > button { max-width: 592px; border-radius: 10px; background-image: none; background-color: hsl(var(--primary)); color: hsl(var(--primary-foreground)); box-shadow: none; }
+  .desktop-post-composer .composer-footer > button:disabled { background-color: hsl(var(--muted)); color: hsl(var(--muted-foreground)); }
+  .desktop-post-composer .composer-attachments > div > .grid { grid-template-columns: repeat(4, minmax(0, 1fr)); grid-template-rows: auto; gap: 8px; border-radius: 10px; }
+  .desktop-post-composer .composer-attachments > div > .grid > div { aspect-ratio: 1; grid-column: auto; grid-row: auto; }
+  .desktop-post-composer .composer-drop-zone { display: grid; grid-template-columns: 32px minmax(0, 1fr) auto; align-items: center; gap: 4px 12px; border-width: 1px; border-radius: 12px; padding: 12px; }
+  .desktop-post-composer .composer-drop-zone > div { grid-row: span 2; width: 32px; height: 32px; margin: 0; }
+  .desktop-post-composer .composer-drop-zone > p { grid-column: 2; text-align: left; margin: 0; }
+  .desktop-post-composer .composer-drop-zone > button { grid-column: 3; grid-row: 1 / span 2; margin: 0; padding: 8px; }
+
+  .desktop-post-composer .composer-text-box:focus-within { box-shadow: none; }
+  .desktop-post-composer .composer-text-box > button { margin-right: 12px; }
+
+}
