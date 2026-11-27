@@ -1,0 +1,14 @@
+{
+  "jobId": "712e31ba-cca8-4d93-8cc1-24060b2a22d0",
+  "phase": "complete",
+  "sourceBytes": 37481012,
+  "outputBytes": 33567165,
+  "savedBytes": 3913847,
+  "publishedAt": "2026-11-27 07:42:50.319452+00",
+  "streamDeletedAt": "2026-11-27 07:42:59.362+00",
+  "sourceDeletedAt": null,
+  "head": 200,
+  "size": 33567165,
+  "range": 206,
+  "mp4": true
+}

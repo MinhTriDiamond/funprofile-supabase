@@ -1,0 +1,12 @@
+import {afterEach,expect,it,vi} from 'vitest';
+vi.mock('../../supabase/functions/_shared/r2MultipartService',()=>({signedR2Request:vi.fn()}));
+import {signedR2Request} from '../../supabase/functions/_shared/r2MultipartService';
+import {processPostVideoBackfill} from '../../supabase/functions/_shared/postVideoBackfill';
+const item={id:'item',kind:'feed',source_key:'videos/source.webm'};
+afterEach(()=>vi.clearAllMocks());
+function admin(claim:any=item){return{rpc:vi.fn(async(name:string)=>({data:name==='claim_post_video_backfill'?claim:name==='admit_post_video_backfill'?{jobId:'job'}:true,error:null}))};}
+it('does no R2 work when paused or another job is active',async()=>{const db=admin(null);expect(await processPostVideoBackfill(db)).toBeNull();expect(signedR2Request).not.toHaveBeenCalled();});
+it('records a missing source without admitting a job',async()=>{vi.mocked(signedR2Request).mockResolvedValue(new Response(null,{status:404}));const db=admin();expect((await processPostVideoBackfill(db))?.status).toBe('source_missing');expect(db.rpc).toHaveBeenLastCalledWith('finish_post_video_backfill',expect.objectContaining({p_status:'skipped',p_reason:'source_missing'}));expect(db.rpc.mock.calls.some(c=>c[0]==='admit_post_video_backfill')).toBe(false);});
+it('does not interpret denied R2 access as a missing source',async()=>{vi.mocked(signedR2Request).mockResolvedValue(new Response(null,{status:403}));const db=admin();expect((await processPostVideoBackfill(db))?.status).toBe('inspection_held');expect(db.rpc).toHaveBeenLastCalledWith('finish_post_video_backfill',expect.objectContaining({p_status:'held',p_reason:'source_inspection_failed'}));});
+it('passes exact source version and size into transactional admission',async()=>{vi.mocked(signedR2Request).mockResolvedValue(new Response(null,{headers:{etag:'"original"','content-length':'100','content-type':'video/webm'}}));const db=admin();expect((await processPostVideoBackfill(db))?.jobId).toBe('job');expect(signedR2Request).toHaveBeenCalledWith({method:'HEAD',bucket:'fun-rich-media',key:item.source_key});expect(db.rpc).toHaveBeenLastCalledWith('admit_post_video_backfill',expect.objectContaining({p_size:100,p_etag:'"original"'}));});
+it('does not admit a source without a size proof',async()=>{vi.mocked(signedR2Request).mockResolvedValue(new Response(null,{headers:{etag:'"original"'}}));const db=admin();await processPostVideoBackfill(db);expect(db.rpc).toHaveBeenLastCalledWith('finish_post_video_backfill',expect.objectContaining({p_status:'held'}));});

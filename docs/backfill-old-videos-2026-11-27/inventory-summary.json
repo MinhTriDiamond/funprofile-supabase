@@ -1,0 +1,14 @@
+{
+  "posts": 9362,
+  "sourceItems": 9395,
+  "groups": {
+    "feed_candidate": 3340,
+    "already_stream_encoded": 350,
+    "excluded_rtmp": 724,
+    "held_live": 2,
+    "webcam_archived_encoded": 772,
+    "held_webcam_provenance": 4177,
+    "held_privacy": 4,
+    "already_processed": 26
+  }
+}

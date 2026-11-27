@@ -6,9 +6,10 @@ export const POST_VIDEO_PRIVATE_BUCKET = 'fun-rich-video-optimized';
 export function assertPrivateVideoDestination(bucket: string, key: string) {
   if (bucket !== POST_VIDEO_PRIVATE_BUCKET || !/^optimized\/[a-f0-9-]+\/[a-f0-9-]+\.mp4$/.test(key)) throw new Error('Invalid private video destination');
 }
-interface SourceIdentity {user_id:string;source_key:string;source_size:number;canary?:boolean;runtime?:{sourceEtag?:unknown;legacySourceKey?:unknown;legacySourceOwner?:unknown}}
+interface SourceIdentity {user_id:string;source_key:string;source_size:number;canary?:boolean;runtime?:{sourceEtag?:unknown;legacySourceKey?:unknown;legacySourceOwner?:unknown;legacyWebcamSession?:unknown}}
 function assertSourceIdentity(job:SourceIdentity) {
  if(isOwnedPostVideoKey(job.source_key,job.user_id))return;
+ if(job.canary===true&&job.runtime?.legacySourceOwner===job.user_id&&typeof job.runtime.legacyWebcamSession==='string'&&/^[a-f0-9-]{36}$/.test(job.runtime.legacyWebcamSession)&&job.source_key===`replays/${job.user_id}/${job.runtime.legacyWebcamSession}/replay.mp4`)return;
  if(job.canary===true&&job.runtime?.legacySourceKey===job.source_key&&job.runtime.legacySourceOwner===job.user_id&&/^videos\/[A-Za-z0-9_.-]+\.(mov|mp4|webm|mkv)$/i.test(job.source_key)&&!job.source_key.includes('..'))return;
  throw new Error('Unowned source key');
 }

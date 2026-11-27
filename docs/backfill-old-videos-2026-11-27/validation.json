@@ -1,0 +1,21 @@
+{
+  "offlinePassed": 751,
+  "skipped": 53,
+  "files": 111,
+  "sqlGuards": 16,
+  "parallelClaimants": 2,
+  "successfulClaims": 1,
+  "authenticatedVisibleRows": 0,
+  "typecheckPassed": true,
+  "denoPassed": true,
+  "buildSeconds": 23.36,
+  "realWebcamSamples": 3,
+  "firstFeedPlaybackVerified": true,
+  "review": "author self-review",
+  "filesSha256": {
+    "supabase/functions/_shared/postVideoBackfill.ts": "84503e2972851256ab8d13319caa6c0c1808cb2871e37feb5e0b2e24e32da607",
+    "supabase/functions/_shared/postVideoR2.ts": "e7aa450a7cd1d5eb7296fcafde661a4b8d17c13a705f6dd5e0a11e8a65e2c2f5",
+    "supabase/functions/process-post-videos/index.ts": "abd08e48e177a2c1a941640e1bc1df529494b914fc59f592b603748b0e54081a",
+    "supabase/migrations/20261127090000_old_video_backfill_queue.sql": "16b0e9508cea8c4bdf79b0d97c5fa32ef84fac372efcdb1cf1d8acd35b4749b8"
+  }
+}
