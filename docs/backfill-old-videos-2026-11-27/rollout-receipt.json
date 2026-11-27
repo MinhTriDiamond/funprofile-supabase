@@ -1,0 +1,185 @@
+{
+  "pr": "https://github.com/MinhTriDiamond/funprofile-supabase/pull/100",
+  "runtimeCommit": "7163400",
+  "preview": {
+    "head": "714ae3a",
+    "url": "https://482c90d4.funprofile-supabase.pages.dev",
+    "renderPassed": true
+  },
+  "migration": "20261127090000",
+  "enabled": [
+    {
+      "enabled": true,
+      "updated_at": "2026-11-27 08:09:04.400459+00"
+    }
+  ],
+  "seed": {
+    "run": "old-videos-2026-11-27",
+    "entries": 7515,
+    "feed": 3340,
+    "webcam": 4175,
+    "excludedRtmpKeys": 724
+  },
+  "seedVerification": [
+    {
+      "data": {
+        "feed": 3340,
+        "pending": 7514,
+        "skipped": 1,
+        "total": 7515,
+        "webcam": 4175
+      },
+      "kind": "inventory"
+    },
+    {
+      "data": {
+        "count": 0
+      },
+      "kind": "rtmp_post_metadata"
+    },
+    {
+      "data": {
+        "count": 0
+      },
+      "kind": "rtmp_sessions"
+    },
+    {
+      "data": {
+        "enabled": false,
+        "id": true,
+        "updated_at": "2026-11-27T08:04:09.811315+00:00"
+      },
+      "kind": "control"
+    }
+  ],
+  "additionalRtmpSignals": [
+    {
+      "live_input_signal": 0,
+      "metadata_mode_rtmp": 0,
+      "rtmp_config_signal": 0
+    }
+  ],
+  "webcamSmoke": [
+    {
+      "id": "a5c1839c-0629-d442-ff35-6be519b3b2d4",
+      "job_id": null,
+      "original_current": true,
+      "probe": {
+        "kind": "webcam",
+        "mime": "video/mp4",
+        "probe": {
+          "codecs": [
+            "mp4a",
+            "avc1"
+          ],
+          "duration": 64.685,
+          "height": 480,
+          "width": 856
+        },
+        "size": 7697908
+      },
+      "reason": "already_compressed",
+      "status": "skipped"
+    }
+  ],
+  "sourceManifest": [
+    {
+      "file": "process-post-videos/index.ts",
+      "sha256": "abd08e48e177a2c1a941640e1bc1df529494b914fc59f592b603748b0e54081a",
+      "deployedMatch": true
+    },
+    {
+      "file": "_shared/postVideoBackfill.ts",
+      "sha256": "84503e2972851256ab8d13319caa6c0c1808cb2871e37feb5e0b2e24e32da607",
+      "deployedMatch": true
+    },
+    {
+      "file": "_shared/postVideoR2.ts",
+      "sha256": "e7aa450a7cd1d5eb7296fcafde661a4b8d17c13a705f6dd5e0a11e8a65e2c2f5",
+      "deployedMatch": true
+    }
+  ],
+  "state": {
+    "checked_at": {
+      "at": "2026-11-27T08:11:57.981373+00:00"
+    },
+    "queue_control": {
+      "enabled": true,
+      "id": true,
+      "updated_at": "2026-11-27T08:09:04.400459+00:00"
+    },
+    "queue_groups": [
+      {
+        "count": 3337,
+        "kind": "feed",
+        "outcome": null,
+        "phase": null,
+        "reason": null,
+        "status": "pending"
+      },
+      {
+        "count": 1,
+        "kind": "feed",
+        "outcome": "optimized",
+        "phase": "complete",
+        "reason": "linked_existing_verified_job",
+        "status": "queued"
+      },
+      {
+        "count": 1,
+        "kind": "feed",
+        "outcome": null,
+        "phase": "mp4_wait",
+        "reason": null,
+        "status": "queued"
+      },
+      {
+        "count": 1,
+        "kind": "feed",
+        "outcome": null,
+        "phase": null,
+        "reason": "source_missing",
+        "status": "skipped"
+      },
+      {
+        "count": 4174,
+        "kind": "webcam",
+        "outcome": null,
+        "phase": null,
+        "reason": null,
+        "status": "pending"
+      },
+      {
+        "count": 1,
+        "kind": "webcam",
+        "outcome": null,
+        "phase": null,
+        "reason": "already_compressed",
+        "status": "skipped"
+      }
+    ],
+    "active_backfill_jobs": [
+      {
+        "id": "739a8870-ade5-4cff-92d3-70ff18ad6b0f",
+        "last_error": null,
+        "output_size": null,
+        "phase": "mp4_wait",
+        "published_at": null,
+        "source_size": 4015205
+      }
+    ],
+    "safeguards": {
+      "delete_enabled": true,
+      "enabled": true,
+      "import_enabled": true,
+      "live_reserve_minutes": 240,
+      "original_delete_enabled": true,
+      "publish_enabled": true
+    }
+  },
+  "allVideosCompleted": false,
+  "workerCronChanged": false,
+  "secretsChanged": false,
+  "seedChunksApplied": 38,
+  "initialOversizeSeedRequest": "HTTP413 before SQL execution; then small idempotent chunks applied with admission OFF"
+}
