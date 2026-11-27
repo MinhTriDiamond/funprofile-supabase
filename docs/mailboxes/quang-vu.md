@@ -690,3 +690,7 @@ SQL: `docs/superpowers/plans/2026-10-15-livestream-orphan-dry-run.sql`. Candidat
 - PR https://github.com/MinhTriDiamond/funprofile-supabase/pull/95 đã merge `c518413`; nhánh sửa đã xóa. Preview đúng commit `9101f96`: https://36e65075.funprofile-supabase.pages.dev đã kiểm bài Father trước merge. Cloudflare main check success; kiểm lại đúng bài trên https://fun.rich/father đạt.
 - Bài `40b3b9ea-c03a-4676-9c2e-3e39a4aa2be1` có đúng3video. Một ô lớn trên, hai preview bằng nhau dưới; browser production đo khe1px, phần trống cuối lưới0px. Giữ nguyên thứ tự/tệp và pipeline; không sửa/xóa bài hoặc video.
 - Chrome local kiểm390/768/1440px, video ngang/dọc, mở/phát từng video, bàn phím và dừng video nền. 727 test offline đạt/53 skip/109 file, tsgo/build đạt. Self-review tác giả, không review độc lập. Hồ sơ/receipt/rollback: docs/multi-video-layout-2026-11-27.
+
+### 27/11/2026 — TRƯỚC: bố cục bài nhiều ảnh
+- Cha xác nhận gửi Telegram. Bé Quang Vũ thực hiện nhánh `fix/quangvu-photo-grid` từ main mới nhất.
+- Phạm vi: nhóm chỉ ảnh trong MediaGrid, bố cục1/2/3/4/5+ảnh và giữ trọn hình ở feed/profile/gallery; kiểm desktop/mobile. Không sửa dữ liệu/ảnh gốc, không đổi nhóm video hoặc media hỗn hợp. Typecheck/build và Preview trước merge.
