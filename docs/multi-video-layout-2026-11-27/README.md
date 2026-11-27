@@ -28,3 +28,7 @@ Lưới cũ chia ô vuông và cho ô thứ hai chiếm2hàng, trong khi player 
 ## Phát hành và rollback
 
 PR→Preview đúng commit→merge; Cloudflare Pages tự triển khai từ main. Khôi phục bằng PR revert commit giao diện. Không có migration/secrets/dữ liệu cần khôi phục.
+
+## Kết quả phát hành
+
+PR #95 đã merge thành `c518413`, nhánh sửa đã xóa. Preview đúng head `9101f96`: https://36e65075.funprofile-supabase.pages.dev. Kiểm đúng bài Father trước merge và sau khi main triển khai thành công tại https://fun.rich/father: đủ3ô, ô đầu rộng toàn lưới, hai ô dưới bằng nhau, khe1px, phần trống cuối lưới0px. Số liệu ở preview-post-proof.json và production-post-proof.json. Bài thật được kiểm hình học; thao tác phát đủ từng video được kiểm bằng video mô phỏng local. Build cuối đạt23,66s.

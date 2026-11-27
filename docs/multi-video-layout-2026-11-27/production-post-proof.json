@@ -1,0 +1,17 @@
+{
+  "postId": "40b3b9ea-c03a-4676-9c2e-3e39a4aa2be1",
+  "tiles": 3,
+  "heroWidth": 536.40625,
+  "gridWidth": 536.40625,
+  "lowerWidths": [
+    267.703125,
+    267.703125
+  ],
+  "gap": 1,
+  "unusedBottom": 0,
+  "playerIds": [
+    "40b3b9ea-c03a-4676-9c2e-3e39a4aa2be1:media:0",
+    "40b3b9ea-c03a-4676-9c2e-3e39a4aa2be1:media:1",
+    "40b3b9ea-c03a-4676-9c2e-3e39a4aa2be1:media:2"
+  ]
+}

@@ -685,3 +685,8 @@ SQL: `docs/superpowers/plans/2026-10-15-livestream-orphan-dry-run.sql`. Candidat
 ### 27/11/2026 — TRƯỚC: layout bài nhiều video
 - Cha xác nhận đã gửi Telegram. Bé Quang Vũ kiểm tra bài Father và sửa trên `fix/quangvu-multi-video-layout` từ main mới nhất.
 - Phạm vi: media feed/profile cho bài3video, một video lớn trên/hai video dưới, khe ngăn nhỏ, bỏ khoảng trắng thừa; kiểm responsive và mở/phát từng video, giữ thứ tự/dữ liệu. Không đăng/sửa/xóa bài hoặc thay pipeline video. Typecheck/build/Preview trước merge.
+
+### 27/11/2026 — SAU: layout bài ba video
+- PR https://github.com/MinhTriDiamond/funprofile-supabase/pull/95 đã merge `c518413`; nhánh sửa đã xóa. Preview đúng commit `9101f96`: https://36e65075.funprofile-supabase.pages.dev đã kiểm bài Father trước merge. Cloudflare main check success; kiểm lại đúng bài trên https://fun.rich/father đạt.
+- Bài `40b3b9ea-c03a-4676-9c2e-3e39a4aa2be1` có đúng3video. Một ô lớn trên, hai preview bằng nhau dưới; browser production đo khe1px, phần trống cuối lưới0px. Giữ nguyên thứ tự/tệp và pipeline; không sửa/xóa bài hoặc video.
+- Chrome local kiểm390/768/1440px, video ngang/dọc, mở/phát từng video, bàn phím và dừng video nền. 727 test offline đạt/53 skip/109 file, tsgo/build đạt. Self-review tác giả, không review độc lập. Hồ sơ/receipt/rollback: docs/multi-video-layout-2026-11-27.
