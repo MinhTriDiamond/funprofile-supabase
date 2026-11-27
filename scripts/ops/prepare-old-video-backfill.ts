@@ -1,5 +1,6 @@
 import{createHash}from'node:crypto';
 import { resolve } from 'node:path';
+import { mkdir } from 'node:fs/promises';
 const root=process.argv[2];
 if(!root||!resolve(root).includes('/.local-backups/'))throw new Error('Use an ignored .local-backups directory containing inventory.json');
 const posts=(await Bun.file(root+'/inventory.json').json()).rows;
@@ -41,3 +42,12 @@ for(const x of eligible){const hex=createHash('sha256').update(x.postId+'\n'+x.u
 sql+='COMMIT;\n';
 await Bun.write(root+'/seed.sql',sql);await Bun.write(root+'/seed-summary.json',JSON.stringify({run:'old-videos-2026-11-27',entries:eligible.length,feed:eligible.filter(x=>x.kind==='feed').length,webcam:eligible.filter(x=>x.kind==='webcam').length,excludedRtmpKeys:rtmpKeys.size},null,2));
 console.log(JSON.stringify({seedEntries:eligible.length,feed:eligible.filter(x=>x.kind==='feed').length,webcam:eligible.filter(x=>x.kind==='webcam').length}));
+
+// Management API rejects a multi-megabyte SQL body. Apply these small files serially
+// with admission OFF; ON CONFLICT makes interrupted inventory seeding resumable.
+await mkdir(root+'/seed-chunks',{recursive:true,mode:0o700});
+const statements=sql.split('\n').filter(line=>line.startsWith('INSERT'));
+for(let start=0;start<statements.length;start+=200){
+ const transaction="BEGIN;\nDO $$ BEGIN IF (SELECT enabled FROM public.post_video_backfill_control WHERE id) THEN RAISE EXCEPTION 'Queue must be OFF'; END IF; END $$;\n"+statements.slice(start,start+200).join('\n')+'\nCOMMIT;\n';
+ await Bun.write(root+`/seed-chunks/${Math.floor(start/200)}.sql`,transaction);
+}
