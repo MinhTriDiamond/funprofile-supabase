@@ -699,3 +699,12 @@ SQL: `docs/superpowers/plans/2026-10-15-livestream-orphan-dry-run.sql`. Candidat
 - PR https://github.com/MinhTriDiamond/funprofile-supabase/pull/97 đã merge `d4fb8a9`; nhánh sửa đã xóa. Preview đúng head `9f83117`: https://06ab08cb.funprofile-supabase.pages.dev; đã mở trực tiếp bài `39c32ed1-3c87-4e90-82ab-144da409a9fc` và xem ảnh chụp thật trước merge. Main tự triển khai qua Cloudflare Pages.
 - Nhóm1/2/3/4/5+ảnh có bố cục riêng;3ảnh một lớn trên/hai dưới. Bỏ crop từ preset CDN và CSS cho nhóm chỉ ảnh, có nền đệm khi khác tỉ lệ; giữ trọn ảnh và thứ tự/gallery. Không sửa dữ liệu hoặc nhóm video/mixed.
 - Bài thật Preview:3ảnh loaded, contain cả3, không dùng CDN fit cover/crop, ô đầu606px toàn chiều ngang, hai ô dưới302,5px, phần trống cuối0px. Chrome mô phỏng18case responsive và mở ảnh6 qua gallery đạt. 727test offline/53skip, tsgo/build đạt. Self-review tác giả. Hồ sơ/rollback: docs/photo-grid-2026-11-27.
+
+### 27/11/2026 — TRƯỚC: kiểm tra xóa nguồn3,40GB
+- Cha xác nhận gửi Telegram. Bé Quang Vũ thực hiện `docs/quangvu-original-deletion-check`.
+- Chỉ đọc đúng job canary02e100d1-e568-4ab0-a178-33a5ee791c46: trạng thái/receipt dọn nguồn, HEAD nguồn R2 và HEAD/Range bản tối ưu. Không kích hoạt tick, không probe tạo/xóa, không thay cấu hình/dữ liệu. Ghi kết quả vào hồ sơ.
+
+### 27/11/2026 — SAU: xác nhận nguồn3,40GB đã xóa
+- Kiểm tra chỉ đọc job02e100d1-e568-4ab0-a178-33a5ee791c46 lúc15:24ngày27/11giờKualaLumpur: source_deleted_at=26/11/2026 13:29:20,857812; có receipt, nguồn3.399.337.725byte, lỗiNULL. Dọn sau hạn24h khoảng48giây; không chạy DELETE/tick mới.
+- Bản tối ưu110.367.516byte vẫn gắn đúng attachment, HEAD200/Range206/ftyp đạt. Stream tạm đã xóa25/11/2026 14:05:18,98. Source-dry-run: sourceDeleted=true, currentPublication/outputVerified=true, referenced=false. Receipt xóa chỉ được ghi sau kiểm originHEAD404 theo runtime; không coi CDN cache là storageorigin.
+- Không sửa dữ liệu/cấu hình hoặc tạo probe. Hồ sơ: docs/original-deletion-check-2026-11-27. Chỉ PR tài liệu; mã vận hành không thay đổi.
