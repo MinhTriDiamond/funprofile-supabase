@@ -20,3 +20,7 @@ Gõ text/3ảnh, đổi quyền sang private, xóa ảnh và drop vào preview �
 ## Rollback
 
 Revert PR giao diện qua PR mới. Không có migration, dữ liệu, secrets hoặc backend cần phục hồi. Hàng đợi tối ưu video vẫn chạy độc lập.
+
+## Phát hành
+
+PR #102 đã merge `7ca46a2`, nhánh tính năng đã xóa. Preview đúng head `b9714a4`: https://720a8aaf.funprofile-supabase.pages.dev render bình thường; asset CSS có layout desktop và bundle FacebookCreatePost có preview, HTTP200. Receipt:preview-assets-proof.json. Cloudflare Pages tự triển khai từ main. Chỉ đổi UI, không có deploy function hoặc thay đổi dữ liệu.

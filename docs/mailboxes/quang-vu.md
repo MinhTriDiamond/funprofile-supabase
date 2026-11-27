@@ -726,3 +726,9 @@ SQL: `docs/superpowers/plans/2026-10-15-livestream-orphan-dry-run.sql`. Candidat
 ### 27/11/2026 — TRƯỚC: composer desktop thoáng và xem trước
 - Cha xác nhận đã gửi Telegram. Bé Quang Vũ thực hiện `feat/quangvu-desktop-post-composer` từ main mới nhất.
 - Phạm vi: FacebookCreatePost và component preview, bố cục desktop hai cột soạn/xem trước, giảm khung lồng nhau, công cụ gọn và nút Đăng luôn thấy; giữ tablet/mobile, các callback tải media/lưu nháp/cảnh báo rời bài. Kiểm Chrome nhiều viewport, regression/typecheck/build và Preview trước merge. Không đăng bài production, không thay backend hoặc hàng đợi video đang chạy.
+
+### 27/11/2026 — SAU: composer desktop rộng và xem trước
+- PR https://github.com/MinhTriDiamond/funprofile-supabase/pull/102 đã merge `7ca46a2`; nhánh tính năng đã xóa. Preview đúng head `b9714a4`: https://720a8aaf.funprofile-supabase.pages.dev render bình thường, CSS desktop và bundle composer HTTP200 có marker mới. Cloudflare Pages tự triển khai từ main.
+- Desktop từ1024px dùng hai cột soạn/preview cuộn riêng; header/nút Đăng luôn thấy. Thu gọn avatar/viền, thumbnail quản lý4cột, toolbar gọn và gợi ý/AI mở rộng. Preview cùng state text/privacy/context/media, giữ thứ tự và ảnh contain, không upload hoặc phát thêm video. Không đổi backend hoặc hàng đợi tối ưu video.
+- Chrome fixture dùng component/CSS thật, backend giả:1024/1440/1920 không overflow, tablet768 và mobile390 một cột; gõ/3ảnh/private/remove/drop/AI đồng bộ; text dài cuộn preview600px; mobile cuộn500px tới media/công cụ. Đóng→tiếp tục giữ dữ liệu, native reload warning và lưu nháp text/private/3media đạt. Không đăng bài production.
+- 753test offline đạt/53skip/112file,8test composer/preview đạt,tsgo và build22,24s đạt. Self-review tác giả, không review độc lập. Hồ sơ/ảnh mô phỏng/rollback:docs/desktop-post-composer-2026-11-27. Preview ứng dụng công khai và asset được kiểm online; composer có đăng nhập được kiểm bằng fixture local.
