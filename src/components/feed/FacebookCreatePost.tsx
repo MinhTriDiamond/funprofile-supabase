@@ -46,6 +46,7 @@ import { FriendTagDialog, TaggedFriend } from './FriendTagDialog';
 import { LocationCheckin } from './LocationCheckin';
 import { PrivacySelector } from './PrivacySelector';
 import { FeelingActivityDialog, FeelingActivity } from './FeelingActivityDialog';
+import { PostComposerPreview } from './PostComposerPreview';
 import { CreatePostToolbar } from './CreatePostToolbar';
 import { CreatePostActionButton } from './CreatePostActionButton';
 import { getComposerPlaceholder } from './composerPlaceholder';
@@ -268,6 +269,7 @@ export const CreatePost = ({ onPostCreated, initialAction }: FacebookCreatePostP
     setIsDialogOpenRaw(open);
     setDialogOpenState(open);
   }, []);
+  const [showWritingTools, setShowWritingTools] = useState(false);
   const [content, setContent] = useState('');
   const [privacy, setPrivacy] = useState('public');
   const [loading, setLoading] = useState(false);
@@ -1469,13 +1471,13 @@ export const CreatePost = ({ onPostCreated, initialAction }: FacebookCreatePostP
       }}>
         <DialogContent
           overlayClassName="bg-black/55 backdrop-blur-sm"
-          className="inset-0 h-[100dvh] max-h-[100dvh] rounded-none p-0 sm:inset-auto sm:left-1/2 sm:top-1/2 sm:h-auto sm:max-h-[90vh] sm:max-w-[640px] sm:translate-x-[-50%] sm:translate-y-[-50%] sm:rounded-3xl overflow-hidden flex flex-col gap-0 border-border/70 bg-background shadow-2xl animate-in fade-in-0 slide-in-from-bottom-3 sm:zoom-in-95 [&>button.absolute]:hidden"
+          className="desktop-post-composer inset-0 h-[100dvh] max-h-[100dvh] rounded-none p-0 sm:inset-auto sm:left-1/2 sm:top-1/2 sm:h-auto sm:max-h-[90vh] sm:max-w-[640px] sm:translate-x-[-50%] sm:translate-y-[-50%] sm:rounded-3xl overflow-hidden flex flex-col gap-0 border-border/70 bg-background shadow-2xl animate-in fade-in-0 slide-in-from-bottom-3 sm:zoom-in-95 [&>button.absolute]:hidden"
         >
           {/* Mobile drag handle (visual only) — FB-style bottom sheet feel */}
           <div className="flex justify-center pt-1.5 pb-0.5 sm:hidden">
             <span className="h-1 w-10 rounded-full bg-muted-foreground/25" aria-hidden />
           </div>
-          <DialogHeader className="sticky top-0 z-20 border-b border-border/70 bg-background/95 px-3 py-2 shrink-0 backdrop-blur">
+          <DialogHeader className="composer-header sticky top-0 z-20 border-b border-border/70 bg-background/95 px-3 py-2 shrink-0 backdrop-blur">
             {decodedBack && (
               <div className="mb-2 flex items-center justify-between gap-2 rounded-lg border border-amber-300/60 bg-amber-50 px-2.5 py-1.5 text-[12px] text-amber-900 dark:border-amber-500/30 dark:bg-amber-950/40 dark:text-amber-200">
                 <span className="truncate">{t('fcpQuestBannerText')}</span>
@@ -1547,7 +1549,7 @@ export const CreatePost = ({ onPostCreated, initialAction }: FacebookCreatePostP
             <button
               type="button"
               onClick={() => setInnerWorkToggle((v) => !v)}
-              className={`mt-2 mx-auto flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-all border hover:-translate-y-0.5 active:scale-95 ${
+              className={`composer-innerwork-toggle mt-2 mx-auto flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-all border hover:-translate-y-0.5 active:scale-95 ${
                 isInnerWorkMode
                   ? 'bg-purple-500/15 border-purple-500/40 text-purple-700 dark:text-purple-300'
                   : 'bg-muted/40 border-border text-muted-foreground hover:bg-muted'
@@ -1558,12 +1560,16 @@ export const CreatePost = ({ onPostCreated, initialAction }: FacebookCreatePostP
             </button>
           </DialogHeader>
 
-          <div
-            className={`flex-1 overflow-y-auto p-3 sm:p-4 relative transition-colors duration-200 ${isDragging ? 'ring-2 ring-primary ring-inset bg-primary/5' : 'bg-gradient-to-b from-background to-muted/20'}`}
+          <div className="composer-workspace min-h-0 flex flex-1 flex-col"
             onPasteCapture={(e) => void handlePasteCapture(e)}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={(e) => void handleDrop(e)}
+          >
+          <div
+            data-testid="composer-editor"
+            className={`composer-editor min-h-0 flex-1 overflow-y-auto p-3 sm:p-4 relative transition-colors duration-200 ${isDragging ? 'ring-2 ring-primary ring-inset bg-primary/5' : 'bg-gradient-to-b from-background to-muted/20'}`}
+
           >
             {composerMode === 'focus' ? (
               <div className="flex min-h-full flex-col bg-background px-1 py-3 animate-in fade-in-0 slide-in-from-bottom-2 duration-200">
@@ -1598,7 +1604,7 @@ export const CreatePost = ({ onPostCreated, initialAction }: FacebookCreatePostP
             ) : (
               <>
             {/* User Info */}
-            <div className="mb-3 flex items-center gap-3 rounded-3xl border border-border/60 bg-card/75 p-3 shadow-sm backdrop-blur">
+            <div className="composer-author mb-3 flex items-center gap-3 rounded-3xl border border-border/60 bg-card/75 p-3 shadow-sm backdrop-blur">
               <div className="relative shrink-0">
                 <Avatar className="w-11 h-11 ring-2 ring-primary/20 shadow-md">
                   <AvatarImage src={profile.avatar_url} sizeHint="sm" alt={profile.username || 'User avatar'} />
@@ -1664,9 +1670,9 @@ export const CreatePost = ({ onPostCreated, initialAction }: FacebookCreatePostP
             </div>
 
             {/* Content */}
-            <div className="relative rounded-3xl border border-border/60 bg-background/80 p-3 shadow-sm transition-all duration-200 focus-within:border-primary/35 focus-within:bg-background focus-within:shadow-[0_0_0_4px_rgba(34,197,94,0.10),0_10px_30px_rgba(15,23,42,0.08)]">
+            <div className="composer-text-box relative rounded-3xl border border-border/60 bg-background/80 p-3 shadow-sm transition-all duration-200 focus-within:border-primary/35 focus-within:bg-background focus-within:shadow-[0_0_0_4px_rgba(34,197,94,0.10),0_10px_30px_rgba(15,23,42,0.08)]">
               <div className="flex items-start gap-3">
-                <Avatar className="mt-1 h-10 w-10 shrink-0 ring-2 ring-primary/15 shadow-sm">
+                <Avatar className="composer-repeat-avatar mt-1 h-10 w-10 shrink-0 ring-2 ring-primary/15 shadow-sm">
                   <AvatarImage src={profile.avatar_url} sizeHint="sm" alt={profile.username || 'User avatar'} />
                   <AvatarFallback className="bg-primary text-primary-foreground">{profile.username?.[0]?.toUpperCase()}</AvatarFallback>
                 </Avatar>
@@ -1701,6 +1707,8 @@ export const CreatePost = ({ onPostCreated, initialAction }: FacebookCreatePostP
                   {content.length.toLocaleString()}/{MAX_CONTENT_LENGTH.toLocaleString()}
                 </span>
               </div>
+              <button type="button" className="mt-3 hidden items-center gap-2 text-sm font-medium text-primary lg:inline-flex" aria-expanded={showWritingTools} onClick={() => setShowWritingTools(value => !value)}><Sparkles className="h-4 w-4" />{t('fcpMoreWritingTools')}</button>
+              <div className={cn('composer-writing-tools', !showWritingTools && 'lg:hidden')}>
               <div className="mt-3 flex flex-wrap gap-2 px-1">
                 {CLEAN_INSPIRATION_CHIPS.map((chip) => (
                   <button
@@ -1766,6 +1774,7 @@ export const CreatePost = ({ onPostCreated, initialAction }: FacebookCreatePostP
                   </PopoverContent>
                 </Popover>
               </div>
+              </div>
               {/* Light Score eligibility hint */}
               {(() => {
                 const trimmedLen = content.trim().length;
@@ -1806,7 +1815,7 @@ export const CreatePost = ({ onPostCreated, initialAction }: FacebookCreatePostP
 
             {/* Attachments Preview Grid — FB-style asymmetric */}
             {attachments.length > 0 ? (
-              <div className="mt-3">
+              <div className="composer-attachments mt-3">
                 <AttachmentPreviewGrid
                   attachments={attachments}
                   disabled={loading}
@@ -1820,7 +1829,7 @@ export const CreatePost = ({ onPostCreated, initialAction }: FacebookCreatePostP
               </div>
             ) : (
               <div className={cn(
-                'mt-3 rounded-3xl border-2 border-dashed border-border/80 bg-card/60 p-6 text-center transition-all duration-200 hover:border-primary/35 hover:bg-primary/5',
+                'composer-drop-zone mt-3 rounded-3xl border-2 border-dashed border-border/80 bg-card/60 p-6 text-center transition-all duration-200 hover:border-primary/35 hover:bg-primary/5',
                 composerMode === 'composer' && 'hidden sm:block',
               )}>
                 <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10">
@@ -1847,7 +1856,7 @@ export const CreatePost = ({ onPostCreated, initialAction }: FacebookCreatePostP
             )}
 
             {/* Toolbar */}
-            <div className={cn('mt-3', composerMode === 'composer' && 'hidden sm:block')}>
+            <div className={cn('composer-tools mt-3', composerMode === 'composer' && 'hidden sm:block')}>
               <CreatePostToolbar
                 loading={loading}
                 taggedFriendsCount={taggedFriends.length}
@@ -1857,7 +1866,7 @@ export const CreatePost = ({ onPostCreated, initialAction }: FacebookCreatePostP
                 onShowLocation={() => setShowLocationDialog(true)}
                 onShowFeeling={() => setShowFeelingDialog(true)}
                 onShowLive={handleLiveVideoClick}
-                onShowAi={() => setAiAssistOpen(true)}
+                onShowAi={() => { setShowWritingTools(true); setAiAssistOpen(true); }}
                 onShowVoice={() => handleUiReadyAction(t('fcpVoiceComingSoon'))}
                 onShowGiftCoin={() => handleUiReadyAction(t('fcpGiftCoinComingSoon'))}
                 onEmojiSelect={handleEmojiSelect}
@@ -1867,9 +1876,12 @@ export const CreatePost = ({ onPostCreated, initialAction }: FacebookCreatePostP
             )}
           </div>
 
+          <PostComposerPreview name={profile.display_name || profile.username || ''} avatar={profile.avatar_url} content={content} privacy={privacy} attachments={attachments} context={[feeling ? `${feeling.emoji} ${feeling.label}` : '', taggedFriends.length ? `${t('withPrefix')} ${taggedFriends.map(friend => friend.full_name || friend.username).join(', ')}` : '', location ? `${t('atPrefix')} ${location}` : ''].filter(Boolean).join(' · ')} />
+          </div>
+
           {/* Submit */}
           <div className={cn(
-            'sticky bottom-0 z-10 border-t border-border/70 bg-background/95 p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] shrink-0 backdrop-blur',
+            'composer-footer sticky bottom-0 z-10 border-t border-border/70 bg-background/95 p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] shrink-0 backdrop-blur',
             composerMode === 'focus' && 'hidden sm:block',
           )}>
             {/* Aggregate upload progress strip */}

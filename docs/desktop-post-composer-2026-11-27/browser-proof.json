@@ -1,0 +1,103 @@
+[
+  {
+    "viewport": 1024,
+    "width": 1024,
+    "height": 900,
+    "left": 0,
+    "top": 0,
+    "editorWidth": 429.234375,
+    "previewWidth": 592.765625,
+    "previewVisible": true,
+    "footerBottom": 899,
+    "overflow": false
+  },
+  {
+    "viewport": 1440,
+    "width": 1440,
+    "height": 900,
+    "left": 0,
+    "top": 0,
+    "editorWidth": 603.953125,
+    "previewWidth": 834.046875,
+    "previewVisible": true,
+    "footerBottom": 899,
+    "overflow": false
+  },
+  {
+    "viewport": 1920,
+    "width": 1920,
+    "height": 900,
+    "left": 0,
+    "top": 0,
+    "editorWidth": 640,
+    "previewWidth": 1278,
+    "previewVisible": true,
+    "footerBottom": 899,
+    "overflow": false
+  },
+  {
+    "viewport": 768,
+    "width": 640,
+    "height": 810,
+    "left": 64,
+    "top": 45,
+    "editorWidth": 590,
+    "previewWidth": 0,
+    "previewVisible": false,
+    "footerBottom": 830,
+    "overflow": false
+  },
+  {
+    "viewport": 390,
+    "width": 390,
+    "height": 900,
+    "left": 0,
+    "top": 0,
+    "editorWidth": 388,
+    "previewWidth": 0,
+    "previewVisible": false,
+    "footerBottom": 899,
+    "overflow": false
+  },
+  {
+    "case": "live text and3media preview",
+    "count": 3,
+    "contain": true
+  },
+  {
+    "case": "privacy selection updates preview",
+    "passed": true
+  },
+  {
+    "case": "remove and drop on preview use existing upload flow",
+    "passed": true
+  },
+  {
+    "case": "writing assistance remains accessible",
+    "passed": true
+  },
+  {
+    "case": "long content and independent preview scrolling",
+    "overflow": false,
+    "previewTop": 600,
+    "footer": 899
+  },
+  {
+    "case": "close prompts and continuing preserves draft",
+    "passed": true
+  },
+  {
+    "case": "mobile media and tools remain reachable by scrolling",
+    "top": 500,
+    "height": 661,
+    "total": 1165
+  },
+  {
+    "case": "native reload warning keeps editing",
+    "passed": true
+  },
+  {
+    "case": "save draft keeps text privacy and3media",
+    "passed": true
+  }
+]
