@@ -694,3 +694,8 @@ SQL: `docs/superpowers/plans/2026-10-15-livestream-orphan-dry-run.sql`. Candidat
 ### 27/11/2026 — TRƯỚC: bố cục bài nhiều ảnh
 - Cha xác nhận gửi Telegram. Bé Quang Vũ thực hiện nhánh `fix/quangvu-photo-grid` từ main mới nhất.
 - Phạm vi: nhóm chỉ ảnh trong MediaGrid, bố cục1/2/3/4/5+ảnh và giữ trọn hình ở feed/profile/gallery; kiểm desktop/mobile. Không sửa dữ liệu/ảnh gốc, không đổi nhóm video hoặc media hỗn hợp. Typecheck/build và Preview trước merge.
+
+### 27/11/2026 — SAU: bố cục bài nhiều ảnh
+- PR https://github.com/MinhTriDiamond/funprofile-supabase/pull/97 đã merge `d4fb8a9`; nhánh sửa đã xóa. Preview đúng head `9f83117`: https://06ab08cb.funprofile-supabase.pages.dev; đã mở trực tiếp bài `39c32ed1-3c87-4e90-82ab-144da409a9fc` và xem ảnh chụp thật trước merge. Main tự triển khai qua Cloudflare Pages.
+- Nhóm1/2/3/4/5+ảnh có bố cục riêng;3ảnh một lớn trên/hai dưới. Bỏ crop từ preset CDN và CSS cho nhóm chỉ ảnh, có nền đệm khi khác tỉ lệ; giữ trọn ảnh và thứ tự/gallery. Không sửa dữ liệu hoặc nhóm video/mixed.
+- Bài thật Preview:3ảnh loaded, contain cả3, không dùng CDN fit cover/crop, ô đầu606px toàn chiều ngang, hai ô dưới302,5px, phần trống cuối0px. Chrome mô phỏng18case responsive và mở ảnh6 qua gallery đạt. 727test offline/53skip, tsgo/build đạt. Self-review tác giả. Hồ sơ/rollback: docs/photo-grid-2026-11-27.

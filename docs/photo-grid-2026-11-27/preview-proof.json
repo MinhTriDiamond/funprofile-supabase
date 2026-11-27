@@ -1,0 +1,22 @@
+{
+  "origin": "https://06ab08cb.funprofile-supabase.pages.dev",
+  "tiles": 3,
+  "width": 606,
+  "heroWidth": 606,
+  "lowerWidths": [
+    302.5,
+    302.5
+  ],
+  "unusedBottom": 0,
+  "fits": [
+    "contain",
+    "contain",
+    "contain"
+  ],
+  "cdnCrops": [
+    false,
+    false,
+    false
+  ],
+  "loaded": true
+}
