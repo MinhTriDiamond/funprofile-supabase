@@ -12,3 +12,7 @@ Kiểm chứng: Chrome component thật với ảnh mô phỏng ngang/dọc/vuô
 Ảnh kiểm thử mô phỏng: [desktop](desktop.png), [mobile](mobile.png). Số liệu: browser-proof.json.
 
 Phát hành qua PR và Preview đúng commit. Rollback bằng PR revert thay đổi UI; không có dữ liệu cần phục hồi.
+
+## Kết quả phát hành
+
+PR #97 merged `d4fb8a9`; nhánh sửa đã xóa. Preview đúng head9f83117: https://06ab08cb.funprofile-supabase.pages.dev. Bài thật `39c32ed1-3c87-4e90-82ab-144da409a9fc` tải đủ3ảnh, contain và không crop CDN, một ô606px trên/hai ô302,5px dưới, trống cuối0px; đã xem screenshot thật. Receipt: preview-proof.json. Main tự triển khai Cloudflare; không sửa backend hoặc dữ liệu. Không đưa ảnh thật của người dùng vào Git.
