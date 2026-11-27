@@ -1,0 +1,208 @@
+[
+  {
+    "case": "tile geometry",
+    "viewport": 1440,
+    "portrait": false,
+    "width": 742,
+    "height": 626.78125,
+    "heroWidth": 742,
+    "firstWidth": 370.5,
+    "secondWidth": 370.5,
+    "upperGap": 1,
+    "lowerOffset": 0,
+    "unusedBottom": 0,
+    "overflow": false,
+    "players": [
+      {
+        "height": 417.375,
+        "parentHeight": 417.375
+      },
+      {
+        "height": 208.40625,
+        "parentHeight": 208.40625
+      },
+      {
+        "height": 208.40625,
+        "parentHeight": 208.40625
+      }
+    ]
+  },
+  {
+    "case": "tile geometry",
+    "viewport": 768,
+    "portrait": false,
+    "width": 742,
+    "height": 626.78125,
+    "heroWidth": 742,
+    "firstWidth": 370.5,
+    "secondWidth": 370.5,
+    "upperGap": 1,
+    "lowerOffset": 0,
+    "unusedBottom": 0,
+    "overflow": false,
+    "players": [
+      {
+        "height": 417.375,
+        "parentHeight": 417.375
+      },
+      {
+        "height": 208.40625,
+        "parentHeight": 208.40625
+      },
+      {
+        "height": 208.40625,
+        "parentHeight": 208.40625
+      }
+    ]
+  },
+  {
+    "case": "tile geometry",
+    "viewport": 390,
+    "portrait": false,
+    "width": 364.09375,
+    "height": 307.90625,
+    "heroWidth": 364.09375,
+    "firstWidth": 181.546875,
+    "secondWidth": 181.546875,
+    "upperGap": 1,
+    "lowerOffset": 0,
+    "unusedBottom": 0,
+    "overflow": false,
+    "players": [
+      {
+        "height": 204.796875,
+        "parentHeight": 204.796875
+      },
+      {
+        "height": 102.109375,
+        "parentHeight": 102.109375
+      },
+      {
+        "height": 102.109375,
+        "parentHeight": 102.109375
+      }
+    ]
+  },
+  {
+    "case": "tile geometry",
+    "viewport": 1440,
+    "portrait": true,
+    "width": 742,
+    "height": 626.78125,
+    "heroWidth": 742,
+    "firstWidth": 370.5,
+    "secondWidth": 370.5,
+    "upperGap": 1,
+    "lowerOffset": 0,
+    "unusedBottom": 0,
+    "overflow": false,
+    "players": [
+      {
+        "height": 417.375,
+        "parentHeight": 417.375
+      },
+      {
+        "height": 208.40625,
+        "parentHeight": 208.40625
+      },
+      {
+        "height": 208.40625,
+        "parentHeight": 208.40625
+      }
+    ]
+  },
+  {
+    "case": "tile geometry",
+    "viewport": 768,
+    "portrait": true,
+    "width": 742,
+    "height": 626.78125,
+    "heroWidth": 742,
+    "firstWidth": 370.5,
+    "secondWidth": 370.5,
+    "upperGap": 1,
+    "lowerOffset": 0,
+    "unusedBottom": 0,
+    "overflow": false,
+    "players": [
+      {
+        "height": 417.375,
+        "parentHeight": 417.375
+      },
+      {
+        "height": 208.40625,
+        "parentHeight": 208.40625
+      },
+      {
+        "height": 208.40625,
+        "parentHeight": 208.40625
+      }
+    ]
+  },
+  {
+    "case": "tile geometry",
+    "viewport": 390,
+    "portrait": true,
+    "width": 364.09375,
+    "height": 307.90625,
+    "heroWidth": 364.09375,
+    "firstWidth": 181.546875,
+    "secondWidth": 181.546875,
+    "upperGap": 1,
+    "lowerOffset": 0,
+    "unusedBottom": 0,
+    "overflow": false,
+    "players": [
+      {
+        "height": 204.796875,
+        "parentHeight": 204.796875
+      },
+      {
+        "height": 102.109375,
+        "parentHeight": 102.109375
+      },
+      {
+        "height": 102.109375,
+        "parentHeight": 102.109375
+      }
+    ]
+  },
+  {
+    "case": "small previews remain paused",
+    "passed": true
+  },
+  {
+    "case": "open and play",
+    "index": 0,
+    "src": "/.local-backups/multi-video-layout-2026-11-27/lead.mp4",
+    "playing": true,
+    "fit": "contain",
+    "width": 1280,
+    "height": 720,
+    "feedPaused": true
+  },
+  {
+    "case": "open and play",
+    "index": 1,
+    "src": "/.local-backups/multi-video-layout-2026-11-27/portrait.mp4",
+    "playing": true,
+    "fit": "contain",
+    "width": 720,
+    "height": 1280,
+    "feedPaused": true
+  },
+  {
+    "case": "open and play",
+    "index": 2,
+    "src": "/.local-backups/multi-video-layout-2026-11-27/third.mp4",
+    "playing": true,
+    "fit": "contain",
+    "width": 1280,
+    "height": 720,
+    "feedPaused": true
+  },
+  {
+    "case": "keyboard open and next/previous preserve order",
+    "passed": true
+  }
+]

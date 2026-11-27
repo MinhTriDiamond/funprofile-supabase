@@ -55,6 +55,8 @@ export interface FeedVideoPlayerProps {
   feedId?: string;
   className?: string;
   compact?: boolean;
+  /** Static, control-free tile that opens the full gallery player. */
+  previewOnly?: boolean;
   onError?: (code?: number) => void;
 }
 
@@ -67,6 +69,7 @@ export const FeedVideoPlayer = memo(({
   feedId,
   className,
   compact = false,
+  previewOnly = false,
   onError,
 }: FeedVideoPlayerProps) => {
   const { t } = useLanguage();
@@ -270,7 +273,7 @@ export const FeedVideoPlayer = memo(({
                   src={normalizedSrc}
                   poster={safePoster}
                   className="w-full h-full"
-                  controls
+                  controls={!previewOnly}
                 />
               </Suspense>
             </VideoErrorBoundary>
@@ -285,12 +288,12 @@ export const FeedVideoPlayer = memo(({
                   manifestUrl={normalizedSrc}
                   className="w-full h-full"
                   autoPlay={false}
-                  controls
+                  controls={!previewOnly}
                 />
               </Suspense>
             </VideoErrorBoundary>
           ) : parsePostVideoLocator(normalizedSrc) ? (
-            <OptimizedPostVideoPlayer src={normalizedSrc} poster={safePoster} className="h-full w-full" />
+            <OptimizedPostVideoPlayer src={normalizedSrc} poster={safePoster} className="h-full w-full" controls={!previewOnly} />
           ) : (
             <VideoErrorBoundary>
               <FacebookVideoPlayer
@@ -300,7 +303,8 @@ export const FeedVideoPlayer = memo(({
                 className="w-full h-full"
                 compact={compact}
                 mutedByDefault
-                autoPlayInView
+                autoPlayInView={!previewOnly}
+                controls={!previewOnly}
                 objectFit="contain"
                 onPlayStart={handlePlayStart}
                 onError={handlePlayerError}

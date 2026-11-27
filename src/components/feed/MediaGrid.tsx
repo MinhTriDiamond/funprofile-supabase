@@ -7,7 +7,7 @@ import { ImageViewer } from './ImageViewer';
 import { LazyImage } from '@/components/ui/LazyImage';
 import { FeedVideoPlayer } from './FeedVideoPlayer';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
-import { ChevronLeft, ChevronRight, X, Play, Download, Loader2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, X, Play, Download, Loader2, Maximize2 } from 'lucide-react';
 import { SocialVideoPlayer } from '@/components/ui/SocialVideoPlayer';
 import { downloadChunkedVideo, downloadCloudflareMp4 } from '@/utils/chunkedVideoDownload';
 import { lazyNamedWithChunkRecovery } from '@/lib/appUpdateRecovery';
@@ -59,6 +59,8 @@ interface MediaGridProps {
  * - Automatically filters out broken media
  */
 export const MediaGrid = memo(({ media: initialMedia, feedId }: MediaGridProps) => {
+  const { t } = useLanguage();
+  const videoGridRef = useRef<HTMLDivElement>(null);
   const [showViewer, setShowViewer] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [brokenUrls, setBrokenUrls] = useState<Set<string>>(new Set());
@@ -134,6 +136,7 @@ export const MediaGrid = memo(({ media: initialMedia, feedId }: MediaGridProps) 
   const remainingCount = media.length - 4;
 
   const handleClick = (index: number) => {
+    videoGridRef.current?.querySelectorAll('video').forEach(video => video.pause());
     setSelectedIndex(index);
     setShowViewer(true);
   };
@@ -234,6 +237,34 @@ export const MediaGrid = memo(({ media: initialMedia, feedId }: MediaGridProps) 
         />
       </>
     );
+  }
+
+  // Three videos: one full-width lead, then two equal previews. The tile owns
+  // its geometry; portrait/square players must fit it instead of sizing the row.
+  if (media.length === 3 && media.every(item => item.type === 'video')) {
+    return <>
+      <div ref={videoGridRef} data-testid="three-video-grid" className="grid grid-cols-2 gap-px overflow-hidden bg-border">
+        {media.map((item, index) => (
+          <div key={item.url} data-video-tile={index} className={`relative min-w-0 aspect-video overflow-hidden bg-media ${index === 0 ? 'col-span-2' : ''}`}
+            onClick={event => { event.stopPropagation(); handleClick(index); }}>
+            <FeedVideoPlayer
+              src={item.url} poster={item.poster} isLiveReplay={item.isLiveReplay} aspectRatio={item.aspectRatio}
+              feedId={feedId} itemId={feedId ? `${feedId}:media:${index}` : undefined}
+              className="h-full max-h-none max-w-none aspect-auto rounded-none" compact={index > 0} previewOnly={index > 0}
+              onError={getOnError(item.url)}
+            />
+            <button type="button" onClick={event => { event.stopPropagation(); handleClick(index); }}
+              className={index === 0
+                ? 'absolute right-2 top-2 z-30 rounded-full bg-media/75 p-2 text-media-foreground shadow-sm hover:bg-media focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
+                : 'absolute inset-0 z-30 flex items-center justify-center text-media-foreground hover:bg-media/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring'}
+              aria-label={t('mdgOpenVideo', { index: index + 1, count: media.length })}>
+              {index === 0 ? <Maximize2 className="h-4 w-4" /> : <span className="flex h-12 w-12 items-center justify-center rounded-full bg-media/60 shadow-sm"><Play className="h-6 w-6 fill-current" /></span>}
+            </button>
+          </div>
+        ))}
+      </div>
+      <MediaGalleryViewer media={media} isOpen={showViewer} onClose={() => setShowViewer(false)} currentIndex={selectedIndex} onPrev={handlePrev} onNext={handleNext} setIndex={setSelectedIndex} />
+    </>;
   }
 
   // Three media - Image 1 on top left, Image 2 on top right, Image 3 on bottom left
@@ -466,6 +497,7 @@ const MediaGalleryViewer = memo(({ media, isOpen, onClose, currentIndex, onPrev,
             )}
             <button
               onClick={onClose}
+              aria-label={t('close')}
               className="w-10 h-10 bg-black/50 hover:bg-black/80 rounded-full flex items-center justify-center text-white transition-colors"
             >
               <X className="w-6 h-6" />
@@ -481,6 +513,7 @@ const MediaGalleryViewer = memo(({ media, isOpen, onClose, currentIndex, onPrev,
           {media.length > 1 && (
             <button
               onClick={onPrev}
+              aria-label={t('mdgPreviousMedia')}
               className="absolute left-4 z-50 w-12 h-12 bg-black/50 hover:bg-black/80 rounded-full flex items-center justify-center text-white transition-colors"
             >
               <ChevronLeft className="w-8 h-8" />
@@ -547,6 +580,7 @@ const MediaGalleryViewer = memo(({ media, isOpen, onClose, currentIndex, onPrev,
           {media.length > 1 && (
             <button
               onClick={onNext}
+              aria-label={t('mdgNextMedia')}
               className="absolute right-4 z-50 w-12 h-12 bg-black/50 hover:bg-black/80 rounded-full flex items-center justify-center text-white transition-colors"
             >
               <ChevronRight className="w-8 h-8" />
