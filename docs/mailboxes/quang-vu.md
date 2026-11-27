@@ -681,3 +681,7 @@ SQL: `docs/superpowers/plans/2026-10-15-livestream-orphan-dry-run.sql`. Candidat
 - Read-only đúng live trong ảnh xác nhận2row khác ID/cùng người và text, lệch34ms. Thêm khóa đồng bộ trước auth/INSERT và nút chờ, lọc Enter IME/repeat ở host desktop/viewer/chat. Hòa giải optimistic/response/realtime theo server ID, history chậm không ghi đè row mới; không đưa phản hồi session cũ vào live mới.
 - Chrome với chat/hook thật và backend giả: Enter liên tiếp+realtime lặp→1write/1dòng/count1; gửi lại có chủ ý sau hoàn tất→2write/count2. 10 regression test, toàn bộ727 test offline đạt/53 skip/109 file, tsgo/build đạt. Self-review tác giả, không review độc lập.
 - Không gửi/xóa bình luận production, không ngắt live, không sửa schema/quyền/backend. Hai row cũ vẫn là hai bình luận đã lưu; không gộp theo text làm mất bình luận lặp chủ ý. Hồ sơ/receipt/rollback: docs/live-comment-duplicate-2026-11-26.
+
+### 27/11/2026 — TRƯỚC: layout bài nhiều video
+- Cha xác nhận đã gửi Telegram. Bé Quang Vũ kiểm tra bài Father và sửa trên `fix/quangvu-multi-video-layout` từ main mới nhất.
+- Phạm vi: media feed/profile cho bài3video, một video lớn trên/hai video dưới, khe ngăn nhỏ, bỏ khoảng trắng thừa; kiểm responsive và mở/phát từng video, giữ thứ tự/dữ liệu. Không đăng/sửa/xóa bài hoặc thay pipeline video. Typecheck/build/Preview trước merge.

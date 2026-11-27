@@ -2,12 +2,12 @@ import { useLanguage } from '@/i18n/LanguageContext';
 import { useRef } from 'react';
 import { SocialVideoPlayer } from '@/components/ui/SocialVideoPlayer';
 import { usePostVideoPlayback } from '@/hooks/usePostVideoPlayback';
-export function OptimizedPostVideoPlayer({src,poster,className}:{src:string;poster?:string;className?:string}) {
+export function OptimizedPostVideoPlayer({src,poster,className,controls=true}:{src:string;poster?:string;className?:string;controls?:boolean}) {
  const {language}=useLanguage();const vi=language==='vi';
  const videoRef=useRef<HTMLVideoElement>(null),errorRetries=useRef(0);
  const {ready,error,renew}=usePostVideoPlayback(src,videoRef);
  return <div className={className}>
-  <SocialVideoPlayer videoRef={videoRef} showControls className="h-full w-full">
+  <SocialVideoPlayer videoRef={videoRef} showControls={controls} className="h-full w-full">
    <video ref={videoRef} src={ready?src:undefined} poster={poster} playsInline preload="metadata" className="h-full w-full object-contain"
     onError={()=>{if(errorRetries.current++<1)void renew(true).catch(()=>{});}} />
   </SocialVideoPlayer>

@@ -23,6 +23,7 @@ export interface FacebookVideoPlayerProps {
   mutedByDefault?: boolean;
   className?: string;
   compact?: boolean;
+  controls?: boolean;
   objectFit?: 'contain' | 'cover';
   onPlay?: () => void;
   onPlayStart?: () => void;
@@ -64,6 +65,7 @@ export const FacebookVideoPlayer = memo(({
   mutedByDefault = true,
   className,
   compact = false,
+  controls = true,
   objectFit: objectFitProp,
   onPlay,
   onPlayStart,
@@ -438,8 +440,8 @@ export const FacebookVideoPlayer = memo(({
       onMouseLeave={() => { if (playing) setShowControls(false); }}
       onClick={handleContainerClick}
       onKeyDown={handleKeyDown}
-      tabIndex={0}
-      role="application"
+      tabIndex={controls ? 0 : -1}
+      role={controls ? 'application' : undefined}
       aria-label="Video player"
     >
       {/* Video element */}
@@ -468,7 +470,7 @@ export const FacebookVideoPlayer = memo(({
         data-controls
         className={cn(
           'absolute inset-0 flex flex-col justify-between transition-opacity duration-300 z-20',
-          showControls ? 'opacity-100' : 'opacity-0 pointer-events-none'
+          !controls ? 'hidden' : showControls ? 'opacity-100' : 'opacity-0 pointer-events-none'
         )}
       >
         {/* Top gradient */}
