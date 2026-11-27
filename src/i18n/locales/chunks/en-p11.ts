@@ -331,6 +331,7 @@ const chunk = {
   fvpDownloadMp4: 'Download MP4 to device',
   mdgPreviousMedia: 'Previous photo or video',
   mdgNextMedia: 'Next photo or video',
+  mdgOpenImage: 'Open image {index} of {count}',
   mdgOpenVideo: 'Open video {index} of {count}',
   mdgDownloadVideo: 'Download video to device',
   mdgDownloadMp4: 'Download MP4 to device',

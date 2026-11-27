@@ -61,6 +61,7 @@ interface MediaGridProps {
 export const MediaGrid = memo(({ media: initialMedia, feedId }: MediaGridProps) => {
   const { t } = useLanguage();
   const videoGridRef = useRef<HTMLDivElement>(null);
+  const [photoRatios, setPhotoRatios] = useState<Record<string, number>>({});
   const [showViewer, setShowViewer] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [brokenUrls, setBrokenUrls] = useState<Set<string>>(new Set());
@@ -148,6 +149,40 @@ export const MediaGrid = memo(({ media: initialMedia, feedId }: MediaGridProps) 
   const handleNext = () => {
     setSelectedIndex((prev) => (prev < media.length - 1 ? prev + 1 : 0));
   };
+
+  // Photo tiles fit the complete image. Do not use the square cover transform:
+  // a contained <img> cannot recover pixels already cropped by the CDN.
+  if (media.every(item => item.type === 'image')) {
+    const visible = media.slice(0, 5);
+    const leadRatio = Math.max(0.65, Math.min(2, photoRatios[media[0].url] || 16 / 10));
+    return <>
+      <div data-testid="photo-grid" className={`grid gap-px overflow-hidden bg-border ${visible.length >= 5 ? 'grid-cols-6' : 'grid-cols-2'}`}>
+        {visible.map((item, index) => {
+          const isLead = visible.length === 1 || (visible.length === 3 && index === 0);
+          const span = visible.length >= 5 ? (index < 2 ? 'col-span-3' : 'col-span-2') : isLead ? 'col-span-2' : '';
+          const extra = media.length - visible.length;
+          return <button key={`${item.url}:${index}`} type="button" data-photo-tile={index}
+            className={`relative min-w-0 overflow-hidden bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring ${span}`}
+            style={{ aspectRatio: isLead ? leadRatio : visible.length === 3 ? 16 / 10 : 1 }}
+            aria-label={t('mdgOpenImage', { index: index + 1, count: media.length })}
+            onClick={event => { event.stopPropagation(); handleClick(index); }}>
+            <LazyImage src={item.url} alt={t('mdgOpenImage', { index: index + 1, count: media.length })}
+              className="h-full w-full [&_img]:object-contain" hideOnError
+              onLoad={event => {
+                const image = event.currentTarget;
+                if (image.naturalWidth && image.naturalHeight) {
+                  const ratio = image.naturalWidth / image.naturalHeight;
+                  setPhotoRatios(previous => previous[item.url] === ratio ? previous : { ...previous, [item.url]: ratio });
+                }
+              }}
+              onLoadError={getOnImageError(item.url)} transformPreset="post" />
+            {index === visible.length - 1 && extra > 0 && <span className="absolute bottom-2 right-2 rounded-full bg-media/80 px-3 py-1 text-lg font-semibold text-media-foreground">+{extra}</span>}
+          </button>;
+        })}
+      </div>
+      <MediaGalleryViewer media={media} isOpen={showViewer} onClose={() => setShowViewer(false)} currentIndex={selectedIndex} onPrev={handlePrev} onNext={handleNext} setIndex={setSelectedIndex} />
+    </>;
+  }
 
   // Single media
   if (media.length === 1) {

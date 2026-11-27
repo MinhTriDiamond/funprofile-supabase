@@ -43,6 +43,7 @@ export const LazyImage = memo(({
   transformPreset,
   transformOptions,
   skipTransform = false,
+  onLoad,
   ...props 
 }: LazyImageProps) => {
   const [isLoaded, setIsLoaded] = useState(false);
@@ -167,7 +168,7 @@ export const LazyImage = memo(({
           alt={alt}
           loading={priority ? 'eager' : 'lazy'}
           decoding="async"
-          onLoad={handleLoad}
+          onLoad={event => { handleLoad(); onLoad?.(event); }}
           onError={handleError}
           className={cn(
             'w-full h-full object-cover transition-opacity duration-300',
