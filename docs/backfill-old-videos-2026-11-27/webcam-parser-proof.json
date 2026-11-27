@@ -1,0 +1,44 @@
+[
+  {
+    "postId": "d6cc24cb-0d5c-4b64-bf09-e266167f25ff",
+    "size": 7697908,
+    "probe": {
+      "duration": 64.685,
+      "width": 856,
+      "height": 480,
+      "codecs": [
+        "mp4a",
+        "avc1"
+      ]
+    },
+    "decision": "already_compressed"
+  },
+  {
+    "postId": "aa0af8ad-8dec-4cce-a834-b9599aea14e1",
+    "size": 223161235,
+    "probe": {
+      "duration": 1881.022,
+      "width": 540,
+      "height": 960,
+      "codecs": [
+        "mp4a",
+        "avc1"
+      ]
+    },
+    "decision": "already_compressed"
+  },
+  {
+    "postId": "fcd76eed-8777-41b3-9dd6-acc367eea28e",
+    "size": 143463386,
+    "probe": {
+      "duration": 1206.35,
+      "width": 540,
+      "height": 960,
+      "codecs": [
+        "mp4a",
+        "avc1"
+      ]
+    },
+    "decision": "already_compressed"
+  }
+]

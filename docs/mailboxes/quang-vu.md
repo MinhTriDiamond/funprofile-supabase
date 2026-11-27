@@ -708,3 +708,10 @@ SQL: `docs/superpowers/plans/2026-10-15-livestream-orphan-dry-run.sql`. Candidat
 - Kiểm tra chỉ đọc job02e100d1-e568-4ab0-a178-33a5ee791c46 lúc15:24ngày27/11giờKualaLumpur: source_deleted_at=26/11/2026 13:29:20,857812; có receipt, nguồn3.399.337.725byte, lỗiNULL. Dọn sau hạn24h khoảng48giây; không chạy DELETE/tick mới.
 - Bản tối ưu110.367.516byte vẫn gắn đúng attachment, HEAD200/Range206/ftyp đạt. Stream tạm đã xóa25/11/2026 14:05:18,98. Source-dry-run: sourceDeleted=true, currentPublication/outputVerified=true, referenced=false. Receipt xóa chỉ được ghi sau kiểm originHEAD404 theo runtime; không coi CDN cache là storageorigin.
 - Không sửa dữ liệu/cấu hình hoặc tạo probe. Hồ sơ: docs/original-deletion-check-2026-11-27. Chỉ PR tài liệu; mã vận hành không thay đổi.
+
+### 27/11/2026 — TRƯỚC: rà soát/tối ưu tuần tự video cũ
+- Cha duyệt và xác nhận gửi Telegram. Bé Quang Vũ thực hiện nhánh `feat/quangvu-backfill-old-videos`.
+- Phạm vi: inventory read-only toàn bộ video feed và bản ghi webcam cũ, loại RTMP bằng provenance live_sessions/metadata; snapshot metadata trước ghi. Tối ưu lần lượt từng nguồn đủ điều kiện bằng Stream tạm→R2private→dọn Stream, chỉ publish khi nhỏ hơn/đã xác minh/quyền xem đúng; giữ nguồn24h rồi dọn bằng policy hiện có. Không xử lý nguồn không rõ loại/đang live/thiếu quyền hoặc làm trùng job.
+- Có thể bổ sung công cụ admission/backfill có allowlist và checkpoint nếu pipeline hiện tại chưa hỗ trợ nguồn cũ/webcam. Không tự đổi public/private, không batch DELETE. Test/Preview trước merge code; hồ sơ từng video và rollback trước publication.
+
+- Cập nhật phạm vi sau inventory:9.362bài/9.395mục nguồn;724RTMP bị loại (bao gồm228bài metadata RTMP mâu thuẫn session webcam),3.340ứng viên feed,772webcam có lineage Stream/R2 và4.177webcam cần đối chiếu thêm. Bổ sung queue service-only/lease/admission từng nguồn trong cron hiện có, cờ mặc địnhOFF; snapshot seed và rollback trước bật. Không xếp hàng RTMP/nguồn mơ hồ. Video feed đầu tiên37.481.012byte đã admission bằng pipeline hiện hữu sau snapshot, không canary, output dự kiến33.567.165byte chưa publish tại thời điểm ghi.

@@ -1,5 +1,5 @@
 import {afterEach,expect,it,vi} from 'vitest';
-import {deleteRetiredPostVideoSource,isPostVideoSourceMissing} from '../../supabase/functions/_shared/postVideoR2';
+import {deleteRetiredPostVideoSource,isPostVideoSourceMissing,verifyPostVideoSource} from '../../supabase/functions/_shared/postVideoR2';
 const owner='10000000-0000-0000-0000-000000000001',job={user_id:owner,source_key:`videos/${owner}/source.mov`,source_size:100,runtime:{sourceEtag:'"source"'}};
 afterEach(()=>vi.unstubAllGlobals());
 function env(){const e:Record<string,string>={R2_ACCOUNT_ID:'a'.repeat(32),R2_ACCESS_KEY_ID:'test',R2_SECRET_ACCESS_KEY:'test',R2_BUCKET_NAME:'originals',R2_PUBLIC_DOMAIN:'https://media.example'};vi.stubGlobal('Deno',{env:{get:(k:string)=>e[k]}});}
@@ -13,3 +13,6 @@ it('probes retirement only on a unique synthetic1024byte source and confirms404'
  const f=vi.fn().mockImplementation(async(url:string,init:RequestInit)=>{if(init.method==='PUT'){expect(new Headers(init.headers).get('if-none-match')).toBe('*');exists=true;key=url;return new Response(null);}expect(url).toBe(key);if(init.method==='HEAD')return exists?new Response(null,{headers:{'content-length':'1024',etag:'"fixture"'}}):new Response(null,{status:404});if(init.method==='DELETE'){exists=false;return new Response(null,{status:204});}throw new Error('Unexpected probe request');});vi.stubGlobal('fetch',f);
  expect(await probeOriginalRetentionR2()).toEqual({fixtureDeleted:true,bytes:1024});expect(exists).toBe(false);expect(key).toContain('source-retention-probe-');expect(f.mock.calls.every(([u])=>!u.includes('fun-rich-video-optimized'))).toBe(true);
 });
+
+it('accepts only an explicitly attested canonical webcam key',async()=>{env();const session='20000000-0000-4000-8000-000000000001';const f=vi.fn().mockResolvedValue(new Response(null,{headers:{'content-length':'100',etag:'"source"'}}));vi.stubGlobal('fetch',f);await expect(verifyPostVideoSource({...job,canary:true,source_key:`replays/${owner}/${session}/replay.mp4`,runtime:{...job.runtime,legacySourceOwner:owner,legacyWebcamSession:session}})).resolves.toBe('"source"');expect(f).toHaveBeenCalledTimes(1);});
+it.each(['wrong_owner','wrong_session','not_attested'])('rejects webcam identity %s before any request',async kind=>{env();const session='20000000-0000-4000-8000-000000000001',f=vi.fn();vi.stubGlobal('fetch',f);await expect(verifyPostVideoSource({...job,canary:kind!=='not_attested',source_key:`replays/${owner}/${session}/replay.mp4`,runtime:{...job.runtime,legacySourceOwner:kind==='wrong_owner'?'foreign':owner,legacyWebcamSession:kind==='wrong_session'?'30000000-0000-4000-8000-000000000001':session}})).rejects.toThrow();expect(f).not.toHaveBeenCalled();});

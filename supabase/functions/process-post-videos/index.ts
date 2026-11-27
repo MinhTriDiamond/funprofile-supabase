@@ -1,3 +1,4 @@
+import { processPostVideoBackfill } from '../_shared/postVideoBackfill.ts';
 import {processOriginalRetention,inspectOriginalRetention,probeOriginalRetentionR2} from '../_shared/postVideoOriginalRetention.ts';
 import { inspectPostVideoExport } from '../_shared/postVideoExportDiagnostics.ts';
 import { probePostVideoInfrastructure } from '../_shared/postVideoInfrastructure.ts';
@@ -42,6 +43,7 @@ Deno.serve(async(req:Request)=>{
    if(error)throw error;
    return json({scheduled:!!data?.length});
   }
+  const backfill = body.action==='tick'&&!body.jobId ? await processPostVideoBackfill(admin) : null;
   const retentionResults=[];
   if(body.action==='tick'){
    const {data:control,error:controlError}=await (admin as any).from('post_video_processing_control').select('original_delete_enabled').eq('id',true).single();
@@ -66,6 +68,6 @@ Deno.serve(async(req:Request)=>{
   if(body.action==='dry-run')return json({jobs:jobs||[]});
   const results=[...retentionResults];
   for(const job of jobs||[])results.push({id:job.id,...await processPostVideoJob(admin,job.id,cleanup)});
-  return json({results});
+  return json({results,...(backfill?{backfill}:{})});
  }catch(e){return json({error:e instanceof HttpError?e.message:'Background processing request failed'},e instanceof HttpError?e.status:500);}
 });
