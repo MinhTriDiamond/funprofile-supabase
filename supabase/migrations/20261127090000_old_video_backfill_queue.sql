@@ -155,4 +155,3 @@ BEGIN
   SELECT * INTO j FROM post_video_processing_jobs WHERE id=j.id;
   RETURN to_jsonb(j);
 END $$;
-
