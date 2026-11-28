@@ -1,0 +1,14 @@
+{
+  "size": 2758959012,
+  "sha256": "8f32c55650b56769d2b7c7ea7c385fbaafbf8f4ce929b526bf2dac90240edb7c",
+  "url": "https://media.fun.rich/live-replays/e16a7fa8-0c38-41b1-a7a8-fad1269ced78/1dbef509-286b-499b-b634-526d1c37d4f5/4641dfe88bdfaf390fdca77d5707cb26-hls-recovered.mp4",
+  "key": "live-replays/e16a7fa8-0c38-41b1-a7a8-fad1269ced78/1dbef509-286b-499b-b634-526d1c37d4f5/4641dfe88bdfaf390fdca77d5707cb26-hls-recovered.mp4",
+  "bucket": "fun-rich-media",
+  "remoteGet": 206,
+  "verificationMode": "ordered complete coverage by byte ranges with fixed ETag",
+  "rangeRequests": 329,
+  "etag": "\"ec76a15302c3e92603097f571506c7a1-165\"",
+  "remoteBytes": 2758959012,
+  "remoteSha256": "8f32c55650b56769d2b7c7ea7c385fbaafbf8f4ce929b526bf2dac90240edb7c",
+  "verifiedAt": "2026-11-28T10:11:29.685Z"
+}

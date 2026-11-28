@@ -1,0 +1,52 @@
+{
+  "replay": {
+    "archive_error": null,
+    "archive_phase": "done",
+    "archive_status": "archived",
+    "cloudflare_deleted_at": "2026-11-28T10:12:11.942+00:00",
+    "delete_stream_error": null,
+    "duration_seconds": 14555,
+    "filesize_bytes": 2758959012,
+    "id": "2dcca8db-db44-49b8-97cc-edf261682786",
+    "last_cf_response": {
+      "bytes": 2758959012,
+      "duration_seconds": 14554.1005,
+      "etag": "\"ec76a15302c3e92603097f571506c7a1-165\"",
+      "full_decode": true,
+      "range_requests": 329,
+      "recovery": "HLS remux; no reencode",
+      "sha256": "8f32c55650b56769d2b7c7ea7c385fbaafbf8f4ce929b526bf2dac90240edb7c",
+      "verification_mode": "ordered complete coverage by byte ranges with fixed ETag",
+      "verified_at": "2026-11-28T10:11:29.685Z"
+    },
+    "last_cf_status": "hls_recovery_verified",
+    "r2_bucket": "fun-rich-media",
+    "r2_object_key": "live-replays/e16a7fa8-0c38-41b1-a7a8-fad1269ced78/1dbef509-286b-499b-b634-526d1c37d4f5/4641dfe88bdfaf390fdca77d5707cb26-hls-recovered.mp4",
+    "r2_verified_at": "2026-11-28T10:11:56.165795+00:00",
+    "r2_video_url": "https://media.fun.rich/live-replays/e16a7fa8-0c38-41b1-a7a8-fad1269ced78/1dbef509-286b-499b-b634-526d1c37d4f5/4641dfe88bdfaf390fdca77d5707cb26-hls-recovered.mp4",
+    "replay_post_id": "26c9de27-1a4d-4153-b469-f3927fad277f",
+    "replay_ready_at": "2026-11-28T10:12:10.818+00:00",
+    "status": "ready",
+    "stream_deleted_at": "2026-11-28T10:12:11.942+00:00"
+  },
+  "session": {
+    "archive_status": "archived",
+    "delete_stream_error": null,
+    "id": "1dbef509-286b-499b-b634-526d1c37d4f5",
+    "r2_object_key": "live-replays/e16a7fa8-0c38-41b1-a7a8-fad1269ced78/1dbef509-286b-499b-b634-526d1c37d4f5/4641dfe88bdfaf390fdca77d5707cb26-hls-recovered.mp4",
+    "r2_video_url": "https://media.fun.rich/live-replays/e16a7fa8-0c38-41b1-a7a8-fad1269ced78/1dbef509-286b-499b-b634-526d1c37d4f5/4641dfe88bdfaf390fdca77d5707cb26-hls-recovered.mp4",
+    "replay_post_id": "26c9de27-1a4d-4153-b469-f3927fad277f",
+    "status": "archived",
+    "stream_deleted_at": "2026-11-28T10:12:11.942+00:00"
+  },
+  "post": {
+    "id": "26c9de27-1a4d-4153-b469-f3927fad277f",
+    "playback_provider": "r2",
+    "processing_message": null,
+    "replay_ready": true,
+    "replay_status": "ready_mp4",
+    "video_url": "https://media.fun.rich/live-replays/e16a7fa8-0c38-41b1-a7a8-fad1269ced78/1dbef509-286b-499b-b634-526d1c37d4f5/4641dfe88bdfaf390fdca77d5707cb26-hls-recovered.mp4"
+  },
+  "sourceManifestHTTP": 404,
+  "streamDeletedAtKualaLumpur": "2026-11-28T18:12:11.942000+08:00"
+}

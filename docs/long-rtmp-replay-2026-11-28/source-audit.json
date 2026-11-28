@@ -1,0 +1,51 @@
+[
+  {
+    "file": "supabase/functions/rtmp-recovery-upload/index.ts",
+    "sha256": "b7b9b1bfb3b1fb3bac3370b0d88f2dde48ff736fe0efc8c716d8cf932516727b",
+    "match": true,
+    "normalizedMatch": true,
+    "bomOnlyDifference": false
+  },
+  {
+    "file": "supabase/functions/_shared/rtmpRecoveryCapability.ts",
+    "sha256": "0a6b580a6724e20f8e65edd1069cd477ec5bda538985e84fc0f83498851a88c8",
+    "match": true,
+    "normalizedMatch": true,
+    "bomOnlyDifference": false
+  },
+  {
+    "file": "supabase/functions/_shared/archiveReplayService.ts",
+    "sha256": "2c0fd240e498ef3d05d4846065d9fe306cd0e7e923b3196735df26c57900ce65",
+    "match": true,
+    "normalizedMatch": true,
+    "bomOnlyDifference": false
+  },
+  {
+    "file": "supabase/functions/_shared/cloudflareStreamService.ts",
+    "sha256": "20d6b8fd58e27ede3882d15c6add450e680eb0f69d66deac992e4669aa054fd4",
+    "match": true,
+    "normalizedMatch": true,
+    "bomOnlyDifference": false
+  },
+  {
+    "file": "supabase/functions/_shared/streamLiveMp4Policy.ts",
+    "sha256": "43439b8dc9f187bd4467b74d733daff141cad5b597be5f1ca5fac1d4560c680c",
+    "match": true,
+    "normalizedMatch": true,
+    "bomOnlyDifference": false
+  },
+  {
+    "file": "supabase/functions/live-replay-archive-cron/index.ts",
+    "sha256": "d040924f4758d46948a566c242d2ea731b752584eb2db183d28201f2c45ee74b",
+    "match": false,
+    "normalizedMatch": true,
+    "bomOnlyDifference": true
+  },
+  {
+    "file": "supabase/functions/live-replay-mp4-poll-cron/index.ts",
+    "sha256": "1fb6d8210108413d4cd11f3481282b446fd0c379b90e68a4dbaad8263df722f0",
+    "match": true,
+    "normalizedMatch": true,
+    "bomOnlyDifference": false
+  }
+]

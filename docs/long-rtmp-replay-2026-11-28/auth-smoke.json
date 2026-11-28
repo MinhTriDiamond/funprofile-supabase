@@ -1,0 +1,20 @@
+[
+  {
+    "name": "missing",
+    "status": 401
+  },
+  {
+    "name": "wrong",
+    "status": 401
+  },
+  {
+    "name": "scoped",
+    "status": 200,
+    "body": {
+      "key": "live-replays/e16a7fa8-0c38-41b1-a7a8-fad1269ced78/1dbef509-286b-499b-b634-526d1c37d4f5/4641dfe88bdfaf390fdca77d5707cb26-hls-recovered.mp4",
+      "exists": false,
+      "size": 0,
+      "bucket": "fun-rich-media"
+    }
+  }
+]

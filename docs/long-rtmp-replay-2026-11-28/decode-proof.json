@@ -1,0 +1,14 @@
+{
+  "fullDecode": true,
+  "size": 2758959012,
+  "sha256": "8f32c55650b56769d2b7c7ea7c385fbaafbf8f4ce929b526bf2dac90240edb7c",
+  "durationSeconds": 14554.1005,
+  "videoCodec": "h264",
+  "audioCodec": "aac",
+  "width": 1280,
+  "height": 720,
+  "hlsSegmentsDownloaded": 14570,
+  "reencoded": false,
+  "verificationVideoTimebase": "1/90000",
+  "verificationAudioTimebase": "1/48000"
+}

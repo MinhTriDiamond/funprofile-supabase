@@ -1,0 +1,10 @@
+{
+  "head": 200,
+  "size": 2758959012,
+  "contentType": "video/mp4",
+  "range": 206,
+  "contentRange": "bytes 0-1023/2758959012",
+  "ftyp": true,
+  "tail": 206,
+  "tailBytes": 1024
+}
