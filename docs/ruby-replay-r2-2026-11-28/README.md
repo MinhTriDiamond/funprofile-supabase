@@ -32,3 +32,5 @@ Raw DB snapshot/metadata/media/logs/capability tạm nằm ngoài Git trong `.lo
 
 Raw receipts: `verification.json`, `source-proof.json`, `library-write.sql/json`, `cleanup-receipt.json`, `final-check.json`, `revoked.json` trong snapshot local ignored. Source MP4 backup vẫn giữ local để phục hồi khi cần. Công cụ mới vận hành thủ công cho recording chưa publish, không phải cron tự quét tài khoản.
 
+
+Kiểm lại lúc22:57:42 Kuala Lumpur: HLS nguồn đã404, R2 vẫn206/ftyp vàđúng492.475.142byte. Quyền capability cũ401 đã xácnhận,rawtoken local đãxóa.
