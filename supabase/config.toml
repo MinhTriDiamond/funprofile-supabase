@@ -294,3 +294,6 @@ verify_jwt = false
 
 [functions.rtmp-recovery-upload]
 verify_jwt = false
+
+[functions.archive-unpublished-stream-recording]
+verify_jwt = false
