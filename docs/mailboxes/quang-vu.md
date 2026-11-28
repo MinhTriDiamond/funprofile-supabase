@@ -747,3 +747,9 @@ SQL: `docs/superpowers/plans/2026-10-15-livestream-orphan-dry-run.sql`. Candidat
 - 757test offline đạt/53skip,tsgo,Deno3function,build29,53s. Không thay hàng đợi tối ưu video cũ. Hồ sơ/SQL/receipt/rollback:docs/long-rtmp-replay-2026-11-28; raw snapshot và media backup local ignored. Nhánh kết quả docs/quangvu-long-rtmp-recovery-result.
 
 - Đối chiếu thêm chính sách thời lượng: frontend/shared RTMP240phút, grace-watchdog mặc định4giờ; Stream recording.mode automatic có thể ghi từ nguồn OBS trước khi bấm live. Phiên14.457,283giây nhưng recording14.554,1giây, nên giới hạn phiên không bảo đảmMP4export<4giờ. Không đổi chính sách thời lượng trong bản sửa; giới hạn xuấtMP4 của provider vẫn còn.
+
+### 28/11/2026 — TRƯỚC: Ruby–Đại Huỳnh replay chưa chuyển R2
+- Cha xác nhận đã gửi Telegram. Bé Quang Vũ thực hiện `fix/quangvu-ruby-replay-r2`.
+- Đối chiếu video “Ruby–Đại Huỳnh làm kênh dẫn cho Cha”,28/11/2026 07:36UTC,56:21: xác định UID/session/replay/post và điểm kẹt archive; snapshot trước thay đổi production, sửa nguyên nhân và phục hồi bằng pipeline hiện hữu khi phù hợp. Giữ Stream tới khi R2/publication/playback xác minh; không ngắt live, không đổi quyền riêng tư hoặc hàng đợi tối ưu feed/webcam. Test và Preview trước merge; kèm hồ sơ/rollback.
+
+- Cập nhật chẩn đoán/phạm vi: UID4a574ce41a29381867c59842c8f7f38c,Input165f93ddeee3ec027722e1b173b113e4,56:21,ready. Chủ32276998-38c9-4e5c-a26c-72f85a2033d0 (angelhuynhtydo),confige0d48bc5-c7a6-4909-9e48-e7c6d935eef6. Phiêncb0324ed-dc67-42ab-b562-139a9ff3e54f kết thúcmanual07:21UTC,go_live_clicked_at/post/replayNULL; recording tạo07:36UTC nằm sau phiên,0tham chiếu. Không nới strict matching/không tạo feed tự phát. Bổ sung công cụ archive recording chưa gắn phiên bằng capability tạm giới hạn đúngUID/config, server-side MP4→R2; xác minh media trước ghi creator_library của chủ (post/session/replayNULL), rồi mới dọn đúngStreamUID. Không xuất APIkeys hoặc sửa session cũ.
