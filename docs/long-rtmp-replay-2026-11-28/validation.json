@@ -1,0 +1,20 @@
+{
+  "runtimePR": 104,
+  "runtimeMain": "b226ce2",
+  "previewHead": "1a139d4",
+  "previewURL": "https://c64c3956.funprofile-supabase.pages.dev",
+  "previewRootChildren": 3,
+  "previewTextLength": 6152,
+  "previewViteFailure": false,
+  "offlineTestsPassed": 757,
+  "testsSkipped": 53,
+  "testFiles": 113,
+  "tsgo": true,
+  "denoCheck": [
+    "rtmp-recovery-upload",
+    "live-replay-archive-cron",
+    "live-replay-mp4-poll-cron"
+  ],
+  "buildSeconds": 29.53,
+  "review": "author self-review; no independent reviewer"
+}

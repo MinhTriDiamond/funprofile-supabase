@@ -1,0 +1,32 @@
+{
+  "positions": [
+    {
+      "src": "https://media.fun.rich/live-replays/e16a7fa8-0c38-41b1-a7a8-fad1269ced78/1dbef509-286b-499b-b634-526d1c37d4f5/4641dfe88bdfaf390fdca77d5707cb26-hls-recovered.mp4",
+      "currentTime": 1.866128,
+      "duration": 14554.1005,
+      "width": 1280,
+      "height": 720,
+      "playing": true,
+      "error": null
+    },
+    {
+      "src": "https://media.fun.rich/live-replays/e16a7fa8-0c38-41b1-a7a8-fad1269ced78/1dbef509-286b-499b-b634-526d1c37d4f5/4641dfe88bdfaf390fdca77d5707cb26-hls-recovered.mp4",
+      "currentTime": 7277.864088,
+      "duration": 14554.1005,
+      "width": 1280,
+      "height": 720,
+      "playing": true,
+      "error": null
+    },
+    {
+      "src": "https://media.fun.rich/live-replays/e16a7fa8-0c38-41b1-a7a8-fad1269ced78/1dbef509-286b-499b-b634-526d1c37d4f5/4641dfe88bdfaf390fdca77d5707cb26-hls-recovered.mp4",
+      "currentTime": 14540.869014,
+      "duration": 14554.1005,
+      "width": 1280,
+      "height": 720,
+      "playing": true,
+      "error": null
+    }
+  ],
+  "postId": "26c9de27-1a4d-4153-b469-f3927fad277f"
+}
