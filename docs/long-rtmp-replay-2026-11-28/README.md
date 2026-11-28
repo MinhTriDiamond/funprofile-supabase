@@ -8,7 +8,7 @@ Stream UID `4641dfe88bdfaf390fdca77d5707cb26`; session `1dbef509-286b-499b-b634-
 
 HLS video720p và audio đều có7284segment, ENDLIST, thời lượng14.554,1giây (4:02:34,1). Replay kẹt `mp4_export`, HTTP400, chưa có r2_object_key. Không phải bằng chứng mất bản ghi.
 
-Cloudflare chỉ hỗ trợ xuất MP4 trực tiếp với bản ghi live không quá giới hạn4giờ; HLS/DASH vẫn còn phát lại: https://developers.cloudflare.com/stream/stream-live/download-stream-live-videos/ . Đây là giới hạn export của provider, không phải giới hạn thời lượng phát RTMP của ứng dụng.
+Cloudflare chỉ hỗ trợ xuất MP4 trực tiếp với bản ghi live không quá giới hạn4giờ; HLS/DASH vẫn còn phát lại: https://developers.cloudflare.com/stream/stream-live/download-stream-live-videos/ . Giới hạn export của provider khác với chính sách thời lượng phiên của ứng dụng. Mã hiện hành cũng đặt RTMP240phút (`src/modules/live/liveDurationPolicy.ts`, bản shared và mặc định grace-watchdog4giờ). Stream recording.mode=automatic bắt đầu từ khi nguồn OBS kết nối, có thể trước lúc bấm live; vì vậy cắt phiên ở240phút không bảo đảm bản ghi Stream dưới4giờ. Bản cụ thể dài14.554,1giây trong khi started_at→ended_at của phiên là14.457,283giây, chênh khoảng96,817giây. Bản sửa này không đổi chính sách thời lượng phiên.
 
 ## Bản sửa
 
