@@ -52,10 +52,10 @@ Deno.serve(async req => {
       if (!existing.exists || existing.size!==size || !item || item.deleted_at || item.post_id || item.live_session_id || item.live_replay_id || posts?.length || item.r2_bucket!==existing.bucket || !item.r2_video_url) return json({error:'Archive/library references not verified'},409);
       const expectedPublic = (Deno.env.get('R2_PUBLIC_DOMAIN') || Deno.env.get('CLOUDFLARE_R2_PUBLIC_URL') || '').replace(/\/$/,'')+'/'+key;
       if (item.r2_video_url !== expectedPublic) return json({error:'Library URL mismatch'},409);
-      const playable = await verifyR2PlayableUrl(expectedPublic,size);
+      const playable = await verifyR2PlayableUrl(expectedPublic,32);
       const range=await fetch(expectedPublic,{headers:{Range:'bytes=0-31'},signal:AbortSignal.timeout(15000)});
       const bytes=range.status===206 ? new Uint8Array(await range.arrayBuffer()) : new Uint8Array();
-      if (!playable.ok || new TextDecoder().decode(bytes.slice(4,8))!=='ftyp') return json({error:'Archive not playable MP4'},409);
+      if (!playable.ok || playable.contentLength!==size || new TextDecoder().decode(bytes.slice(4,8))!=='ftyp') return json({error:'Archive not playable MP4'},409);
       const result=await deleteStreamVideo(scope.streamUid);
       return json({deleted:result.deleted,status:result.status,uid:scope.streamUid,libraryId:item.id,deletedAt:new Date().toISOString()});
     }
