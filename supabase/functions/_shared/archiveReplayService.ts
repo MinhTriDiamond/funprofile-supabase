@@ -18,6 +18,20 @@ import {
   upsertCreatorLibrary,
 } from './replayFeedService.ts';
 import { canReuseConfirmedR2Object, mayPublishR2Replay } from './r2ArchiveDiagnostics.ts';
+import { StreamLiveMp4Unavailable } from './streamLiveMp4Policy.ts';
+
+async function deferLongLiveMp4(admin: SupabaseClient, replay: any, error: StreamLiveMp4Unavailable) {
+  // Keep the playable HLS and its Stream source. This is an export limitation,
+  // not a missing recording; never send the unrecoverable/failed recording notice.
+  await patchReplay(admin, replay.id, {
+    archive_error: `live_mp4_duration_limit: ${error.message}`,
+    duration_seconds: Math.ceil(error.durationSeconds),
+    archive_next_retry_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+    archive_lease_until: null,
+    last_cf_status: 'live_mp4_duration_limit',
+  });
+  return { ok: true, status: 'awaiting_hls_recovery', replay_id: replay.id };
+}
 
 // ============ STATE-MACHINE PHASES (resumable) ============
 // Mỗi cron tick chỉ chạy 1 phase + 1 đơn vị công việc nhỏ → < 30s wall-time.
@@ -1078,6 +1092,7 @@ export async function archiveReplay(admin: SupabaseClient, replayId: string): Pr
     }
     return result;
   } catch (err) {
+    if (err instanceof StreamLiveMp4Unavailable) return deferLongLiveMp4(admin, current, err);
     const message = err instanceof Error ? err.message : String(err);
     const anyErr = err as { httpStatus?: number; notFound?: boolean };
     const isPermanent404 = anyErr?.notFound === true || anyErr?.httpStatus === 404
@@ -1129,6 +1144,10 @@ export async function archiveReplay(admin: SupabaseClient, replayId: string): Pr
 export async function pollMp4ForReplay(admin: SupabaseClient, replayId: string): Promise<Record<string, unknown>> {
   const { data: replay } = await (admin as any).from('live_replays').select('*').eq('id', replayId).maybeSingle();
   if (!replay) return { ok: false, status: 'not_found' };
+  if (replay.last_cf_status === 'live_mp4_duration_limit'
+    && Date.parse(replay.archive_next_retry_at || '') > Date.now()) {
+    return { ok: true, status: 'awaiting_hls_recovery', replay_id: replay.id };
+  }
   if (replay.archive_phase !== Phase.MP4_WAIT) {
     return { ok: true, status: 'skipped_wrong_phase', phase: replay.archive_phase };
   }
@@ -1156,6 +1175,7 @@ export async function pollMp4ForReplay(admin: SupabaseClient, replayId: string):
     }
     return { ok: true, status: 'pending', percentComplete: result.percentComplete };
   } catch (err) {
+    if (err instanceof StreamLiveMp4Unavailable) return deferLongLiveMp4(admin, replay, err);
     const message = err instanceof Error ? err.message : String(err);
     const anyErr = err as { httpStatus?: number; notFound?: boolean; rateLimited?: boolean; retryAfterSeconds?: number };
     const isPermanent404 = anyErr?.notFound === true || anyErr?.httpStatus === 404;

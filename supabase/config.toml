@@ -291,3 +291,6 @@ verify_jwt = false
 
 [functions.post-video-read]
 verify_jwt = false
+
+[functions.rtmp-recovery-upload]
+verify_jwt = false

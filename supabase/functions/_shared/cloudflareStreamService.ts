@@ -1,5 +1,6 @@
 import { CloudflareApiError, getCloudflareErrorCodes } from './cloudflareApiError.ts';
 import { isConfirmedRtmpDisconnectedState } from './rtmpDisconnectPolicy.ts';
+import { assertStreamLiveMp4Supported } from './streamLiveMp4Policy.ts';
 
 export interface StreamPlaybackUrls {
   hls: string;
@@ -76,6 +77,7 @@ export async function requestMp4Download(uid: string): Promise<StreamDownloadSta
   // Tránh lỗi 400 vô nghĩa khi video còn 'inprogress'/'queued'/'pendingupload'/'live-input'.
   const meta = await getStreamVideo(uid).catch(() => null);
   if (meta) {
+    assertStreamLiveMp4Supported(meta);
     const state = String((meta as any)?.status?.state || '').toLowerCase();
     if (state === 'error') {
       const err = new Error(`Cloudflare Stream video state=error (${(meta as any)?.status?.errorReasonText || 'unknown'})`) as Error & {
